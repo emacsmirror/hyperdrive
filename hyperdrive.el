@@ -468,6 +468,7 @@ Call `org-*' functions to handle search option if URL contains it."
     (switch-to-buffer (current-buffer))
     (goto-line 4)))
 
+;; TODO: Use bui.el instead?
 (defun hyperdrive-dired-insert-directory-contents (url contents)
   "Display hyperdrive directory CONTENTS for URL in a Dired-like interface."
   (insert "  " (propertize url  'face 'hyperdrive-dired-header) ":" "\n"
