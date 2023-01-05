@@ -465,8 +465,8 @@ Call `org-*' functions to handle search option if URL contains it."
       (erase-buffer)
       (hyperdrive-dired-insert-directory-contents url contents))
     (hyperdrive-dired-mode)
-  (switch-to-buffer (current-buffer))
-  (goto-line 4)))
+    (switch-to-buffer (current-buffer))
+    (goto-line 4)))
 
 (defun hyperdrive-dired-insert-directory-contents (url contents)
   "Display hyperdrive directory CONTENTS for URL in a Dired-like interface."
