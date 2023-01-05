@@ -117,8 +117,8 @@ Capture group matches public key.")
 
 (defgroup hyperdrive-dired-faces nil
   "Faces used by hyperdrive dired."
-  :group 'dired
-  :group 'faces)
+  :group 'faces
+  :prefix "hyperdrive-dired-")
 
 (defface hyperdrive-dired-header
   '((t (:inherit font-lock-type-face)))
