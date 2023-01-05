@@ -388,7 +388,9 @@ If already at top-level directory, return current directory."
 (defun hyperdrive-store-link ()
   "Store a link to the hyperdrive file.
 
-In a `hyperdrive-dired' buffer, store link to file at point."
+In a `hyperdrive-dired' buffer, store link to file at point. In a
+buffer with `hyperdrive-mode' enabled, store file corresponding
+to current buffer."
   (cond
    ((derived-mode-p 'hyperdrive-dired-mode)
     (setq org-store-link-plist nil)
