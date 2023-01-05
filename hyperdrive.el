@@ -77,14 +77,17 @@
 
 ;; TODO: Use `defvar' instead? I see that `mu4e-contexts' is defined with `defvar'.
 (defcustom hyperdrive-namespaces nil
-  "List of `hyperdrive-namespace' objects describing the writable hyperdrive namespaces.")
+  "List of `hyperdrive-namespace' objects describing the writable hyperdrive namespaces."
+  :type 'sexp)
 
 (defcustom hyperdrive-storage-location
   (expand-file-name "~/.local/share/hyper-gateway-nodejs/")
-  "Location to store Hypercore data.")
+  "Location to store Hypercore data."
+  :type '(file :must-match t))
 
 (defcustom hyper-gateway-command "hyper-gateway"
-  "Name of `hyper-gateway' binary on your machine.")
+  "Name of `hyper-gateway' binary on your machine."
+  :type 'string)
 
 (defcustom hyper-gateway-port 4973
   "Port on which to run the hyper-gateway server."
@@ -95,7 +98,8 @@
   :type 'natnum)
 
 (defcustom hyperdrive-honor-auto-mode-alist t
-  "If non-nil, use file extension of hyperdrive file to set `major-mode'.")
+  "If non-nil, use file extension of hyperdrive file to set `major-mode'."
+  :type 'boolean)
 
 ;;;; Internal variables
 
