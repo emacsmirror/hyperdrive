@@ -86,11 +86,13 @@
 (defcustom hyper-gateway-command "hyper-gateway"
   "Name of `hyper-gateway' binary on your machine.")
 
-(defcustom hyper-gateway-port "4973"
-  "Port on which to run the hyper-gateway server.")
+(defcustom hyper-gateway-port 4973
+  "Port on which to run the hyper-gateway server."
+  :type 'natnum)
 
-(defcustom hyper-gateway-p2p-port "4977"
-  "Port on which to run the p2p network.")
+(defcustom hyper-gateway-p2p-port 4977
+  "Port on which to run the p2p network."
+  :type 'natnum)
 
 (defcustom hyperdrive-honor-auto-mode-alist t
   "If non-nil, use file extension of hyperdrive file to set `major-mode'.")
@@ -169,7 +171,7 @@ If only `hyperdrive-namespace' exists, it will be chosen automatically."
 
 (defun hyperdrive--convert-to-hyper-gateway-url (url)
   "Convert a URL starting with `hyperdrive--hyper-prefix' to one starting with \"http://localhost:4973/hyper/\" (assuming that 4973 is the value of `hyper-gateway-port')."
-  (concat "http://localhost:" hyper-gateway-port "/hyper/"
+  (concat "http://localhost:" (number-to-string hyper-gateway-port) "/hyper/"
           (substring url (length hyperdrive--hyper-prefix))))
 
 (defun hyperdrive--make-hyperdrive-url (namespace raw-path)
