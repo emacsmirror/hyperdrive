@@ -364,6 +364,11 @@ extension."
     (switch-to-buffer (current-buffer))
     (hyperdrive-mode)))
 
+(defun hyperdrive-up-directory ()
+  "Visit parent directory of current hyperdrive file or directory."
+  (interactive)
+  (hyperdrive-load-url (hyperdrive--get-parent-directory)))
+
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
   (widen)
@@ -445,7 +450,7 @@ Call `org-*' functions to handle search option if URL contains it."
   :group 'hyperdrive
   :lighter "hyperdrive"
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map [remap dired-jump] #'hyperdrive-dired-up-directory)
+            (define-key map [remap dired-jump] #'hyperdrive-up-directory)
             map)
   (if hyperdrive-mode
       (hyperdrive-mode-on)
@@ -493,11 +498,6 @@ Call `org-*' functions to handle search option if URL contains it."
                   ((equal ".." raw) (hyperdrive--get-parent-directory))
                   (t (concat (hyperdrive--get-current-url) "/" raw)))))))
 
-(defun hyperdrive-dired-up-directory ()
-  "Visit parent directory of current `hyperdrive-dired' buffer."
-  (interactive)
-  (hyperdrive-load-url (hyperdrive--get-parent-directory)))
-
 (defun hyperdrive-dired-copy-filename-as-kill ()
   "Copy hyperdrive url of file at point."
   (interactive)
@@ -516,7 +516,7 @@ Call `org-*' functions to handle search option if URL contains it."
   :doc "Local keymap for `hyperdrive-dired-mode' buffers."
   ;; TODO: Use keymap parent to adopt user's current dired bindings?
   "RET"     #'hyperdrive-dired-find-file
-  "^"       #'hyperdrive-dired-up-directory
+  "^"       #'hyperdrive-up-directory
   "w"       #'hyperdrive-dired-copy-filename-as-kill
   "D"       #'hyperdrive-dired-delete-file)
 
