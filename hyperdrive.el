@@ -365,15 +365,13 @@ URL should begin with `hyperdrive--hyper-prefix'."
 
 (defun hyperdrive-delete-file (url)
   "Delete file at URL."
-  (let ((url (hyperdrive--remove-trailing-slash url))  ; Always remove trailing slash for consistency
-        (json-array-type 'list))
-    (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url)
-      :as 'response
-      :then (lambda (_response) (hyperdrive-load-url (hyperdrive--get-parent-directory url)))
-      ;; TODO: Get special status code for attempt to delete directory? Or just warn before deletion
-      :else (lambda (err)
-              (when (= 403 (plz-response-status (plz-error-response err)))
-                (user-error "Not Authorized to delete: %s" url))))))
+  (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url)
+    :as 'response
+    :then (lambda (_response) (hyperdrive-load-url (hyperdrive--get-parent-directory url)))
+    ;; TODO: Get special status code for attempt to delete directory? Or just warn before deletion
+    :else (lambda (err)
+            (when (= 403 (plz-response-status (plz-error-response err)))
+              (user-error "Not Authorized to delete: %s" url)))))
 
 ;; TODO: HTTP error when deleting file, then going up directory and attempting to delete directory. Then, refresh and the dir andparent are gone (if no siblings)
 
