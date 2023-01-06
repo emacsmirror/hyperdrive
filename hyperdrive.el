@@ -217,6 +217,37 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
       (replace-regexp-in-string (hyperdrive--extract-public-key url) alias url)
     url))
 
+(defun hyperdrive--extract-path (string)
+  "Extract path following public-key from STRING."
+  (substring string (+ (length hyperdrive--hyper-prefix)
+                       (length (hyperdrive--extract-public-key string)))))
+
+(defun hyperdrive--reconstruct-url (link version)
+  "Reconstruct url from LINK and VERSION.
+
+This function always returns a url of the form \"hyper://\" + public-key
++ version number + path, whiled urls entered by users may be namespace aliases or lack version numbers."
+  (hyperdrive--remove-trailing-slash
+   (concat hyperdrive--hyper-prefix (hyperdrive--extract-public-key link) "+" version (hyperdrive--extract-path link))))
+
+(defun hyperdrive--response-extract-link (response)
+  "Extract version number (etag) from RESPONSE."
+  (let ((str (alist-get 'link (plz-response-headers response))))
+    (when (string-match (rx "<" (group (one-or-more anything)) ">")
+                        str)
+      (match-string 1 str))))
+
+(defun hyperdrive--response-extract-version (response)
+  "Extract version number (etag) from RESPONSE.
+
+Version number is of type string"
+  (json-read-from-string
+   (alist-get 'etag (plz-response-headers response))))
+
+(defun hyperdrive--response-extract-contents (response)
+  "Extract contents (body) from RESPONSE."
+  (json-read-from-string (plz-response-body response)))
+
 (defun hyperdrive--get-buffer-create (url)
   "Pass URL or corresponding alias to `get-buffer-create'.
 
@@ -317,18 +348,17 @@ URL should begin with `hyperdrive--hyper-prefix'."
   ;; TODO: Warn if the amount of data to be downloaded exceeds some limit
   (interactive "sURL: ") ;; TODO: Present `find-file'-like interface for selecting path from cached hyperdrives
   ;; TODO: Put the call to `plz' inside of a callback which runs after `hyper-gateway' is done initializing. Waiting on https://github.com/RangerMauve/hyper-gateway/issues/3
-  ;; TODO: Fix version numbers inside urls
-  (let ((url (hyperdrive--remove-trailing-slash url))  ; Always remove trailing slash for consistency
-        (json-array-type 'list))
-    ;; TODO: noResolve to display contents as filesystem?
-    ;; (plz 'get (concat (hyperdrive--convert-to-hyper-gateway-url url) "?noResolve")
-    ;; TODO: Why do files inside hyper://blog.mauve.moe give JSON readtable error?
-    ;; TODO: Large files cause problems too hyper://blog.mauve.moe/videos/2022-02-02_01-07-36.mp4
-    (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
-      :as (lambda ()
-            (let ((json-array-type 'list))
-              (json-read)))
-      :then (lambda (contents)
+  ;; (plz 'get (concat (hyperdrive--convert-to-hyper-gateway-url url) "?noResolve")
+  ;; TODO: Why do files inside hyper://blog.mauve.moe give JSON readtable error?
+  ;; TODO: Large files cause problems too hyper://blog.mauve.moe/videos/2022-02-02_01-07-36.mp4
+  (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
+    :as 'response
+    :then (lambda (response)
+            (let* ((json-array-type 'list)
+                   (link (hyperdrive--response-extract-link response))
+                   (version (hyperdrive--response-extract-version response))
+                   (contents (hyperdrive--response-extract-contents response)))
+              (setq url (hyperdrive--reconstruct-url link version))
               (cond (cb (funcall cb url contents))
                     ((listp contents) (hyperdrive-dired url contents))
                     (t (hyperdrive-find-file url contents)))))))
