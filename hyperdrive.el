@@ -77,8 +77,7 @@
 
 ;; TODO: Use `defvar' instead? I see that `mu4e-contexts' is defined with `defvar'.
 (defcustom hyperdrive-namespaces nil
-  "List of `hyperdrive-namespace' objects describing the writable
-hyperdrive namespaces."
+  "List of `hyperdrive-namespace' objects."
   :type 'sexp)
 
 (defcustom hyperdrive-storage-location
