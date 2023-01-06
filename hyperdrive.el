@@ -109,7 +109,7 @@
 
 (defconst hyperdrive--public-key-re
   (rx (eval hyperdrive--hyper-prefix) (group (= 64 hex)))
-  "Regex to match \"hyper://\" + public key + \"/\".
+  "Regex to match \"hyper://\" + public key.
 
 Capture group matches public key.")
 
