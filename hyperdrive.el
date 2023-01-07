@@ -384,6 +384,7 @@ not strip version number from reconstructed url."
 
 (defun hyperdrive-delete-file (url)
   "Delete file at URL."
+  ;; TODO: Warn if looking at old Hyperdrive version, prompt to view current version?
   (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url)
     :as 'response
     :then (lambda (_response) (hyperdrive-load-url (hyperdrive--get-parent-directory url)))
