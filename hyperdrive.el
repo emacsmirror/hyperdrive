@@ -310,14 +310,15 @@ foo>/\" both point to the same content."
 
 Also initialize `hyperdrive--alias-public-key-map'."
   (interactive)
-  (hyperdrive--set-alias-public-key-map)
   (unless (hyperdrive--gateway-pid)
     (let ((buf (get-buffer-create "hyper-gateway")))
       (with-current-buffer buf (erase-buffer))
       (make-process
        :name "hyper-gateway"
        :buffer buf
-       :command (list hyper-gateway-command "--writable" "true" "run")))))
+       :command (list hyper-gateway-command "--writable" "true" "run"))))
+  ;; FIXME: Set hyperdrive--alias-public-key-map in cb after gateway has initialized https://github.com/RangerMauve/hyper-gateway/issues/3
+  (hyperdrive--set-alias-public-key-map))
 
 (defun hyperdrive-stop-gateway ()
   "Delete the `hyper-gateway' process."
