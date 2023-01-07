@@ -174,6 +174,7 @@ If only `hyperdrive-namespace' exists, it will be chosen automatically."
 
 (defun hyperdrive--set-alias-public-key-map ()
   "Set the value of `hyperdrive--alias-public-key-map' based on current `hyperdrive-namespaces'."
+  ;; TODO: Should we call this function elsewhere besides `hyperdrive-start-gateway'?
   (setq hyperdrive--alias-public-key-map
         (mapcar (lambda (namespace)
                   (cons (hyperdrive-namespace-alias namespace) (hyperdrive--public-key namespace)))
@@ -305,8 +306,11 @@ foo>/\" both point to the same content."
 ;; TODO: Check that `hyper-gateway' is running before attempting to connect to it.
 ;;;###autoload
 (defun hyperdrive-start-gateway ()
-  "Start `hyper-gateway' if not already running."
+  "Start `hyper-gateway' if not already running.
+
+Also initialize `hyperdrive--alias-public-key-map'."
   (interactive)
+  (hyperdrive--set-alias-public-key-map)
   (unless (hyperdrive--gateway-pid)
     (let ((buf (get-buffer-create "hyper-gateway")))
       (with-current-buffer buf (erase-buffer))
