@@ -113,6 +113,14 @@
 
 Capture group matches public key.")
 
+(defconst hyperdrive--version-re
+  (rx (eval hyperdrive--hyper-prefix)
+      (one-or-more alnum)
+      (group "+" (one-or-more num)))
+  "Regex to match \"hyper://\" + public key or alias + version number.
+
+Capture group matches version number.")
+
 ;;;; Faces
 
 (defgroup hyperdrive-dired-faces nil
@@ -222,13 +230,16 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
   (substring string (+ (length hyperdrive--hyper-prefix)
                        (length (hyperdrive--extract-public-key string)))))
 
-(defun hyperdrive--reconstruct-url (link version)
-  "Reconstruct url from LINK and VERSION.
+(defun hyperdrive--reconstruct-url (link &optional version)
+  "Reconstruct url from LINK and (optionally) VERSION.
 
 This function always returns a url of the form \"hyper://\" + public-key
 + version number + path, whiled urls entered by users may be namespace aliases or lack version numbers."
   (hyperdrive--remove-trailing-slash
-   (concat hyperdrive--hyper-prefix (hyperdrive--extract-public-key link) "+" version (hyperdrive--extract-path link))))
+   (concat hyperdrive--hyper-prefix
+           (hyperdrive--extract-public-key link)
+           (and version (concat "+" version))
+           (hyperdrive--extract-path link))))
 
 (defun hyperdrive--response-extract-link (response)
   "Extract version number (etag) from RESPONSE."
@@ -247,6 +258,10 @@ Version number is of type string"
 (defun hyperdrive--response-extract-contents (response)
   "Extract contents (body) from RESPONSE."
   (json-read-from-string (plz-response-body response)))
+
+(defun hyperdrive--version-match (url)
+  "Return non-nil if URL contains a version number."
+  (string-match hyperdrive--version-re url))
 
 (defun hyperdrive--get-buffer-create (url)
   "Pass URL or corresponding alias to `get-buffer-create'.
@@ -338,13 +353,16 @@ This function returns nil."
        namespace
        (concat "/" (file-relative-name path (hyperdrive-namespace-relative-dir namespace)))))))
 
-(defun hyperdrive-load-url (url &optional cb)
+(defun hyperdrive-load-url (url &optional use-version cb)
   "Load contents at URL from Hypercore network.
 
 If CB is non-nil, pass it the url and loaded contents. Otherwise,
 call either `hyperdrive-dired' or `hyperdrive-find-file'.
 
-URL should begin with `hyperdrive--hyper-prefix'."
+URL should begin with `hyperdrive--hyper-prefix'.
+
+If URL contains a version number or if USE-VERSION is non-nil, do
+not strip version number from reconstructed url."
   ;; TODO: Warn if the amount of data to be downloaded exceeds some limit
   (interactive "sURL: ") ;; TODO: Present `find-file'-like interface for selecting path from cached hyperdrives
   ;; TODO: Put the call to `plz' inside of a callback which runs after `hyper-gateway' is done initializing. Waiting on https://github.com/RangerMauve/hyper-gateway/issues/3
@@ -357,8 +375,9 @@ URL should begin with `hyperdrive--hyper-prefix'."
             (let* ((json-array-type 'list)
                    (link (hyperdrive--response-extract-link response))
                    (version (hyperdrive--response-extract-version response))
-                   (contents (hyperdrive--response-extract-contents response)))
-              (setq url (hyperdrive--reconstruct-url link version))
+                   (contents (hyperdrive--response-extract-contents response))
+                   (use-version (or use-version (hyperdrive--version-match url))))
+              (setq url (hyperdrive--reconstruct-url link (and use-version version)))
               (cond (cb (funcall cb url contents))
                     ((listp contents) (hyperdrive-dired url contents))
                     (t (hyperdrive-find-file url contents)))))))
