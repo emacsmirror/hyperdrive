@@ -121,6 +121,12 @@ Capture group matches public key.")
 
 Capture group matches version number.")
 
+(defvar hyperdrive--current-url nil
+  "The url of the current hyperdrive file or directory.
+
+Depending on how `hyperdrive-load-url' was called to generate the current buffer, the url may or may not contain a version number.")
+(put 'hyperdrive--current-url 'permanent-local t)
+
 ;;;; Faces
 
 (defgroup hyperdrive-dired-faces nil
@@ -406,12 +412,13 @@ not strip version number from reconstructed url."
 If `hyperdrive-honor-auto-mode-alist' is non-nil, set `major-mode' according to file
 extension."
   (with-current-buffer (hyperdrive--get-buffer-create url)
+    (setq hyperdrive--current-url url)
     (let ((inhibit-read-only t))
       (erase-buffer)
       (insert contents)
       ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
       (when hyperdrive-honor-auto-mode-alist
-        (let ((buffer-file-name (hyperdrive--get-current-url)))
+        (let ((buffer-file-name hyperdrive--current-url))
           (set-auto-mode))))
     (switch-to-buffer (current-buffer))
     (hyperdrive-mode)))
@@ -424,20 +431,16 @@ extension."
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
   (widen)
-  (hyperdrive-load-url (hyperdrive--get-current-url)))
-
-(defun hyperdrive--get-current-url ()
-  "Get hyperdrive url for current buffer."
-  (buffer-name (buffer-base-buffer)))
+  (hyperdrive-load-url hyperdrive--current-url))
 
 (defun hyperdrive--get-parent-directory (&optional url)
   "Get parent directory of URL or current hyperdrive file or directory if URL is nil.
 
 If already at top-level directory, return current directory."
-  (let* ((url (or url (hyperdrive--get-current-url)))
+  (let* ((url (or url hyperdrive--current-url))
          (parent-dir (file-name-directory (directory-file-name url))))
     (if (equal parent-dir hyperdrive--hyper-prefix)
-        (hyperdrive--get-current-url)
+        hyperdrive--current-url
       parent-dir)))
 
 ;;;; Org links
@@ -457,7 +460,7 @@ to current buffer."
     (setq org-store-link-plist nil)
     ;; TODO: Store link with search options, like the default handler for `org-store-link'
     (org-link-store-props :type hyperdrive--org-link-type
-                          :link (hyperdrive--get-current-url)))))
+                          :link hyperdrive--current-url))))
 
 (defun hyperdrive-open-link (url)
   "Open the hyperdrive URL, pulling latest updates from the network.
@@ -475,6 +478,7 @@ Call `org-*' functions to handle search option if URL contains it."
                                (hyperdrive-dired url contents)
                              (hyperdrive-find-file url contents)
                              (with-current-buffer (hyperdrive--get-buffer-create url)
+                               (setq hyperdrive--current-url url)
                                (cond (line (org-goto-line line)
 		                           (when (derived-mode-p 'org-mode) (org-fold-reveal)))
 	                             (search (condition-case err
@@ -513,6 +517,7 @@ Call `org-*' functions to handle search option if URL contains it."
 (defun hyperdrive-dired (url contents)
   "Switch to a buffer with CONTENTS of directory at URL."
   (with-current-buffer (hyperdrive--get-buffer-create url)
+    (setq hyperdrive--current-url url)
     (let ((inhibit-read-only t))
       (erase-buffer)
       (hyperdrive-dired-insert-directory-contents url contents))
@@ -544,12 +549,12 @@ Call `org-*' functions to handle search option if URL contains it."
   (let ((raw)
         (filename))
     (if (= 1 (line-number-at-pos))
-        (hyperdrive--get-current-url)
+        hyperdrive--current-url
       (setq raw (string-trim (thing-at-point 'line t)))
       (setq filename
-            (cond ((equal "."  raw) (hyperdrive--get-current-url))
+            (cond ((equal "."  raw) hyperdrive--current-url)
                   ((equal ".." raw) (hyperdrive--get-parent-directory))
-                  (t (concat (hyperdrive--get-current-url) "/" raw)))))))
+                  (t (concat hyperdrive--current-url "/" raw)))))))
 
 (defun hyperdrive-dired-copy-filename-as-kill ()
   "Copy hyperdrive url of file at point."
