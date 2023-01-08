@@ -280,6 +280,10 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"hyper://foo/\" and another called \"hyper://<public key for
 foo>/\" both point to the same content."
+  ;; TODO: For human-readable buffer names, we should use a name +
+  ;;       path rather than the full url. This requires storing names
+  ;;       in a well-known location. In what format should names (and
+  ;;       colors) be stored? JSON?
   (get-buffer-create (hyperdrive--maybe-replace-public-key-with-alias url)))
 
 ;;;; Commands
