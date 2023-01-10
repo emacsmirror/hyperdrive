@@ -310,7 +310,7 @@ foo>/\" both point to the same content."
   (let ((output
          (shell-command-to-string (concat "pgrep " hyper-gateway-command))))
     (if (> (length output) 0)
-        (string-to-number (substring output 0 -1))
+        (string-to-number (string-trim output))
       nil)))
 
 ;; TODO: Check that `hyper-gateway' is running before attempting to connect to it.
