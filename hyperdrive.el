@@ -180,7 +180,6 @@ If only `hyperdrive-namespace' exists, it will be chosen automatically."
 
 (defun hyperdrive--set-alias-public-key-map ()
   "Set the value of `hyperdrive--alias-public-key-map' based on current `hyperdrive-namespaces'."
-  ;; TODO: Should we call this function elsewhere besides `hyperdrive-start-gateway'?
   (setq hyperdrive--alias-public-key-map
         (mapcar (lambda (namespace)
                   (cons (hyperdrive-namespace-alias namespace) (hyperdrive--public-key namespace)))
@@ -280,10 +279,6 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"hyper://foo/\" and another called \"hyper://<public key for
 foo>/\" both point to the same content."
-  ;; TODO: For human-readable buffer names, we should use a name +
-  ;;       path rather than the full url. This requires storing names
-  ;;       in a well-known location. In what format should names (and
-  ;;       colors) be stored? JSON?
   (get-buffer-create (hyperdrive--maybe-replace-public-key-with-alias url)))
 
 ;;;; Commands
@@ -305,15 +300,12 @@ foo>/\" both point to the same content."
 
 (defun hyperdrive--gateway-pid ()
   "Return `hyper-gateway' process id if it's running. Otherwise, return nil."
-  ;; TODO: Better way to check if an external process is running given its command name?
-  ;; TODO: Handle case where multiple hyper-gateway instances are running.
   (let ((output
          (shell-command-to-string (concat "pgrep " hyper-gateway-command))))
     (if (> (length output) 0)
         (string-to-number (string-trim output))
       nil)))
 
-;; TODO: Check that `hyper-gateway' is running before attempting to connect to it.
 ;;;###autoload
 (defun hyperdrive-start-gateway ()
   "Start `hyper-gateway' if not already running.
@@ -326,10 +318,7 @@ Also initialize `hyperdrive--alias-public-key-map'."
       (make-process
        :name "hyper-gateway"
        :buffer buf
-       :command (list hyper-gateway-command "--writable" "true" "run"))))
-  ;; FIXME: Set hyperdrive--alias-public-key-map in cb after gateway has initialized https://github.com/RangerMauve/hyper-gateway/issues/3
-  ;; (hyperdrive--set-alias-public-key-map)
-  )
+       :command (list hyper-gateway-command "--writable" "true" "run")))))
 
 (defun hyperdrive-stop-gateway ()
   "Delete the `hyper-gateway' process."
@@ -382,7 +371,6 @@ not strip version number from reconstructed url."
   ;; TODO: Warn if the amount of data to be downloaded exceeds some limit
   (interactive "sURL: ") ;; TODO: Present `find-file'-like interface for selecting path from cached hyperdrives
   ;; TODO: Put the call to `plz' inside of a callback which runs after `hyper-gateway' is done initializing. Waiting on https://github.com/RangerMauve/hyper-gateway/issues/3
-  ;; (plz 'get (concat (hyperdrive--convert-to-hyper-gateway-url url) "?noResolve")
   ;; TODO: Why do files inside hyper://blog.mauve.moe give JSON readtable error?
   ;; TODO: Large files cause problems too hyper://blog.mauve.moe/videos/2022-02-02_01-07-36.mp4
   (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
@@ -404,12 +392,10 @@ not strip version number from reconstructed url."
   (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url)
     :as 'response
     :then (lambda (_response) (hyperdrive-load-url (hyperdrive--get-parent-directory url)))
-    ;; TODO: Get special status code for attempt to delete directory? Or just warn before deletion
+    ;; TODO: After hyper-gateway upgrades to hypercore 10, warn user on deleting non-empty directories
     :else (lambda (err)
             (when (= 403 (plz-response-status (plz-error-response err)))
               (user-error "Not Authorized to delete: %s" url)))))
-
-;; TODO: HTTP error when deleting file, then going up directory and attempting to delete directory. Then, refresh and the dir andparent are gone (if no siblings)
 
 (defun hyperdrive-find-file (url contents)
   "Switch to a buffer with CONTENTS of file at URL.
@@ -530,7 +516,6 @@ Call `org-*' functions to handle search option if URL contains it."
     (switch-to-buffer (current-buffer))
     (goto-line 4)))
 
-;; TODO: Use bui.el instead?
 (defun hyperdrive-dired-insert-directory-contents (url contents)
   "Display hyperdrive directory CONTENTS for URL in a Dired-like interface."
   (insert "  " (propertize url  'face 'hyperdrive-dired-header) ":" "\n"
