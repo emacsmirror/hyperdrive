@@ -382,7 +382,6 @@ not strip version number from reconstructed url."
   ;; TODO: Warn if the amount of data to be downloaded exceeds some limit
   (interactive "sURL: ") ;; TODO: Present `find-file'-like interface for selecting path from cached hyperdrives
   ;; TODO: Put the call to `plz' inside of a callback which runs after `hyper-gateway' is done initializing. Waiting on https://github.com/RangerMauve/hyper-gateway/issues/3
-  ;; TODO: Large files cause problems too hyper://blog.mauve.moe/videos/2022-02-02_01-07-36.mp4
   (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
     :as 'response
     :then (lambda (response)
