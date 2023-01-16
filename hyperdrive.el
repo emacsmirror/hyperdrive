@@ -474,7 +474,7 @@ Call `org-*' functions to handle search option if URL contains it."
          (search (and (not line) option)))
     (hyperdrive-load-url (concat "hyper:" url-without-option)
                          (lambda (url contents directoryp)
-                           (if (directoryp)
+                           (if directoryp
                                (hyperdrive-dired url contents)
                              (hyperdrive-find-file url contents)
                              (with-current-buffer (hyperdrive--get-buffer-create url)
