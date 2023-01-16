@@ -472,7 +472,7 @@ Call `org-*' functions to handle search option if URL contains it."
                     (string-match-p "\\`[0-9]+\\'" option)
 		    (list (string-to-number option))))
          (search (and (not line) option)))
-    (hyperdrive-load-url (concat "hyper:" url-without-option)
+    (hyperdrive-load-url (concat "hyper:" url-without-option) nil
                          (lambda (url contents directoryp)
                            (if directoryp
                                (hyperdrive-dired url contents)
