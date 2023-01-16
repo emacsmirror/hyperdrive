@@ -403,7 +403,7 @@ not strip version number from reconstructed url."
 If `hyperdrive-honor-auto-mode-alist' is non-nil, set `major-mode' according to file
 extension."
   (with-current-buffer (hyperdrive--get-buffer-create url)
-    (setq hyperdrive--current-url url)
+    (setq-local hyperdrive--current-url url)
     (let ((inhibit-read-only t))
       (erase-buffer)
       (insert contents)
@@ -469,7 +469,7 @@ Call `org-*' functions to handle search option if URL contains it."
                                (hyperdrive-dired url contents)
                              (hyperdrive-find-file url contents)
                              (with-current-buffer (hyperdrive--get-buffer-create url)
-                               (setq hyperdrive--current-url url)
+                               (setq-local hyperdrive--current-url url)
                                (cond (line (org-goto-line line)
 		                           (when (derived-mode-p 'org-mode) (org-fold-reveal)))
 	                             (search (condition-case err
@@ -508,7 +508,7 @@ Call `org-*' functions to handle search option if URL contains it."
 (defun hyperdrive-dired (url contents)
   "Switch to a buffer with CONTENTS of directory at URL."
   (with-current-buffer (hyperdrive--get-buffer-create url)
-    (setq hyperdrive--current-url url)
+    (setq-local hyperdrive--current-url url)
     (let ((inhibit-read-only t))
       (erase-buffer)
       (hyperdrive-dired-insert-directory-contents url contents))
