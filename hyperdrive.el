@@ -258,12 +258,22 @@ This function always returns a url of the form \"hyper://\" + public-key
   "Extract version number (etag) from RESPONSE.
 
 Version number is of type string"
-  (json-read-from-string
-   (alist-get 'etag (plz-response-headers response))))
+  (alist-get 'etag (plz-response-headers response)))
 
-(defun hyperdrive--response-extract-contents (response)
-  "Extract contents (body) from RESPONSE."
-  (json-read-from-string (plz-response-body response)))
+(defun hyperdrive--response-extract-contents (response directoryp)
+  "Extract contents (body) from RESPONSE.
+
+If response is a directory, read directory contents as JSON.
+Otherwise, return plain buffer contents."
+  (let ((json-array-type 'list)
+        (contents (plz-response-body response)))
+    (if directoryp
+        (json-read-from-string contents)
+      contents)))
+
+(defun hyperdrive--directory-p (response)
+  "Return non-nil if hyperdrive RESPONSE is a directory."
+  (alist-get 'x-is-directory (plz-response-headers response)))
 
 (defun hyperdrive--version-match (url)
   "Return non-nil if URL contains a version number."
@@ -339,8 +349,9 @@ PATH represents the absolute path to the shared file inside the hyperdrive."
   ;; TODO: Make curl handle filenames with spaces
   (plz 'put (hyperdrive--convert-to-hyper-gateway-url
              (hyperdrive--make-hyperdrive-url namespace path))
+    :body-type 'binary
     :body (with-current-buffer buffer
-            (json-encode (buffer-string)))))
+            (buffer-string))))
 
 ;; TODO: Add `after-save-hook' to call `hyperdrive-sync-shared-files'
 (defun hyperdrive-sync-shared-files (namespace)
@@ -371,19 +382,18 @@ not strip version number from reconstructed url."
   ;; TODO: Warn if the amount of data to be downloaded exceeds some limit
   (interactive "sURL: ") ;; TODO: Present `find-file'-like interface for selecting path from cached hyperdrives
   ;; TODO: Put the call to `plz' inside of a callback which runs after `hyper-gateway' is done initializing. Waiting on https://github.com/RangerMauve/hyper-gateway/issues/3
-  ;; TODO: Why do files inside hyper://blog.mauve.moe give JSON readtable error?
   ;; TODO: Large files cause problems too hyper://blog.mauve.moe/videos/2022-02-02_01-07-36.mp4
   (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
     :as 'response
     :then (lambda (response)
-            (let* ((json-array-type 'list)
-                   (link (hyperdrive--response-extract-link response))
+            (let* ((link (hyperdrive--response-extract-link response))
                    (version (hyperdrive--response-extract-version response))
-                   (contents (hyperdrive--response-extract-contents response))
+                   (directoryp (hyperdrive--directory-p response))
+                   (contents (hyperdrive--response-extract-contents response directoryp))
                    (use-version (or use-version (hyperdrive--version-match url))))
               (setq url (hyperdrive--reconstruct-url link (and use-version version)))
-              (cond (cb (funcall cb url contents))
-                    ((listp contents) (hyperdrive-dired url contents))
+              (cond (cb (funcall cb url contents directoryp))
+                    (directoryp (hyperdrive-dired url contents))
                     (t (hyperdrive-find-file url contents)))))))
 
 (defun hyperdrive-delete-file (url)
@@ -464,8 +474,8 @@ Call `org-*' functions to handle search option if URL contains it."
 		    (list (string-to-number option))))
          (search (and (not line) option)))
     (hyperdrive-load-url (concat "hyper:" url-without-option)
-                         (lambda (url contents)
-                           (if (listp contents)
+                         (lambda (url contents directoryp)
+                           (if (directoryp)
                                (hyperdrive-dired url contents)
                              (hyperdrive-find-file url contents)
                              (with-current-buffer (hyperdrive--get-buffer-create url)
