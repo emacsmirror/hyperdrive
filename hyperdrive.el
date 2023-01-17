@@ -38,6 +38,10 @@
 
 ;; hyperdrive.el uses [plz.el](https://github.com/alphapapa/plz.el) for sending HTTP requests to `hyper-gateway`.
 
+;;;;;; `mpv.el'
+
+;; hyperdrive.el uses [mpv.el](https://github.com/kljohann/mpv.el) for streaming audio and video.
+
 ;;;;; Manual
 
 ;; Clone this repository:
@@ -58,6 +62,7 @@
   (require 'rx)
   (require 'json))
 (require 'plz)
+(require 'mpv)
 
 (defgroup hyperdrive nil
   "Emacs gateway to the Hypercore network."
@@ -275,6 +280,10 @@ Otherwise, return plain buffer contents."
   "Return non-nil if hyperdrive RESPONSE is a directory."
   (alist-get 'x-is-directory (plz-response-headers response)))
 
+;; (defun hyperdrive--video-p (response)
+;;   "Return non-nil if hyperdrive RESPONSE is a directory."
+;;   (string-match "video/.+" (alist-get 'content-type (plz-response-headers response))))
+
 (defun hyperdrive--version-match (url)
   "Return non-nil if URL contains a version number."
   (string-match hyperdrive--version-re url))
@@ -382,18 +391,23 @@ not strip version number from reconstructed url."
   ;; TODO: Warn if the amount of data to be downloaded exceeds some limit
   (interactive "sURL: ") ;; TODO: Present `find-file'-like interface for selecting path from cached hyperdrives
   ;; TODO: Put the call to `plz' inside of a callback which runs after `hyper-gateway' is done initializing. Waiting on https://github.com/RangerMauve/hyper-gateway/issues/3
-  (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
-    :as 'response
-    :then (lambda (response)
-            (let* ((link (hyperdrive--response-extract-link response))
-                   (version (hyperdrive--response-extract-version response))
-                   (directoryp (hyperdrive--directory-p response))
-                   (contents (hyperdrive--response-extract-contents response directoryp))
-                   (use-version (or use-version (hyperdrive--version-match url))))
-              (setq url (hyperdrive--reconstruct-url link (and use-version version)))
-              (cond (cb (funcall cb url contents directoryp))
-                    (directoryp (hyperdrive-dired url contents))
-                    (t (hyperdrive-find-file url contents)))))))
+  (if (string-match (rx (one-or-more anything) "." (or "mkv" "mp4" "avi" "mov")) url)
+      ;; TODO: Replace this dummy check with head request to url: https://github.com/alphapapa/plz.el/issues/15
+      ;; (if (hyperdrive--video-p
+      ;;      (plz 'head (hyperdrive--convert-to-hyper-gateway-url url) :as 'response))
+      (mpv-play-url (hyperdrive--convert-to-hyper-gateway-url url))
+    (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
+      :as 'response
+      :then (lambda (response)
+              (let* ((link (hyperdrive--response-extract-link response))
+                     (version (hyperdrive--response-extract-version response))
+                     (directoryp (hyperdrive--directory-p response))
+                     (contents (hyperdrive--response-extract-contents response directoryp))
+                     (use-version (or use-version (hyperdrive--version-match url))))
+                (setq url (hyperdrive--reconstruct-url link (and use-version version)))
+                (cond (cb (funcall cb url contents directoryp))
+                      (directoryp (hyperdrive-dired url contents))
+                      (t (hyperdrive-find-file url contents))))))))
 
 (defun hyperdrive-delete-file (url)
   "Delete file at URL."
