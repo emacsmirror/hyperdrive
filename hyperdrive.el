@@ -90,15 +90,15 @@
   "Location to store Hypercore data."
   :type '(file :must-match t))
 
-(defcustom hyper-gateway-command "hyper-gateway"
+(defcustom hyperdrive-hyper-gateway-command "hyper-gateway"
   "Name of `hyper-gateway' binary on your machine."
   :type 'string)
 
-(defcustom hyper-gateway-port 4973
+(defcustom hyperdrive-hyper-gateway-port 4973
   "Port on which to run the hyper-gateway server."
   :type 'natnum)
 
-(defcustom hyper-gateway-p2p-port 4977
+(defcustom hyperdrive-hyper-gateway-p2p-port 4977
   "Port on which to run the p2p network."
   :type 'natnum)
 
@@ -194,7 +194,7 @@ If only `hyperdrive-namespace' exists, it will be chosen automatically."
 
 (defun hyperdrive--convert-to-hyper-gateway-url (url)
   "Convert a URL starting with `hyperdrive--hyper-prefix' to one starting with \"http://localhost:4973/hyper/\" (assuming that 4973 is the value of `hyper-gateway-port')."
-  (concat "http://localhost:" (number-to-string hyper-gateway-port) "/hyper/"
+  (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
           (substring url (length hyperdrive--hyper-prefix))))
 
 (defun hyperdrive--make-hyperdrive-url (namespace raw-path)
@@ -320,7 +320,7 @@ foo>/\" both point to the same content."
 (defun hyperdrive--gateway-pid ()
   "Return `hyper-gateway' process id if it's running. Otherwise, return nil."
   (let ((output
-         (shell-command-to-string (concat "pgrep " hyper-gateway-command))))
+         (shell-command-to-string (concat "pgrep " hyperdrive-hyper-gateway-command))))
     (if (> (length output) 0)
         (string-to-number (string-trim output))
       nil)))
@@ -337,7 +337,7 @@ Also initialize `hyperdrive--alias-public-key-map'."
       (make-process
        :name "hyper-gateway"
        :buffer buf
-       :command (list hyper-gateway-command "--writable" "true" "run")))))
+       :command (list hyperdrive-hyper-gateway-command "--writable" "true" "run")))))
 
 (defun hyperdrive-stop-gateway ()
   "Delete the `hyper-gateway' process."
