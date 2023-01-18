@@ -354,15 +354,13 @@ PATH represents the absolute path to the shared file inside the hyperdrive."
   (interactive (list
                 (read-buffer "Buffer to share: " (current-buffer))
                 (hyperdrive--read-namespace)
-                (read-string "Path in hyperdrive: "))) ;; TODO: `find-file'-like interface for selecting path inside hyperdrive
-  ;; TODO: Make curl handle filenames with spaces
+                (read-string "Path in hyperdrive: ")))
   (plz 'put (hyperdrive--convert-to-hyper-gateway-url
              (hyperdrive--make-hyperdrive-url namespace path))
     :body-type 'binary
     :body (with-current-buffer buffer
             (buffer-string))))
 
-;; TODO: Add `after-save-hook' to call `hyperdrive-sync-shared-files'
 (defun hyperdrive-sync-shared-files (namespace)
   "Sync shared files with hyperdrive for NAMESPACE.
 
@@ -388,9 +386,7 @@ URL should begin with `hyperdrive--hyper-prefix'.
 
 If URL contains a version number or if USE-VERSION is non-nil, do
 not strip version number from reconstructed url."
-  ;; TODO: Warn if the amount of data to be downloaded exceeds some limit
-  (interactive "sURL: ") ;; TODO: Present `find-file'-like interface for selecting path from cached hyperdrives
-  ;; TODO: Put the call to `plz' inside of a callback which runs after `hyper-gateway' is done initializing. Waiting on https://github.com/RangerMauve/hyper-gateway/issues/3
+  (interactive "sURL: ")
   (if (string-match (rx (one-or-more anything) "." (or "mkv" "mp4" "avi" "mov")) url)
       ;; TODO: Replace this dummy check with head request to url: https://github.com/alphapapa/plz.el/issues/15
       ;; (if (hyperdrive--video-p
@@ -411,11 +407,9 @@ not strip version number from reconstructed url."
 
 (defun hyperdrive-delete-file (url)
   "Delete file at URL."
-  ;; TODO: Warn if looking at old Hyperdrive version, prompt to view current version?
   (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url)
     :as 'response
     :then (lambda (_response) (hyperdrive-load-url (hyperdrive--get-parent-directory url)))
-    ;; TODO: After hyper-gateway upgrades to hypercore 10, warn user on deleting non-empty directories
     :else (lambda (err)
             (when (= 403 (plz-response-status (plz-error-response err)))
               (user-error "Not Authorized to delete: %s" url)))))
@@ -472,7 +466,6 @@ to current buffer."
                           :link (hyperdrive-dired-get-filename)))
    ((bound-and-true-p hyperdrive-mode)
     (setq org-store-link-plist nil)
-    ;; TODO: Store link with search options, like the default handler for `org-store-link'
     (org-link-store-props :type hyperdrive--org-link-type
                           :link hyperdrive--current-url))))
 
@@ -506,12 +499,10 @@ Call `org-*' functions to handle search option if URL contains it."
 (defun hyperdrive-mode-on ()
   "Activate `hyperdrive-mode'."
   (setq buffer-read-only t)
-  ;; TODO: Make reverting work
   (setq-local revert-buffer-function #'hyperdrive-revert-buffer))
 
 (defun hyperdrive-mode-off ()
   "Deactivate `hyperdrive-mode'."
-  ;; FIXME: What is the correct way to restore prior `buffer-read-only' state?
   (setq buffer-read-only nil))
 
 (define-minor-mode hyperdrive-mode
@@ -585,7 +576,6 @@ Call `org-*' functions to handle search option if URL contains it."
 (defvar-keymap hyperdrive-dired-mode-map
   :parent  special-mode-map
   :doc "Local keymap for `hyperdrive-dired-mode' buffers."
-  ;; TODO: Use keymap parent to adopt user's current dired bindings?
   "RET"     #'hyperdrive-dired-find-file
   "^"       #'hyperdrive-up-directory
   "w"       #'hyperdrive-dired-copy-filename-as-kill
