@@ -133,6 +133,13 @@ to determine which files to share!
   `:files` can either be a list of filepaths or a function which
   returns a list of filepaths.
 
+## Bugs and Patches
+
+Bugs can be submitted to the [ushin issue
+tracker](https://todo.sr.ht/~breatheoutbreathein/ushin). Patches,
+comments or questions can be submitted to the [ushin public
+inbox](https://lists.sr.ht/~breatheoutbreathein/ushin).
+
 ## Acknowledgments
 
 [Karl Voit](https://karl-voit.at/) for his feedback, especially the
