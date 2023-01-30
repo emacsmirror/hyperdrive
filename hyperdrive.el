@@ -113,7 +113,7 @@
 (defconst hyperdrive--org-link-type "hyper" "Org mode link type.")
 
 (defconst hyperdrive--public-key-re
-  (rx (eval hyperdrive--hyper-prefix) (group (= 64 hex)))
+  (rx (eval hyperdrive--hyper-prefix) (group (= 52 alphanumeric)))
   "Regex to match \"hyper://\" + public key.
 
 Capture group matches public key.")
