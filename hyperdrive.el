@@ -350,7 +350,7 @@ Also initialize `hyperdrive--alias-public-key-map'." ; TODO: Need to initialize 
        :command (list hyperdrive-hyper-gateway-command "--writable" "true" "run")))))
 
 (defun hyperdrive-stop-gateway ()
-  "Delete the `hyper-gateway' process."
+  "Stop the `hyper-gateway' process."
   (interactive)
   (let ((proc (hyperdrive--gateway-pid)))
     (if proc
