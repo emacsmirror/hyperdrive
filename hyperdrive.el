@@ -193,7 +193,9 @@ If only `hyperdrive-namespace' exists, it will be chosen automatically."
 ;;;; Helper functions
 
 (defun hyperdrive--convert-to-hyper-gateway-url (url)
-  "Convert a URL starting with `hyperdrive--hyper-prefix' to one starting with \"http://localhost:4973/hyper/\" (assuming that 4973 is the value of `hyper-gateway-port')."
+  "Convert a URL starting with `hyperdrive--hyper-prefix' to one
+ starting with \"http://localhost:4973/hyper/\" (assuming that
+ 4973 is the value of `hyper-gateway-port')."
   (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
           (substring url (length hyperdrive--hyper-prefix))))
 
