@@ -388,6 +388,11 @@ This function returns nil."
        (hyperdrive-namespace-alias namespace)
        (concat "/" (file-relative-name path (hyperdrive-namespace-relative-dir namespace)))))))
 
+(defun hyperdrive-load-alias (alias)
+  "Load hyperdrive corresponding to ALIAS."
+  (interactive (list (hyperdrive-namespace-alias (hyperdrive--read-namespace))))
+  (hyperdrive-load-url (hyperdrive--make-hyperdrive-url alias "/")))
+
 (defun hyperdrive-load-url (url &optional use-version cb)
   "Load contents at URL from Hypercore network.
 
