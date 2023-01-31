@@ -187,7 +187,8 @@ If only `hyperdrive-namespace' exists, it will be chosen automatically."
   "Set the value of `hyperdrive--alias-public-key-map' based on current `hyperdrive-namespaces'."
   (setq hyperdrive--alias-public-key-map
         (mapcar (lambda (namespace)
-                  (cons (hyperdrive-namespace-alias namespace) (hyperdrive--public-key namespace)))
+                  (let ((alias (hyperdrive-namespace-alias namespace)))
+                    (cons alias (hyperdrive--get-public-key-by-alias alias))))
                 hyperdrive-namespaces)))
 
 ;;;; Helper functions
@@ -199,15 +200,15 @@ If only `hyperdrive-namespace' exists, it will be chosen automatically."
   (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
           (substring url (length hyperdrive--hyper-prefix))))
 
-(defun hyperdrive--make-hyperdrive-url (namespace raw-path)
+(defun hyperdrive--make-hyperdrive-url (alias raw-path)
   "Generate a `hyperdrive--hyper-prefix'-prefixed URL from a NAMESPACE and PATH.
 
-NAMESPACE alias will be converted to a public key.
+ALIAS will be converted to a public key.
 PATH is an absolute path, starting from the top-level directory of the hyperdrive."
   (let ((path (if (string-match-p "^/" raw-path)
                   raw-path
                 (concat "/" raw-path))))
-    (concat hyperdrive--hyper-prefix (hyperdrive--public-key namespace) path)))
+    (concat hyperdrive--hyper-prefix (hyperdrive--get-public-key-by-alias alias) path)))
 
 (defun hyperdrive--namespace-files (namespace)
   "Get the list of files for NAMESPACE."
@@ -216,12 +217,6 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
     (if (functionp files)
         (funcall files)
       files)))
-
-(defun hyperdrive--remove-trailing-slash (url)
-  "Remove trailing slash from URL if it exists."
-  (if (string-match-p "/$" url)
-      (substring url 0 -1)
-    url))
 
 (defun hyperdrive--extract-public-key (string)
   "Extract public-key from STRING using `hyperdrive--public-key-re'."
@@ -232,10 +227,18 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
   "Return alias corresponding to public key in URL. Otherwise, return URL."
   (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--alias-public-key-map)))
 
-(defun hyperdrive--maybe-replace-public-key-with-alias (url)
-  "Replace public key in URL with corresponding alias if possible. Otherwise, return URL."
+;; TODO: Handle duplicate alias/name urls, like foo:/path/to/file
+
+(defun hyperdrive--replace-public-key-with-alias (url)
+  "Replace public key in URL with corresponding alias if possible.
+
+For example, if URL corresponds to alias \"foo\" according to
+`hyperdrive--alias-public-key-map', replace \"hyper://<public key
+for foo>/\" with \"foo:/\".
+
+Otherwise, return URL."
   (if-let ((alias (hyperdrive--maybe-get-alias-from-public-key url)))
-      (replace-regexp-in-string (hyperdrive--extract-public-key url) alias url)
+      (replace-regexp-in-string (concat hyperdrive--hyper-prefix (hyperdrive--extract-public-key url)) (concat alias ":") url)
     url))
 
 (defun hyperdrive--extract-path (string)
@@ -243,19 +246,22 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
   (substring string (+ (length hyperdrive--hyper-prefix)
                        (length (hyperdrive--extract-public-key string)))))
 
-(defun hyperdrive--reconstruct-url (link &optional version)
-  "Reconstruct url from LINK and (optionally) VERSION.
+(defun hyperdrive--add-version-to-url (link version)
+  "Add VERSION number to url from LINK and (optionally) VERSION.
 
-This function always returns a url of the form \"hyper://\" + public-key
-+ version number + path, whiled urls entered by users may be namespace aliases or lack version numbers."
-  (hyperdrive--remove-trailing-slash
-   (concat hyperdrive--hyper-prefix
-           (hyperdrive--extract-public-key link)
-           (and version (concat "+" version))
-           (hyperdrive--extract-path link))))
+This function returns a url of the form \"hyper://\" + public-key
++ path or \"hyper://\" + public-key + version number + path,
+while urls entered by users may be namespace aliases or lack
+version numbers."
+  (concat hyperdrive--hyper-prefix
+          (hyperdrive--extract-public-key link)
+          (and version (concat "+" version))
+          (hyperdrive--extract-path link)))
 
-(defun hyperdrive--response-extract-link (response)
-  "Extract version number (etag) from RESPONSE."
+(defun hyperdrive--response-extract-url (response)
+  "Extract url from RESPONSE.
+
+Returned url does not contain version number."
   (let ((str (alist-get 'link (plz-response-headers response))))
     (when (string-match (rx "<" (group (one-or-more anything)) ">")
                         str)
@@ -280,7 +286,7 @@ Otherwise, return plain buffer contents."
 
 (defun hyperdrive--directory-p (response)
   "Return non-nil if hyperdrive RESPONSE is a directory."
-  (alist-get 'x-is-directory (plz-response-headers response)))
+  (string-match "/$" (hyperdrive--response-extract-url response)))
 
 ;; (defun hyperdrive--video-p (response)
 ;;   "Return non-nil if hyperdrive RESPONSE is a directory."
@@ -298,26 +304,28 @@ ensuring that buffer names always use the namespace alias
 corresponding to URL if possible.
 
 In other words, this avoids the situation where a buffer called
-\"hyper://foo/\" and another called \"hyper://<public key for
-foo>/\" both point to the same content."
-  (get-buffer-create (hyperdrive--maybe-replace-public-key-with-alias url)))
+\"foo:/\" and another called \"hyper://<public key for foo>/\"
+both point to the same content."
+  (let* ((alias (hyperdrive--maybe-get-alias-from-public-key url))
+         (bufname (cond
+                   (alias (hyperdrive--replace-public-key-with-alias url))
+                   (t url))))
+    (get-buffer-create bufname)))
 
 ;;;; Commands
 
-(defun hyperdrive-public-key (namespace)
-  "Copy the formatted public key corresponding to NAMESPACE."
-  (interactive (list (hyperdrive--read-namespace)))
-  (let ((key (hyperdrive--make-hyperdrive-url namespace "/")))
+(defun hyperdrive--get-public-key-by-alias (alias)
+  "Synchronously get public key corresponding to ALIAS."
+  (hyperdrive--extract-public-key
+   (plz 'get (hyperdrive--convert-to-hyper-gateway-url
+              (concat hyperdrive--hyper-prefix "localhost/?key=" alias)))))
+
+(defun hyperdrive-public-key (alias)
+  "Copy the formatted public key corresponding to ALIAS to kill-ring."
+  (interactive (list (hyperdrive-namespace-alias (hyperdrive--read-namespace))))
+  (let ((key (hyperdrive--make-hyperdrive-url alias "")))
     (message "%s" key)
     (kill-new key)))
-
-(defun hyperdrive--public-key (namespace)
-  "Synchronously get public key corresponding to NAMESPACE."
-  (let* ((response (plz 'get (hyperdrive--convert-to-hyper-gateway-url
-                              (concat hyperdrive--hyper-prefix (hyperdrive-namespace-alias namespace) "/"))
-                     :as 'response))
-         (link (alist-get 'link (plz-response-headers response))))
-    (hyperdrive--extract-public-key link)))
 
 (defun hyperdrive--gateway-pid ()
   "Return `hyper-gateway' process id if it's running. Otherwise, return nil."
@@ -331,7 +339,7 @@ foo>/\" both point to the same content."
 (defun hyperdrive-start-gateway ()
   "Start `hyper-gateway' if not already running.
 
-Also initialize `hyperdrive--alias-public-key-map'."
+Also initialize `hyperdrive--alias-public-key-map'." ; TODO: Need to initialize `hyperdrive--alias-public-key-map' here
   (interactive)
   (unless (hyperdrive--gateway-pid)
     (let ((buf (get-buffer-create "hyper-gateway")))
@@ -349,16 +357,18 @@ Also initialize `hyperdrive--alias-public-key-map'."
         (signal-process (hyperdrive--gateway-pid) 'sigint)
       (message "Already not running hyper-gateway."))))
 
-(defun hyperdrive-share-buffer (buffer namespace path)
-  "Share contents of BUFFER as a file at PATH in writable NAMESPACE hyperdrive.
+(defun hyperdrive-share-buffer (buffer alias path)
+  "Share contents of BUFFER as a file at PATH in namespaced
+hyperdrive corresponding to ALIAS.
 
-PATH represents the absolute path to the shared file inside the hyperdrive."
+PATH represents the absolute path to the shared file inside the
+hyperdrive."
   (interactive (list
                 (read-buffer "Buffer to share: " (current-buffer))
-                (hyperdrive--read-namespace)
+                (hyperdrive-namespace-alias (hyperdrive--read-namespace))
                 (read-string "Path in hyperdrive: ")))
   (plz 'put (hyperdrive--convert-to-hyper-gateway-url
-             (hyperdrive--make-hyperdrive-url namespace path))
+             (hyperdrive--make-hyperdrive-url alias path))
     :body-type 'binary
     :body (with-current-buffer buffer
             (buffer-string))))
@@ -375,7 +385,7 @@ This function returns nil."
       (insert-file-contents path)
       (hyperdrive-share-buffer
        (current-buffer)
-       namespace
+       (hyperdrive-namespace-alias namespace)
        (concat "/" (file-relative-name path (hyperdrive-namespace-relative-dir namespace)))))))
 
 (defun hyperdrive-load-url (url &optional use-version cb)
@@ -386,8 +396,8 @@ call either `hyperdrive-dired' or `hyperdrive-find-file'.
 
 URL should begin with `hyperdrive--hyper-prefix'.
 
-If URL contains a version number or if USE-VERSION is non-nil, do
-not strip version number from reconstructed url."
+If URL contains a version number or if USE-VERSION is non-nil,
+ensure that the final url displays the version number."
   (interactive "sURL: ")
   (if (string-match (rx (one-or-more anything) "." (or "mkv" "mp4" "avi" "mov")) url)
       ;; TODO: Replace this dummy check with head request to url: https://github.com/alphapapa/plz.el/issues/15
@@ -397,12 +407,14 @@ not strip version number from reconstructed url."
     (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
       :as 'response
       :then (lambda (response)
-              (let* ((link (hyperdrive--response-extract-link response))
-                     (version (hyperdrive--response-extract-version response))
-                     (directoryp (hyperdrive--directory-p response))
+              (let* ((directoryp (hyperdrive--directory-p response))
                      (contents (hyperdrive--response-extract-contents response directoryp))
-                     (use-version (or use-version (hyperdrive--version-match url))))
-                (setq url (hyperdrive--reconstruct-url link (and use-version version)))
+                     (use-version (or use-version (hyperdrive--version-match url)))
+                     (url-without-version (hyperdrive--response-extract-url response))
+                     (version (hyperdrive--response-extract-version response)))
+                (setq url (if use-version
+                              (hyperdrive--add-version-to-url url-without-version version)
+                            url-without-version))
                 (cond (cb (funcall cb url contents directoryp))
                       (directoryp (hyperdrive-dired url contents))
                       (t (hyperdrive-find-file url contents))))))))
@@ -560,7 +572,7 @@ Call `org-*' functions to handle search option if URL contains it."
       (setq filename
             (cond ((equal "."  raw) hyperdrive--current-url)
                   ((equal ".." raw) (hyperdrive--get-parent-directory))
-                  (t (concat hyperdrive--current-url "/" raw)))))))
+                  (t (concat hyperdrive--current-url raw)))))))
 
 (defun hyperdrive-dired-copy-filename-as-kill ()
   "Copy hyperdrive url of file at point."
