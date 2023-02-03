@@ -356,7 +356,7 @@ both point to the same content."
 
 Also initialize `hyperdrive--alias-public-key-map'." ; TODO: Need to initialize `hyperdrive--alias-public-key-map' here
   (interactive)
-  (unless (hyperdrive--gateway-pid)
+  (unless (hyperdrive--gateway-ready-p)
     (let ((buf (get-buffer-create "hyper-gateway")))
       (with-current-buffer buf (erase-buffer))
       (make-process
