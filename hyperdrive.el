@@ -335,6 +335,21 @@ both point to the same content."
         (string-to-number (string-trim output))
       nil)))
 
+(defun hyperdrive--gateway-ready-p ()
+  "Return non-nil if hyper-gateway is ready."
+  (let (readyp)
+    (plz 'get
+      (hyperdrive--convert-to-hyper-gateway-url (concat hyperdrive--hyper-prefix "localhost/?key="))
+      :else (lambda (err)
+              (unless (and (plz-error-curl-error err)
+                           ;; "Failed to connect to host."
+                           (= 7 (car (plz-error-curl-error err))))
+                ;; Status code 400 is expected when hyper-gateway is running
+                ;; See https://github.com/RangerMauve/hyper-gateway/issues/3
+                (when (= 400 (plz-response-status (plz-error-response err)))
+                  (setq readyp t)))))
+    readyp))
+
 ;;;###autoload
 (defun hyperdrive-start-gateway ()
   "Start `hyper-gateway' if not already running.
