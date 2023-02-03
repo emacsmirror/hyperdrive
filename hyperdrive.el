@@ -369,7 +369,7 @@ Also initialize `hyperdrive--alias-public-key-map'." ; TODO: Need to initialize 
   (interactive)
   (let ((proc (hyperdrive--gateway-pid)))
     (if proc
-        (signal-process (hyperdrive--gateway-pid) 'sigint)
+        (signal-process proc 'sigint)
       (message "Already not running hyper-gateway."))))
 
 (defun hyperdrive-share-buffer (buffer alias path)
