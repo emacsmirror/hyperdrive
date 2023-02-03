@@ -331,9 +331,8 @@ both point to the same content."
   "Return `hyper-gateway' process id if it's running. Otherwise, return nil."
   (let ((output
          (shell-command-to-string (concat "pgrep " hyperdrive-hyper-gateway-command))))
-    (if (> (length output) 0)
-        (string-to-number (string-trim output))
-      nil)))
+    (when (> (length output) 0)
+      (string-to-number (string-trim output)))))
 
 (defun hyperdrive--gateway-ready-p ()
   "Return non-nil if hyper-gateway is ready."
