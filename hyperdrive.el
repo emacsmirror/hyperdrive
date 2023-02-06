@@ -33,6 +33,7 @@
 
 ;;;;;; `hyper-gateway`
 
+;; `hyperdrive.el` relies on [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for talking to the hypercore network.
 ;; Download or compile the hyper-gateway (https://github.com/RangerMauve/hyper-gateway/releases) binary and ensure that it is executable and in your `$PATH`.
 
 ;;;;;; `plz.el`
@@ -42,6 +43,10 @@
 ;;;;;; `mpv.el'
 
 ;; hyperdrive.el uses [mpv.el](https://github.com/kljohann/mpv.el) for streaming audio and video.
+
+;;;;;; `compat.el`
+
+;; `hyperdrive.el` relies on [compat.el](https://github.com/emacs-compat/compat) to support Emacs versions prior to Emacs 29.
 
 ;;;;; Manual
 
