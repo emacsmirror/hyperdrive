@@ -289,9 +289,15 @@ Otherwise, return plain buffer contents."
   "Return non-nil if hyperdrive RESPONSE is a directory."
   (string-match "/$" (hyperdrive--response-extract-url response)))
 
-;; (defun hyperdrive--video-p (response)
-;;   "Return non-nil if hyperdrive RESPONSE is a directory."
-;;   (string-match "video/.+" (alist-get 'content-type (plz-response-headers response))))
+(defun hyperdrive--streamable-p (url)
+  "Return non-nil if hyperdrive URL points to audio or video which
+can be streamed with mpv."
+  (string-match
+   (rx (or "audio" "video"))
+   (alist-get 'content-type
+              (plz-response-headers
+               (plz 'head (hyperdrive--convert-to-hyper-gateway-url url)
+                 :as 'response)))))
 
 (defun hyperdrive--version-match (url)
   "Return non-nil if URL contains a version number."
@@ -419,10 +425,7 @@ URL should begin with `hyperdrive--hyper-prefix'.
 If URL contains a version number or if USE-VERSION is non-nil,
 ensure that the final url displays the version number."
   (interactive "sURL: ")
-  (if (string-match (rx (one-or-more anything) "." (or "mkv" "mp4" "avi" "mov")) url)
-      ;; TODO: Replace this dummy check with head request to url: https://github.com/alphapapa/plz.el/issues/15
-      ;; (if (hyperdrive--video-p
-      ;;      (plz 'head (hyperdrive--convert-to-hyper-gateway-url url) :as 'response))
+  (if (hyperdrive--streamable-p url)
       (mpv-play-url (hyperdrive--convert-to-hyper-gateway-url url))
     (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
       :as 'response
