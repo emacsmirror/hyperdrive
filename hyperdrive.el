@@ -31,22 +31,22 @@
 
 ;;;;; Dependencies
 
-;;;;;; `hyper-gateway`
+;;;;;; hyper-gateway
 
-;; `hyperdrive.el` relies on [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for talking to the hypercore network.
-;; Download or compile the hyper-gateway (https://github.com/RangerMauve/hyper-gateway/releases) binary and ensure that it is executable and in your `$PATH`.
+;; hyperdrive.el relies on [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for talking to the hypercore network.
+;; Download or compile the hyper-gateway (https://github.com/RangerMauve/hyper-gateway/releases) binary and ensure that it is executable and in your $PATH.
 
-;;;;;; `plz.el`
+;;;;;; plz.el
 
-;; hyperdrive.el uses [plz.el](https://github.com/alphapapa/plz.el) for sending HTTP requests to `hyper-gateway`.
+;; hyperdrive.el uses [plz.el](https://github.com/alphapapa/plz.el) for sending HTTP requests to hyper-gateway.
 
-;;;;;; `mpv.el'
+;;;;;; mpv.el
 
 ;; hyperdrive.el uses [mpv.el](https://github.com/kljohann/mpv.el) for streaming audio and video.
 
-;;;;;; `compat.el`
+;;;;;; compat.el
 
-;; `hyperdrive.el` relies on [compat.el](https://github.com/emacs-compat/compat) to support Emacs versions prior to Emacs 29.
+;; hyperdrive.el relies on [compat.el](https://github.com/emacs-compat/compat) to support Emacs versions prior to Emacs 29.
 
 ;;;;; Manual
 
@@ -59,7 +59,7 @@
 ;; (add-to-list 'load-path "~/.local/src/hyperdrive.el")
 ;; (require 'hyperdrive)
 
-;; Ensure that `hyper-gateway-command` is set to the name you gave to the `hyper-gateway` binary.
+;; Ensure that `hyper-gateway-command' is set to the name you gave to the hyper-gateway binary.
 
 ;;; Code:
 
