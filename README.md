@@ -19,6 +19,12 @@ compile the binary then ensure that it is executable and in your
 sending HTTP requests to `hyper-gateway`. `plz.el` can be installed
 from GNU ELPA with the `package-install` command.
 
+#### `mpv.el`
+
+`hyperdrive.el` uses [mpv.el](https://github.com/kljohann/mpv.el) for
+streaming audio and video. `mpv.el` can be installed from GNU ELPA
+with the `package-install` command.
+
 #### `compat.el`
 
 `hyperdrive.el` relies on
