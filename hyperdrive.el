@@ -6,6 +6,7 @@
 ;; Maintainer: Joseph Turner <joseph@ushin.org>
 ;; Created: 2022
 ;; Version: 0.0.1
+;; Package-Requires: ((emacs "29.1")(plz.el "0.3")(mpv.el "0.2.0"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
