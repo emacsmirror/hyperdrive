@@ -17,7 +17,14 @@ compile the binary then ensure that it is executable and in your
 
 `hyperdrive.el` uses [plz.el](https://github.com/alphapapa/plz.el) for
 sending HTTP requests to `hyper-gateway`. `plz.el` can be installed
-from GNU ELPA with `package-install` command.
+from GNU ELPA with the `package-install` command.
+
+#### `compat.el`
+
+`hyperdrive.el` relies on
+[compat.el](https://github.com/emacs-compat/compat) to support Emacs
+versions prior to Emacs 29. `compat.el` can be installed from GNU ELPA
+with the `package-install` command.
 
 ### Manual
 
