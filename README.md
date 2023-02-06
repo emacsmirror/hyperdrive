@@ -24,7 +24,7 @@ from GNU ELPA with `package-install` command.
 Clone this repository:
 
 ```
-git clone https://git.sr.ht/~breatheoutbreathein/hyperdrive.el/ ~/.local/src/hyperdrive.el/
+git clone https://git.sr.ht/~ushin/hyperdrive.el/ ~/.local/src/hyperdrive.el/
 ```
 
 Add the following lines to your init.el file:
@@ -136,9 +136,9 @@ to determine which files to share!
 ## Bugs and Patches
 
 Bugs can be submitted to the [ushin issue
-tracker](https://todo.sr.ht/~breatheoutbreathein/ushin). Patches,
+tracker](https://todo.sr.ht/~ushin/ushin). Patches,
 comments or questions can be submitted to the [ushin public
-inbox](https://lists.sr.ht/~breatheoutbreathein/ushin).
+inbox](https://lists.sr.ht/~ushin/ushin).
 
 ## Acknowledgments
 

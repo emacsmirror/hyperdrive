@@ -1,12 +1,12 @@
 ;;; hyperdrive.el --- Emacs gateway to the Hypercore network  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2022 Joseph Turner <joseph@breatheoutbreathe.in>
+;; Copyright (C) 2022 Joseph Turner <joseph@ushin.org>
 
 ;; Author: Joseph Turner
-;; Maintainer: Joseph Turner <joseph@breatheoutbreathe.in>
+;; Maintainer: Joseph Turner <joseph@ushin.org>
 ;; Created: 2022
 ;; Version: 0.0.1
-;; Homepage: https://git.sr.ht/~breatheoutbreathein/hyperdrive.el
+;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License
@@ -46,7 +46,7 @@
 
 ;; Clone this repository:
 
-;; git clone https://git.sr.ht/~breatheoutbreathein/hyperdrive.el/ ~/.local/src/hyperdrive.el/
+;; git clone https://git.sr.ht/~ushin/hyperdrive.el/ ~/.local/src/hyperdrive.el/
 
 ;; Add the following lines to your init.el file:
 
