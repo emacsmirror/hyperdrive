@@ -439,10 +439,10 @@ ensure that the final url displays the version number."
               (let* ((directoryp (hyperdrive--directory-p response))
                      (contents (hyperdrive--response-extract-contents response directoryp))
                      (use-version (or use-version (hyperdrive--version-match url)))
-                     (url-without-version (hyperdrive--response-extract-url response))
-                     (version (hyperdrive--response-extract-version response)))
+                     (url-without-version (hyperdrive--response-extract-url response)))
                 (setq url (if use-version
-                              (hyperdrive--add-version-to-url url-without-version version)
+                              (hyperdrive--add-version-to-url url-without-version
+                                                              (hyperdrive--response-extract-version response))
                             url-without-version))
                 (cond (cb (funcall cb url contents directoryp))
                       (directoryp (hyperdrive-dired url contents))
