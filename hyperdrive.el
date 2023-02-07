@@ -6,7 +6,7 @@
 ;; Maintainer: Joseph Turner <joseph@ushin.org>
 ;; Created: 2022
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "26.3") (compat "29.1.3.2") (plz.el "0.3") (mpv.el "0.2.0"))
+;; Package-Requires: ((emacs "26.3") (compat "29.1.3.2") (plz "0.3") (mpv "0.2.0") (persist "0.5"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
@@ -70,6 +70,7 @@
   (require 'json))
 (require 'plz)
 (require 'mpv)
+(require 'persist)
 
 (defgroup hyperdrive nil
   "Emacs gateway to the Hypercore network."
@@ -78,19 +79,6 @@
   :prefix "hyperdrive-")
 
 ;;;; Configuration
-
-(cl-defstruct (hyperdrive-namespace (:constructor hyperdrive-namespace-create)
-                                    (:copier nil))
-  "A hyperdrive-namespace object with the following members:
-- `alias': the namespace alias. Further documentation here: https://github.com/RangerMauve/hyper-sdk#sdknamespace
-- `relative-dir': The directory relative to which files in the hyperdrive will be inserted.
-- `files': files to share. This can either be a list of strings or a function which returns a list of strings."
-  alias relative-dir files)
-
-;; TODO: Use `defvar' instead? I see that `mu4e-contexts' is defined with `defvar'.
-(defcustom hyperdrive-namespaces nil
-  "List of `hyperdrive-namespace' objects."
-  :type 'sexp)
 
 (defcustom hyperdrive-storage-location
   (expand-file-name "~/.local/share/hyper-gateway-nodejs/")
@@ -133,6 +121,10 @@ Capture group matches public key.")
 
 Capture group matches version number.")
 
+(persist-defvar hyperdrive--namespaces nil
+                "List of cons pairs mapping an alias to a public key."
+                (locate-user-emacs-file "var/hyperdrive"))
+
 (defvar hyperdrive--current-url nil
   "The url of the current hyperdrive file or directory.
 
@@ -158,45 +150,16 @@ Depending on how `hyperdrive-load-url' was called to generate the current buffer
 
 ;;;; User interaction helper functions
 
-(defun hyperdrive--read-namespace ()
-  "Choose a `hyperdrive-namespace' based on its alias.
+(defun hyperdrive--completing-read-alias ()
+  "Return an alias from `hyperdrive--namespaces'.
 
-If only `hyperdrive-namespace' exists, it will be chosen automatically."
-  (if hyperdrive-namespaces
-      (if (= 1 (length hyperdrive-namespaces))
-          (car hyperdrive-namespaces)
-        (if-let (dupes (hyperdrive--report-namespace-alias-dupes))
-            (user-error "Found duplicate namespace alias: %s" dupes)
-          (let* ((alias-namespace-alist
-                  (seq-map (lambda (namespace)
-                             (cons (hyperdrive-namespace-alias namespace) namespace))
-                           hyperdrive-namespaces))
-                 (alias (completing-read "Namespace: " alias-namespace-alist nil t)))
-            (cdr (assoc alias alias-namespace-alist)))))
-    (user-error "No namespace defined. Please set `hyperdrive-namespaces'.")))
-
-(defun hyperdrive--report-namespace-alias-dupes ()
-  (let ((aliases (mapcar (lambda (namespace) (hyperdrive-namespace-alias namespace))
-                         hyperdrive-namespaces))
-        (dupes))
-    (while aliases
-      (unless (member (car aliases) dupes)
-        (when (member (car aliases) (cdr aliases)) (push (car aliases) dupes)))
-      (setq aliases  (cdr aliases)))
-    dupes))
-
-;;;; In-memory cache
-
-(defvar hyperdrive--alias-public-key-map nil
-  "Alist mapping namespace aliases to public keys.")
-
-(defun hyperdrive--set-alias-public-key-map ()
-  "Set the value of `hyperdrive--alias-public-key-map' based on current `hyperdrive-namespaces'."
-  (setq hyperdrive--alias-public-key-map
-        (mapcar (lambda (namespace)
-                  (let ((alias (hyperdrive-namespace-alias namespace)))
-                    (cons alias (hyperdrive--get-public-key-by-alias alias))))
-                hyperdrive-namespaces)))
+Prompt user to select an alias, or if only one namespace exists,
+select it automatically."
+  (if hyperdrive--namespaces
+      (if (= 1 (length hyperdrive--namespaces))
+          (caar hyperdrive--namespaces)
+        (completing-read "Alias: " hyperdrive--namespaces nil t))
+    (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace"))) ; TODO: Prompt user to create namespace here?
 
 ;;;; Helper functions
 
@@ -217,14 +180,6 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
                 (concat "/" raw-path))))
     (concat hyperdrive--hyper-prefix (hyperdrive--get-public-key-by-alias alias) path)))
 
-(defun hyperdrive--namespace-files (namespace)
-  "Get the list of files for NAMESPACE."
-  ;; TODO: Is there a better way to handle a variable which could be a list or a function returning a list?
-  (let ((files (hyperdrive-namespace-files namespace)))
-    (if (functionp files)
-        (funcall files)
-      files)))
-
 (defun hyperdrive--extract-public-key (string)
   "Extract public-key from STRING using `hyperdrive--public-key-re'."
   (when (string-match hyperdrive--public-key-re string)
@@ -232,7 +187,7 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
 
 (defun hyperdrive--maybe-get-alias-from-public-key (url)
   "Return alias corresponding to public key in URL. Otherwise, return URL."
-  (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--alias-public-key-map)))
+  (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--namespaces)))
 
 ;; TODO: Handle duplicate alias/name urls, like foo:/path/to/file
 
@@ -240,7 +195,7 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
   "Replace public key in URL with corresponding alias if possible.
 
 For example, if URL corresponds to alias \"foo\" according to
-`hyperdrive--alias-public-key-map', replace \"hyper://<public key
+`hyperdrive--namespaces', replace \"hyper://<public key
 for foo>/\" with \"foo:/\".
 
 Otherwise, return URL."
@@ -335,7 +290,7 @@ both point to the same content."
 
 (defun hyperdrive-public-key (alias)
   "Copy the formatted public key corresponding to ALIAS to kill-ring."
-  (interactive (list (hyperdrive-namespace-alias (hyperdrive--read-namespace))))
+  (interactive (list (hyperdrive--completing-read-alias)))
   (let ((key (hyperdrive--make-hyperdrive-url alias "")))
     (message "%s" key)
     (kill-new key)))
@@ -364,9 +319,7 @@ both point to the same content."
 
 ;;;###autoload
 (defun hyperdrive-start-gateway ()
-  "Start `hyper-gateway' if not already running.
-
-Also initialize `hyperdrive--alias-public-key-map'." ; TODO: Need to initialize `hyperdrive--alias-public-key-map' here
+  "Start `hyper-gateway' if not already running."
   (interactive)
   (unless (hyperdrive--gateway-ready-p)
     (let ((buf (get-buffer-create "hyper-gateway")))
@@ -392,7 +345,7 @@ PATH represents the absolute path to the shared file inside the
 hyperdrive."
   (interactive (list
                 (read-buffer "Buffer to share: " (current-buffer))
-                (hyperdrive-namespace-alias (hyperdrive--read-namespace))
+                (hyperdrive--completing-read-alias)
                 (read-string "Path in hyperdrive: ")))
   (plz 'put (hyperdrive--convert-to-hyper-gateway-url
              (hyperdrive--make-hyperdrive-url alias path))
@@ -400,24 +353,39 @@ hyperdrive."
     :body (with-current-buffer buffer
             (buffer-string))))
 
-(defun hyperdrive-sync-shared-files (namespace)
-  "Sync shared files with hyperdrive for NAMESPACE.
+(defun hyperdrive-upload-files (alias relative-dir files)
+  "Upload files from the local filesystem to the hyperdrive for ALIAS.
 
-Control the behavior of this function with `hyperdrive-namespaces'.
+RELATIVE-DIR is the directory relative to which files in the
+hyperdrive will be inserted.
 
-This function returns nil."
-  (interactive (list (hyperdrive--read-namespace)))
-  (dolist (path (hyperdrive--namespace-files namespace))
+FILES can be either be a list of filepaths (strings) or a
+function which returns a list of filepaths."
+  (dolist (path files)
     (with-temp-buffer
       (insert-file-contents path)
       (hyperdrive-share-buffer
-       (current-buffer)
-       (hyperdrive-namespace-alias namespace)
-       (concat "/" (file-relative-name path (hyperdrive-namespace-relative-dir namespace)))))))
+       (current-buffer) alias (concat "/" (file-relative-name path relative-dir))))))
+
+(defun hyperdrive-create-namespace (alias)
+  "Create a hyperdrive namespace from an alphanumeric ALIAS.
+
+This adds a new cons pair to `hyperdrive--namespaces'.
+
+This function is idempotent; running it multiple times with the
+same ALIAS does not create a new namespace."
+  (interactive "sNamespace alias: ")
+  (let ((public-key (hyperdrive--extract-public-key
+                     (plz-response-body
+                      (plz 'post (hyperdrive--convert-to-hyper-gateway-url
+                                  (concat hyperdrive--hyper-prefix "localhost/?key=" alias))
+                        :as 'response)))))
+    (cl-pushnew (cons alias public-key) hyperdrive--namespaces :test #'equal)
+    (message "%s: %s" alias public-key)))
 
 (defun hyperdrive-load-alias (alias)
   "Load hyperdrive corresponding to ALIAS."
-  (interactive (list (hyperdrive-namespace-alias (hyperdrive--read-namespace))))
+  (interactive (list (hyperdrive--completing-read-alias)))
   (hyperdrive-load-url (hyperdrive--make-hyperdrive-url alias "/")))
 
 (defun hyperdrive-load-url (url &optional use-version cb)
