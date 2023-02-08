@@ -59,7 +59,7 @@
 ;; (add-to-list 'load-path "~/.local/src/hyperdrive.el")
 ;; (require 'hyperdrive)
 
-;; Ensure that `hyper-gateway-command' is set to the name you gave to the hyper-gateway binary.
+;; Ensure that `hyper-hyper-gateway-command' is set to the name you gave to the hyper-gateway binary.
 
 ;;; Code:
 
