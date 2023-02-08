@@ -163,6 +163,10 @@ select it automatically."
 
 ;;;; Helper functions
 
+(defun hyperdrive--get-public-key-by-alias (alias)
+  "Get public key corresponding to ALIAS in `hyperdrive--namespaces'."
+  (cdr (assoc alias hyperdrive--namespaces)))
+
 (defun hyperdrive--convert-to-hyper-gateway-url (url)
   "Convert a URL starting with `hyperdrive--hyper-prefix' to one
  starting with \"http://localhost:4973/hyper/\" (assuming that
@@ -282,12 +286,6 @@ both point to the same content."
     (get-buffer-create bufname)))
 
 ;;;; Commands
-
-(defun hyperdrive--get-public-key-by-alias (alias)
-  "Synchronously get public key corresponding to ALIAS."
-  (hyperdrive--extract-public-key
-   (plz 'get (hyperdrive--convert-to-hyper-gateway-url
-              (concat hyperdrive--hyper-prefix "localhost/?key=" alias)))))
 
 (defun hyperdrive-public-key (alias)
   "Copy the formatted public key corresponding to ALIAS to kill-ring."
