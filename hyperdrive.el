@@ -191,17 +191,18 @@ PATH is an absolute path, starting from the top-level directory of the hyperdriv
 
 ;; TODO: Handle duplicate alias/name urls, like foo:/path/to/file
 
-(defun hyperdrive--replace-public-key-with-alias (url)
-  "Replace public key in URL with corresponding alias if possible.
+(defun hyperdrive--replace-public-key-with-alias (url alias)
+  "Replace public key in URL with corresponding ALIAS.
 
 For example, if URL corresponds to alias \"foo\" according to
 `hyperdrive--namespaces', replace \"hyper://<public key
 for foo>/\" with \"foo:/\".
 
 Otherwise, return URL."
-  (if-let ((alias (hyperdrive--maybe-get-alias-from-public-key url)))
-      (replace-regexp-in-string (concat hyperdrive--hyper-prefix (hyperdrive--extract-public-key url)) (concat alias ":") url)
-    url))
+  (replace-regexp-in-string
+   (concat hyperdrive--hyper-prefix (hyperdrive--extract-public-key url))
+   (concat alias ":")
+   url))
 
 (defun hyperdrive--extract-path (string)
   "Extract path following public-key from STRING."
@@ -276,7 +277,7 @@ In other words, this avoids the situation where a buffer called
 both point to the same content."
   (let* ((alias (hyperdrive--maybe-get-alias-from-public-key url))
          (bufname (cond
-                   (alias (hyperdrive--replace-public-key-with-alias url))
+                   (alias (hyperdrive--replace-public-key-with-alias url alias))
                    (t url))))
     (get-buffer-create bufname)))
 
