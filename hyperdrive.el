@@ -337,14 +337,14 @@ both point to the same content."
         (signal-process proc 'sigint)
       (message "Already not running hyper-gateway."))))
 
-(defun hyperdrive-share-buffer (buffer alias path)
-  "Share contents of BUFFER as a file at PATH in namespaced
+(defun hyperdrive-upload-buffer (buffer alias path)
+  "Upload contents of BUFFER as a file at PATH in namespaced
 hyperdrive corresponding to ALIAS.
 
-PATH represents the absolute path to the shared file inside the
+PATH represents the absolute path to the uploaded file inside the
 hyperdrive."
   (interactive (list
-                (read-buffer "Buffer to share: " (current-buffer))
+                (read-buffer "Buffer to upload: " (current-buffer))
                 (hyperdrive--completing-read-alias)
                 (read-string "Path in hyperdrive: ")))
   (plz 'put (hyperdrive--convert-to-hyper-gateway-url
@@ -364,7 +364,7 @@ function which returns a list of filepaths."
   (dolist (path files)
     (with-temp-buffer
       (insert-file-contents path)
-      (hyperdrive-share-buffer
+      (hyperdrive-upload-buffer
        (current-buffer) alias (concat "/" (file-relative-name path relative-dir))))))
 
 (defun hyperdrive-create-namespace (alias)
