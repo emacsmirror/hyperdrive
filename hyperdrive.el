@@ -101,6 +101,10 @@
   "If non-nil, use file extension of hyperdrive file to set `major-mode'."
   :type 'boolean)
 
+(defcustom hyperdrive-persist-location (locate-user-emacs-file "var/hyperdrive")
+  "Location where `persist' will store data."
+  :type 'sexp)
+
 ;;;; Internal variables
 
 (defconst hyperdrive--hyper-prefix "hyper://" "Hyper prefix.")
@@ -123,7 +127,7 @@ Capture group matches version number.")
 
 (persist-defvar hyperdrive--namespaces nil
                 "List of cons pairs mapping an alias to a public key."
-                (locate-user-emacs-file "var/hyperdrive"))
+                hyperdrive-persist-location)
 
 (defvar hyperdrive--current-url nil
   "The url of the current hyperdrive file or directory.
