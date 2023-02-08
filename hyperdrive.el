@@ -174,15 +174,14 @@ select it automatically."
   (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
           (substring url (length hyperdrive--hyper-prefix))))
 
-(defun hyperdrive--make-hyperdrive-url (alias raw-path)
-  "Generate a `hyperdrive--hyper-prefix'-prefixed URL from a NAMESPACE and PATH.
+(defun hyperdrive--make-hyperdrive-url (public-key raw-path)
+  "Generate a `hyperdrive--hyper-prefix'-prefixed URL from a
+PUBLIC-KEY and PATH.
 
-ALIAS will be converted to a public key.
-PATH is an absolute path, starting from the top-level directory of the hyperdrive."
-  (let ((path (if (string-match-p "^/" raw-path)
-                  raw-path
-                (concat "/" raw-path))))
-    (concat hyperdrive--hyper-prefix (hyperdrive--get-public-key-by-alias alias) path)))
+PATH is an absolute path, starting from the top-level directory
+of the hyperdrive."
+  (let ((path (if (string-match-p "^/" raw-path) raw-path (concat "/" raw-path))))
+    (concat hyperdrive--hyper-prefix public-key path)))
 
 (defun hyperdrive--extract-public-key (string)
   "Extract public-key from STRING using `hyperdrive--public-key-re'."
@@ -290,9 +289,10 @@ both point to the same content."
 (defun hyperdrive-public-key (alias)
   "Copy the formatted public key corresponding to ALIAS to kill-ring."
   (interactive (list (hyperdrive--completing-read-alias)))
-  (let ((key (hyperdrive--make-hyperdrive-url alias "")))
-    (message "%s" key)
-    (kill-new key)))
+  (let* ((public-key (hyperdrive--get-public-key-by-alias alias))
+         (formatted-key (hyperdrive--make-hyperdrive-url public-key "")))
+    (message "%s" formatted-key)
+    (kill-new formatted-key)))
 
 (defun hyperdrive--gateway-pid ()
   "Return `hyper-gateway' process id if it's running. Otherwise, return nil."
@@ -347,7 +347,7 @@ hyperdrive."
                 (hyperdrive--completing-read-alias)
                 (read-string "Path in hyperdrive: ")))
   (plz 'put (hyperdrive--convert-to-hyper-gateway-url
-             (hyperdrive--make-hyperdrive-url alias path))
+             (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) path))
     :body-type 'binary
     :body (with-current-buffer buffer
             (buffer-string))))
@@ -380,12 +380,12 @@ same ALIAS does not create a new namespace."
                                   (concat hyperdrive--hyper-prefix "localhost/?key=" alias))
                         :as 'response)))))
     (cl-pushnew (cons alias public-key) hyperdrive--namespaces :test #'equal)
-    (message "%s: %s" alias public-key)))
+    (message "%s: %s" alias (hyperdrive--make-hyperdrive-url public-key ""))))
 
 (defun hyperdrive-load-alias (alias)
   "Load hyperdrive corresponding to ALIAS."
   (interactive (list (hyperdrive--completing-read-alias)))
-  (hyperdrive-load-url (hyperdrive--make-hyperdrive-url alias "/")))
+  (hyperdrive-load-url (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
 
 (defun hyperdrive-load-url (url &optional use-version cb)
   "Load contents at URL from Hypercore network.
