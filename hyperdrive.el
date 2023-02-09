@@ -364,11 +364,15 @@ hyperdrive will be inserted.
 
 FILES can be either be a list of filepaths (strings) or a
 function which returns a list of filepaths."
-  (dolist (path files)
-    (with-temp-buffer
-      (insert-file-contents path)
-      (hyperdrive-upload-buffer
-       (current-buffer) alias (concat "/" (file-relative-name path relative-dir))))))
+  (let ((file-list
+         (if (functionp files)
+             (funcall files)
+           files)))
+    (dolist (path file-list)
+      (with-temp-buffer
+        (insert-file-contents path)
+        (hyperdrive-upload-buffer
+         (current-buffer) alias (concat "/" (file-relative-name path relative-dir)))))))
 
 (defun hyperdrive-create-namespace (alias)
   "Create a hyperdrive namespace from an alphanumeric ALIAS.
