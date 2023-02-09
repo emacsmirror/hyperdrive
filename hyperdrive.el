@@ -354,7 +354,7 @@ hyperdrive."
              (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) path))
     :body-type 'binary
     :body (with-current-buffer buffer
-            (buffer-string))))
+            (buffer-substring-no-properties (point-min) (point-max)))))
 
 (defun hyperdrive-upload-files (alias relative-dir files)
   "Upload files from the local filesystem to the hyperdrive for ALIAS.
