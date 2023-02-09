@@ -52,44 +52,36 @@ Ensure that `hyper-gateway-command` is set to the name you gave to the
 
 ## Quickstart
 
-Follow these instructions to get started with a sync directory inside
-`~/public/`.
-
 Add the following lines to your `init.el` file:
 
 ```
 (add-to-list 'load-path "~/.local/src/hyperdrive.el/")
 (require 'hyperdrive)
-(setq hyperdrive-namespaces
-      `(,(hyperdrive-namespace-create
-          :alias "foo" ; Human-readable alias
-          :relative-dir "~/public/" ; Top-level directory of hyperdrive
-          :files (lambda () (directory-files-recursively "~/public/" ""))))) ; Files to share
 ```
 
 Alternatively, with `use-package`:
 ```
 (use-package hyperdrive
-  :load-path "~/.local/src/hyperdrive.el/"
-  :config
-  (setq hyperdrive-namespaces
-        `(,(hyperdrive-namespace-create
-            :alias "default" ; Human-readable alias
-            :relative-dir "~/public/" ; Top-level directory of hyperdrive
-            :files (lambda () (directory-files-recursively "~/public/" "")))))) ; Files to share
+  :load-path "~/.local/src/hyperdrive.el/")
 ```
 
 First, run `M-x hyperdrive-start-gateway` to start `hyper-gateway`.
 
-Add some files you want to share into `~/public/`. Sync this directory
-with the hyperdrive with `M-x hyperdrive-sync-shared-files`. Copy the
-public key (unique identifier) of the hyperdrive by running `M-x
-hyperdrive-public-key`.
+Next, create a namespace with `M-x hyperdrive-create-namespace`, which
+will prompt you for an alias for your namespace. This can be anything
+you want, so long it only contains numbers and letters.
 
-Send the public key to a friend who has installed `hyperdrive.el` and run
-`M-x hyperdrive-start-gateway`. On your friend's machine, run `M-x
-hyperdrive-load-url` and paste in the public key. Your shared files are
-now on your friend's machine!
+Now, put something in your hyperdrive with `M-x
+hyperdrive-upload-buffer`, which will prompt you for a buffer to
+upload and the path where it should be stored inside your hyperdrive.
+
+Copy the public key (unique identifier) of the hyperdrive by running
+`M-x hyperdrive-public-key`.
+
+Send the public key to a friend who has installed `hyperdrive.el` and
+run `M-x hyperdrive-start-gateway`. On your friend's machine, run `M-x
+hyperdrive-load-url` and paste in the public key. Your shared files
+are now on your friend's machine!
 
 **Be careful what you publish!** Anyone with your public key can
 download those shared files from you, your friend, or anyone else who
@@ -100,51 +92,63 @@ has them.
 ### Namespaces
 
 [Hyperdrive](https://docs.holepunch.to/building-blocks/hyperdrive) is
-a secure, real-time distributed file system designed for easy P2P file
-sharing. You can have multiple hyperdrives, where each one contains an
-isolated or "namespaced" set of files.
+a secure, real-time distributed file system designed for easy
+peer-to-peer file sharing. You can have multiple hyperdrives, where
+each one contains an isolated or "namespaced" set of files.
 
-Use `hyperdrive-namespace-create` to create a namespace:
+Each namespaced hyperdrive has an `alias`, the local "petname" given to
+a namespaced hyperdrive. An `alias` combines with your secret master
+key, which is generated for you by `hyper-gateway`, to produce a public
+key which uniquely identifies that hyperdrive. You can load one of your
+own hyperdrives with `M-x hyperdrive-load-alias`. Other people cannot
+load one of your hyperdrives by its `alias`; they will need its public
+key, which you can get with `M-x hyperdrive-public-key`.
+
+Use `M-x hyperdrive-create-namespace` to create a namespace.
+
+### Upload files from your filesystem
+
+`hyperdrive-upload-files` lets you upload files from your filesystem
+to a hyperdrive. It accepts an `alias`, a `relative-dir`, the
+directory on your filesystem which will be the top-level or root
+directory of the hyperdrive, and the list of `files` to be shared in
+the hyperdrive. `files` can either be a list of filepaths or a
+function which returns a list of filepaths.
+
+In order to upload files to a hyperdrive, you must first create it
+with `hyperdrive-create-namespace`.
+
+#### Upload a whole directory
+
+`my/hyperdrive-upload-files-foo` uploads everything inside of `~/public/`:
 
 ```
-(setq hyperdrive-namespaces
-      `(,(hyperdrive-namespace-create
-          :alias "foo"
-          :relative-dir "~/public/"
-          :files (lambda () (directory-files-recursively "~/public/" "")))
-        ,(hyperdrive-namespace-create
-          :alias "bar"
-          :relative-dir "~/"
-          :files (lambda () (directory-files-recursively "~/" ".*_public.*")))))
+(defun my/hyperdrive-upload-files-foo ()
+  "Upload all files inside of \"~/public/\" to hyperdrive with alias \"foo\"."
+  (interactive)
+  (hyperdrive-upload-files "foo" "~/public/"
+                           (lambda () (directory-files-recursively "~/public/" ""))))
 ```
 
-This sets up two hyperdrives. The "foo" hyperdrive, just like in the
-Quickstart, syncs everything inside `~/public/`. The "bar" hyperdrive
-syncs all files inside `~/` which have been tagged as "public" using
-Protesilaos Stavrou's [Denote](https://protesilaos.com/emacs/denote)
-file-naming scheme. Alternatively, you could select files by tag with
-Karl Voit's [filetags](https://github.com/novoid/filetags/). Either
-way allows for a "non-splitting" approach where public and private
-files exist in the same directory. You can write any function you like
-to determine which files to share!
+#### Upload files by tag
 
-- `:alias` refers to the local "petname" given to a namespaced
-  hyperdrive. An `:alias` combines with your secret master key, which
-  is generated for you by `hyper-gateway`, to produce a public key
-  which uniquely identifies that hyperdrive. You can load files from
-  one of your own hyperdrives by passing its `:alias` to `M-x
-  hyperdrive-load-url`, either as `hyper://foo` or simply `foo`. Other
-  people cannot load one of your hyperdrives by its alias; they will
-  need its public key, which you can get with `M-x hyperdrive-public-key`.
-  There is a one-to-one mapping between an `:alias` and a hyperdrive,
-  which means that you cannot use the same name twice.
+`my/hyperdrive-upload-files-bar` uploads all files inside `~/org/` which
+have been tagged as "public" using Protesilaos Stavrou's
+[Denote](https://protesilaos.com/emacs/denote) file-naming scheme.
 
-- `:relative-dir` refers to the directory on your filesystem which
-  will be the top-level or root directory of the hyperdrive.
+```
+(defun my/hyperdrive-upload-files-bar ()
+  "Upload all files tagged \"public\" inside of \"~/org/\" to hyperdrive \"bar\"."
+  (interactive)
+  (hyperdrive-upload-files "foo" "~/"
+                           (lambda () (directory-files-recursively "~/org/" ".*_public.*"))))
+```
 
-- `:files` refers to the files to be shared in the hyperdrive.
-  `:files` can either be a list of filepaths or a function which
-  returns a list of filepaths.
+Alternatively, you could select files by tag with Karl Voit's
+[filetags](https://github.com/novoid/filetags/). Either way allows for
+a "non-splitting" approach where public and private files exist in the
+same directory. You can write any function you like to determine which
+files to share!
 
 ## Bugs and Patches
 
