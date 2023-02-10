@@ -117,6 +117,14 @@ is not already stored in your hyperdrive. If you are editing an
 existing hyperdrive "file", `hyperdrive-save-buffer` will silently
 update the current hyperdrive url with the new content.
 
+### Load a hyperdrive
+
+`hyperdrive-load-alias` loads one of your previously created
+hyperdrives by prompting you for its `alias`.
+
+To load someone else's hyperdrive or a particular location inside of a
+hyperdrive, run `M-x hyperdrive-load-url` and paste in the URL.
+
 ### Upload files from your filesystem
 
 `hyperdrive-upload-files` lets you upload files from your filesystem
