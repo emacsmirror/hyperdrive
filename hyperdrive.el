@@ -401,7 +401,7 @@ same ALIAS does not create a new namespace."
   (interactive (list (hyperdrive--completing-read-alias)))
   (hyperdrive-load-url (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
 
-(defun hyperdrive-load-url (url &optional use-version cb)
+(cl-defun hyperdrive-load-url (url &key use-version cb)
   "Load contents at URL from Hypercore network.
 
 If CB is non-nil, pass it the url and loaded contents. Otherwise,
@@ -503,18 +503,19 @@ Call `org-*' functions to handle search option if URL contains it."
                     (string-match-p "\\`[0-9]+\\'" option)
 		    (list (string-to-number option))))
          (search (and (not line) option)))
-    (hyperdrive-load-url (concat "hyper:" url-without-option) nil
-                         (lambda (url contents directoryp)
-                           (if directoryp
-                               (hyperdrive-dired url contents)
-                             (hyperdrive-find-file url contents)
-                             (with-current-buffer (hyperdrive--get-buffer-create url)
-                               (setq-local hyperdrive--current-url url)
-                               (cond (line (org-goto-line line)
-		                           (when (derived-mode-p 'org-mode) (org-fold-reveal)))
-	                             (search (condition-case err
-			                         (org-link-search search)
-                                               (error (message "%s" (nth 1 err))))))))))))
+    (hyperdrive-load-url
+     (concat "hyper:" url-without-option)
+     :cb (lambda (url contents directoryp)
+           (if directoryp
+               (hyperdrive-dired url contents)
+             (hyperdrive-find-file url contents)
+             (with-current-buffer (hyperdrive--get-buffer-create url)
+               (setq-local hyperdrive--current-url url)
+               (cond (line (org-goto-line line)
+		           (when (derived-mode-p 'org-mode) (org-fold-reveal)))
+	             (search (condition-case err
+			         (org-link-search search)
+                               (error (message "%s" (nth 1 err))))))))))))
 
 (org-link-set-parameters hyperdrive--org-link-type :store #'hyperdrive-store-link :follow #'hyperdrive-open-link)
 
