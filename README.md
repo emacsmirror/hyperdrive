@@ -95,10 +95,11 @@ has them.
 
 ## Usage
 
-### Namespaces
+### Create a namespace
 
 You can have multiple hyperdrives, where each one contains an isolated
-or "namespaced" set of files.
+or "namespaced" set of files. Use `M-x hyperdrive-create-namespace` to
+create a new namespace.
 
 Each namespaced hyperdrive has an `alias`, the local "petname" given to
 a namespaced hyperdrive. An `alias` combines with your secret master
@@ -108,7 +109,13 @@ own hyperdrives with `M-x hyperdrive-load-alias`. Other people cannot
 load one of your hyperdrives by its `alias`; they will need its public
 key, which you can get with `M-x hyperdrive-public-key`.
 
-Use `M-x hyperdrive-create-namespace` to create a namespace.
+### Save a buffer to a hyperdrive
+
+You can save a buffer to a hyperdrive with `hyperdrive-save-buffer`,
+which will prompt you for an `alias` and `path` if the current buffer
+is not already stored in your hyperdrive. If you are editing an
+existing hyperdrive "file", `hyperdrive-save-buffer` will silently
+update the current hyperdrive url with the new content.
 
 ### Upload files from your filesystem
 
