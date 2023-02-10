@@ -17,7 +17,10 @@ for managing hyperdrives.
 talking to the hypercore network.
 [Download](https://github.com/RangerMauve/hyper-gateway/releases) or
 compile the binary then ensure that it is executable and in your
-`$PATH`.
+`$PATH`. Ensure that `hyperdrive-hyper-gateway-command` is set to the
+name you gave to the `hyper-gateway` binary. One way to do this is by
+renaming the binary to `hyper-gateway`, the default value for
+`hyperdrive-hyper-gateway-command`.
 
 #### `plz.el`
 
@@ -52,9 +55,6 @@ Add the following lines to your init.el file:
 (add-to-list 'load-path "~/.local/src/hyperdrive.el/")
 (require 'hyperdrive)
 ```
-
-Ensure that `hyper-gateway-command` is set to the name you gave to the
-`hyper-gateway` binary.
 
 ## Quickstart
 

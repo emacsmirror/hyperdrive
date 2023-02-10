@@ -33,8 +33,18 @@
 
 ;;;;;; hyper-gateway
 
-;; hyperdrive.el relies on [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for talking to the hypercore network.
-;; Download or compile the hyper-gateway (https://github.com/RangerMauve/hyper-gateway/releases) binary and ensure that it is executable and in your $PATH.
+;; hyperdrive.el relies on
+;; [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for
+;; talking to the hypercore network.
+
+;; Download or compile the hyper-gateway
+;; (https://github.com/RangerMauve/hyper-gateway/releases) binary and
+;; ensure that it is executable and in your $PATH.
+
+;; Ensure that `hyperdrive-hyper-gateway-command' is set to the name
+;; you gave to the `hyper-gateway` binary. One way to do this is by
+;; renaming the binary to `hyper-gateway`, the default value for
+;; `hyperdrive-hyper-gateway-command'.
 
 ;;;;;; plz.el
 
@@ -58,8 +68,6 @@
 
 ;; (add-to-list 'load-path "~/.local/src/hyperdrive.el")
 ;; (require 'hyperdrive)
-
-;; Ensure that `hyper-hyper-gateway-command' is set to the name you gave to the hyper-gateway binary.
 
 ;;; Code:
 
