@@ -441,7 +441,7 @@ ensure that the final url displays the version number."
   "Delete file at URL."
   (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url)
     :as 'response
-    :then (lambda (_response) (hyperdrive-load-url (hyperdrive--get-parent-directory url))
+    :then (lambda (_response) (hyperdrive-up-directory url)
             ;; FIXME: This message is immediately overwritten by the message "Mark set", by a call inside `hyperdrive-dired'.
             ;;        Let's see if this is still an issue after we resolve https://todo.sr.ht/~ushin/ushin/4
             (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
@@ -466,10 +466,10 @@ extension."
     (switch-to-buffer (current-buffer))
     (hyperdrive-mode)))
 
-(defun hyperdrive-up-directory ()
+(defun hyperdrive-up-directory (&optional url)
   "Visit parent directory of current hyperdrive file or directory."
   (interactive)
-  (hyperdrive-load-url (hyperdrive--get-parent-directory)))
+  (hyperdrive-load-url (hyperdrive--get-parent-directory url)))
 
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
