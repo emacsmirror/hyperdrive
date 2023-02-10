@@ -340,20 +340,18 @@ both point to the same content."
         (signal-process proc 'sigint)
       (message "Already not running hyper-gateway."))))
 
-(defun hyperdrive-save-buffer-by-alias (buffer alias path)
-  "Save contents of BUFFER as a file at PATH in namespaced
+(defun hyperdrive-save-buffer-by-alias (alias path)
+  "Save contents of current buffer as a file at PATH in namespaced
 hyperdrive corresponding to ALIAS.
 
 PATH represents the absolute path inside the hyperdrive."
   (interactive (list
-                (read-buffer "Buffer to upload: " (current-buffer))
                 (hyperdrive--completing-read-alias)
                 (read-string "Path in hyperdrive: ")))
   (plz 'put (hyperdrive--convert-to-hyper-gateway-url
              (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) path))
     :body-type 'binary
-    :body (with-current-buffer buffer
-            (buffer-substring-no-properties (point-min) (point-max)))))
+    :body (buffer-substring-no-properties (point-min) (point-max))))
 
 (defun hyperdrive-upload-files (alias relative-dir files)
   "Upload files from the local filesystem to the hyperdrive for ALIAS.
@@ -371,7 +369,7 @@ function which returns a list of filepaths."
       (with-temp-buffer
         (insert-file-contents path)
         (hyperdrive-save-buffer-by-alias
-         (current-buffer) alias (concat "/" (file-relative-name path relative-dir)))))))
+         alias (concat "/" (file-relative-name path relative-dir)))))))
 
 (defun hyperdrive-create-namespace (alias)
   "Create a hyperdrive namespace from an alphanumeric ALIAS.
