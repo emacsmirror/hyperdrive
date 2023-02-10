@@ -340,6 +340,17 @@ both point to the same content."
         (signal-process proc 'sigint)
       (message "Already not running hyper-gateway."))))
 
+(defun hyperdrive-save-buffer (url)
+  "Save contents of current buffer to URL.
+
+URL must be writable."
+  (interactive (list hyperdrive--current-url))
+  (if url
+      (plz 'put (hyperdrive--convert-to-hyper-gateway-url url)
+        :body-type 'binary
+        :body (buffer-substring-no-properties (point-min) (point-max)))
+    (call-interactively #'hyperdrive-save-buffer-by-alias)))
+
 (defun hyperdrive-save-buffer-by-alias (alias path)
   "Save contents of current buffer as a file at PATH in namespaced
 hyperdrive corresponding to ALIAS.
@@ -348,10 +359,8 @@ PATH represents the absolute path inside the hyperdrive."
   (interactive (list
                 (hyperdrive--completing-read-alias)
                 (read-string "Path in hyperdrive: ")))
-  (plz 'put (hyperdrive--convert-to-hyper-gateway-url
-             (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) path))
-    :body-type 'binary
-    :body (buffer-substring-no-properties (point-min) (point-max))))
+  (hyperdrive-save-buffer
+   (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) path)))
 
 (defun hyperdrive-upload-files (alias relative-dir files)
   "Upload files from the local filesystem to the hyperdrive for ALIAS.
@@ -526,7 +535,10 @@ Call `org-*' functions to handle search option if URL contains it."
   :group 'hyperdrive
   :lighter "hyperdrive"
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map [remap dired-jump] #'hyperdrive-up-directory)
+            (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
+            (define-key map (kbd "C-x C-s") #'hyperdrive-save-buffer)
+            ;; FIXME: The following doesn't work?
+            ;; (define-key map [remap save-buffer] #'hyperdrive-save-buffer)
             map)
   (if hyperdrive-mode
       (hyperdrive-mode-on)
