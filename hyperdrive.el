@@ -522,15 +522,13 @@ Call `org-*' functions to handle search option if URL contains it."
 
 (defun hyperdrive-mode-on ()
   "Activate `hyperdrive-mode'."
-  (setq buffer-read-only t)
   (setq-local revert-buffer-function #'hyperdrive-revert-buffer))
 
 (defun hyperdrive-mode-off ()
-  "Deactivate `hyperdrive-mode'."
-  (setq buffer-read-only nil))
+  "Deactivate `hyperdrive-mode'.")
 
 (define-minor-mode hyperdrive-mode
-  "Make buffer read-only and set `revert-buffer-function'."
+  "Set `revert-buffer-function'."
   :global nil
   :group 'hyperdrive
   :lighter "hyperdrive"
