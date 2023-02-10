@@ -1,5 +1,11 @@
 # hyperdrive.el - Emacs gateway to the Hypercore network
 
+[Hyperdrive](https://docs.holepunch.to/building-blocks/hyperdrive) is
+a secure, real-time distributed file system designed for easy
+peer-to-peer file sharing. `hyperdrive.el` is an independent project
+built by [USHIN](https://ushin.org) which provides an Emacs interface
+for managing hyperdrives.
+
 ## Installation
 
 ### Dependencies
@@ -91,10 +97,8 @@ has them.
 
 ### Namespaces
 
-[Hyperdrive](https://docs.holepunch.to/building-blocks/hyperdrive) is
-a secure, real-time distributed file system designed for easy
-peer-to-peer file sharing. You can have multiple hyperdrives, where
-each one contains an isolated or "namespaced" set of files.
+You can have multiple hyperdrives, where each one contains an isolated
+or "namespaced" set of files.
 
 Each namespaced hyperdrive has an `alias`, the local "petname" given to
 a namespaced hyperdrive. An `alias` combines with your secret master
