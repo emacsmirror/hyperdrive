@@ -340,12 +340,11 @@ both point to the same content."
         (signal-process proc 'sigint)
       (message "Already not running hyper-gateway."))))
 
-(defun hyperdrive-upload-buffer (buffer alias path)
-  "Upload contents of BUFFER as a file at PATH in namespaced
+(defun hyperdrive-save-buffer-by-alias (buffer alias path)
+  "Save contents of BUFFER as a file at PATH in namespaced
 hyperdrive corresponding to ALIAS.
 
-PATH represents the absolute path to the uploaded file inside the
-hyperdrive."
+PATH represents the absolute path inside the hyperdrive."
   (interactive (list
                 (read-buffer "Buffer to upload: " (current-buffer))
                 (hyperdrive--completing-read-alias)
@@ -371,7 +370,7 @@ function which returns a list of filepaths."
     (dolist (path file-list)
       (with-temp-buffer
         (insert-file-contents path)
-        (hyperdrive-upload-buffer
+        (hyperdrive-save-buffer-by-alias
          (current-buffer) alias (concat "/" (file-relative-name path relative-dir)))))))
 
 (defun hyperdrive-create-namespace (alias)
