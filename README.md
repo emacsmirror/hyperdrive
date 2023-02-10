@@ -72,8 +72,8 @@ will prompt you for an alias for your namespace. This can be anything
 you want, so long it only contains numbers and letters.
 
 Now, put something in your hyperdrive with `M-x
-hyperdrive-upload-buffer`, which will prompt you for a buffer to
-upload and the path where it should be stored inside your hyperdrive.
+hyperdrive-save-buffer`, which will prompt you for the path where the
+current buffer should be stored inside your hyperdrive.
 
 Copy the public key (unique identifier) of the hyperdrive by running
 `M-x hyperdrive-public-key`.
