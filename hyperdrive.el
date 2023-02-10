@@ -229,8 +229,8 @@ Otherwise, return URL."
 
 This function returns a url of the form \"hyper://\" + public-key
 + path or \"hyper://\" + public-key + version number + path,
-while urls entered by users may be namespace aliases or lack
-version numbers."
+while urls from hyper-gateway response headers lack version
+numbers."
   (concat hyperdrive--hyper-prefix
           (hyperdrive--extract-public-key link)
           (and version (concat "+" version))
