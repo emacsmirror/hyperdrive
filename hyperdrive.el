@@ -339,9 +339,9 @@ both point to the same content."
 (defun hyperdrive-save-buffer (url)
   "Save contents of current buffer to URL.
 
-URL must be writable."
+URL must be writable and not a directory."
   (interactive (list hyperdrive--current-url))
-  (if url
+  (if (and url (not (hyperdrive--directory-p url)))
       (plz 'put (hyperdrive--convert-to-hyper-gateway-url url)
         :body-type 'binary
         :body (buffer-substring-no-properties (point-min) (point-max)))
