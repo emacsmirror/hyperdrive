@@ -255,17 +255,6 @@ Returned url does not contain version number."
 Version number is of type string"
   (alist-get 'etag headers))
 
-(defun hyperdrive--response-extract-contents (response directoryp)
-  "Extract contents (body) from RESPONSE.
-
-If response is a directory, read directory contents as JSON.
-Otherwise, return plain buffer contents."
-  (let ((json-array-type 'list)
-        (contents (plz-response-body response)))
-    (if directoryp
-        (json-read-from-string contents)
-      contents)))
-
 (defun hyperdrive--directory-p (headers)
   "Return non-nil if url in hyperdrive response HEADERS is a directory."
   (string-match "/$" (hyperdrive--headers-extract-url headers)))
@@ -406,49 +395,46 @@ same ALIAS does not create a new namespace."
 (defun hyperdrive-load-alias (alias)
   "Load hyperdrive corresponding to ALIAS."
   (interactive (list (hyperdrive--completing-read-alias)))
-  (hyperdrive--load-url-get (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
+  (hyperdrive--load-url-directory
+   (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
 
-(cl-defun hyperdrive--load-url-get (url &key cb)
-  "Load contents at URL by sending a GET request to hyper-gateway.
+(defun hyperdrive--load-url-directory (url)
+  "Load directory contents at URL."
+  (let ((json-array-type 'list))
+    (hyperdrive-dired url (plz 'get (hyperdrive--convert-to-hyper-gateway-url url) :as #'json-read))))
 
-If CB is non-nil, pass it the url and loaded contents. Otherwise,
-call either `hyperdrive-dired' or `hyperdrive-find-file'.
-
-URL should begin with `hyperdrive--hyper-prefix'.
-
-If URL contains a version number, ensure that the final url
-displays the version number."
-  (let* ((response (plz 'get (hyperdrive--convert-to-hyper-gateway-url url) :as 'response))
-         (headers (plz-response-headers response))
-         (directoryp (hyperdrive--directory-p headers))
-         (contents (hyperdrive--response-extract-contents response directoryp))
-         (use-version (hyperdrive--version-match url))
-         (url-without-version (hyperdrive--headers-extract-url headers)))
-    (setq url (if use-version
-                  (hyperdrive--add-version-to-url url-without-version
-                                                  (hyperdrive--headers-extract-version headers))
-                url-without-version))
-    (cond (cb (funcall cb url contents directoryp))
-          (directoryp (hyperdrive-dired url contents))
-          (t (hyperdrive-find-file url contents)))))
+(defun hyperdrive--load-url-buffer (url)
+  "Load buffer contents at URL."
+  (hyperdrive-find-file url (plz 'get (hyperdrive--convert-to-hyper-gateway-url url))))
 
 (cl-defun hyperdrive-load-url (url &key cb)
   "Load contents at URL.
 
+If URL is a directory according to `hyperdrive--directory-p',
+load it with `hyperdrive-dired'.
+
 If URL is streamable according to `hyperdrive--streamable-p',
 play it with mpv.
 
-Pass CB along to `hyperdrive--load-url-get'. When content is
-streamable, CB is ignored.
+Otherwise, load the URL as a buffer with `hyperdrive-find-file'
+and call CB.
 
 URL should begin with `hyperdrive--hyper-prefix'."
   (interactive "sURL: ")
   (let* ((hyper-gateway-url (hyperdrive--convert-to-hyper-gateway-url url))
-         (headers (plz-response-headers
-                   (plz 'head hyper-gateway-url :as 'response))))
-    (if (hyperdrive--streamable-p headers)
-        (mpv-play-url hyper-gateway-url)
-      (hyperdrive--load-url-get url :cb cb))))
+         (headers (plz-response-headers (plz 'head hyper-gateway-url :as 'response)))
+         (directoryp (hyperdrive--directory-p headers))
+         (streamablep (hyperdrive--streamable-p headers))
+         (use-version (hyperdrive--version-match url))
+         (url-without-version (hyperdrive--headers-extract-url headers)))
+    (setq url (if use-version (hyperdrive--add-version-to-url
+                               url-without-version
+                               (hyperdrive--headers-extract-version headers))
+                url-without-version))
+    (cond (directoryp (hyperdrive--load-url-directory url))
+          (streamablep (mpv-play-url hyper-gateway-url))
+          (t (hyperdrive--load-url-buffer url)
+             (when cb (funcall cb url))))))
 
 (defun hyperdrive-download-url-as-file (url filename)
   "Load contents at URL as a file to store at FILENAME.
@@ -496,14 +482,14 @@ extension."
   (interactive)
   (let ((parent-dir (hyperdrive--get-parent-directory url)))
     (condition-case err
-        (hyperdrive--load-url-get parent-dir)
+        (hyperdrive--load-url-directory parent-dir)
       (plz-http-error
        (hyperdrive-up-directory parent-dir)))))
 
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
   (widen)
-  (hyperdrive--load-url-get hyperdrive--current-url))
+  (hyperdrive-load-url hyperdrive--current-url))
 
 (defun hyperdrive--get-parent-directory (&optional url)
   "Get parent directory of URL or current hyperdrive file or directory if URL is nil.
@@ -545,17 +531,13 @@ Call `org-*' functions to handle search option if URL contains it."
          (search (and (not line) option)))
     (hyperdrive-load-url
      (concat "hyper:" url-without-option)
-     :cb (lambda (url contents directoryp)
-           (if directoryp
-               (hyperdrive-dired url contents)
-             (hyperdrive-find-file url contents)
-             (with-current-buffer (hyperdrive--get-buffer-create url)
-               (setq-local hyperdrive--current-url url)
-               (cond (line (org-goto-line line)
-		           (when (derived-mode-p 'org-mode) (org-fold-reveal)))
-	             (search (condition-case err
-			         (org-link-search search)
-                               (error (message "%s" (nth 1 err))))))))))))
+     :cb (lambda (url)
+           (with-current-buffer (hyperdrive--get-buffer-create url)
+             (cond (line (org-goto-line line)
+		         (when (derived-mode-p 'org-mode) (org-fold-reveal)))
+	           (search (condition-case err
+			       (org-link-search search)
+                             (error (message "%s" (nth 1 err)))))))))))
 
 (org-link-set-parameters hyperdrive--org-link-type :store #'hyperdrive-store-link :follow #'hyperdrive-open-link)
 
