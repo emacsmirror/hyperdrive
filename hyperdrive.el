@@ -113,6 +113,10 @@
   "Location where `persist' will store data."
   :type 'sexp)
 
+(defcustom hyperdrive-download-directory "~/"
+  "Location where `hyperdrive-download-url-as-file' will download files."
+  :type '(file :must-match t))
+
 ;;;; Internal variables
 
 (defconst hyperdrive--hyper-prefix "hyper://" "Hyper prefix.")
@@ -446,6 +450,21 @@ URL should begin with `hyperdrive--hyper-prefix'."
     (if (hyperdrive--streamable-p headers)
         (mpv-play-url hyper-gateway-url)
       (hyperdrive--load-url-get url :cb cb))))
+
+(defun hyperdrive-download-url-as-file (url filename)
+  "Load contents at URL as a file to store at FILENAME.
+
+URL should begin with `hyperdrive--hyper-prefix'."
+  (interactive
+   (let* ((read-url (read-string "URL: "))
+          (read-filename (read-string "Filename: "
+                                      (expand-file-name
+                                       (file-name-nondirectory
+                                        (hyperdrive--extract-path read-url))
+                                       hyperdrive-download-directory))))
+     (list read-url read-filename)))
+  (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
+    :as `(file ,filename)))
 
 (defun hyperdrive-delete-file (url)
   "Delete file at URL."
