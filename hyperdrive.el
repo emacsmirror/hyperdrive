@@ -266,15 +266,10 @@ Otherwise, return plain buffer contents."
   "Return non-nil if hyperdrive RESPONSE is a directory."
   (string-match "/$" (hyperdrive--response-extract-url response)))
 
-(defun hyperdrive--streamable-p (url)
-  "Return non-nil if hyperdrive URL points to audio or video which
-can be streamed with mpv."
-  (string-match
-   (rx (or "audio" "video"))
-   (alist-get 'content-type
-              (plz-response-headers
-               (plz 'head (hyperdrive--convert-to-hyper-gateway-url url)
-                 :as 'response)))))
+(defun hyperdrive--streamable-p (headers)
+  "Return non-nil if response HEADERS indicate that the content is
+audio or video which can be streamed with mpv."
+  (string-match (rx (or "audio" "video")) (alist-get 'content-type headers)))
 
 (defun hyperdrive--version-match (url)
   "Return non-nil if URL contains a version number."
@@ -409,8 +404,8 @@ same ALIAS does not create a new namespace."
   (interactive (list (hyperdrive--completing-read-alias)))
   (hyperdrive-load-url (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
 
-(cl-defun hyperdrive-load-url (url &key cb)
-  "Load contents at URL from Hypercore network.
+(cl-defun hyperdrive--load-url-get (url &key cb)
+  "Load contents at URL by sending a GET request to hyper-gateway.
 
 If CB is non-nil, pass it the url and loaded contents. Otherwise,
 call either `hyperdrive-dired' or `hyperdrive-find-file'.
@@ -419,23 +414,38 @@ URL should begin with `hyperdrive--hyper-prefix'.
 
 If URL contains a version number, ensure that the final url
 displays the version number."
+  (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
+    :as 'response
+    :then (lambda (response)
+            (let* ((directoryp (hyperdrive--directory-p response))
+                   (contents (hyperdrive--response-extract-contents response directoryp))
+                   (use-version (hyperdrive--version-match url))
+                   (url-without-version (hyperdrive--response-extract-url response)))
+              (setq url (if use-version
+                            (hyperdrive--add-version-to-url url-without-version
+                                                            (hyperdrive--response-extract-version response))
+                          url-without-version))
+              (cond (cb (funcall cb url contents directoryp))
+                    (directoryp (hyperdrive-dired url contents))
+                    (t (hyperdrive-find-file url contents)))))))
+
+(cl-defun hyperdrive-load-url (url &key cb)
+  "Load contents at URL.
+
+If URL is streamable according to `hyperdrive--streamable-p',
+play it with mpv.
+
+Pass CB along to `hyperdrive--load-url-get'. When content is
+streamable, CB is ignored.
+
+URL should begin with `hyperdrive--hyper-prefix'."
   (interactive "sURL: ")
-  (if (hyperdrive--streamable-p url)
-      (mpv-play-url (hyperdrive--convert-to-hyper-gateway-url url))
-    (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
-      :as 'response
-      :then (lambda (response)
-              (let* ((directoryp (hyperdrive--directory-p response))
-                     (contents (hyperdrive--response-extract-contents response directoryp))
-                     (use-version (hyperdrive--version-match url))
-                     (url-without-version (hyperdrive--response-extract-url response)))
-                (setq url (if use-version
-                              (hyperdrive--add-version-to-url url-without-version
-                                                              (hyperdrive--response-extract-version response))
-                            url-without-version))
-                (cond (cb (funcall cb url contents directoryp))
-                      (directoryp (hyperdrive-dired url contents))
-                      (t (hyperdrive-find-file url contents))))))))
+  (let* ((hyper-gateway-url (hyperdrive--convert-to-hyper-gateway-url url))
+         (headers (plz-response-headers
+                   (plz 'head hyper-gateway-url :as 'response))))
+    (if (hyperdrive--streamable-p headers)
+        (mpv-play-url hyper-gateway-url)
+      (hyperdrive--load-url-get url :cb cb))))
 
 (defun hyperdrive-delete-file (url)
   "Delete file at URL."
