@@ -255,9 +255,9 @@ Returned url does not contain version number."
 Version number is of type string"
   (alist-get 'etag headers))
 
-(defun hyperdrive--directory-p (headers)
-  "Return non-nil if url in hyperdrive response HEADERS is a directory."
-  (string-match "/$" (hyperdrive--headers-extract-url headers)))
+(defun hyperdrive--directory-p (url)
+  "Return non-nil if url is a directory."
+  (string-match "/$" url))
 
 (defun hyperdrive--streamable-p (headers)
   "Return non-nil if response HEADERS indicate that the content is
@@ -426,10 +426,10 @@ and call CB.
 URL should begin with `hyperdrive--hyper-prefix'."
   (interactive "sURL: ")
   (let* ((headers (plz-response-headers (plz 'head (hyperdrive--convert-to-hyper-gateway-url url) :as 'response)))
-         (directoryp (hyperdrive--directory-p headers))
-         (streamablep (hyperdrive--streamable-p headers))
+         (url-without-version (hyperdrive--headers-extract-url headers))
          (use-version (hyperdrive--version-match url))
-         (url-without-version (hyperdrive--headers-extract-url headers)))
+         (directoryp (hyperdrive--directory-p url-without-version))
+         (streamablep (hyperdrive--streamable-p headers)))
     (setq url (if use-version (hyperdrive--add-version-to-url
                                url-without-version
                                (hyperdrive--headers-extract-version headers))
