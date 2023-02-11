@@ -425,8 +425,7 @@ and call CB.
 
 URL should begin with `hyperdrive--hyper-prefix'."
   (interactive "sURL: ")
-  (let* ((hyper-gateway-url (hyperdrive--convert-to-hyper-gateway-url url))
-         (headers (plz-response-headers (plz 'head hyper-gateway-url :as 'response)))
+  (let* ((headers (plz-response-headers (plz 'head (hyperdrive--convert-to-hyper-gateway-url url) :as 'response)))
          (directoryp (hyperdrive--directory-p headers))
          (streamablep (hyperdrive--streamable-p headers))
          (use-version (hyperdrive--version-match url))
