@@ -403,6 +403,10 @@ same ALIAS does not create a new namespace."
   (let ((json-array-type 'list))
     (hyperdrive-dired url (plz 'get (hyperdrive--convert-to-hyper-gateway-url url) :as #'json-read))))
 
+(defun hyperdrive--load-url-streamable (url)
+  "Stream URL with mpv."
+  (mpv-play-url (hyperdrive--convert-to-hyper-gateway-url url)))
+
 (defun hyperdrive--load-url-buffer (url)
   "Load buffer contents at URL."
   (hyperdrive-find-file url (plz 'get (hyperdrive--convert-to-hyper-gateway-url url))))
@@ -432,7 +436,7 @@ URL should begin with `hyperdrive--hyper-prefix'."
                                (hyperdrive--headers-extract-version headers))
                 url-without-version))
     (cond (directoryp (hyperdrive--load-url-directory url))
-          (streamablep (mpv-play-url hyper-gateway-url))
+          (streamablep (hyperdrive--load-url-streamable url))
           (t (hyperdrive--load-url-buffer url)
              (when cb (funcall cb url))))))
 
