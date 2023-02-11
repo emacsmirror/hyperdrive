@@ -240,20 +240,20 @@ numbers."
           (and version (concat "+" version))
           (hyperdrive--extract-path link)))
 
-(defun hyperdrive--response-extract-url (response)
-  "Extract url from RESPONSE.
+(defun hyperdrive--headers-extract-url (headers)
+  "Extract url from response HEADERS.
 
 Returned url does not contain version number."
-  (let ((str (alist-get 'link (plz-response-headers response))))
+  (let ((str (alist-get 'link headers)))
     (when (string-match (rx "<" (group (one-or-more anything)) ">")
                         str)
       (match-string 1 str))))
 
-(defun hyperdrive--response-extract-version (response)
-  "Extract version number (etag) from RESPONSE.
+(defun hyperdrive--headers-extract-version (headers)
+  "Extract version number (etag) from response HEADERS.
 
 Version number is of type string"
-  (alist-get 'etag (plz-response-headers response)))
+  (alist-get 'etag headers))
 
 (defun hyperdrive--response-extract-contents (response directoryp)
   "Extract contents (body) from RESPONSE.
@@ -266,9 +266,9 @@ Otherwise, return plain buffer contents."
         (json-read-from-string contents)
       contents)))
 
-(defun hyperdrive--directory-p (response)
-  "Return non-nil if hyperdrive RESPONSE is a directory."
-  (string-match "/$" (hyperdrive--response-extract-url response)))
+(defun hyperdrive--directory-p (headers)
+  "Return non-nil if url in hyperdrive response HEADERS is a directory."
+  (string-match "/$" (hyperdrive--headers-extract-url headers)))
 
 (defun hyperdrive--streamable-p (headers)
   "Return non-nil if response HEADERS indicate that the content is
@@ -419,13 +419,14 @@ URL should begin with `hyperdrive--hyper-prefix'.
 If URL contains a version number, ensure that the final url
 displays the version number."
   (let* ((response (plz 'get (hyperdrive--convert-to-hyper-gateway-url url) :as 'response))
-         (directoryp (hyperdrive--directory-p response))
+         (headers (plz-response-headers response))
+         (directoryp (hyperdrive--directory-p headers))
          (contents (hyperdrive--response-extract-contents response directoryp))
          (use-version (hyperdrive--version-match url))
-         (url-without-version (hyperdrive--response-extract-url response)))
+         (url-without-version (hyperdrive--headers-extract-url headers)))
     (setq url (if use-version
                   (hyperdrive--add-version-to-url url-without-version
-                                                  (hyperdrive--response-extract-version response))
+                                                  (hyperdrive--headers-extract-version headers))
                 url-without-version))
     (cond (cb (funcall cb url contents directoryp))
           (directoryp (hyperdrive-dired url contents))
