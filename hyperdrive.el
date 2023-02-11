@@ -418,20 +418,18 @@ URL should begin with `hyperdrive--hyper-prefix'.
 
 If URL contains a version number, ensure that the final url
 displays the version number."
-  (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
-    :as 'response
-    :then (lambda (response)
-            (let* ((directoryp (hyperdrive--directory-p response))
-                   (contents (hyperdrive--response-extract-contents response directoryp))
-                   (use-version (hyperdrive--version-match url))
-                   (url-without-version (hyperdrive--response-extract-url response)))
-              (setq url (if use-version
-                            (hyperdrive--add-version-to-url url-without-version
-                                                            (hyperdrive--response-extract-version response))
-                          url-without-version))
-              (cond (cb (funcall cb url contents directoryp))
-                    (directoryp (hyperdrive-dired url contents))
-                    (t (hyperdrive-find-file url contents)))))))
+  (let* ((response (plz 'get (hyperdrive--convert-to-hyper-gateway-url url) :as 'response))
+         (directoryp (hyperdrive--directory-p response))
+         (contents (hyperdrive--response-extract-contents response directoryp))
+         (use-version (hyperdrive--version-match url))
+         (url-without-version (hyperdrive--response-extract-url response)))
+    (setq url (if use-version
+                  (hyperdrive--add-version-to-url url-without-version
+                                                  (hyperdrive--response-extract-version response))
+                url-without-version))
+    (cond (cb (funcall cb url contents directoryp))
+          (directoryp (hyperdrive-dired url contents))
+          (t (hyperdrive-find-file url contents)))))
 
 (cl-defun hyperdrive-load-url (url &key cb)
   "Load contents at URL.
