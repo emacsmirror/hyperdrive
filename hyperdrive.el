@@ -465,7 +465,10 @@ URL should begin with `hyperdrive--hyper-prefix'."
     :as `(file ,filename)))
 
 (defun hyperdrive-delete-file (url)
-  "Delete file at URL."
+  "Delete file at URL.
+
+Note that deleted files can be accessed by checking out a prior
+version of the hyperdrive."
   (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url))
   (hyperdrive-up-directory url)
   (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
