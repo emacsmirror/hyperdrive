@@ -493,7 +493,11 @@ extension."
 (defun hyperdrive-up-directory (&optional url)
   "Visit parent directory of current hyperdrive file or directory."
   (interactive)
-  (hyperdrive-load-url (hyperdrive--get-parent-directory url)))
+  (let ((parent-dir (hyperdrive--get-parent-directory url)))
+    (condition-case err
+        (hyperdrive--load-url-get parent-dir)
+      (plz-http-error
+       (hyperdrive-up-directory parent-dir)))))
 
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
