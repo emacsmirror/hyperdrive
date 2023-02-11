@@ -466,15 +466,9 @@ URL should begin with `hyperdrive--hyper-prefix'."
 
 (defun hyperdrive-delete-file (url)
   "Delete file at URL."
-  (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url)
-    :as 'response
-    :then (lambda (_response) (hyperdrive-up-directory url)
-            ;; FIXME: This message is immediately overwritten by the message "Mark set", by a call inside `hyperdrive-dired'.
-            ;;        Let's see if this is still an issue after we resolve https://todo.sr.ht/~ushin/ushin/4
-            (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
-    :else (lambda (err)
-            (when (= 403 (plz-response-status (plz-error-response err)))
-              (user-error "Not Authorized to delete: %s" url)))))
+  (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url))
+  (hyperdrive-up-directory url)
+  (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
 
 (defun hyperdrive-find-file (url contents)
   "Switch to a buffer with CONTENTS of file at URL.
