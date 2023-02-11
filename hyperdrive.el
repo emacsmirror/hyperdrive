@@ -409,7 +409,7 @@ same ALIAS does not create a new namespace."
   (interactive (list (hyperdrive--completing-read-alias)))
   (hyperdrive-load-url (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
 
-(cl-defun hyperdrive-load-url (url &key use-version cb)
+(cl-defun hyperdrive-load-url (url &key cb)
   "Load contents at URL from Hypercore network.
 
 If CB is non-nil, pass it the url and loaded contents. Otherwise,
@@ -417,8 +417,8 @@ call either `hyperdrive-dired' or `hyperdrive-find-file'.
 
 URL should begin with `hyperdrive--hyper-prefix'.
 
-If URL contains a version number or if USE-VERSION is non-nil,
-ensure that the final url displays the version number."
+If URL contains a version number, ensure that the final url
+displays the version number."
   (interactive "sURL: ")
   (if (hyperdrive--streamable-p url)
       (mpv-play-url (hyperdrive--convert-to-hyper-gateway-url url))
@@ -427,7 +427,7 @@ ensure that the final url displays the version number."
       :then (lambda (response)
               (let* ((directoryp (hyperdrive--directory-p response))
                      (contents (hyperdrive--response-extract-contents response directoryp))
-                     (use-version (or use-version (hyperdrive--version-match url)))
+                     (use-version (hyperdrive--version-match url))
                      (url-without-version (hyperdrive--response-extract-url response)))
                 (setq url (if use-version
                               (hyperdrive--add-version-to-url url-without-version
