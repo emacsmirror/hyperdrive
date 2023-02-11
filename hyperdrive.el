@@ -406,7 +406,7 @@ same ALIAS does not create a new namespace."
 (defun hyperdrive-load-alias (alias)
   "Load hyperdrive corresponding to ALIAS."
   (interactive (list (hyperdrive--completing-read-alias)))
-  (hyperdrive-load-url (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
+  (hyperdrive--load-url-get (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
 
 (cl-defun hyperdrive--load-url-get (url &key cb)
   "Load contents at URL by sending a GET request to hyper-gateway.
@@ -498,7 +498,7 @@ extension."
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
   (widen)
-  (hyperdrive-load-url hyperdrive--current-url))
+  (hyperdrive--load-url-get hyperdrive--current-url))
 
 (defun hyperdrive--get-parent-directory (&optional url)
   "Get parent directory of URL or current hyperdrive file or directory if URL is nil.
