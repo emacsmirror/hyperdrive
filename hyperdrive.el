@@ -137,6 +137,8 @@ Capture group matches public key.")
 
 Capture group matches version number.")
 
+(defconst hyperdrive--public-file-location "public.json" "Location of peer information.")
+
 (persist-defvar hyperdrive--namespaces nil
                 "List of cons pairs mapping an alias to a public key."
                 hyperdrive-persist-location)
@@ -204,24 +206,16 @@ of the hyperdrive."
   (when (string-match hyperdrive--public-key-re string)
     (match-string 1 string)))
 
-(defun hyperdrive--maybe-get-alias-from-public-key (url)
+(defun hyperdrive--get-alias (url)
   "Return alias corresponding to public key in URL. Otherwise, return URL."
   (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--namespaces)))
 
-;; TODO: Handle duplicate alias/name urls, like foo:/path/to/file
-
-(defun hyperdrive--replace-public-key-with-alias (url alias)
-  "Replace public key in URL with corresponding ALIAS.
-
-For example, if URL corresponds to alias \"foo\" according to
-`hyperdrive--namespaces', replace \"hyper://<public key
-for foo>/\" with \"foo:/\".
-
-Otherwise, return URL."
-  (replace-regexp-in-string
-   (concat hyperdrive--hyper-prefix (hyperdrive--extract-public-key url))
-   (concat alias ":")
-   url))
+(defun hyperdrive--get-name (url)
+  "Return value of name property in public.json file in hyperdrive."
+  (let* ((json-array-type 'list)
+         (public-file (plz 'get (hyperdrive--convert-to-hyper-gateway-url (concat url hyperdrive--public-file-location))
+                        :as #'json-read)))
+    (message "%s" (alist-get 'name public-file))))  ; TODO: Handle missing file and attribute?
 
 (defun hyperdrive--extract-path (string)
   "Extract path following public-key from STRING."
@@ -268,6 +262,19 @@ audio or video which can be streamed with mpv."
   "Return non-nil if URL contains a version number."
   (string-match hyperdrive--version-re url))
 
+(defun hyperdrive--get-display-url (url)
+  "Make human-readable version of URL where the public-key is
+replaced with its local alias or public name.
+
+If no alias or name exists, return URL."
+  ;; TODO: Handle duplicate alias/name urls, like foo:/path/to/file
+  (let ((display-name (or (hyperdrive--get-alias url) (hyperdrive--get-name url))))
+    (if display-name (replace-regexp-in-string
+                      (concat hyperdrive--hyper-prefix (hyperdrive--extract-public-key url))
+                      (concat display-name ":")
+                      url)
+      url)))
+
 (defun hyperdrive--get-buffer-create (url)
   "Pass URL or corresponding alias to `get-buffer-create'.
 
@@ -278,11 +285,7 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (let* ((alias (hyperdrive--maybe-get-alias-from-public-key url))
-         (bufname (cond
-                   (alias (hyperdrive--replace-public-key-with-alias url alias))
-                   (t url))))
-    (get-buffer-create bufname)))
+  (get-buffer-create (hyperdrive--get-display-url url)))
 
 ;;;; Commands
 
