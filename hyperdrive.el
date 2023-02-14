@@ -551,7 +551,8 @@ Call `org-*' functions to handle search option if URL contains it."
   (setq-local revert-buffer-function #'hyperdrive-revert-buffer))
 
 (defun hyperdrive-mode-off ()
-  "Deactivate `hyperdrive-mode'.")
+  "Deactivate `hyperdrive-mode'."
+  (setq-local revert-buffer-function #'revert-buffer--default))
 
 (define-minor-mode hyperdrive-mode
   "Set `revert-buffer-function'."
