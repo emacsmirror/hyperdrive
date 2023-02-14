@@ -267,11 +267,11 @@ audio or video which can be streamed with mpv."
 replaced with its local alias or public name.
 
 If no alias or name exists, return URL."
-  ;; TODO: Handle duplicate alias/name urls, like foo:/path/to/file
-  (let ((display-name (or (hyperdrive--get-alias url) (hyperdrive--get-name url))))
+  (let ((display-name (or (hyperdrive--get-alias url) (hyperdrive--get-name url)))
+        (public-key (hyperdrive--extract-public-key url)))
     (if display-name (replace-regexp-in-string
-                      (concat hyperdrive--hyper-prefix (hyperdrive--extract-public-key url))
-                      (concat display-name ":")
+                      (concat hyperdrive--hyper-prefix public-key)
+                      (concat (substring public-key 0 6) "<" display-name ">" ":")
                       url)
       url)))
 
