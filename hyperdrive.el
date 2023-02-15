@@ -137,7 +137,8 @@ Capture group matches public key.")
 
 Capture group matches version number.")
 
-(defconst hyperdrive--public-file-location "public.json" "Location of peer information.")
+(defconst hyperdrive-metadata-filename ".hyperdrive-el.json"
+  "Location of hyperdrive.el metadata inside hyperdrive.")
 
 (persist-defvar hyperdrive--namespaces nil
                 "List of cons pairs mapping an alias to a public key."
@@ -210,12 +211,12 @@ of the hyperdrive."
   "Return alias corresponding to public key in URL. Otherwise, return URL."
   (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--namespaces)))
 
-(defun hyperdrive--get-name (url)
-  "Return value of name property in public.json file in hyperdrive."
-  (let* ((json-array-type 'list)
-         (public-file (plz 'get (hyperdrive--convert-to-hyper-gateway-url (concat url hyperdrive--public-file-location))
-                        :as #'json-read)))
-    (message "%s" (alist-get 'name public-file))))  ; TODO: Handle missing file and attribute?
+(defun hyperdrive-metadata (url)
+  "Return alist converted from JSON file at
+`hyperdrive-metadata-filename' in hyperdrive for URL."
+  (let* ((json-array-type 'list))
+    (plz 'get (hyperdrive--convert-to-hyper-gateway-url (concat url hyperdrive-metadata-filename))
+      :as #'json-read)))
 
 (defun hyperdrive--extract-path (string)
   "Extract path following public-key from STRING."
@@ -262,17 +263,20 @@ audio or video which can be streamed with mpv."
   "Return non-nil if URL contains a version number."
   (string-match hyperdrive--version-re url))
 
-(defun hyperdrive--get-display-url (url)
-  "Make human-readable version of URL where the public-key is
+(defun hyperdrive--format-url (url)
+  "Return human-readable version of URL where the public-key is
 replaced with its local alias or public name.
 
 If no alias or name exists, return URL."
-  (let ((display-name (or (hyperdrive--get-alias url) (hyperdrive--get-name url)))
+  (let ((display-name (or
+                       (hyperdrive--get-alias url)
+                       (alist-get 'name (hyperdrive-metadata url))))
         (public-key (hyperdrive--extract-public-key url)))
-    (if display-name (replace-regexp-in-string
-                      (concat hyperdrive--hyper-prefix public-key)
-                      (concat (substring public-key 0 6) "<" display-name ">" ":")
-                      url)
+    (if display-name
+        (replace-regexp-in-string
+         (regexp-quote (concat hyperdrive--hyper-prefix public-key))
+         (concat (substring public-key 0 6) "<" display-name ">" ":")
+         url)
       url)))
 
 (defun hyperdrive--get-buffer-create (url)
@@ -285,7 +289,7 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (get-buffer-create (hyperdrive--get-display-url url)))
+  (get-buffer-create (hyperdrive--format-url url)))
 
 ;;;; Commands
 
