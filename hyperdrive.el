@@ -137,7 +137,7 @@ Capture group matches public key.")
 
 Capture group matches version number.")
 
-(defconst hyperdrive-metadata-filename ".hyperdrive-el.json"
+(defconst hyperdrive-metadata-filename ".ushin.json"
   "Location of hyperdrive.el metadata inside hyperdrive.")
 
 (persist-defvar hyperdrive--namespaces nil
