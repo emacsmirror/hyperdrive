@@ -426,7 +426,7 @@ same ALIAS does not create a new namespace."
   "Load buffer contents at URL."
   (hyperdrive-find-file url (hyperdrive-api 'get url)))
 
-(cl-defun hyperdrive-load-url (url &key cb)
+(cl-defun hyperdrive-load-url (url)
   "Load contents at URL.
 
 If URL is a directory according to `hyperdrive--directory-p',
@@ -435,8 +435,7 @@ load it with `hyperdrive-dired'.
 If URL is streamable according to `hyperdrive--streamable-p',
 play it with mpv.
 
-Otherwise, load the URL as a buffer with `hyperdrive-find-file'
-and call CB.
+Otherwise, load the URL as a buffer with `hyperdrive-find-file'.
 
 URL should begin with `hyperdrive--hyper-prefix'."
   (interactive "sURL: ")
@@ -451,8 +450,7 @@ URL should begin with `hyperdrive--hyper-prefix'."
                 url-without-version))
     (cond (directoryp (hyperdrive--load-url-directory url))
           (streamablep (hyperdrive--load-url-streamable url))
-          (t (hyperdrive--load-url-buffer url)
-             (when cb (funcall cb url))))))
+          (t (hyperdrive--load-url-buffer url)))))
 
 (defun hyperdrive-download-url-as-file (url filename)
   "Load contents at URL as a file to store at FILENAME.
@@ -546,15 +544,14 @@ Call `org-*' functions to handle search option if URL contains it."
                     (string-match-p "\\`[0-9]+\\'" option)
 		    (list (string-to-number option))))
          (search (and (not line) option)))
-    (hyperdrive-load-url
-     (concat "hyper:" url-without-option)
-     :cb (lambda (url)
-           (with-current-buffer (hyperdrive--get-buffer-create url)
-             (cond (line (org-goto-line line)
-		         (when (derived-mode-p 'org-mode) (org-fold-reveal)))
-	           (search (condition-case err
-			       (org-link-search search)
-                             (error (message "%s" (nth 1 err)))))))))))
+    (hyperdrive-load-url (concat "hyper:" url-without-option))
+    (when option
+      (with-current-buffer (hyperdrive--get-buffer-create url)
+        (cond (line (org-goto-line line)
+		    (when (derived-mode-p 'org-mode) (org-fold-reveal)))
+	      (search (condition-case err
+			  (org-link-search search)
+                        (error "%s" (nth 1 err)))))))))
 
 (org-link-set-parameters hyperdrive--org-link-type :store #'hyperdrive-store-link :follow #'hyperdrive-open-link)
 
