@@ -186,13 +186,6 @@ select it automatically."
   "Get public key corresponding to ALIAS in `hyperdrive--namespaces'."
   (cdr (assoc alias hyperdrive--namespaces)))
 
-(defun hyperdrive--convert-to-hyper-gateway-url (url)
-  "Convert a URL starting with `hyperdrive--hyper-prefix' to one
- starting with \"http://localhost:4973/hyper/\" (assuming that
- 4973 is the value of `hyper-gateway-port')."
-  (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
-          (substring url (length hyperdrive--hyper-prefix))))
-
 (defun hyperdrive--make-hyperdrive-url (public-key raw-path)
   "Generate a `hyperdrive--hyper-prefix'-prefixed URL from a
 PUBLIC-KEY and PATH.
@@ -215,8 +208,7 @@ of the hyperdrive."
   "Return alist converted from JSON file at
 `hyperdrive-metadata-filename' in hyperdrive for URL."
   (let* ((json-array-type 'list))
-    (plz 'get (hyperdrive--convert-to-hyper-gateway-url (concat url hyperdrive-metadata-filename))
-      :as #'json-read)))
+    (hyperdrive-api 'get (concat url hyperdrive-metadata-filename) :as #'json-read)))
 
 (defun hyperdrive--extract-path (string)
   "Extract path following public-key from STRING."
@@ -291,6 +283,24 @@ In other words, this avoids the situation where a buffer called
 both point to the same content."
   (get-buffer-create (hyperdrive--format-url url)))
 
+(cl-defun hyperdrive-api (method hyper-url &key headers body else finally noquery
+                                 (as 'string) (then 'sync)
+                                 (body-type 'text) (decode t decode-s)
+                                 (connect-timeout plz-connect-timeout) (timeout plz-timeout))
+  "Wrapper around `plz' which converts a HYPER-URL starting with
+`hyperdrive--hyper-prefix' to a url starting with
+\"http://localhost:4973/hyper/\" (assuming that
+`hyper-gateway-port' is \"4973\").
+
+The remaining arguments are passed to `plz' as is: THEN, BODY,
+DATA-TYPE (passed as BODY-TYPE), ELSE, METHOD,
+JSON-READ-FN (passed as AS), CONNECT-TIMEOUT, TIMEOUT."
+  (let ((url (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
+                     (substring hyper-url (length hyperdrive--hyper-prefix)))))
+    (apply #'plz (list method url :headers headers :body body :body-type body-type
+                       :as as :then then :else else
+                       :connect-timeout connect-timeout :timeout timeout :noquery noquery))))
+
 ;;;; Commands
 
 (defun hyperdrive-public-key (alias)
@@ -311,16 +321,15 @@ both point to the same content."
 (defun hyperdrive--gateway-ready-p ()
   "Return non-nil if hyper-gateway is ready."
   (let (readyp)
-    (plz 'get
-      (hyperdrive--convert-to-hyper-gateway-url (concat hyperdrive--hyper-prefix "localhost/?key="))
-      :else (lambda (err)
-              (unless (and (plz-error-curl-error err)
-                           ;; "Failed to connect to host."
-                           (= 7 (car (plz-error-curl-error err))))
-                ;; Status code 400 is expected when hyper-gateway is running
-                ;; See https://github.com/RangerMauve/hyper-gateway/issues/3
-                (when (= 400 (plz-response-status (plz-error-response err)))
-                  (setq readyp t)))))
+    (hyperdrive-api 'get (concat hyperdrive--hyper-prefix "localhost/?key=")
+                    :else (lambda (err)
+                            (unless (and (plz-error-curl-error err)
+                                         ;; "Failed to connect to host."
+                                         (= 7 (car (plz-error-curl-error err))))
+                              ;; Status code 400 is expected when hyper-gateway is running
+                              ;; See https://github.com/RangerMauve/hyper-gateway/issues/3
+                              (when (= 400 (plz-response-status (plz-error-response err)))
+                                (setq readyp t)))))
     readyp))
 
 ;;;###autoload
@@ -349,9 +358,9 @@ both point to the same content."
 URL must be writable and not a directory."
   (interactive (list hyperdrive--current-url))
   (if (and url (not (hyperdrive--directory-p url)))
-      (plz 'put (hyperdrive--convert-to-hyper-gateway-url url)
-        :body-type 'binary
-        :body (buffer-substring-no-properties (point-min) (point-max)))
+      (hyperdrive-api 'put url
+                      :body-type 'binary
+                      :body (buffer-substring-no-properties (point-min) (point-max)))
     (call-interactively #'hyperdrive-save-buffer-by-alias)))
 
 (defun hyperdrive-save-buffer-by-alias (alias path)
@@ -393,9 +402,8 @@ same ALIAS does not create a new namespace."
   (interactive "sNamespace alias: ")
   (let ((public-key (hyperdrive--extract-public-key
                      (plz-response-body
-                      (plz 'post (hyperdrive--convert-to-hyper-gateway-url
-                                  (concat hyperdrive--hyper-prefix "localhost/?key=" alias))
-                        :as 'response)))))
+                      (hyperdrive-api 'post (concat hyperdrive--hyper-prefix "localhost/?key=" alias)
+                                      :as 'response)))))
     (cl-pushnew (cons alias public-key) hyperdrive--namespaces :test #'equal)
     (message "%s: %s" alias (hyperdrive--make-hyperdrive-url public-key ""))))
 
@@ -408,7 +416,7 @@ same ALIAS does not create a new namespace."
 (defun hyperdrive--load-url-directory (url)
   "Load directory contents at URL."
   (let ((json-array-type 'list))
-    (hyperdrive-dired url (plz 'get (hyperdrive--convert-to-hyper-gateway-url url) :as #'json-read))))
+    (hyperdrive-dired url (hyperdrive-api 'get url :as #'json-read))))
 
 (defun hyperdrive--load-url-streamable (url)
   "Stream URL with mpv."
@@ -416,7 +424,7 @@ same ALIAS does not create a new namespace."
 
 (defun hyperdrive--load-url-buffer (url)
   "Load buffer contents at URL."
-  (hyperdrive-find-file url (plz 'get (hyperdrive--convert-to-hyper-gateway-url url))))
+  (hyperdrive-find-file url (hyperdrive-api 'get url)))
 
 (cl-defun hyperdrive-load-url (url &key cb)
   "Load contents at URL.
@@ -432,7 +440,7 @@ and call CB.
 
 URL should begin with `hyperdrive--hyper-prefix'."
   (interactive "sURL: ")
-  (let* ((headers (plz-response-headers (plz 'head (hyperdrive--convert-to-hyper-gateway-url url) :as 'response)))
+  (let* ((headers (plz-response-headers (hyperdrive-api 'head url :as 'response)))
          (url-without-version (hyperdrive--headers-extract-url headers))
          (use-version (hyperdrive--version-match url))
          (directoryp (hyperdrive--directory-p url-without-version))
@@ -458,15 +466,14 @@ URL should begin with `hyperdrive--hyper-prefix'."
                                         (hyperdrive--extract-path read-url))
                                        hyperdrive-download-directory))))
      (list read-url read-filename)))
-  (plz 'get (hyperdrive--convert-to-hyper-gateway-url url)
-    :as `(file ,filename)))
+  (hyperdrive-api 'get url :as `(file ,filename)))
 
 (defun hyperdrive-delete-file (url)
   "Delete file at URL.
 
 Note that deleted files can be accessed by checking out a prior
 version of the hyperdrive."
-  (plz 'delete (hyperdrive--convert-to-hyper-gateway-url url))
+  (hyperdrive-api 'delete url)
   (hyperdrive-up-directory url)
   (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
 
