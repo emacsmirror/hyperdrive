@@ -139,9 +139,9 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-ewoc--format-entry (entry)
   "Return ENTRY formatted as a string."
-  (format "%40s%s"
+  (format "%-40s %s"
           (hyperdrive-entry-name entry)
-          (hyperdrive-entry-modified entry)))
+          (or (hyperdrive-entry-modified entry) "")))
 
 
 (provide 'hyperdrive-ewoc)
