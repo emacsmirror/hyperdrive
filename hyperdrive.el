@@ -208,7 +208,10 @@ of the hyperdrive."
 (defun hyperdrive-metadata (url)
   "Return alist converted from JSON file at
 `hyperdrive-metadata-filename' in hyperdrive for URL."
-  (let* ((json-array-type 'list))
+  (let ((json-array-type 'list)
+        (url (progn
+               (string-match hyperdrive--public-key-re url)
+               (match-string 0))))
     (hyperdrive-api 'get (concat url hyperdrive-metadata-filename) :as #'json-read)))
 
 (defun hyperdrive--extract-path (string)
