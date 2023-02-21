@@ -46,7 +46,6 @@
   (name nil :documentation "Name of entry.")
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
-  (url nil :documentation "URL returned by gateway.")
   (size nil :documentation "Size of file.")
   (version nil :documentation "Version of the file (if applicable).")
   (type nil :documentation "MIME type of the entry."))
