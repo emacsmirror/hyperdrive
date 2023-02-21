@@ -182,8 +182,8 @@ select it automatically."
 
 ;;;; Helper functions
 
-(defun hyperdrive--get-public-key-by-alias (alias)
-  "Get public key corresponding to ALIAS in `hyperdrive--namespaces'."
+(defun hyperdrive--public-key-by-alias (alias)
+  "Return public key corresponding to ALIAS in `hyperdrive--namespaces'."
   (cdr (assoc alias hyperdrive--namespaces)))
 
 (defun hyperdrive--make-hyperdrive-url (public-key raw-path)
@@ -200,7 +200,7 @@ of the hyperdrive."
   (when (string-match hyperdrive--public-key-re string)
     (match-string 1 string)))
 
-(defun hyperdrive--get-alias (url)
+(defun hyperdrive--alias (url)
   "Return alias corresponding to public key in URL. Otherwise, return URL."
   (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--namespaces)))
 
@@ -261,7 +261,7 @@ replaced with its local alias or public name.
 
 If no alias or name exists, return URL."
   (let ((display-name (or
-                       (hyperdrive--get-alias url)
+                       (hyperdrive--alias url)
                        (alist-get 'name (hyperdrive-metadata url))))
         (public-key (hyperdrive--extract-public-key url)))
     (if display-name
@@ -306,7 +306,7 @@ JSON-READ-FN (passed as AS), CONNECT-TIMEOUT, TIMEOUT."
 (defun hyperdrive-public-key (alias)
   "Copy the formatted public key corresponding to ALIAS to kill-ring."
   (interactive (list (hyperdrive--completing-read-alias)))
-  (let* ((public-key (hyperdrive--get-public-key-by-alias alias))
+  (let* ((public-key (hyperdrive--public-key-by-alias alias))
          (formatted-key (hyperdrive--make-hyperdrive-url public-key "")))
     (message "%s" formatted-key)
     (kill-new formatted-key)))
@@ -372,7 +372,7 @@ PATH represents the absolute path inside the hyperdrive."
                 (hyperdrive--completing-read-alias)
                 (read-string "Path in hyperdrive: ")))
   (hyperdrive-save-buffer
-   (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) path)))
+   (hyperdrive--make-hyperdrive-url (hyperdrive--public-key-by-alias alias) path)))
 
 (defun hyperdrive-upload-files (alias relative-dir files)
   "Upload files from the local filesystem to the hyperdrive for ALIAS.
@@ -411,7 +411,7 @@ same ALIAS does not create a new namespace."
   "Load hyperdrive corresponding to ALIAS."
   (interactive (list (hyperdrive--completing-read-alias)))
   (hyperdrive--load-url-directory
-   (hyperdrive--make-hyperdrive-url (hyperdrive--get-public-key-by-alias alias) "")))
+   (hyperdrive--make-hyperdrive-url (hyperdrive--public-key-by-alias alias) "")))
 
 (defun hyperdrive--load-url-directory (url)
   "Load directory contents at URL."
@@ -495,7 +495,7 @@ extension."
 (defun hyperdrive-up-directory (&optional url)
   "Visit parent directory of current hyperdrive file or directory."
   (interactive)
-  (let ((parent-dir (hyperdrive--get-parent-directory url)))
+  (let ((parent-dir (hyperdrive--parent-directory url)))
     (condition-case err
         (hyperdrive--load-url-directory parent-dir)
       (plz-http-error
@@ -506,8 +506,8 @@ extension."
   (widen)
   (hyperdrive-load-url hyperdrive--current-url))
 
-(defun hyperdrive--get-parent-directory (&optional url)
-  "Get parent directory of URL or current hyperdrive file or directory if URL is nil.
+(defun hyperdrive--parent-directory (&optional url)
+  "Return parent directory of URL or current hyperdrive file or directory if URL is nil.
 
 If already at top-level directory, return current directory."
   (let* ((url (or url hyperdrive--current-url))
@@ -620,7 +620,7 @@ Call `org-*' functions to handle search option if URL contains it."
       (setq raw (string-trim (thing-at-point 'line t)))
       (setq filename
             (cond ((equal "."  raw) hyperdrive--current-url)
-                  ((equal ".." raw) (hyperdrive--get-parent-directory))
+                  ((equal ".." raw) (hyperdrive--parent-directory))
                   (t (concat hyperdrive--current-url raw)))))))
 
 (defun hyperdrive-dired-copy-filename-as-kill ()
