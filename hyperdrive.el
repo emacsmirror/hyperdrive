@@ -119,7 +119,8 @@
 
 ;;;; Internal variables
 
-(defconst hyperdrive--hyper-prefix "hyper://" "Hyper prefix.")
+(eval-and-compile
+  (defconst hyperdrive--hyper-prefix "hyper://" "Hyper prefix."))
 
 (defconst hyperdrive--org-link-type "hyper" "Org mode link type.")
 
