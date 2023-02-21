@@ -38,6 +38,9 @@
 (defvar-local hyperdrive-ewoc nil
   "EWOC for current hyperdrive buffer.")
 
+(defvar-local hyperdrive-entries nil
+  "Entries in current hyperdrive buffer.")
+
 ;;;; Structs
 
 (cl-defstruct hyperdrive-entry
@@ -79,21 +82,31 @@
     (user-error "URL is not to a directory: %s" url))
   (with-current-buffer (hyperdrive--get-buffer-create url)
     (pcase-let* ((inhibit-read-only t)
-                 ((cl-struct plz-response headers body)
+                 ((cl-struct plz-response body)
                   (hyperdrive-api 'get url :as 'response))
                  (entries (mapcar (lambda (entry)
                                     (make-hyperdrive-entry :url url :name entry))
                                   (json-read-from-string body))))
       (hyperdrive-ewoc-mode)
+      (setf hyperdrive-entries entries)
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
-            entries))))
+            entries)
+      (mapc (lambda (entry)
+              (hyperdrive-fill-entry entry (lambda ()
+                                             (ewoc-refresh hyperdrive-ewoc))))
+            entries)
+      (pop-to-buffer (current-buffer)))))
 
-;; (defun hyperdrive-ewoc-insert (ewoc entry)
-;;   "Insert ENTRY into EWOC."
-;;   (if-let ((first-node (ewoc-nth ewoc 0)))
-;;       (ewoc-enter-after )
-;;     ))
+(defun hyperdrive-fill-entry (entry &optional then)
+  "Fill ENTRY's metadata and call THEN."
+  (let ((callback (lambda (response)
+                    (pcase-let* (((cl-struct plz-response headers) response)
+                                 ((map last-modified) headers))
+                      (setf (hyperdrive-entry-modified entry) last-modified)
+                      (funcall then entry))))
+        (url (concat (hyperdrive-entry-url entry) "/" (hyperdrive-entry-name entry))))
+    (hyperdrive-api 'head url :as 'response :then callback)))
 
 (define-derived-mode hyperdrive-ewoc-mode fundamental-mode
   `("Hyperdrive-EWOC"
@@ -118,7 +131,9 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-ewoc--format-entry (entry)
   "Return ENTRY formatted as a string."
-  (format "%s" (hyperdrive-entry-name entry)))
+  (format "%40s%s"
+          (hyperdrive-entry-name entry)
+          (hyperdrive-entry-modified entry)))
 
 
 (provide 'hyperdrive-ewoc)
