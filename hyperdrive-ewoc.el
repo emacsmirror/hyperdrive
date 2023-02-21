@@ -86,15 +86,23 @@
                   (hyperdrive-api 'get url :as 'response))
                  (entries (mapcar (lambda (entry)
                                     (make-hyperdrive-entry :url url :name entry))
-                                  (json-read-from-string body))))
+                                  (json-read-from-string body)))
+                 (ewoc hyperdrive-ewoc))
       (hyperdrive-ewoc-mode)
+      (erase-buffer)
       (setf hyperdrive-entries entries)
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
       (mapc (lambda (entry)
-              (hyperdrive-fill-entry entry (lambda ()
-                                             (ewoc-refresh hyperdrive-ewoc))))
+              (hyperdrive-fill-entry entry
+                                     (lambda (_)
+                                       ;; NOTE: Ensure that the buffer's window is selected,
+                                       ;; if it has one.  (Workaround a possible bug in EWOC.)
+                                       (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                                           (with-selected-window buffer-window
+                                             (ewoc-refresh ewoc))
+                                         (ewoc-refresh ewoc)))))
             entries)
       (pop-to-buffer (current-buffer)))))
 
