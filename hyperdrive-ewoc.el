@@ -79,7 +79,7 @@
     (user-error "URL is not to a directory: %s" url))
   (pcase-let* (((cl-struct plz-response headers body)
                 (hyperdrive-api 'get url :as 'response))
-               (entries (mapcar (lambda (url entry)
+               (entries (mapcar (lambda (entry)
                                   (make-hyperdrive-entry :url url :name entry))
                                 (json-read-from-string body))))
     (mapc (lambda (entry)
