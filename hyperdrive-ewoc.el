@@ -29,7 +29,6 @@
 (require 'ewoc)
 
 (require 'hyperdrive)
-(require 'hyperdrive-api)
 
 ;;;; Variables
 
