@@ -60,19 +60,6 @@
   (url nil :documentation "URL returned by gateway.")
   (entries nil :documentation "Entries in the directory."))
 
-;; (defun hyperdrive-entry-metadata (url)
-;;   "Return entry metadata derived from response headers of HEAD request to URL."
-;;   (let* ((headers (plz-response-headers (hyperdrive-api 'head url :as 'response)))
-;;          (returned-url (when (string-match (rx "<" (group (one-or-more anything)) ">")
-;;                                            (alist-get 'link headers))
-;;                          (match-string 1))))
-;;     ;; TODO: Use alist instead of plist?
-;;     (list :url returned-url
-;;           :size (alist-get 'content-length headers)
-;;           :version ;; ????
-;;           :directoryp (hyperdrive--directory-p returned-url)
-;;           :streamablep (string-match (rx (or "audio" "video")) (alist-get 'content-type headers)))))
-
 
 ;;;; Functions
 
@@ -101,6 +88,8 @@
                                        ;; if it has one.  (Workaround a possible bug in EWOC.)
                                        (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
                                            (with-selected-window buffer-window
+                                             ;; TODO: Use `ewoc-invalidate' on individual entries
+                                             ;; (maybe later, as performance comes to matter more).
                                              (ewoc-refresh ewoc))
                                          (ewoc-refresh ewoc)))))
             entries)
@@ -143,6 +132,13 @@ To be used as the pretty-printer for `ewoc-create'."
           (hyperdrive-entry-name entry)
           (or (hyperdrive-entry-modified entry) "")))
 
+;;;; Commands
+
+(defun hyperdrive-ewoc-find (entry)
+  "Find ENTRY at point."
+  (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+  (hyperdrive-load-url (concat (hyperdrive-entry-url entry)
+                               (hyperdrive-entry-name entry))))
 
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here
