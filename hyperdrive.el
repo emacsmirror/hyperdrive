@@ -212,7 +212,7 @@ of the hyperdrive."
         (url (progn
                (string-match hyperdrive--public-key-re url)
                (match-string 0 url))))
-    (hyperdrive-api 'get (concat url hyperdrive-metadata-filename) :as #'json-read)))
+    (hyperdrive-api 'get (concat url "/" hyperdrive-metadata-filename) :as #'json-read)))
 
 (defun hyperdrive--extract-path (string)
   "Extract path following public-key from STRING."
