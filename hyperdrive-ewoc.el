@@ -29,6 +29,7 @@
 (require 'ewoc)
 
 (require 'hyperdrive)
+(require 'hyperdrive-api)
 
 ;;;; Variables
 
@@ -77,14 +78,17 @@
   "List URL in Hyperdrive buffer."
   (unless (string-suffix-p "/" url)
     (user-error "URL is not to a directory: %s" url))
-  (pcase-let* (((cl-struct plz-response headers body)
-                (hyperdrive-api 'get url :as 'response))
-               (entries (mapcar (lambda (entry)
-                                  (make-hyperdrive-entry :url url :name entry))
-                                (json-read-from-string body))))
-    (mapc (lambda (entry)
-            (ewoc-enter-last hyperdrive-ewoc entry))
-          entries)))
+  (with-current-buffer (hyperdrive--get-buffer-create url)
+    (pcase-let* ((inhibit-read-only t)
+                 ((cl-struct plz-response headers body)
+                  (hyperdrive-api 'get url :as 'response))
+                 (entries (mapcar (lambda (entry)
+                                    (make-hyperdrive-entry :url url :name entry))
+                                  (json-read-from-string body))))
+      (hyperdrive-ewoc-mode)
+      (mapc (lambda (entry)
+              (ewoc-enter-last hyperdrive-ewoc entry))
+            entries))))
 
 ;; (defun hyperdrive-ewoc-insert (ewoc entry)
 ;;   "Insert ENTRY into EWOC."
