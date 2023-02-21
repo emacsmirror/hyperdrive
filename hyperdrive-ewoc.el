@@ -97,6 +97,7 @@
 
 (defun hyperdrive-fill-entry (entry &optional then)
   "Fill ENTRY's metadata and call THEN."
+  ;; TODO: Factor this out of -ewoc.el.
   (let ((callback (lambda (response)
                     (pcase-let* (((cl-struct plz-response headers) response)
                                  ((map last-modified) headers))
@@ -104,19 +105,6 @@
                       (funcall then entry))))
         (url (concat (hyperdrive-entry-url entry) "/" (hyperdrive-entry-name entry))))
     (hyperdrive-api 'head url :as 'response :then callback :else #'ignore)))
-
-(define-derived-mode hyperdrive-ewoc-mode fundamental-mode
-  `("Hyperdrive-EWOC"
-    ;; TODO: Add more to lighter, e.g. URL.
-    )
-  "Major mode for Hyperdrive directory buffers."
-  (let ((inhibit-read-only t))
-    (erase-buffer))
-  (remove-overlays)
-  (setf buffer-read-only t
-        ;; TODO: Imenu support.
-        ;; imenu-create-index-function #'ement-room--imenu-create-index-function
-        hyperdrive-ewoc (ewoc-create #'hyperdrive-ewoc-pp)))
 
 (defun hyperdrive-ewoc-pp (thing)
   "Pretty-print THING.
@@ -132,9 +120,33 @@ To be used as the pretty-printer for `ewoc-create'."
           (hyperdrive-entry-name entry)
           (or (hyperdrive-entry-modified entry) "")))
 
+;;;; Mode
+
+(defvar-keymap hyperdrive-ewoc-mode-map
+  :parent  special-mode-map
+  :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
+  "RET"     #'hyperdrive-ewoc-find-file
+  ;; "^"       #'hyperdrive-up-directory
+  ;; "w"       #'hyperdrive-dired-copy-filename-as-kill
+  ;; "D"       #'hyperdrive-dired-delete-file
+  )
+
+(define-derived-mode hyperdrive-ewoc-mode fundamental-mode
+  `("Hyperdrive-EWOC"
+    ;; TODO: Add more to lighter, e.g. URL.
+    )
+  "Major mode for Hyperdrive directory buffers."
+  (let ((inhibit-read-only t))
+    (erase-buffer))
+  (remove-overlays)
+  (setf buffer-read-only t
+        ;; TODO: Imenu support.
+        ;; imenu-create-index-function #'ement-room--imenu-create-index-function
+        hyperdrive-ewoc (ewoc-create #'hyperdrive-ewoc-pp)))
+
 ;;;; Commands
 
-(defun hyperdrive-ewoc-find (entry)
+(defun hyperdrive-ewoc-find-file (entry)
   "Find ENTRY at point."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
   (hyperdrive-load-url (concat (hyperdrive-entry-url entry)
