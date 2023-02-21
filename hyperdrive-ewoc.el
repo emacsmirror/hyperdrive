@@ -81,6 +81,7 @@
   (unless (string-suffix-p "/" url)
     (user-error "URL is not to a directory: %s" url))
   (with-current-buffer (hyperdrive--get-buffer-create url)
+    (hyperdrive-ewoc-mode)
     (pcase-let* ((inhibit-read-only t)
                  ((cl-struct plz-response body)
                   (hyperdrive-api 'get url :as 'response))
@@ -88,7 +89,6 @@
                                     (make-hyperdrive-entry :url url :name entry))
                                   (json-read-from-string body)))
                  (ewoc hyperdrive-ewoc))
-      (hyperdrive-ewoc-mode)
       (erase-buffer)
       (setf hyperdrive-entries entries)
       (mapc (lambda (entry)
@@ -114,7 +114,7 @@
                       (setf (hyperdrive-entry-modified entry) last-modified)
                       (funcall then entry))))
         (url (concat (hyperdrive-entry-url entry) "/" (hyperdrive-entry-name entry))))
-    (hyperdrive-api 'head url :as 'response :then callback)))
+    (hyperdrive-api 'head url :as 'response :then callback :else #'ignore)))
 
 (define-derived-mode hyperdrive-ewoc-mode fundamental-mode
   `("Hyperdrive-EWOC"
