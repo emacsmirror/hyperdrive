@@ -452,6 +452,7 @@ URL should begin with `hyperdrive--hyper-prefix'."
                                url-without-version
                                (hyperdrive--headers-extract-version headers))
                 url-without-version))
+    ;; TODO(alphapapa): Refactor this using an alist by MIME type.
     (cond (directoryp (hyperdrive--load-url-directory url))
           (streamablep (hyperdrive--load-url-streamable url))
           (t (hyperdrive--load-url-buffer url)))))
