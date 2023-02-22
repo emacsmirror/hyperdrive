@@ -60,7 +60,6 @@
   (url nil :documentation "URL returned by gateway.")
   (entries nil :documentation "Entries in the directory."))
 
-
 ;;;; Functions
 
 (defun hyperdrive-ewoc-list (url)
@@ -97,7 +96,7 @@
 
 (defun hyperdrive-fill-entry (entry &optional then)
   "Fill ENTRY's metadata and call THEN."
-  ;; TODO: Factor this out of -ewoc.el.
+  ;; TODO(alphapapa): Factor this out of -ewoc.el.
   (let ((callback (lambda (response)
                     (pcase-let* (((cl-struct plz-response headers) response)
                                  ((map last-modified) headers))
@@ -126,6 +125,7 @@ To be used as the pretty-printer for `ewoc-create'."
   :parent  special-mode-map
   :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
   "RET"     #'hyperdrive-ewoc-find-file
+  ;; TODO(alphapapa): Port these commands.
   ;; "^"       #'hyperdrive-up-directory
   ;; "w"       #'hyperdrive-dired-copy-filename-as-kill
   ;; "D"       #'hyperdrive-dired-delete-file
@@ -140,7 +140,7 @@ To be used as the pretty-printer for `ewoc-create'."
     (erase-buffer))
   (remove-overlays)
   (setf buffer-read-only t
-        ;; TODO: Imenu support.
+        ;; TODO(alphapapa): Imenu support.
         ;; imenu-create-index-function #'ement-room--imenu-create-index-function
         hyperdrive-ewoc (ewoc-create #'hyperdrive-ewoc-pp)))
 
