@@ -43,37 +43,39 @@
 
 ;;;; Functions
 
-(defun hyperdrive-ewoc-list (url)
-  "List URL in Hyperdrive buffer."
-  (unless (string-suffix-p "/" url)
-    (user-error "URL is not to a directory: %s" url))
-  (with-current-buffer (hyperdrive--get-buffer-create url)
-    (hyperdrive-ewoc-mode)
-    (pcase-let* ((inhibit-read-only t)
-                 ((cl-struct plz-response body)
-                  (hyperdrive-api 'get url :as 'response))
-                 (entries (mapcar (lambda (entry)
-                                    (make-hyperdrive-entry :url url :name entry))
-                                  (json-read-from-string body)))
-                 (ewoc hyperdrive-ewoc))
-      (erase-buffer)
-      (setf hyperdrive-entries entries)
-      (mapc (lambda (entry)
-              (ewoc-enter-last hyperdrive-ewoc entry))
-            entries)
-      (mapc (lambda (entry)
-              (hyperdrive-fill-entry entry
-                                     (lambda (_)
-                                       ;; NOTE: Ensure that the buffer's window is selected,
-                                       ;; if it has one.  (Workaround a possible bug in EWOC.)
-                                       (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                                           (with-selected-window buffer-window
-                                             ;; TODO: Use `ewoc-invalidate' on individual entries
-                                             ;; (maybe later, as performance comes to matter more).
-                                             (ewoc-refresh ewoc))
-                                         (ewoc-refresh ewoc)))))
-            entries)
-      (pop-to-buffer (current-buffer)))))
+(defun hyperdrive-ewoc-list (directory-url)
+  "List DIRECTORY-URL in Hyperdrive buffer."
+  (unless (string-suffix-p "/" directory-url)
+    (user-error "URL is not to a directory: %s" directory-url))
+  (let* ((directory-entry (make-hyperdrive-entry :url directory-url))
+         (buffer (hyperdrive--get-buffer-create directory-entry)))
+    (with-current-buffer buffer
+      (hyperdrive-ewoc-mode)
+      (pcase-let* ((inhibit-read-only t)
+                   (entry-names (hyperdrive-api 'get directory-url :as #'json-read))
+                   (entries (mapcar (lambda (entry-name)
+                                      (let ((entry-url (concat directory-url "/" entry-name)))
+                                        (make-hyperdrive-entry :url entry-url :name entry-name)))
+                                    entry-names))
+                   (ewoc hyperdrive-ewoc))
+        (erase-buffer)
+        (setf hyperdrive-entries entries)
+        (mapc (lambda (entry)
+                (ewoc-enter-last hyperdrive-ewoc entry))
+              entries)
+        (mapc (lambda (entry)
+                (hyperdrive-fill-entry entry
+                                       (lambda (_)
+                                         ;; NOTE: Ensure that the buffer's window is selected,
+                                         ;; if it has one.  (Workaround a possible bug in EWOC.)
+                                         (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                                             (with-selected-window buffer-window
+                                               ;; TODO: Use `ewoc-invalidate' on individual entries
+                                               ;; (maybe later, as performance comes to matter more).
+                                               (ewoc-refresh ewoc))
+                                           (ewoc-refresh ewoc)))))
+              entries)
+        (pop-to-buffer (current-buffer))))))
 
 (defun hyperdrive-fill-entry (entry &optional then)
   "Fill ENTRY's metadata and call THEN."
