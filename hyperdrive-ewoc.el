@@ -54,7 +54,7 @@
       (pcase-let* ((inhibit-read-only t)
                    (entry-names (hyperdrive-api 'get directory-url :as #'json-read))
                    (entries (mapcar (lambda (entry-name)
-                                      (let ((entry-url (concat directory-url "/" entry-name)))
+                                      (let ((entry-url (concat directory-url entry-name)))
                                         (make-hyperdrive-entry :url entry-url :name entry-name)))
                                     entry-names))
                    (ewoc hyperdrive-ewoc))
