@@ -412,10 +412,9 @@ The buffer may already be a hyperdrive file, or it may not be."
                (public-key (hyperdrive--public-key-by-alias alias))
                (name (read-string "Filename: " nil nil basename))
                (hyperdrive-current-entry
-                (or hyperdrive-current-entry
-                    (make-hyperdrive-entry
-                     :name name
-                     :url (hyperdrive--make-hyperdrive-url public-key name)))))
+                (make-hyperdrive-entry
+                 :name name
+                 :url (hyperdrive--make-hyperdrive-url public-key name))))
     (hyperdrive--save-buffer)))
 
 ;; (defun hyperdrive-save-buffer-by-alias (alias path)
