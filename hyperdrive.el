@@ -86,6 +86,27 @@
   :group 'external
   :prefix "hyperdrive-")
 
+;;;; Structs
+
+(cl-defstruct hyperdrive-directory
+  "Represents a directory in a hyperdrive."
+  ;; TODO: Add URL slot.
+  (headers nil :documentation "HTTP headers from request.")
+  (modified nil :documentation "Last modified time.")
+  (url nil :documentation "URL returned by gateway.")
+  (entries nil :documentation "Entries in the directory."))
+
+(cl-defstruct hyperdrive-entry
+  "Represents an entry in a hyperdrive."
+  (url nil :documentation "Canonical URL to entry.")
+  (parent-url nil :documentation "URL to entry's parent directory (i.e. does not include name).")
+  (name nil :documentation "Name of entry.")
+  (headers nil :documentation "HTTP headers from request.")
+  (modified nil :documentation "Last modified time.")
+  (size nil :documentation "Size of file.")
+  (version nil :documentation "Version of the file (if applicable).")
+  (type nil :documentation "MIME type of the entry."))
+
 ;;;; Configuration
 
 (defcustom hyperdrive-storage-location
@@ -146,9 +167,10 @@ Capture group matches version number.")
                 hyperdrive-persist-location)
 
 (defvar hyperdrive--current-url nil
-  "The url of the current hyperdrive file or directory.
+  "URL of the current hyperdrive file or directory.
 
-Depending on how `hyperdrive-load-url' was called to generate the current buffer, the url may or may not contain a version number.")
+Depending on how `hyperdrive-load-url' was called to generate the
+current buffer, the url may or may not contain a version number.")
 (put 'hyperdrive--current-url 'permanent-local t)
 
 ;;;; Faces
@@ -275,35 +297,34 @@ If no alias or name exists, return URL."
          url)
       url)))
 
-(defun hyperdrive--get-buffer-create (url)
-  "Pass URL or corresponding alias to `get-buffer-create'.
+(defun hyperdrive--get-buffer-create (entry)
+  "Return buffer for ENTRY.
+Names buffer, sets `buffer-file-name' and
+`hyperdrive--current-url'.
 
-This function helps prevents duplicate `hyperdrive-mode' buffers by
-ensuring that buffer names always use the namespace alias
+This function helps prevent duplicate `hyperdrive-mode' buffers
+by ensuring that buffer names always use the namespace alias
 corresponding to URL if possible.
 
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (get-buffer-create (hyperdrive--format-url url)))
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (with-current-buffer (get-buffer-create (hyperdrive--format-url url))
+      (setq-local hyperdrive--current-url url
+                  buffer-file-name url)
+      (current-buffer))))
 
-(cl-defun hyperdrive-api (method hyper-url &key headers body else finally noquery
-                                 (as 'string) (then 'sync)
-                                 (body-type 'text) (decode t decode-s)
-                                 (connect-timeout plz-connect-timeout) (timeout plz-timeout))
+(cl-defun hyperdrive-api (method hyper-url &rest rest)
   "Wrapper around `plz' which converts a HYPER-URL starting with
 `hyperdrive--hyper-prefix' to a url starting with
 \"http://localhost:4973/hyper/\" (assuming that
 `hyper-gateway-port' is \"4973\").
 
-The remaining arguments are passed to `plz' as is: THEN, BODY,
-DATA-TYPE (passed as BODY-TYPE), ELSE, METHOD,
-JSON-READ-FN (passed as AS), CONNECT-TIMEOUT, TIMEOUT."
+The remaining arguments are passed to `plz', which see."
   (let ((url (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
                      (substring hyper-url (length hyperdrive--hyper-prefix)))))
-    (apply #'plz (list method url :headers headers :body body :body-type body-type
-                       :as as :then then :else else
-                       :connect-timeout connect-timeout :timeout timeout :noquery noquery))))
+    (apply #'plz method url rest)))
 
 ;;;; Commands
 
@@ -653,6 +674,30 @@ Call `org-*' functions to handle search option if URL contains it."
   "Major mode for viewing hyperdrive directories.
 \\{hyperdrive-dired-mode-map}"
   (hyperdrive-mode +1))
+
+;;;; Handlers
+
+(defvar hyperdrive-type-handlers nil
+  "Alist mapping MIME types to handler functions.")
+
+(defun hyperdrive-handler-default (entry)
+  "Load ENTRY's file into an Emacs buffer.
+Default handler."
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (hyperdrive-api 'get url :as 'response
+                    :then (lambda ()
+                            (pcase-let* ((response-buffer (current-buffer))
+                                         (inhibit-read-only t))
+                              (with-current-buffer (hyperdrive--get-buffer-create entry)
+                                (erase-buffer)
+                                (insert-buffer-substring response-buffer)
+                                ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+                                (when hyperdrive-honor-auto-mode-alist
+                                  (let ((buffer-file-name hyperdrive--current-url))
+                                    (set-auto-mode)))
+                                ;; TODO: Option to defer showing buffer.
+                                (hyperdrive-mode)
+                                (pop-to-buffer (current-buffer))))))))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here

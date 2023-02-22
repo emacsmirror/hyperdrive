@@ -41,25 +41,6 @@
 (defvar-local hyperdrive-entries nil
   "Entries in current hyperdrive buffer.")
 
-;;;; Structs
-
-(cl-defstruct hyperdrive-entry
-  "Represents an entry in a hyperdrive."
-  (url nil :documentation "URL to entry's parent directory (i.e. does not include name).")
-  (name nil :documentation "Name of entry.")
-  (headers nil :documentation "HTTP headers from request.")
-  (modified nil :documentation "Last modified time.")
-  (size nil :documentation "Size of file.")
-  (version nil :documentation "Version of the file (if applicable).")
-  (type nil :documentation "MIME type of the entry."))
-
-(cl-defstruct hyperdrive-directory
-  "Represents a directory in a hyperdrive."
-  (headers nil :documentation "HTTP headers from request.")
-  (modified nil :documentation "Last modified time.")
-  (url nil :documentation "URL returned by gateway.")
-  (entries nil :documentation "Entries in the directory."))
-
 ;;;; Functions
 
 (defun hyperdrive-ewoc-list (url)
@@ -99,10 +80,11 @@
   ;; TODO(alphapapa): Factor this out of -ewoc.el.
   (let ((callback (lambda (response)
                     (pcase-let* (((cl-struct plz-response headers) response)
-                                 ((map last-modified) headers))
-                      (setf (hyperdrive-entry-modified entry) last-modified)
+                                 ((map content-type last-modified) headers))
+                      (setf  (hyperdrive-entry-type entry) content-type
+                             (hyperdrive-entry-modified entry) last-modified)
                       (funcall then entry))))
-        (url (concat (hyperdrive-entry-url entry) "/" (hyperdrive-entry-name entry))))
+        (url (concat (hyperdrive-entry-parent-url entry) "/" (hyperdrive-entry-name entry))))
     (hyperdrive-api 'head url :as 'response :then callback :else #'ignore)))
 
 (defun hyperdrive-ewoc-pp (thing)
@@ -149,8 +131,10 @@ To be used as the pretty-printer for `ewoc-create'."
 (defun hyperdrive-ewoc-find-file (entry)
   "Find ENTRY at point."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
-  (hyperdrive-load-url (concat (hyperdrive-entry-url entry)
-                               (hyperdrive-entry-name entry))))
+  (pcase-let* (((cl-struct hyperdrive-entry type) entry)
+               (handler (alist-get type hyperdrive-type-handlers
+                                   #'hyperdrive-handler-default nil #'equal)))
+    (funcall handler entry)))
 
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here
