@@ -677,7 +677,8 @@ Call `org-*' functions to handle search option if URL contains it."
 
 ;;;; Handlers
 
-(defvar hyperdrive-type-handlers nil
+(defvar hyperdrive-type-handlers
+  '(("inode/directory" . hyperdrive-handler-directory))
   "Alist mapping MIME types to handler functions.")
 
 (defun hyperdrive-handler-default (entry)
@@ -697,7 +698,12 @@ Default handler."
                                   (set-auto-mode)))
                               ;; TODO: Option to defer showing buffer.
                               (hyperdrive-mode)
-                              (pop-to-buffer (current-buffer))))) )))
+                              (pop-to-buffer (current-buffer))))))))
+
+(defun hyperdrive-handler-directory (entry)
+  "Show directory ENTRY."
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (hyperdrive-ewoc-list url)))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
