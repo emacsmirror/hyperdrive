@@ -32,9 +32,6 @@
 
 ;;;; Variables
 
-(defvar-local hyperdrive-current-url nil
-  "URL of current buffer.")
-
 (defvar-local hyperdrive-ewoc nil
   "EWOC for current hyperdrive buffer.")
 
@@ -43,6 +40,7 @@
 
 ;;;; Functions
 
+;;;###autoload
 (defun hyperdrive-ewoc-list (directory-url)
   "List DIRECTORY-URL in Hyperdrive buffer."
   (unless (string-suffix-p "/" directory-url)
