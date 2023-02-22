@@ -684,20 +684,20 @@ Call `org-*' functions to handle search option if URL contains it."
   "Load ENTRY's file into an Emacs buffer.
 Default handler."
   (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive-api 'get url :as 'response
-                    :then (lambda ()
-                            (pcase-let* ((response-buffer (current-buffer))
-                                         (inhibit-read-only t))
-                              (with-current-buffer (hyperdrive--get-buffer-create entry)
-                                (erase-buffer)
-                                (insert-buffer-substring response-buffer)
-                                ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-                                (when hyperdrive-honor-auto-mode-alist
-                                  (let ((buffer-file-name hyperdrive--current-url))
-                                    (set-auto-mode)))
-                                ;; TODO: Option to defer showing buffer.
-                                (hyperdrive-mode)
-                                (pop-to-buffer (current-buffer))))))))
+    (hyperdrive-api 'get url
+                    :as (lambda ()
+                          (let ((response-buffer (current-buffer))
+                                (inhibit-read-only t))
+                            (with-current-buffer (hyperdrive--get-buffer-create entry)
+                              (erase-buffer)
+                              (insert-buffer-substring response-buffer)
+                              ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+                              (when hyperdrive-honor-auto-mode-alist
+                                (let ((buffer-file-name hyperdrive--current-url))
+                                  (set-auto-mode)))
+                              ;; TODO: Option to defer showing buffer.
+                              (hyperdrive-mode)
+                              (pop-to-buffer (current-buffer))))) )))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
