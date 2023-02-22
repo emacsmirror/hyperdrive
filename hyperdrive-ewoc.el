@@ -80,14 +80,15 @@
 (defun hyperdrive-fill-entry (entry &optional then)
   "Fill ENTRY's metadata and call THEN."
   ;; TODO(alphapapa): Factor this out of -ewoc.el.
-  (let ((callback (lambda (response)
-                    (pcase-let* (((cl-struct plz-response headers) response)
-                                 ((map content-type last-modified) headers))
-                      (setf  (hyperdrive-entry-type entry) content-type
-                             (hyperdrive-entry-modified entry) last-modified)
-                      (funcall then entry))))
-        (url (concat (hyperdrive-entry-parent-url entry) "/" (hyperdrive-entry-name entry))))
-    (hyperdrive-api 'head url :as 'response :then callback :else #'ignore)))
+  (hyperdrive-api 'head (hyperdrive-entry-url entry)
+                  :as 'response
+                  :then (lambda (response)
+                          (pcase-let* (((cl-struct plz-response headers) response)
+                                       ((map content-type last-modified) headers))
+                            (setf  (hyperdrive-entry-type entry) content-type
+                                   (hyperdrive-entry-modified entry) last-modified)
+                            (funcall then entry)))
+                  :else #'ignore))
 
 (defun hyperdrive-ewoc-pp (thing)
   "Pretty-print THING.
