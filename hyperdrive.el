@@ -225,7 +225,7 @@ Default handler."
 (defun hyperdrive-handler-streamable (entry)
   "Stream ENTRY."
   (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (mpv-play-url (hyperdrive--convert-to-hyper-gateway-url url))))
+    (mpv-play-url (hyperdrive--httpify-url url))))
 
 ;;;; User interaction helper functions
 
@@ -352,17 +352,21 @@ both point to the same content."
       (setq-local hyperdrive-current-entry entry)
       (current-buffer))))
 
-(cl-defun hyperdrive-api (method hyper-url &rest rest)
-  "Wrapper around `plz' which converts a HYPER-URL starting with
-`hyperdrive--hyper-prefix' to a url starting with
+(cl-defun hyperdrive-api (method url &rest rest)
+  "Make hyperdrive API request.
+Calls `hyperdrive--httpify-url' to convert HYPER-URL starting
+with `hyperdrive--hyper-prefix' to a URL starting with
 \"http://localhost:4973/hyper/\" (assuming that
 `hyper-gateway-port' is \"4973\").
 
 The remaining arguments are passed to `plz', which see."
   (declare (indent defun))
-  (let ((url (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
-                     (substring hyper-url (length hyperdrive--hyper-prefix)))))
-    (apply #'plz method url rest)))
+  (apply #'plz method (hyperdrive--httpify-url url) rest))
+
+(defun hyperdrive--httpify-url (url)
+  "Return localhost HTTP URL for HYPER-URL."
+  (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
+          (substring url (length hyperdrive--hyper-prefix))))
 
 ;;;; Commands
 
@@ -510,10 +514,6 @@ same ALIAS does not create a new namespace."
   "Load directory contents at URL."
   (let ((json-array-type 'list))
     (hyperdrive-dired url (hyperdrive-api 'get url :as #'json-read))))
-
-(defun hyperdrive--load-url-streamable (url)
-  "Stream URL with mpv."
-  (mpv-play-url (hyperdrive--convert-to-hyper-gateway-url url)))
 
 ;; (cl-defun hyperdrive-load-url (url)
 ;;   "Load contents at URL.
