@@ -248,12 +248,12 @@ select it automatically."
   (cdr (assoc alias hyperdrive--namespaces)))
 
 (defun hyperdrive--make-hyperdrive-url (public-key raw-path)
-  "Generate a `hyperdrive--hyper-prefix'-prefixed URL from a
-PUBLIC-KEY and PATH.
+  "Return `hyperdrive--hyper-prefix'-prefixed url from PUBLIC-KEY and RAW-PATH.
 
-PATH is an absolute path, starting from the top-level directory
-of the hyperdrive."
-  (let ((path (if (string-match-p "^/" raw-path) raw-path (concat "/" raw-path))))
+Path portion of url is URI-encoded."
+  (let* ((encoded-portion (url-hexify-string
+                           (if (string-prefix-p "/" raw-path) (substring raw-path 1) raw-path)))
+         (path (concat "/" encoded-portion)))
     (concat hyperdrive--hyper-prefix public-key path)))
 
 (defun hyperdrive--extract-public-key (string)
