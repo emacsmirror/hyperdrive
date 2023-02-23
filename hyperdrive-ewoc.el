@@ -55,9 +55,12 @@
                                       (let ((entry-url (concat directory-url entry-name)))
                                         (make-hyperdrive-entry :url entry-url :name entry-name)))
                                     entry-names))
-                   (ewoc hyperdrive-ewoc))
-        (erase-buffer)
+                   (ewoc hyperdrive-ewoc)
+                   (parent-entry (hyperdrive--entry-parent directory-entry)))
+        (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry)) "..")
+        (push parent-entry entries)
         (setf hyperdrive-entries entries)
+        (erase-buffer)
         (mapc (lambda (entry)
                 (ewoc-enter-last hyperdrive-ewoc entry))
               entries)
@@ -102,7 +105,8 @@ To be used as the pretty-printer for `ewoc-create'."
 (defun hyperdrive-ewoc--format-entry (entry)
   "Return ENTRY formatted as a string."
   (format "%-40s %s"
-          (hyperdrive-entry-name entry)
+          (or (alist-get 'display-name (hyperdrive-entry-etc entry))
+              (hyperdrive-entry-name entry))
           (or (hyperdrive-entry-modified entry) "")))
 
 ;;;; Mode

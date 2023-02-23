@@ -106,7 +106,8 @@
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
   (version nil :documentation "Version of the file (if applicable).")
-  (type nil :documentation "MIME type of the entry."))
+  (type nil :documentation "MIME type of the entry.")
+  (etc nil :documentation "Alist for extra data about the entry."))
 
 ;;;; Configuration
 
@@ -580,15 +581,24 @@ version of the hyperdrive."
   (widen)
   (hyperdrive-load-url hyperdrive--current-url))
 
-(defun hyperdrive--parent-directory (&optional url)
-  "Return parent directory of URL or current hyperdrive file or directory if URL is nil.
+;; (defun hyperdrive--parent-directory (&optional url)
+;;   "Return parent directory of URL or current hyperdrive file or directory if URL is nil.
 
+;; If already at top-level directory, return current directory."
+;;   (let* ((url (or url hyperdrive--current-url))
+;;          (parent-dir (file-name-directory (directory-file-name url))))
+;;     (if (equal parent-dir hyperdrive--hyper-prefix)
+;;         hyperdrive--current-url
+;;       parent-dir)))
+
+(defun hyperdrive--entry-parent (entry)
+  "Return parent directory entry of ENTRY.
 If already at top-level directory, return current directory."
-  (let* ((url (or url hyperdrive--current-url))
-         (parent-dir (file-name-directory (directory-file-name url))))
-    (if (equal parent-dir hyperdrive--hyper-prefix)
-        hyperdrive--current-url
-      parent-dir)))
+  (pcase-let* (((cl-struct hyperdrive-entry url) entry)
+               (parent-url (file-name-directory (directory-file-name url))))
+    (unless (equal parent-dir hyperdrive--hyper-prefix)
+      (make-hyperdrive-entry :name (file-name-nondirectory parent-url)
+                             :url parent-url))))
 
 ;;;; Org links
 
