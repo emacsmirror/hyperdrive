@@ -84,17 +84,17 @@
   "Fill ENTRY's metadata and call THEN."
   ;; TODO(alphapapa): Factor this out of -ewoc.el.
   (hyperdrive-api 'head (hyperdrive-entry-url entry)
-                  :as 'response
-                  :then (lambda (response)
-                          (pcase-let* (((cl-struct plz-response headers) response)
-                                       ((map content-type last-modified) headers))
-                            (when (string-suffix-p "/" (hyperdrive-entry-name entry))
-                              ;; FIXME: Remove when this issue is
-                              ;; solved: https://github.com/RangerMauve/hypercore-fetch/issues/56
-                              (setf content-type "inode/directory"))
-                            (setf (hyperdrive-entry-type entry) content-type
-                                  (hyperdrive-entry-modified entry) last-modified)
-                            (funcall then entry)))))
+    :as 'response
+    :then (lambda (response)
+            (pcase-let* (((cl-struct plz-response headers) response)
+                         ((map content-type last-modified) headers))
+              (when (string-suffix-p "/" (hyperdrive-entry-name entry))
+                ;; FIXME: Remove when this issue is
+                ;; solved: https://github.com/RangerMauve/hypercore-fetch/issues/56
+                (setf content-type "inode/directory"))
+              (setf (hyperdrive-entry-type entry) content-type
+                    (hyperdrive-entry-modified entry) last-modified)
+              (funcall then entry)))))
 
 (defun hyperdrive-ewoc-pp (thing)
   "Pretty-print THING.
