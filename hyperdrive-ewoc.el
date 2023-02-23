@@ -135,10 +135,7 @@ To be used as the pretty-printer for `ewoc-create'."
 (defun hyperdrive-ewoc-find-file (entry)
   "Find ENTRY at point."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
-  (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-               (handler (alist-get type hyperdrive-type-handlers
-                                   #'hyperdrive-handler-default nil #'equal)))
-    (funcall handler entry)))
+  (hyperdrive-open entry))
 
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here

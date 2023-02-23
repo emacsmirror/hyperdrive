@@ -683,6 +683,15 @@ Call `org-*' functions to handle search option if URL contains it."
 \\{hyperdrive-dired-mode-map}"
   (hyperdrive-mode +1))
 
+(defun hyperdrive-open (entry)
+  "Open ENTRY.
+Calls appropriate handler from `hyperdrive-type-handlers'."
+  (interactive (list (make-hyperdrive-entry :url (read-string "URL: "))))
+  (pcase-let* (((cl-struct hyperdrive-entry type) entry)
+               (handler (alist-get type hyperdrive-type-handlers
+                                   #'hyperdrive-handler-default nil #'equal)))
+    (funcall handler entry)))
+
 ;;;; Handlers
 
 (defvar hyperdrive-type-handlers
