@@ -192,8 +192,8 @@ Capture group matches version number.")
 
 (defvar hyperdrive-type-handlers
   '(("inode/directory" . hyperdrive-handler-directory)
-    ("\\`audio/" . hyperdrive-handler-stream)
-    ("\\`video/" . hyperdrive-handler-stream))
+    ("\\`audio/" . hyperdrive-handler-streamable)
+    ("\\`video/" . hyperdrive-handler-streamable))
   "Alist mapping MIME types to handler functions.
 Keys are regexps matched against MIME types.")
 
