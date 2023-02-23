@@ -592,11 +592,11 @@ version of the hyperdrive."
 ;;       parent-dir)))
 
 (defun hyperdrive--entry-parent (entry)
-  "Return parent directory entry of ENTRY.
-If already at top-level directory, return current directory."
+  "Return parent directory entry of ENTRY, or nil.
+If already at top-level directory, return nil."
   (pcase-let* (((cl-struct hyperdrive-entry url) entry)
                (parent-url (file-name-directory (directory-file-name url))))
-    (unless (equal parent-dir hyperdrive--hyper-prefix)
+    (unless (equal parent-url hyperdrive--hyper-prefix)
       (make-hyperdrive-entry :name (file-name-nondirectory parent-url)
                              :url parent-url))))
 

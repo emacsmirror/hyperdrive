@@ -57,8 +57,9 @@
                                     entry-names))
                    (ewoc hyperdrive-ewoc)
                    (parent-entry (hyperdrive--entry-parent directory-entry)))
-        (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry)) "..")
-        (push parent-entry entries)
+        (when parent-entry
+          (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry)) "..")
+          (push parent-entry entries))
         (setf hyperdrive-entries entries)
         (erase-buffer)
         (mapc (lambda (entry)
