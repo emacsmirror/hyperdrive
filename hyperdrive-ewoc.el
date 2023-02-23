@@ -43,6 +43,7 @@
 ;;;###autoload
 (defun hyperdrive-ewoc-list (directory-url)
   "List DIRECTORY-URL in Hyperdrive buffer."
+  ;; FIXME: About half of the time, calls to hyperdrive-ewoc-list fail. Issue with sending many rapid HEAD requests?
   (unless (string-suffix-p "/" directory-url)
     (user-error "URL is not to a directory: %s" directory-url))
   (let* ((directory-entry (make-hyperdrive-entry :url directory-url))
@@ -86,6 +87,7 @@
   (hyperdrive-api 'head (hyperdrive-entry-url entry)
     :as 'response
     :then (lambda (response)
+            ;; TODO: Destructure content-length and etag (version number) from headers
             (pcase-let* (((cl-struct plz-response headers) response)
                          ((map content-type last-modified) headers))
               (when (string-suffix-p "/" (hyperdrive-entry-name entry))
