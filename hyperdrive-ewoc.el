@@ -129,7 +129,7 @@ To be used as the pretty-printer for `ewoc-create'."
   "Major mode for Hyperdrive directory buffers."
   (let ((inhibit-read-only t))
     (erase-buffer))
-  (remove-overlays)
+  (remove-overlays)  ;; What does this do?
   (setf buffer-read-only t
         ;; TODO(alphapapa): Imenu support.
         ;; imenu-create-index-function #'ement-room--imenu-create-index-function
