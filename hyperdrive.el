@@ -188,6 +188,45 @@ Capture group matches version number.")
   "Face used for hyperdrive subdirectories."
   :group 'hyperdrive-dired-faces)
 
+;;;; Handlers
+
+(defvar hyperdrive-type-handlers
+  '(("inode/directory" . hyperdrive-handler-directory)
+    ("\\`audio/" . hyperdrive-handler-stream)
+    ("\\`video/" . hyperdrive-handler-stream))
+  "Alist mapping MIME types to handler functions.
+Keys are regexps matched against MIME types.")
+
+(defun hyperdrive-handler-default (entry)
+  "Load ENTRY's file into an Emacs buffer.
+Default handler."
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (hyperdrive-api 'get url
+      :as (lambda ()
+            (let ((response-buffer (current-buffer))
+                  (inhibit-read-only t))
+              (with-current-buffer (hyperdrive--get-buffer-create entry)
+                (erase-buffer)
+                (insert-buffer-substring response-buffer)
+                ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+                (when hyperdrive-honor-auto-mode-alist
+                  (let ((buffer-file-name (hyperdrive-entry-url entry)))
+                    (set-auto-mode)))
+                ;; TODO: Option to defer showing buffer.
+                (hyperdrive-mode)
+                (pop-to-buffer (current-buffer))))))))
+
+(declare-function hyperdrive-ewoc-list "hyperdrive-ewoc")
+(defun hyperdrive-handler-directory (entry)
+  "Show directory ENTRY."
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (hyperdrive-ewoc-list url)))
+
+(defun hyperdrive-handler-streamable (entry)
+  "Stream ENTRY."
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (mpv-play-url (hyperdrive--convert-to-hyper-gateway-url url))))
+
 ;;;; User interaction helper functions
 
 (defun hyperdrive--completing-read-alias ()
@@ -688,40 +727,12 @@ Call `org-*' functions to handle search option if URL contains it."
 Calls appropriate handler from `hyperdrive-type-handlers'."
   (interactive (list (make-hyperdrive-entry :url (read-string "URL: "))))
   (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-               (handler (alist-get type hyperdrive-type-handlers
-                                   #'hyperdrive-handler-default nil #'equal)))
+               ;; MAYBE: Use alist-get instead of cl-find-if.
+               (handler (or (cdr (cl-find-if (lambda (regexp)
+                                               (string-match-p regexp type))
+                                             hyperdrive-type-handlers :key #'car))
+                            #'hyperdrive-handler-default)))
     (funcall handler entry)))
-
-;;;; Handlers
-
-(defvar hyperdrive-type-handlers
-  '(("inode/directory" . hyperdrive-handler-directory))
-  "Alist mapping MIME types to handler functions.")
-
-(defun hyperdrive-handler-default (entry)
-  "Load ENTRY's file into an Emacs buffer.
-Default handler."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive-api 'get url
-      :as (lambda ()
-            (let ((response-buffer (current-buffer))
-                  (inhibit-read-only t))
-              (with-current-buffer (hyperdrive--get-buffer-create entry)
-                (erase-buffer)
-                (insert-buffer-substring response-buffer)
-                ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-                (when hyperdrive-honor-auto-mode-alist
-                  (let ((buffer-file-name (hyperdrive-entry-url entry)))
-                    (set-auto-mode)))
-                ;; TODO: Option to defer showing buffer.
-                (hyperdrive-mode)
-                (pop-to-buffer (current-buffer))))))))
-
-(declare-function hyperdrive-ewoc-list "hyperdrive-ewoc")
-(defun hyperdrive-handler-directory (entry)
-  "Show directory ENTRY."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive-ewoc-list url)))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
