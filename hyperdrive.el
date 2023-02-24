@@ -105,9 +105,7 @@
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
-  (etag nil
-        ;; FIXME: Docstring.
-        :documentation "")
+  (etag nil :documentation "Entry's Etag.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
@@ -745,7 +743,13 @@ Calls appropriate handler from `hyperdrive-type-handlers'."
                                                (string-match-p regexp type))
                                              hyperdrive-type-handlers :key #'car))
                             #'hyperdrive-handler-default)))
-    (funcall handler entry)))
+    (if type
+        (funcall handler entry)
+      (hyperdrive-fill-entry entry (lambda (entry)
+                                     (if (hyperdrive-entry-type entry)
+                                         (hyperdrive-open entry)
+                                       (error "Entry has no type: %S" entry))))
+      (message "Fetching type..."))))
 
 ;;;; API
 
