@@ -736,7 +736,6 @@ Call `org-*' functions to handle search option if URL contains it."
   "Open ENTRY.
 Calls appropriate handler from `hyperdrive-type-handlers'."
   (interactive (list (make-hyperdrive-entry :url (read-string "URL: "))))
-  ;; TODO: We need to make a HEAD request to set type
   (pcase-let* (((cl-struct hyperdrive-entry type) entry)
                ;; MAYBE: Use alist-get instead of cl-find-if.
                (handler (or (cdr (cl-find-if (lambda (regexp)
