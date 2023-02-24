@@ -252,7 +252,9 @@ select it automatically."
 
 Path portion of url is URI-encoded."
   (let* ((encoded-portion (url-hexify-string
-                           (if (string-prefix-p "/" raw-path) (substring raw-path 1) raw-path)))
+                           (if (string-prefix-p "/" raw-path) (substring raw-path 1) raw-path)
+                           ;; Leave slashes unencoded.  See <https://todo.sr.ht/~ushin/ushin/39>.
+                           (cons ?/ url-unreserved-chars)))
          (path (concat "/" encoded-portion)))
     (concat hyperdrive--hyper-prefix public-key path)))
 
