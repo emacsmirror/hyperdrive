@@ -105,7 +105,9 @@
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
-  (version nil :documentation "Version of the file (if applicable).")
+  (etag nil
+        ;; FIXME: Docstring.
+        :documentation "")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
@@ -744,6 +746,25 @@ Calls appropriate handler from `hyperdrive-type-handlers'."
                                              hyperdrive-type-handlers :key #'car))
                             #'hyperdrive-handler-default)))
     (funcall handler entry)))
+
+;;;; API
+
+(defun hyperdrive-fill-entry (entry &optional then)
+  "Fill ENTRY's metadata and call THEN."
+  (hyperdrive-api 'head (hyperdrive-entry-url entry)
+    :as 'response
+    :then (lambda (response)
+            ;; TODO: Destructure content-length and etag (version number) from headers
+            (pcase-let* (((cl-struct plz-response headers) response)
+                         ((map content-type etag last-modified) headers))
+              (when (string-suffix-p "/" (hyperdrive-entry-name entry))
+                ;; FIXME: Remove when this issue is
+                ;; solved: https://github.com/RangerMauve/hypercore-fetch/issues/56
+                (setf content-type "inode/directory"))
+              (setf (hyperdrive-entry-type entry) content-type
+                    (hyperdrive-entry-etag entry) etag
+                    (hyperdrive-entry-modified entry) last-modified)
+              (funcall then entry)))))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
