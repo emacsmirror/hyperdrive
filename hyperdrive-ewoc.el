@@ -28,7 +28,7 @@
 (require 'cl-lib)
 (require 'ewoc)
 
-(require 'hyperdrive)
+(require 'hyperdrive-lib)
 
 ;;;; Variables
 
@@ -38,53 +38,9 @@
 (defvar-local hyperdrive-entries nil
   "Entries in current hyperdrive buffer.")
 
-;;;; Functions
+(defvar hyperdrive-current-entry)
 
-;;;###autoload
-(defun hyperdrive-ewoc-list (directory-url)
-  "List DIRECTORY-URL in Hyperdrive buffer."
-  ;; FIXME: About half of the time, calls to hyperdrive-ewoc-list fail. Issue with sending many rapid HEAD requests?
-  (unless (string-suffix-p "/" directory-url)
-    (user-error "URL is not to a directory: %s" directory-url))
-  (let* ((directory-entry (make-hyperdrive-entry :url directory-url))
-         (buffer (hyperdrive--get-buffer-create directory-entry)))
-    (with-current-buffer buffer
-      (hyperdrive-ewoc-mode)
-      (pcase-let* ((inhibit-read-only t)
-                   ((cl-struct plz-response headers body)
-                    ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
-                    (hyperdrive-api 'get directory-url :as 'response))
-                   (encoded-entry-names (json-read-from-string body))
-                   (entries (mapcar (lambda (encoded-entry-name)
-                                      (let ((entry-url (concat directory-url encoded-entry-name)))
-                                        (make-hyperdrive-entry :url entry-url
-                                                               :name (url-unhex-string encoded-entry-name))))
-                                    encoded-entry-names))
-                   (ewoc hyperdrive-ewoc)
-                   (parent-url (hyperdrive--parent-url directory-entry)))
-        (ewoc-filter hyperdrive-ewoc #'ignore)
-        (when parent-url
-          (push (make-hyperdrive-entry :url parent-url
-                                       :etc '((display-name . "..")))
-                entries))
-        (setf directory-entry (hyperdrive--fill-entry directory-entry headers)
-              hyperdrive-entries entries)
-        (mapc (lambda (entry)
-                (ewoc-enter-last hyperdrive-ewoc entry))
-              entries)
-        (mapc (lambda (entry)
-                (hyperdrive-fill-entry entry
-                  (lambda (_)
-                    ;; NOTE: Ensure that the buffer's window is selected,
-                    ;; if it has one.  (Workaround a possible bug in EWOC.)
-                    (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                        (with-selected-window buffer-window
-                          ;; TODO: Use `ewoc-invalidate' on individual entries
-                          ;; (maybe later, as performance comes to matter more).
-                          (ewoc-refresh ewoc))
-                      (ewoc-refresh ewoc)))))
-              entries)
-        (pop-to-buffer (current-buffer))))))
+;;;; Functions
 
 (defun hyperdrive-ewoc-pp (thing)
   "Pretty-print THING.
@@ -131,6 +87,8 @@ To be used as the pretty-printer for `ewoc-create'."
         hyperdrive-ewoc (ewoc-create #'hyperdrive-ewoc-pp)))
 
 ;;;; Commands
+
+(declare-function hyperdrive-open "hyperdrive")
 
 (defun hyperdrive-ewoc-find-file (entry)
   "Find ENTRY at point."

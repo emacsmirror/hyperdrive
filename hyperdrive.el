@@ -3,6 +3,7 @@
 ;; Copyright (C) 2022 Joseph Turner <joseph@ushin.org>
 
 ;; Author: Joseph Turner
+;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Joseph Turner <joseph@ushin.org>
 ;; Created: 2022
 ;; Version: 0.0.1
@@ -76,39 +77,18 @@
 (require 'map)
 (require 'rx)
 
-(require 'compat)
 (require 'plz)
 (require 'mpv)
 (require 'persist)
+
+(require 'hyperdrive-lib)
+(require 'hyperdrive-handlers)
 
 (defgroup hyperdrive nil
   "Emacs gateway to the Hypercore network."
   :group 'communication
   :group 'external
   :prefix "hyperdrive-")
-
-;;;; Structs
-
-(cl-defstruct hyperdrive-directory
-  "Represents a directory in a hyperdrive."
-  ;; FIXME: Do we even need this struct?  Or will we need it later?
-  ;; TODO: Add URL slot.
-  (headers nil :documentation "HTTP headers from request.")
-  (modified nil :documentation "Last modified time.")
-  (url nil :documentation "URL returned by gateway.")
-  (entries nil :documentation "Entries in the directory."))
-
-(cl-defstruct hyperdrive-entry
-  "Represents an entry in a hyperdrive."
-  (url nil :documentation "Canonical URL to entry.")
-  (parent-url nil :documentation "URL to entry's parent directory (i.e. does not include name).")
-  (name nil :documentation "Name of entry.")
-  (headers nil :documentation "HTTP headers from request.")
-  (modified nil :documentation "Last modified time.")
-  (size nil :documentation "Size of file.")
-  (etag nil :documentation "Entry's Etag.")
-  (type nil :documentation "MIME type of the entry.")
-  (etc nil :documentation "Alist for extra data about the entry."))
 
 ;;;; Configuration
 
@@ -143,31 +123,11 @@
 
 ;;;; Internal variables
 
-(eval-and-compile
-  (defconst hyperdrive--hyper-prefix "hyper://" "Hyper prefix."))
-
-(defconst hyperdrive--org-link-type "hyper" "Org mode link type.")
-
-(defconst hyperdrive--public-key-re
-  (rx (eval hyperdrive--hyper-prefix) (group (= 52 alphanumeric)))
-  "Regex to match \"hyper://\" + public key.
-
-Capture group matches public key.")
-
-(defconst hyperdrive--version-re
-  (rx (eval hyperdrive--hyper-prefix)
-      (one-or-more alnum)
-      (group "+" (one-or-more num)))
-  "Regex to match \"hyper://\" + public key or alias + version number.
-
-Capture group matches version number.")
-
-(defconst hyperdrive-metadata-filename ".ushin.json"
-  "Location of hyperdrive.el metadata inside hyperdrive.")
-
 (persist-defvar hyperdrive--namespaces nil
                 "List of cons pairs mapping an alias to a public key."
                 hyperdrive-persist-location)
+
+(defconst hyperdrive--org-link-type "hyper" "Org mode link type.")
 
 (defvar-local hyperdrive-current-entry nil
   "Entry for current buffer.")
@@ -190,55 +150,6 @@ Capture group matches version number.")
   "Face used for hyperdrive subdirectories."
   :group 'hyperdrive-dired-faces)
 
-;;;; Handlers
-
-(defvar hyperdrive-type-handlers
-  '(("application/json" . hyperdrive-handler-json)
-    ("\\`audio/" . hyperdrive-handler-streamable)
-    ("\\`video/" . hyperdrive-handler-streamable))
-  "Alist mapping MIME types to handler functions.
-Keys are regexps matched against MIME types.")
-
-(defun hyperdrive-handler-default (entry)
-  "Load ENTRY's file into an Emacs buffer.
-Default handler."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive-api 'get url
-      :as (lambda ()
-            (let ((response-buffer (current-buffer))
-                  (inhibit-read-only t))
-              (with-current-buffer (hyperdrive--get-buffer-create entry)
-                (erase-buffer)
-                (insert-buffer-substring response-buffer)
-                ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-                (when hyperdrive-honor-auto-mode-alist
-                  (let ((buffer-file-name (hyperdrive-entry-url entry)))
-                    (set-auto-mode)))
-                ;; TODO: Option to defer showing buffer.
-                (hyperdrive-mode)
-                (pop-to-buffer (current-buffer))))))))
-
-(declare-function hyperdrive-ewoc-list "hyperdrive-ewoc")
-(defun hyperdrive-handler-directory (entry)
-  "Show directory ENTRY."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive-ewoc-list url)))
-
-(defun hyperdrive-handler-streamable (entry)
-  "Stream ENTRY."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (mpv-play-url (hyperdrive--httpify-url url))))
-
-(defun hyperdrive-handler-json (entry)
-  "Show ENTRY.
-If ENTRY is a directory (if its URL ends in \"/\"), pass to
-`hyperdrive-handler-directory'.  Otherwise, open with
-`hyperdrive-handler-default'."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (if (string-suffix-p "/" url)
-        (hyperdrive-handler-directory entry)
-      (hyperdrive-handler-default entry))))
-
 ;;;; User interaction helper functions
 
 (defun hyperdrive--completing-read-alias ()
@@ -251,136 +162,6 @@ select it automatically."
           (caar hyperdrive--namespaces)
         (completing-read "Alias: " hyperdrive--namespaces nil t))
     (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace"))) ; TODO: Prompt user to create namespace here?
-
-;;;; Helper functions
-
-(defun hyperdrive--public-key-by-alias (alias)
-  "Return public key corresponding to ALIAS in `hyperdrive--namespaces'."
-  (cdr (assoc alias hyperdrive--namespaces)))
-
-(defun hyperdrive--make-hyperdrive-url (public-key raw-path)
-  "Return `hyperdrive--hyper-prefix'-prefixed url from PUBLIC-KEY and RAW-PATH.
-
-Path portion of url is URI-encoded."
-  (let* ((encoded-portion (url-hexify-string
-                           (if (string-prefix-p "/" raw-path) (substring raw-path 1) raw-path)
-                           ;; Leave slashes unencoded.  See <https://todo.sr.ht/~ushin/ushin/39>.
-                           (cons ?/ url-unreserved-chars)))
-         (path (concat "/" encoded-portion)))
-    (concat hyperdrive--hyper-prefix public-key path)))
-
-(defun hyperdrive--extract-public-key (string)
-  "Extract public-key from STRING using `hyperdrive--public-key-re'."
-  (when (string-match hyperdrive--public-key-re string)
-    (match-string 1 string)))
-
-(defun hyperdrive--alias (url)
-  "Return alias corresponding to public key in URL. Otherwise, return URL."
-  (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--namespaces)))
-
-(defun hyperdrive-metadata (url)
-  "Return alist converted from JSON file at
-`hyperdrive-metadata-filename' in hyperdrive for URL."
-  (let ((json-array-type 'list)
-        (url (progn
-               (string-match hyperdrive--public-key-re url)
-               (match-string 0 url))))
-    (hyperdrive-api 'get (concat url "/" hyperdrive-metadata-filename) :as #'json-read)))
-
-(defun hyperdrive--extract-path (string)
-  "Extract path following public-key from STRING."
-  (substring string (+ (length hyperdrive--hyper-prefix)
-                       (length (hyperdrive--extract-public-key string)))))
-
-(defun hyperdrive--add-version-to-url (link version)
-  "Add VERSION number to url from LINK and (optionally) VERSION.
-
-This function returns a url of the form \"hyper://\" + public-key
-+ path or \"hyper://\" + public-key + version number + path,
-while urls from hyper-gateway response headers lack version
-numbers."
-  (concat hyperdrive--hyper-prefix
-          (hyperdrive--extract-public-key link)
-          (and version (concat "+" version))
-          (hyperdrive--extract-path link)))
-
-(defun hyperdrive--headers-extract-url (headers)
-  "Extract url from response HEADERS.
-
-Returned url does not contain version number."
-  (let ((str (alist-get 'link headers)))
-    (when (string-match (rx "<" (group (one-or-more anything)) ">")
-                        str)
-      (match-string 1 str))))
-
-(defun hyperdrive--headers-extract-version (headers)
-  "Extract version number (etag) from response HEADERS.
-
-Version number is of type string"
-  (alist-get 'etag headers))
-
-(defun hyperdrive--directory-p (url)
-  "Return non-nil if url is a directory."
-  (string-match "/$" url))
-
-(defun hyperdrive--streamable-p (headers)
-  "Return non-nil if response HEADERS indicate that the content is
-audio or video which can be streamed with mpv."
-  (string-match (rx (or "audio" "video")) (alist-get 'content-type headers)))
-
-(defun hyperdrive--version-match (url)
-  "Return non-nil if URL contains a version number."
-  (string-match hyperdrive--version-re url))
-
-(defun hyperdrive--format-url (url)
-  "Return human-readable version of URL where the public-key is
-replaced with its local alias or public name.
-
-If no alias or name exists, return URL."
-  (let ((display-name (or
-                       (hyperdrive--alias url)
-                       (alist-get 'name (hyperdrive-metadata url))))
-        (public-key (hyperdrive--extract-public-key url)))
-    (if display-name
-        (replace-regexp-in-string
-         (regexp-quote (concat hyperdrive--hyper-prefix public-key))
-         (concat (substring public-key 0 6) "<" display-name ">" ":")
-         url)
-      url)))
-
-;; TODO: Rename later.
-(defun hyperdrive--get-buffer-create (entry)
-  "Return buffer for ENTRY.
-Names buffer, sets `buffer-file-name' and
-`hyperdrive-current-entry'.
-
-This function helps prevent duplicate `hyperdrive-mode' buffers
-by ensuring that buffer names always use the namespace alias
-corresponding to URL if possible.
-
-In other words, this avoids the situation where a buffer called
-\"foo:/\" and another called \"hyper://<public key for foo>/\"
-both point to the same content."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (with-current-buffer (get-buffer-create (hyperdrive--format-url url))
-      (setq-local hyperdrive-current-entry entry)
-      (current-buffer))))
-
-(cl-defun hyperdrive-api (method url &rest rest)
-  "Make hyperdrive API request.
-Calls `hyperdrive--httpify-url' to convert HYPER-URL starting
-with `hyperdrive--hyper-prefix' to a URL starting with
-\"http://localhost:4973/hyper/\" (assuming that
-`hyper-gateway-port' is \"4973\").
-
-The remaining arguments are passed to `plz', which see."
-  (declare (indent defun))
-  (apply #'plz method (hyperdrive--httpify-url url) rest))
-
-(defun hyperdrive--httpify-url (url)
-  "Return localhost HTTP URL for HYPER-URL."
-  (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
-          (substring url (length hyperdrive--hyper-prefix))))
 
 ;;;; Commands
 
@@ -403,14 +184,14 @@ The remaining arguments are passed to `plz', which see."
   "Return non-nil if hyper-gateway is ready."
   (let (readyp)
     (hyperdrive-api 'get (concat hyperdrive--hyper-prefix "localhost/?key=")
-                    :else (lambda (err)
-                            (unless (and (plz-error-curl-error err)
-                                         ;; "Failed to connect to host."
-                                         (= 7 (car (plz-error-curl-error err))))
-                              ;; Status code 400 is expected when hyper-gateway is running
-                              ;; See https://github.com/RangerMauve/hyper-gateway/issues/3
-                              (when (= 400 (plz-response-status (plz-error-response err)))
-                                (setq readyp t)))))
+      :else (lambda (err)
+              (unless (and (plz-error-curl-error err)
+                           ;; "Failed to connect to host."
+                           (= 7 (car (plz-error-curl-error err))))
+                ;; Status code 400 is expected when hyper-gateway is running
+                ;; See https://github.com/RangerMauve/hyper-gateway/issues/3
+                (when (= 400 (plz-response-status (plz-error-response err)))
+                  (setq readyp t)))))
     readyp))
 
 ;;;###autoload
@@ -485,23 +266,24 @@ The buffer may already be a hyperdrive file, or it may not be."
 ;;   (hyperdrive-save-buffer
 ;;    (hyperdrive--make-hyperdrive-url (hyperdrive--public-key-by-alias alias) path)))
 
-(defun hyperdrive-upload-files (alias relative-dir files)
-  "Upload files from the local filesystem to the hyperdrive for ALIAS.
+;; (defun hyperdrive-upload-files (alias relative-dir files)
+;; TODO: Update this.
+;;   "Upload files from the local filesystem to the hyperdrive for ALIAS.
 
-RELATIVE-DIR is the directory relative to which files in the
-hyperdrive will be inserted.
+;; RELATIVE-DIR is the directory relative to which files in the
+;; hyperdrive will be inserted.
 
-FILES can be either be a list of filepaths (strings) or a
-function which returns a list of filepaths."
-  (let ((file-list
-         (if (functionp files)
-             (funcall files)
-           files)))
-    (dolist (path file-list)
-      (with-temp-buffer
-        (insert-file-contents path)
-        (hyperdrive-save-buffer-by-alias
-         alias (concat "/" (file-relative-name path relative-dir)))))))
+;; FILES can be either be a list of filepaths (strings) or a
+;; function which returns a list of filepaths."
+;;   (let ((file-list
+;;          (if (functionp files)
+;;              (funcall files)
+;;            files)))
+;;     (dolist (path file-list)
+;;       (with-temp-buffer
+;;         (insert-file-contents path)
+;;         (hyperdrive-save-buffer-by-alias
+;;          alias (concat "/" (file-relative-name path relative-dir)))))))
 
 (defun hyperdrive-create-namespace (alias)
   "Create a hyperdrive namespace from an alphanumeric ALIAS.
@@ -514,20 +296,21 @@ same ALIAS does not create a new namespace."
   (let ((public-key (hyperdrive--extract-public-key
                      (plz-response-body
                       (hyperdrive-api 'post (concat hyperdrive--hyper-prefix "localhost/?key=" alias)
-                                      :as 'response)))))
+                        :as 'response)))))
     (cl-pushnew (cons alias public-key) hyperdrive--namespaces :test #'equal)
     (message "%s: %s" alias (hyperdrive--make-hyperdrive-url public-key ""))))
 
-(defun hyperdrive-load-alias (alias)
-  "Load hyperdrive corresponding to ALIAS."
-  (interactive (list (hyperdrive--completing-read-alias)))
-  (hyperdrive--load-url-directory
-   (hyperdrive--make-hyperdrive-url (hyperdrive--public-key-by-alias alias) "")))
+;; (defun hyperdrive-load-alias (alias)
+;;   ;; TODO: Update this.
+;;   "Load hyperdrive corresponding to ALIAS."
+;;   (interactive (list (hyperdrive--completing-read-alias)))
+;;   (hyperdrive--load-url-directory
+;;    (hyperdrive--make-hyperdrive-url (hyperdrive--public-key-by-alias alias) "")))
 
-(defun hyperdrive--load-url-directory (url)
-  "Load directory contents at URL."
-  (let ((json-array-type 'list))
-    (hyperdrive-dired url (hyperdrive-api 'get url :as #'json-read))))
+;; (defun hyperdrive--load-url-directory (url)
+;;   "Load directory contents at URL."
+;;   (let ((json-array-type 'list))
+;;     (hyperdrive-dired url (hyperdrive-api 'get url :as #'json-read))))
 
 ;; (cl-defun hyperdrive-load-url (url)
 ;;   "Load contents at URL.
@@ -556,28 +339,28 @@ same ALIAS does not create a new namespace."
 ;;           (streamablep (hyperdrive--load-url-streamable url))
 ;;           (t (hyperdrive--load-url-buffer url)))))
 
-(defun hyperdrive-download-url-as-file (url filename)
-  "Load contents at URL as a file to store at FILENAME.
+;; (defun hyperdrive-download-url-as-file (url filename)
+;;   "Load contents at URL as a file to store at FILENAME.
 
-URL should begin with `hyperdrive--hyper-prefix'."
-  (interactive
-   (let* ((read-url (read-string "URL: "))
-          (read-filename (read-string "Filename: "
-                                      (expand-file-name
-                                       (file-name-nondirectory
-                                        (hyperdrive--extract-path read-url))
-                                       hyperdrive-download-directory))))
-     (list read-url read-filename)))
-  (hyperdrive-api 'get url :as `(file ,filename)))
+;; URL should begin with `hyperdrive--hyper-prefix'."
+;;   (interactive
+;;    (let* ((read-url (read-string "URL: "))
+;;           (read-filename (read-string "Filename: "
+;;                                       (expand-file-name
+;;                                        (file-name-nondirectory
+;;                                         (hyperdrive--extract-path read-url))
+;;                                        hyperdrive-download-directory))))
+;;      (list read-url read-filename)))
+;;   (hyperdrive-api 'get url :as `(file ,filename)))
 
-(defun hyperdrive-delete-file (url)
-  "Delete file at URL.
+;; (defun hyperdrive-delete-file (url)
+;;   "Delete file at URL.
 
-Note that deleted files can be accessed by checking out a prior
-version of the hyperdrive."
-  (hyperdrive-api 'delete url)
-  (hyperdrive-up-directory url)
-  (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
+;; Note that deleted files can be accessed by checking out a prior
+;; version of the hyperdrive."
+;;   (hyperdrive-api 'delete url)
+;;   (hyperdrive-up-directory url)
+;;   (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
 
 ;; TODO: Update this.
 ;; (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
@@ -586,58 +369,53 @@ version of the hyperdrive."
 ;;   (widen)
 ;;   (hyperdrive-load-url hyperdrive--current-url))
 
-(defun hyperdrive--parent-url (entry)
-  "Return URL of ENTRY's parent.
-If already at top-level directory, return nil."
-  (pcase-let* (((cl-struct hyperdrive-entry url) entry)
-               (parent-url (file-name-directory (directory-file-name url))))
-    (unless (equal parent-url hyperdrive--hyper-prefix)
-      parent-url)))
-
 ;;;; Org links
 
-(defun hyperdrive-store-link ()
-  "Store a link to the hyperdrive file.
+;; TODO: Update Org link functions.
 
-In a `hyperdrive-dired' buffer, store link to file at point. In a
-buffer with `hyperdrive-mode' enabled, store file corresponding
-to current buffer."
-  (cond
-   ((derived-mode-p 'hyperdrive-dired-mode)
-    (setq org-store-link-plist nil)
-    (org-link-store-props :type hyperdrive--org-link-type
-                          :link (hyperdrive-dired-get-filename)))
-   ((bound-and-true-p hyperdrive-mode)
-    (setq org-store-link-plist nil)
-    (org-link-store-props :type hyperdrive--org-link-type
-                          :link hyperdrive--current-url))))
+;; (defun hyperdrive-store-link ()
+;;   "Store a link to the hyperdrive file.
 
-(defun hyperdrive-open-link (url)
-  "Open the hyperdrive URL, pulling latest updates from the network.
+;; In a `hyperdrive-dired' buffer, store link to file at point. In a
+;; buffer with `hyperdrive-mode' enabled, store file corresponding
+;; to current buffer."
+;;   (cond
+;;    ((derived-mode-p 'hyperdrive-dired-mode)
+;;     (setq org-store-link-plist nil)
+;;     (org-link-store-props :type hyperdrive--org-link-type
+;;                           :link (hyperdrive-dired-get-filename)))
+;;    ((bound-and-true-p hyperdrive-mode)
+;;     (setq org-store-link-plist nil)
+;;     (org-link-store-props :type hyperdrive--org-link-type
+;;                           :link hyperdrive--current-url))))
 
-Call `org-*' functions to handle search option if URL contains it."
-  (let* ((url-without-option (car (split-string url "::")))
-         (option (cadr (split-string url "::")))
-         (line (and option
-                    (string-match-p "\\`[0-9]+\\'" option)
-		    (list (string-to-number option))))
-         (search (and (not line) option)))
-    (hyperdrive-load-url (concat "hyper:" url-without-option))
-    (when option
-      (with-current-buffer (hyperdrive--get-buffer-create url)
-        (cond (line (org-goto-line line)
-		    (when (derived-mode-p 'org-mode) (org-fold-reveal)))
-	      (search (condition-case err
-			  (org-link-search search)
-                        (error "%s" (nth 1 err)))))))))
+;; (defun hyperdrive-open-link (url)
+;;   "Open the hyperdrive URL, pulling latest updates from the network.
 
-(org-link-set-parameters hyperdrive--org-link-type :store #'hyperdrive-store-link :follow #'hyperdrive-open-link)
+;; Call `org-*' functions to handle search option if URL contains it."
+;;   (let* ((url-without-option (car (split-string url "::")))
+;;          (option (cadr (split-string url "::")))
+;;          (line (and option
+;;                     (string-match-p "\\`[0-9]+\\'" option)
+;; 		    (list (string-to-number option))))
+;;          (search (and (not line) option)))
+;;     (hyperdrive-load-url (concat "hyper:" url-without-option))
+;;     (when option
+;;       (with-current-buffer (hyperdrive--get-buffer-create url)
+;;         (cond (line (org-goto-line line)
+;; 		    (when (derived-mode-p 'org-mode) (org-fold-reveal)))
+;; 	      (search (condition-case err
+;; 			  (org-link-search search)
+;;                         (error "%s" (nth 1 err)))))))))
+
+;; (org-link-set-parameters hyperdrive--org-link-type :store #'hyperdrive-store-link :follow #'hyperdrive-open-link)
 
 ;;;; hyperdrive-mode
 
 (defun hyperdrive-mode-on ()
   "Activate `hyperdrive-mode'."
-  (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
+  ;; TODO: Update revert buffer function.
+  ;; (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
   (cl-pushnew #'hyperdrive--save-buffer write-contents-functions))
 
 (defun hyperdrive-mode-off ()
@@ -650,85 +428,88 @@ Call `org-*' functions to handle search option if URL contains it."
   :global nil
   :group 'hyperdrive
   :lighter "hyperdrive"
-  :keymap (let ((map (make-sparse-keymap)))
-            (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
-            map)
+  ;; :keymap (let ((map (make-sparse-keymap)))
+  ;;           ;; TODO: Redo this command.
+  ;;           (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
+  ;;           map)
   (if hyperdrive-mode
       (hyperdrive-mode-on)
     (hyperdrive-mode-off)))
 
 ;;;; hyperdrive-dired
 
-(defun hyperdrive-dired (url contents)
-  "Switch to a buffer with CONTENTS of directory at URL."
-  (with-current-buffer (hyperdrive--get-buffer-create url)
-    (setq-local hyperdrive--current-url url)
-    (let ((inhibit-read-only t))
-      (erase-buffer)
-      (hyperdrive-dired-insert-directory-contents url contents))
-    (hyperdrive-dired-mode)
-    (switch-to-buffer (current-buffer))
-    (goto-line 4)))
+;; (defun hyperdrive-dired (url contents)
+;;   "Switch to a buffer with CONTENTS of directory at URL."
+;;   (with-current-buffer (hyperdrive--get-buffer-create url)
+;;     (setq-local hyperdrive--current-url url)
+;;     (let ((inhibit-read-only t))
+;;       (erase-buffer)
+;;       (hyperdrive-dired-insert-directory-contents url contents))
+;;     (hyperdrive-dired-mode)
+;;     (switch-to-buffer (current-buffer))
+;;     (goto-line 4)))
 
-(defun hyperdrive-dired-insert-directory-contents (url contents)
-  "Display hyperdrive directory CONTENTS for URL in a Dired-like interface."
-  (insert "  " (propertize url  'face 'hyperdrive-dired-header) ":" "\n"
-          "  " (propertize "."  'face 'hyperdrive-dired-directory)  "\n"
-          "  " (propertize ".." 'face 'hyperdrive-dired-directory)  "\n")
-  (when (equal (car contents) "$/") ;; Remove special top-level directory: https://github.com/RangerMauve/hypercore-fetch/issues/32
-    (setq contents (cdr contents)))
-  (dolist (item (sort contents #'string<))
-    (if (string-match-p "/$" item)
-        (insert "  " (propertize item 'face 'hyperdrive-dired-directory) "\n")
-      (insert "  " item "\n"))))
+;; (defun hyperdrive-dired-insert-directory-contents (url contents)
+;;   "Display hyperdrive directory CONTENTS for URL in a Dired-like interface."
+;;   (insert "  " (propertize url  'face 'hyperdrive-dired-header) ":" "\n"
+;;           "  " (propertize "."  'face 'hyperdrive-dired-directory)  "\n"
+;;           "  " (propertize ".." 'face 'hyperdrive-dired-directory)  "\n")
+;;   (when (equal (car contents) "$/") ;; Remove special top-level directory: https://github.com/RangerMauve/hypercore-fetch/issues/32
+;;     (setq contents (cdr contents)))
+;;   (dolist (item (sort contents #'string<))
+;;     (if (string-match-p "/$" item)
+;;         (insert "  " (propertize item 'face 'hyperdrive-dired-directory) "\n")
+;;       (insert "  " item "\n"))))
 
-(defun hyperdrive-dired-find-file ()
-  "In `hyperdrive-dired-mode', visit the file or directory named on this line."
-  (interactive)
-  (hyperdrive-load-url (hyperdrive-dired-get-filename)))
+;; (defun hyperdrive-dired-find-file ()
+;;   "In `hyperdrive-dired-mode', visit the file or directory named on this line."
+;;   (interactive)
+;;   (hyperdrive-load-url (hyperdrive-dired-get-filename)))
 
-(defun hyperdrive-dired-get-filename ()
-  "Get the current line's file name, with an error if file does not exist."
-  (interactive)
-  (let ((raw)
-        (filename))
-    (if (= 1 (line-number-at-pos))
-        hyperdrive--current-url
-      (setq raw (string-trim (thing-at-point 'line t)))
-      (setq filename
-            (cond ((equal "."  raw) hyperdrive--current-url)
-                  ((equal ".." raw) (hyperdrive--parent-directory))
-                  (t (concat hyperdrive--current-url raw)))))))
+;; (defun hyperdrive-dired-get-filename ()
+;;   "Get the current line's file name, with an error if file does not exist."
+;;   (interactive)
+;;   (let ((raw)
+;;         (filename))
+;;     (if (= 1 (line-number-at-pos))
+;;         hyperdrive--current-url
+;;       (setq raw (string-trim (thing-at-point 'line t)))
+;;       (setq filename
+;;             (cond ((equal "."  raw) hyperdrive--current-url)
+;;                   ((equal ".." raw) (hyperdrive--parent-directory))
+;;                   (t (concat hyperdrive--current-url raw)))))))
 
-(defun hyperdrive-dired-copy-filename-as-kill ()
-  "Copy hyperdrive url of file at point."
-  (interactive)
-  (let ((string (hyperdrive-dired-get-filename)))
-    (kill-new string)
-    (message "%s" string)))
+;; (defun hyperdrive-dired-copy-filename-as-kill ()
+;;   "Copy hyperdrive url of file at point."
+;;   (interactive)
+;;   (let ((string (hyperdrive-dired-get-filename)))
+;;     (kill-new string)
+;;     (message "%s" string)))
 
-(defun hyperdrive-dired-delete-file ()
-  "Delete file on current line with confirmation."
-  (interactive)
-  (when (y-or-n-p "Delete file? ")
-    (hyperdrive-delete-file (hyperdrive-dired-get-filename))))
+;; (defun hyperdrive-dired-delete-file ()
+;;   "Delete file on current line with confirmation."
+;;   (interactive)
+;;   (when (y-or-n-p "Delete file? ")
+;;     (hyperdrive-delete-file (hyperdrive-dired-get-filename))))
 
-(defvar-keymap hyperdrive-dired-mode-map
-  :parent  special-mode-map
-  :doc "Local keymap for `hyperdrive-dired-mode' buffers."
-  "RET"     #'hyperdrive-dired-find-file
-  "^"       #'hyperdrive-up-directory
-  "w"       #'hyperdrive-dired-copy-filename-as-kill
-  "D"       #'hyperdrive-dired-delete-file)
+;; (defvar-keymap hyperdrive-dired-mode-map
+;;   :parent  special-mode-map
+;;   :doc "Local keymap for `hyperdrive-dired-mode' buffers."
+;;   "RET"     #'hyperdrive-dired-find-file
+;;   "^"       #'hyperdrive-up-directory
+;;   "w"       #'hyperdrive-dired-copy-filename-as-kill
+;;   "D"       #'hyperdrive-dired-delete-file)
 
-(define-derived-mode hyperdrive-dired-mode special-mode "hyperdrive-dired"
-  "Major mode for viewing hyperdrive directories.
-\\{hyperdrive-dired-mode-map}"
-  (hyperdrive-mode +1))
+;; (define-derived-mode hyperdrive-dired-mode special-mode "hyperdrive-dired"
+;;   "Major mode for viewing hyperdrive directories.
+;; \\{hyperdrive-dired-mode-map}"
+;;   (hyperdrive-mode +1))
 
+;;;###autoload
 (defun hyperdrive-open (url)
   "Open hyperdrive URL."
   (interactive (list (read-string "URL: ")))
+  ;; TODO: Ensure gateway is running.
   (hyperdrive-fill-entry (make-hyperdrive-entry :url url)
     (lambda (entry)
       (pcase-let* (((cl-struct hyperdrive-entry type) entry)
@@ -740,26 +521,6 @@ Call `org-*' functions to handle search option if URL contains it."
         (funcall handler entry)))))
 
 ;;;; API
-
-(defun hyperdrive-fill-entry (entry &optional then)
-  "Fill ENTRY's metadata and call THEN."
-  (hyperdrive-api 'head (hyperdrive-entry-url entry)
-    :as 'response
-    :then (lambda (response)
-            (funcall then (hyperdrive--fill-entry entry (plz-response-headers response))))
-    :else (lambda (plz-error)
-            (display-warning 'hyperdrive (format "hyperdrive-fill-entry: error: %S" plz-error)))))
-
-(defun hyperdrive--fill-entry (entry headers)
-  "Fill ENTRY's slot from HEADERS."
-  (pcase-let (((map content-length content-type etag last-modified) headers))
-    (setf (hyperdrive-entry-size entry) (when content-length
-                                          (ignore-errors
-                                            (cl-parse-integer content-length)))
-          (hyperdrive-entry-type entry) content-type
-          (hyperdrive-entry-etag entry) etag
-          (hyperdrive-entry-modified entry) last-modified)
-    entry))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
