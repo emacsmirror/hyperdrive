@@ -69,15 +69,15 @@
               entries)
         (mapc (lambda (entry)
                 (hyperdrive-fill-entry entry
-                                       (lambda (_)
-                                         ;; NOTE: Ensure that the buffer's window is selected,
-                                         ;; if it has one.  (Workaround a possible bug in EWOC.)
-                                         (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                                             (with-selected-window buffer-window
-                                               ;; TODO: Use `ewoc-invalidate' on individual entries
-                                               ;; (maybe later, as performance comes to matter more).
-                                               (ewoc-refresh ewoc))
-                                           (ewoc-refresh ewoc)))))
+                  (lambda (_)
+                    ;; NOTE: Ensure that the buffer's window is selected,
+                    ;; if it has one.  (Workaround a possible bug in EWOC.)
+                    (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                        (with-selected-window buffer-window
+                          ;; TODO: Use `ewoc-invalidate' on individual entries
+                          ;; (maybe later, as performance comes to matter more).
+                          (ewoc-refresh ewoc))
+                      (ewoc-refresh ewoc)))))
               entries)
         (pop-to-buffer (current-buffer))))))
 
