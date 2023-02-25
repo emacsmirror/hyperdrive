@@ -746,7 +746,9 @@ Call `org-*' functions to handle search option if URL contains it."
   (hyperdrive-api 'head (hyperdrive-entry-url entry)
     :as 'response
     :then (lambda (response)
-            (funcall then (hyperdrive--fill-entry entry (plz-response-headers response))))))
+            (funcall then (hyperdrive--fill-entry entry (plz-response-headers response))))
+    :else (lambda (plz-error)
+            (display-warning 'hyperdrive (format "hyperdrive-fill-entry: error: %S" plz-error)))))
 
 (defun hyperdrive--fill-entry (entry headers)
   "Fill ENTRY's slot from HEADERS."
