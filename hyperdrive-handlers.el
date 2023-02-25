@@ -30,6 +30,7 @@
 (defvar hyperdrive-honor-auto-mode-alist)
 (defvar hyperdrive-ewoc)
 (defvar hyperdrive-entries)
+(defvar hyperdrive-timestamp-format)
 
 ;;;; Handlers
 
@@ -83,7 +84,11 @@ Default handler."
                         encoded-entry-names))
                (parent-url (hyperdrive--parent-url directory-entry))
                (ewoc)
-               (header))
+               (header)
+               (timestamp-width
+                (string-width (format-time-string hyperdrive-timestamp-format)))
+               (hyperdrive-timestamp-format-string (format "%%6s  %%%ss  %%s"
+                                                           timestamp-width)))
     (when parent-url
       (push (make-hyperdrive-entry :url parent-url
                                    :etc '((display-name . "..")))

@@ -53,6 +53,8 @@
 
 ;;;; Variables
 
+(defvar hyperdrive-timestamp-format-string nil)
+
 (defvar hyperdrive-hyper-gateway-port)
 (defvar hyperdrive--namespaces)
 

@@ -84,7 +84,7 @@ To be used as the pretty-printer for `ewoc-create'."
                (timestamp (if modified
                               (format-time-string "%x %X" modified)
                             "")))
-    (format "%6s  %29s  %s"
+    (format hyperdrive-timestamp-format-string
             (propertize (or size "")
                         'face 'hyperdrive-size)
             (propertize timestamp

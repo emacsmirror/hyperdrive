@@ -121,6 +121,11 @@
   "Location where `hyperdrive-download-url-as-file' will download files."
   :type '(file :must-match t))
 
+(defcustom hyperdrive-timestamp-format "%x %X"
+  "Format string used for timestamps.
+Passed to `format-time-string', which see."
+  :type 'string)
+
 ;;;; Internal variables
 
 (persist-defvar hyperdrive--namespaces nil
