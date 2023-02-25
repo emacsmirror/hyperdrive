@@ -149,12 +149,13 @@ To be used as the pretty-printer for `ewoc-create'."
   (let ((next-fn (pcase arg
                    ((pred (< 0)) #'ewoc-next)
                    ((pred (> 0)) #'ewoc-prev)))
-        (next-node (ewoc-locate hyperdrive-ewoc))
+        (node (ewoc-locate hyperdrive-ewoc))
+        (i 0)
         target-node)
-    (dotimes (_ arg)
-      (while (setf next-node (funcall next-fn hyperdrive-ewoc next-node))
-        (when next-node
-          (setf target-node next-node))))
+    (while (and (< i arg)
+                (setf node (funcall next-fn hyperdrive-ewoc node)))
+      (setf target-node node)
+      (cl-incf i))
     (when target-node
       (goto-char (ewoc-location target-node)))))
 
