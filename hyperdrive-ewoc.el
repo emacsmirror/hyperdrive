@@ -95,10 +95,14 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-ewoc--format-entry (entry)
   "Return ENTRY formatted as a string."
-  (format "%-40s %s"
-          (or (alist-get 'display-name (hyperdrive-entry-etc entry))
-              (hyperdrive-entry-name entry))
-          (or (hyperdrive-entry-modified entry) "")))
+  (pcase-let* (((cl-struct hyperdrive-entry size) entry)
+               (size (when size
+                       (file-size-human-readable size))))
+    (format "%-40s %-5s %s"
+            (or (alist-get 'display-name (hyperdrive-entry-etc entry))
+                (hyperdrive-entry-name entry))
+            (or size "")
+            (or (hyperdrive-entry-modified entry) ""))))
 
 ;;;; Mode
 
