@@ -43,7 +43,6 @@
 (cl-defstruct hyperdrive-entry
   "Represents an entry in a hyperdrive."
   (url nil :documentation "Canonical URL to entry.")
-  (parent-url nil :documentation "URL to entry's parent directory (i.e. does not include name).")
   (name nil :documentation "Name of entry.")
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
