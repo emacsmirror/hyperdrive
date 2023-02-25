@@ -81,7 +81,8 @@ Default handler."
                             (make-hyperdrive-entry :url entry-url
                                                    :name (url-unhex-string encoded-entry-name))))
                         encoded-entry-names))
-               (parent-url (hyperdrive--parent-url directory-entry)))
+               (parent-url (hyperdrive--parent-url directory-entry))
+               (ewoc))
     (when parent-url
       (push (make-hyperdrive-entry :url parent-url
                                    :etc '((display-name . "..")))
@@ -90,6 +91,7 @@ Default handler."
           hyperdrive-entries entries)
     (with-current-buffer buffer
       (hyperdrive-ewoc-mode)
+      (setf ewoc hyperdrive-ewoc)       ; Bind this for the fill-entry lambda.
       (ewoc-filter hyperdrive-ewoc #'ignore)
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
@@ -99,7 +101,7 @@ Default handler."
                 (lambda (_)
                   ;; NOTE: Ensure that the buffer's window is selected,
                   ;; if it has one.  (Workaround a possible bug in EWOC.)
-                  (if-let ((buffer-window (get-buffer-window (ewoc-buffer hyperdrive-ewoc))))
+                  (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
                       (with-selected-window buffer-window
                         ;; TODO: Use `ewoc-invalidate' on individual entries
                         ;; (maybe later, as performance comes to matter more).
