@@ -145,7 +145,7 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (cl-defun hyperdrive-ewoc-next (&optional (arg 1))
   "Move forward ARG entries."
-  (interactive)
+  (interactive "p")
   (let ((next-fn (pcase arg
                    ((pred (< 0)) #'ewoc-next)
                    ((pred (> 0)) #'ewoc-prev)))
@@ -160,7 +160,7 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (cl-defun hyperdrive-ewoc-previous (&optional (arg 1))
   "Move backward ARG entries."
-  (interactive)
+  (interactive "p")
   (hyperdrive-ewoc-next (- arg)))
 
 (provide 'hyperdrive-ewoc)
