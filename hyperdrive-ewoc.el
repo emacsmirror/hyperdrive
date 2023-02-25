@@ -61,10 +61,11 @@
                                                                :name (url-unhex-string encoded-entry-name))))
                                     encoded-entry-names))
                    (ewoc hyperdrive-ewoc)
-                   (parent-entry (make-hyperdrive-entry :url (hyperdrive--parent-url directory-entry))))
-        (when parent-entry
-          (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry)) "..")
-          (push parent-entry entries))
+                   (parent-url (hyperdrive--parent-url directory-entry)))
+        (when parent-url
+          (push (make-hyperdrive-entry :url parent-url
+                                       :etc '((display-name . "..")))
+                entries))
         (setf directory-entry (hyperdrive--fill-entry directory-entry headers)
               hyperdrive-entries entries)
         (mapc (lambda (entry)
