@@ -192,7 +192,7 @@ Capture group matches version number.")
 ;;;; Handlers
 
 (defvar hyperdrive-type-handlers
-  '(("inode/directory" . hyperdrive-handler-directory)
+  '(("application/json" . hyperdrive-handler-json)
     ("\\`audio/" . hyperdrive-handler-streamable)
     ("\\`video/" . hyperdrive-handler-streamable))
   "Alist mapping MIME types to handler functions.
@@ -227,6 +227,16 @@ Default handler."
   "Stream ENTRY."
   (pcase-let (((cl-struct hyperdrive-entry url) entry))
     (mpv-play-url (hyperdrive--httpify-url url))))
+
+(defun hyperdrive-handler-json (entry)
+  "Show ENTRY.
+If ENTRY is a directory (if its URL ends in \"/\"), pass to
+`hyperdrive-handler-directory'.  Otherwise, open with
+`hyperdrive-handler-default'."
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (if (string-suffix-p "/" url)
+        (hyperdrive-handler-directory entry)
+      (hyperdrive-handler-default entry))))
 
 ;;;; User interaction helper functions
 
@@ -762,10 +772,6 @@ Calls appropriate handler from `hyperdrive-type-handlers'."
             ;; TODO: Destructure content-length and etag (version number) from headers
             (pcase-let* (((cl-struct plz-response headers) response)
                          ((map content-type etag last-modified) headers))
-              (when (string-suffix-p "/" (hyperdrive-entry-name entry))
-                ;; FIXME: Remove when this issue is
-                ;; solved: https://github.com/RangerMauve/hypercore-fetch/issues/56
-                (setf content-type "inode/directory"))
               (setf (hyperdrive-entry-type entry) content-type
                     (hyperdrive-entry-etag entry) etag
                     (hyperdrive-entry-modified entry) last-modified)
