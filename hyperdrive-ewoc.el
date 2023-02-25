@@ -143,26 +143,27 @@ To be used as the pretty-printer for `ewoc-create'."
     (kill-new url)
     (message "%s" url)))
 
-(cl-defun hyperdrive-ewoc-next (&optional (arg 1))
-  "Move forward ARG entries."
+(cl-defun hyperdrive-ewoc-next (&optional (n 1))
+  "Move forward N entries."
   (interactive "p")
-  (let ((next-fn (pcase arg
+  (let ((next-fn (pcase n
                    ((pred (< 0)) #'ewoc-next)
                    ((pred (> 0)) #'ewoc-prev)))
         (node (ewoc-locate hyperdrive-ewoc))
         (i 0)
+        (n (abs n))
         target-node)
-    (while (and (< i arg)
+    (while (and (< i n)
                 (setf node (funcall next-fn hyperdrive-ewoc node)))
       (setf target-node node)
       (cl-incf i))
     (when target-node
       (goto-char (ewoc-location target-node)))))
 
-(cl-defun hyperdrive-ewoc-previous (&optional (arg 1))
-  "Move backward ARG entries."
+(cl-defun hyperdrive-ewoc-previous (&optional (n 1))
+  "Move backward N entries."
   (interactive "p")
-  (hyperdrive-ewoc-next (- arg)))
+  (hyperdrive-ewoc-next (- n)))
 
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here
