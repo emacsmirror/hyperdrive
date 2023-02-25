@@ -78,7 +78,7 @@ will prompt you for an alias for your namespace. This can be anything
 you want, so long it only contains numbers and letters.
 
 Now, put something in your hyperdrive with `M-x
-hyperdrive-save-buffer`, which will prompt you for the path where the
+hyperdrive-write-buffer`, which will prompt you for the path where the
 current buffer should be stored inside your hyperdrive.
 
 Copy the public key (unique identifier) of the hyperdrive by running
@@ -86,8 +86,8 @@ Copy the public key (unique identifier) of the hyperdrive by running
 
 Send the public key to a friend who has installed `hyperdrive.el` and
 run `M-x hyperdrive-start-gateway`. On your friend's machine, run `M-x
-hyperdrive-load-url` and paste in the public key. Your shared files
-are now on your friend's machine!
+hyperdrive-open` and paste in the public key. Your shared files are
+now on your friend's machine!
 
 **Be careful what you publish!** Anyone with your public key can
 download those shared files from you, your friend, or anyone else who
@@ -109,12 +109,12 @@ own hyperdrives with `M-x hyperdrive-load-alias`. Other people cannot
 load one of your hyperdrives by its `alias`; they will need its public
 key, which you can get with `M-x hyperdrive-public-key`.
 
-### Save a buffer to a hyperdrive
+### Write a buffer to a hyperdrive
 
-You can save a buffer to a hyperdrive with `hyperdrive-save-buffer`,
+You can write a buffer to a hyperdrive with `hyperdrive-write-buffer`,
 which will prompt you for an `alias` and `path` if the current buffer
 is not already stored in your hyperdrive. If you are editing an
-existing hyperdrive "file", `hyperdrive-save-buffer` will silently
+existing hyperdrive "file", `hyperdrive-write-buffer` will silently
 update the current hyperdrive url with the new content.
 
 ### Load a hyperdrive
@@ -123,7 +123,7 @@ update the current hyperdrive url with the new content.
 hyperdrives by prompting you for its `alias`.
 
 To load someone else's hyperdrive or a particular location inside of a
-hyperdrive, run `M-x hyperdrive-load-url` and paste in the URL.
+hyperdrive, run `M-x hyperdrive-open` and paste in the URL.
 
 ### Upload files from your filesystem
 
