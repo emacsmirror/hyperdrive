@@ -81,14 +81,14 @@ To be used as the pretty-printer for `ewoc-create'."
                (face (if (hyperdrive--entry-directory-p entry)
                          'hyperdrive-directory
                        'default)))
-    (format "%-40s  %-6s  %s"
-            (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
-                            (hyperdrive-entry-name entry))
-                        'face face)
+    (format "%6s  %29s  %s"
             (propertize (or size "")
                         'face 'hyperdrive-size)
             (propertize (or (hyperdrive-entry-modified entry) "")
-                        'face 'hyperdrive-timestamp))))
+                        'face 'hyperdrive-timestamp)
+            (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
+                            (hyperdrive-entry-name entry))
+                        'face face))))
 
 ;;;; Mode
 
