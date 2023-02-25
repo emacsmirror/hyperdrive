@@ -98,7 +98,7 @@ To be used as the pretty-printer for `ewoc-create'."
   (pcase-let* (((cl-struct hyperdrive-entry size) entry)
                (size (when size
                        (file-size-human-readable size))))
-    (format "%-40s %-5s %s"
+    (format "%-40s  %-6s  %s"
             (or (alist-get 'display-name (hyperdrive-entry-etc entry))
                 (hyperdrive-entry-name entry))
             (or size "")
