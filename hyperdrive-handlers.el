@@ -84,11 +84,7 @@ Default handler."
                         encoded-entry-names))
                (parent-url (hyperdrive--parent-url directory-entry))
                (ewoc)
-               (header)
-               (timestamp-width
-                (string-width (format-time-string hyperdrive-timestamp-format)))
-               ;; TODO: Move this to a defcustom setter.
-               (hyperdrive-timestamp-format-string (format "%%%ss" timestamp-width)))
+               (header))
     (when parent-url
       (push (make-hyperdrive-entry :url parent-url
                                    :etc '((display-name . "..")))
@@ -112,13 +108,12 @@ Default handler."
                 (lambda (_)
                   ;; NOTE: Ensure that the buffer's window is selected,
                   ;; if it has one.  (Workaround a possible bug in EWOC.)
-                  (let ((hyperdrive-timestamp-format-string hyperdrive-timestamp-format-string))
-                    (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                        (with-selected-window buffer-window
-                          ;; TODO: Use `ewoc-invalidate' on individual entries
-                          ;; (maybe later, as performance comes to matter more).
-                          (ewoc-refresh hyperdrive-ewoc))
-                      (ewoc-refresh hyperdrive-ewoc))))))
+                  (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                      (with-selected-window buffer-window
+                        ;; TODO: Use `ewoc-invalidate' on individual entries
+                        ;; (maybe later, as performance comes to matter more).
+                        (ewoc-refresh hyperdrive-ewoc))
+                    (ewoc-refresh hyperdrive-ewoc)))))
             entries)
       (pop-to-buffer (current-buffer)))))
 

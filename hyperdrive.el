@@ -124,7 +124,12 @@
 (defcustom hyperdrive-timestamp-format "%x %X"
   "Format string used for timestamps.
 Passed to `format-time-string', which see."
-  :type 'string)
+  :type 'string
+  :set (lambda (option value)
+         (set option value)
+         (setf hyperdrive-timestamp-format-string
+               (format "%%%ss"
+                       (string-width (format-time-string value))))))
 
 ;;;; Internal variables
 
