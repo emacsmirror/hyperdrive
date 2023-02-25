@@ -56,11 +56,11 @@
   "Subdirectories.")
 
 (defface hyperdrive-size
-  '((t (:inherit font-lock-comment-face)))
+  '((t (:inherit font-lock-doc-face)))
   "Size of entries.")
 
 (defface hyperdrive-timestamp
-  '((t (:inherit font-lock-string-face)))
+  '((t (:inherit default)))
   "Entry timestamp.")
 
 ;;;; Functions
@@ -87,7 +87,8 @@ To be used as the pretty-printer for `ewoc-create'."
                         'face face)
             (propertize (or size "")
                         'face 'hyperdrive-size)
-            (or (hyperdrive-entry-modified entry) ""))))
+            (propertize (or (hyperdrive-entry-modified entry) "")
+                        'face 'hyperdrive-timestamp))))
 
 ;;;; Mode
 
