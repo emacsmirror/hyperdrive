@@ -102,8 +102,8 @@ To be used as the pretty-printer for `ewoc-create'."
   :parent  special-mode-map
   :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
   "RET"     #'hyperdrive-ewoc-find-file
+  "^"       #'hyperdrive-ewoc-up-directory
   ;; TODO(alphapapa): Port these commands.
-  ;; "^"       #'hyperdrive-up-directory
   ;; "w"       #'hyperdrive-dired-copy-filename-as-kill
   ;; "D"       #'hyperdrive-dired-delete-file
   )
@@ -127,6 +127,13 @@ To be used as the pretty-printer for `ewoc-create'."
   "Find ENTRY at point."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
   (hyperdrive-open entry))
+
+(defun hyperdrive-ewoc-up-directory ()
+  "Go up to parent directory."
+  (interactive)
+  (if-let ((parent-entry (hyperdrive--entry-parent hyperdrive-current-entry)))
+      (hyperdrive-open parent-entry)
+    (user-error "At root directory")))
 
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here
