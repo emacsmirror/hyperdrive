@@ -26,6 +26,7 @@
 ;;;; Requirements
 
 (require 'cl-lib)
+(require 'dired)  ; For faces.
 (require 'ewoc)
 
 (require 'hyperdrive-lib)
@@ -39,6 +40,28 @@
   "Entries in current hyperdrive buffer.")
 
 (defvar hyperdrive-current-entry)
+
+;;;; Faces
+
+(defgroup hyperdrive-faces nil
+  "Faces shown in directory listings."
+  :group 'hyperdrive)
+
+(defface hyperdrive-header
+  '((t (:inherit dired-header)))
+  "Directory path.")
+
+(defface hyperdrive-directory
+  '((t (:inherit dired-directory)))
+  "Subdirectories.")
+
+(defface hyperdrive-size
+  '((t (:inherit font-lock-comment-face)))
+  "Size of entries.")
+
+(defface hyperdrive-timestamp
+  '((t (:inherit font-lock-string-face)))
+  "Entry timestamp.")
 
 ;;;; Functions
 
@@ -54,11 +77,16 @@ To be used as the pretty-printer for `ewoc-create'."
   "Return ENTRY formatted as a string."
   (pcase-let* (((cl-struct hyperdrive-entry size) entry)
                (size (when size
-                       (file-size-human-readable size))))
+                       (file-size-human-readable size)))
+               (face (if (hyperdrive--entry-directory-p entry)
+                         'hyperdrive-directory
+                       'default)))
     (format "%-40s  %-6s  %s"
-            (or (alist-get 'display-name (hyperdrive-entry-etc entry))
-                (hyperdrive-entry-name entry))
-            (or size "")
+            (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
+                            (hyperdrive-entry-name entry))
+                        'face face)
+            (propertize (or size "")
+                        'face 'hyperdrive-size)
             (or (hyperdrive-entry-modified entry) ""))))
 
 ;;;; Mode

@@ -228,9 +228,9 @@ Returned url does not contain version number."
 Version number is of type string"
   (alist-get 'etag headers))
 
-(defun hyperdrive--directory-p (url)
-  "Return non-nil if url is a directory."
-  (string-match "/$" url))
+(defun hyperdrive--entry-directory-p (entry)
+  "Return non-nil if ENTRY is a directory."
+  (string-suffix-p "/" (hyperdrive-entry-url entry)))
 
 (defun hyperdrive--streamable-p (headers)
   "Return non-nil if response HEADERS indicate that the content is

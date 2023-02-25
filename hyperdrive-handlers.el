@@ -120,8 +120,8 @@ Default handler."
 If ENTRY is a directory (if its URL ends in \"/\"), pass to
 `hyperdrive-handler-directory'.  Otherwise, open with
 `hyperdrive-handler-default'."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (if (string-suffix-p "/" url)
+  (pcase-let (((cl-struct hyperdrive-entry) entry))
+    (if (hyperdrive--entry-directory-p entry)
         (hyperdrive-handler-directory entry)
       (hyperdrive-handler-default entry))))
 

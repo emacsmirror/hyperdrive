@@ -133,23 +133,6 @@
   "Entry for current buffer.")
 (put 'hyperdrive-current-entry 'permanent-local t)
 
-;;;; Faces
-
-(defgroup hyperdrive-dired-faces nil
-  "Faces used by hyperdrive dired."
-  :group 'faces
-  :prefix "hyperdrive-dired-")
-
-(defface hyperdrive-dired-header
-  '((t (:inherit font-lock-type-face)))
-  "Face used for hyperdrive directory headers."
-  :group 'hyperdrive-dired-faces)
-
-(defface hyperdrive-dired-directory
-  '((t (:inherit font-lock-function-name-face)))
-  "Face used for hyperdrive subdirectories."
-  :group 'hyperdrive-dired-faces)
-
 ;;;; User interaction helper functions
 
 (defun hyperdrive--completing-read-alias ()
@@ -437,17 +420,6 @@ same ALIAS does not create a new namespace."
     (hyperdrive-mode-off)))
 
 ;;;; hyperdrive-dired
-
-;; (defun hyperdrive-dired (url contents)
-;;   "Switch to a buffer with CONTENTS of directory at URL."
-;;   (with-current-buffer (hyperdrive--get-buffer-create url)
-;;     (setq-local hyperdrive--current-url url)
-;;     (let ((inhibit-read-only t))
-;;       (erase-buffer)
-;;       (hyperdrive-dired-insert-directory-contents url contents))
-;;     (hyperdrive-dired-mode)
-;;     (switch-to-buffer (current-buffer))
-;;     (goto-line 4)))
 
 ;; (defun hyperdrive-dired-insert-directory-contents (url contents)
 ;;   "Display hyperdrive directory CONTENTS for URL in a Dired-like interface."
