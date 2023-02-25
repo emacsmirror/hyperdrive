@@ -97,10 +97,12 @@ To be used as the pretty-printer for `ewoc-create'."
   :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
   "RET"     #'hyperdrive-ewoc-find-file
   "^"       #'hyperdrive-ewoc-up-directory
+  "w"       #'hyperdrive-ewoc-copy-filename-as-kill
   ;; TODO(alphapapa): Port these commands.
-  ;; "w"       #'hyperdrive-dired-copy-filename-as-kill
   ;; "D"       #'hyperdrive-dired-delete-file
   )
+
+(declare-function hyperdrive-revert-buffer "hyperdrive")
 
 (define-derived-mode hyperdrive-ewoc-mode fundamental-mode
   `("Hyperdrive-EWOC"
@@ -131,6 +133,13 @@ To be used as the pretty-printer for `ewoc-create'."
   (if-let ((parent-url (hyperdrive--parent-url hyperdrive-current-entry)))
       (hyperdrive-open parent-url)
     (user-error "At root directory")))
+
+(defun hyperdrive-ewoc-copy-filename-as-kill (entry)
+  "Copy URL of file at point into the kill ring."
+  (interactive (list (ewoc-data (ewoc-location hyperdrive-ewoc))))
+  (let ((url (hyperdrive-entry-url entry)))
+    (kill-new url)
+    (message "%s" url)))
 
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here
