@@ -75,16 +75,19 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-ewoc--format-entry (entry)
   "Return ENTRY formatted as a string."
-  (pcase-let* (((cl-struct hyperdrive-entry size) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry size modified) entry)
                (size (when size
                        (file-size-human-readable size)))
                (face (if (hyperdrive--entry-directory-p entry)
                          'hyperdrive-directory
-                       'default)))
+                       'default))
+               (timestamp (if modified
+                              (format-time-string "%x %X" modified)
+                            "")))
     (format "%6s  %29s  %s"
             (propertize (or size "")
                         'face 'hyperdrive-size)
-            (propertize (or (hyperdrive-entry-modified entry) "")
+            (propertize timestamp
                         'face 'hyperdrive-timestamp)
             (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
                             (hyperdrive-entry-name entry))

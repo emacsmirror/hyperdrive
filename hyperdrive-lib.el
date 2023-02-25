@@ -134,6 +134,8 @@ If no alias or name exists, return URL."
 (defun hyperdrive--fill-entry (entry headers)
   "Fill ENTRY's slot from HEADERS."
   (pcase-let (((map content-length content-type etag last-modified) headers))
+    (when last-modified
+      (setf last-modified (encode-time (parse-time-string last-modified))))
     (setf (hyperdrive-entry-size entry) (when content-length
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
