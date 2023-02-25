@@ -62,6 +62,7 @@
                                     encoded-entry-names))
                    (ewoc hyperdrive-ewoc)
                    (parent-url (hyperdrive--parent-url directory-entry)))
+        (ewoc-filter hyperdrive-ewoc #'ignore)
         (when parent-url
           (push (make-hyperdrive-entry :url parent-url
                                        :etc '((display-name . "..")))
