@@ -746,7 +746,6 @@ Call `org-*' functions to handle search option if URL contains it."
   (hyperdrive-api 'head (hyperdrive-entry-url entry)
     :as 'response
     :then (lambda (response)
-            ;; TODO: Destructure content-length and etag (version number) from headers
             (funcall then (hyperdrive--fill-entry entry (plz-response-headers response))))))
 
 (defun hyperdrive--fill-entry (entry headers)
