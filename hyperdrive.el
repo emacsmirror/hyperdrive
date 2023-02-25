@@ -71,11 +71,12 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+(require 'json)
+(require 'map)
+(require 'rx)
+
 (require 'compat)
-(eval-when-compile
-  (require 'cl-lib)
-  (require 'rx)
-  (require 'json))
 (require 'plz)
 (require 'mpv)
 (require 'persist)
@@ -770,12 +771,11 @@ Calls appropriate handler from `hyperdrive-type-handlers'."
     :as 'response
     :then (lambda (response)
             ;; TODO: Destructure content-length and etag (version number) from headers
-            (funcall then (hyperdrive--fill-entry entry)))))
+            (funcall then (hyperdrive--fill-entry entry (plz-response-headers response))))))
 
 (defun hyperdrive--fill-entry (entry headers)
   "Fill ENTRY's slot from HEADERS."
-  (pcase-let* (((cl-struct plz-response headers) response)
-               ((map content-length content-type etag last-modified) headers))
+  (pcase-let (((map content-length content-type etag last-modified) headers))
     (setf (hyperdrive-entry-size entry) content-length
           (hyperdrive-entry-type entry) content-type
           (hyperdrive-entry-etag entry) etag
