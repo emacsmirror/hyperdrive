@@ -110,6 +110,7 @@ To be used as the pretty-printer for `ewoc-create'."
   (let ((inhibit-read-only t))
     (erase-buffer))
   (hl-line-mode)
+  (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
   (setf buffer-read-only t
         ;; TODO(alphapapa): Imenu support.
         ;; imenu-create-index-function #'ement-room--imenu-create-index-function

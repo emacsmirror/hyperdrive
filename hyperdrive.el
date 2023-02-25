@@ -345,12 +345,9 @@ same ALIAS does not create a new namespace."
 ;;   (hyperdrive-up-directory url)
 ;;   (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
 
-;; TODO: Update this.
-;; (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
-;;   ;; FIXME: UPDATE.
-;;   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
-;;   (widen)
-;;   (hyperdrive-load-url hyperdrive--current-url))
+(defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
+  "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
+  (hyperdrive-open (hyperdrive-entry-url hyperdrive-current-entry)))
 
 ;;;; Org links
 
@@ -397,8 +394,7 @@ same ALIAS does not create a new namespace."
 
 (defun hyperdrive-mode-on ()
   "Activate `hyperdrive-mode'."
-  ;; TODO: Update revert buffer function.
-  ;; (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
+  (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
   (cl-pushnew #'hyperdrive--save-buffer write-contents-functions))
 
 (defun hyperdrive-mode-off ()
