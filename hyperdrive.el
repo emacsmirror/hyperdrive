@@ -592,7 +592,7 @@ If already at top-level directory, return nil."
   (pcase-let* (((cl-struct hyperdrive-entry url) entry)
                (parent-url (file-name-directory (directory-file-name url))))
     (unless (equal parent-url hyperdrive--hyper-prefix)
-      (file-name-nondirectory parent-url))))
+      parent-url)))
 
 ;;;; Org links
 
