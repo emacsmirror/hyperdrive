@@ -751,7 +751,9 @@ Call `org-*' functions to handle search option if URL contains it."
 (defun hyperdrive--fill-entry (entry headers)
   "Fill ENTRY's slot from HEADERS."
   (pcase-let (((map content-length content-type etag last-modified) headers))
-    (setf (hyperdrive-entry-size entry) content-length
+    (setf (hyperdrive-entry-size entry) (when content-length
+                                          (ignore-errors
+                                            (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
           (hyperdrive-entry-etag entry) etag
           (hyperdrive-entry-modified entry) last-modified)
