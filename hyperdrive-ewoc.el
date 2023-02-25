@@ -98,6 +98,8 @@ To be used as the pretty-printer for `ewoc-create'."
   "RET"     #'hyperdrive-ewoc-find-file
   "^"       #'hyperdrive-ewoc-up-directory
   "w"       #'hyperdrive-ewoc-copy-filename-as-kill
+  "n" #'hyperdrive-ewoc-next
+  "p" #'hyperdrive-ewoc-previous
   ;; TODO(alphapapa): Port these commands.
   ;; "D"       #'hyperdrive-dired-delete-file
   )
@@ -140,6 +142,25 @@ To be used as the pretty-printer for `ewoc-create'."
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (message "%s" url)))
+
+(cl-defun hyperdrive-ewoc-next (&optional (arg 1))
+  "Move forward ARG entries."
+  (interactive)
+  (let ((next-fn (pcase arg
+                   ((pred (< 0)) #'ewoc-next)
+                   ((pred (> 0)) #'ewoc-prev)))
+        target-node next-node)
+    (dotimes (_ arg)
+      (while (setf next-node (funcall next-fn hyperdrive-ewoc (ewoc-locate hyperdrive-ewoc)))
+        (when next-node
+          (setf target-node next-node))))
+    (when target-node
+      (goto-char (ewoc-location target-node)))))
+
+(cl-defun hyperdrive-ewoc-previous (&optional (arg 1))
+  "Move backward ARG entries."
+  (interactive)
+  (hyperdrive-ewoc-next (- arg)))
 
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here
