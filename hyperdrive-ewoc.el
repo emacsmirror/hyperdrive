@@ -61,7 +61,7 @@
                                                                :name (url-unhex-string encoded-entry-name))))
                                     encoded-entry-names))
                    (ewoc hyperdrive-ewoc)
-                   (parent-entry (hyperdrive--entry-parent directory-entry)))
+                   (parent-entry (make-hyperdrive-entry :url (hyperdrive--parent-url directory-entry))))
         (when parent-entry
           (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry)) "..")
           (push parent-entry entries))
@@ -129,13 +129,13 @@ To be used as the pretty-printer for `ewoc-create'."
 (defun hyperdrive-ewoc-find-file (entry)
   "Find ENTRY at point."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
-  (hyperdrive-open entry))
+  (hyperdrive-open (hyperdrive-entry-url entry)))
 
 (defun hyperdrive-ewoc-up-directory ()
   "Go up to parent directory."
   (interactive)
-  (if-let ((parent-entry (hyperdrive--entry-parent hyperdrive-current-entry)))
-      (hyperdrive-open parent-entry)
+  (if-let ((parent-url (hyperdrive--parent-url hyperdrive-current-entry)))
+      (hyperdrive-open parent-url)
     (user-error "At root directory")))
 
 (provide 'hyperdrive-ewoc)

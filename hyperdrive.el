@@ -579,39 +579,20 @@ version of the hyperdrive."
   (hyperdrive-up-directory url)
   (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
 
-(defun hyperdrive-up-directory (&optional url)
-  "Visit parent directory of current hyperdrive file or directory."
-  (interactive)
-  (let ((parent-dir (hyperdrive--parent-directory url)))
-    (condition-case err
-        (hyperdrive--load-url-directory parent-dir)
-      (plz-http-error
-       (hyperdrive-up-directory parent-dir)))))
+;; TODO: Update this.
+;; (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
+;;   ;; FIXME: UPDATE.
+;;   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
+;;   (widen)
+;;   (hyperdrive-load-url hyperdrive--current-url))
 
-(defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
-  ;; FIXME: UPDATE.
-  "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
-  (widen)
-  (hyperdrive-load-url hyperdrive--current-url))
-
-;; (defun hyperdrive--parent-directory (&optional url)
-;;   "Return parent directory of URL or current hyperdrive file or directory if URL is nil.
-
-;; If already at top-level directory, return current directory."
-;;   (let* ((url (or url hyperdrive--current-url))
-;;          (parent-dir (file-name-directory (directory-file-name url))))
-;;     (if (equal parent-dir hyperdrive--hyper-prefix)
-;;         hyperdrive--current-url
-;;       parent-dir)))
-
-(defun hyperdrive--entry-parent (entry)
-  "Return parent directory entry of ENTRY, or nil.
+(defun hyperdrive--parent-url (entry)
+  "Return URL of ENTRY's parent.
 If already at top-level directory, return nil."
   (pcase-let* (((cl-struct hyperdrive-entry url) entry)
                (parent-url (file-name-directory (directory-file-name url))))
     (unless (equal parent-url hyperdrive--hyper-prefix)
-      (make-hyperdrive-entry :name (file-name-nondirectory parent-url)
-                             :url parent-url))))
+      (file-name-nondirectory parent-url))))
 
 ;;;; Org links
 
@@ -745,23 +726,18 @@ Call `org-*' functions to handle search option if URL contains it."
 \\{hyperdrive-dired-mode-map}"
   (hyperdrive-mode +1))
 
-(defun hyperdrive-open (entry)
-  "Open ENTRY.
-Calls appropriate handler from `hyperdrive-type-handlers'."
-  (interactive (list (make-hyperdrive-entry :url (read-string "URL: "))))
-  (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-               ;; MAYBE: Use alist-get instead of cl-find-if.
-               (handler (or (cdr (cl-find-if (lambda (regexp)
-                                               (string-match-p regexp type))
-                                             hyperdrive-type-handlers :key #'car))
-                            #'hyperdrive-handler-default)))
-    (if type
-        (funcall handler entry)
-      (hyperdrive-fill-entry entry (lambda (entry)
-                                     (if (hyperdrive-entry-type entry)
-                                         (hyperdrive-open entry)
-                                       (error "Entry has no type: %S" entry))))
-      (message "Fetching type..."))))
+(defun hyperdrive-open (url)
+  "Open hyperdrive URL."
+  (interactive (list (read-string "URL: ")))
+  (hyperdrive-fill-entry (make-hyperdrive-entry :url url)
+    (lambda (entry)
+      (pcase-let* (((cl-struct hyperdrive-entry type) entry)
+                   ;; MAYBE: Use alist-get instead of cl-find-if.
+                   (handler (or (cdr (cl-find-if (lambda (regexp)
+                                                   (string-match-p regexp type))
+                                                 hyperdrive-type-handlers :key #'car))
+                                #'hyperdrive-handler-default)))
+        (funcall handler entry)))))
 
 ;;;; API
 
