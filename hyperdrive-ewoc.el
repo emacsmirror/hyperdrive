@@ -51,7 +51,10 @@
     (with-current-buffer buffer
       (hyperdrive-ewoc-mode)
       (pcase-let* ((inhibit-read-only t)
-                   (encoded-entry-names (hyperdrive-api 'get directory-url :as #'json-read))
+                   ((cl-struct plz-response headers body)
+                    ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
+                    (hyperdrive-api 'get directory-url :as 'response))
+                   (encoded-entry-names (json-read-from-string body))
                    (entries (mapcar (lambda (encoded-entry-name)
                                       (let ((entry-url (concat directory-url encoded-entry-name)))
                                         (make-hyperdrive-entry :url entry-url
@@ -62,8 +65,8 @@
         (when parent-entry
           (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry)) "..")
           (push parent-entry entries))
-        (setf hyperdrive-entries entries)
-        (erase-buffer)
+        (setf directory-entry (hyperdrive--fill-entry directory-entry headers)
+              hyperdrive-entries entries)
         (mapc (lambda (entry)
                 (ewoc-enter-last hyperdrive-ewoc entry))
               entries)

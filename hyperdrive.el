@@ -770,12 +770,17 @@ Calls appropriate handler from `hyperdrive-type-handlers'."
     :as 'response
     :then (lambda (response)
             ;; TODO: Destructure content-length and etag (version number) from headers
-            (pcase-let* (((cl-struct plz-response headers) response)
-                         ((map content-type etag last-modified) headers))
-              (setf (hyperdrive-entry-type entry) content-type
-                    (hyperdrive-entry-etag entry) etag
-                    (hyperdrive-entry-modified entry) last-modified)
-              (funcall then entry)))))
+            (funcall then (hyperdrive--fill-entry entry)))))
+
+(defun hyperdrive--fill-entry (entry headers)
+  "Fill ENTRY's slot from HEADERS."
+  (pcase-let* (((cl-struct plz-response headers) response)
+               ((map content-length content-type etag last-modified) headers))
+    (setf (hyperdrive-entry-size entry) content-length
+          (hyperdrive-entry-type entry) content-type
+          (hyperdrive-entry-etag entry) etag
+          (hyperdrive-entry-modified entry) last-modified)
+    entry))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
