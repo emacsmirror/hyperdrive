@@ -63,12 +63,12 @@ Default handler."
 
 (declare-function hyperdrive-ewoc-mode "hyperdrive-ewoc")
 
-(defun hyperdrive-handler-directory (entry)
+(defun hyperdrive-handler-directory (directory-entry)
   "Show directory ENTRY."
+  ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; FIXME: About half of the time, calls to hyperdrive-ewoc-list
   ;; fail. Issue with sending many rapid HEAD requests?
-  (pcase-let* (((cl-struct hyperdrive-entry url) entry)
-               (directory-entry (make-hyperdrive-entry :url url))
+  (pcase-let* (((cl-struct hyperdrive-entry url) directory-entry)
                (buffer (hyperdrive--get-buffer-create directory-entry))
                (inhibit-read-only t)
                ((cl-struct plz-response headers body)
@@ -82,17 +82,22 @@ Default handler."
                                                    :name (url-unhex-string encoded-entry-name))))
                         encoded-entry-names))
                (parent-url (hyperdrive--parent-url directory-entry))
-               (ewoc))
+               (ewoc)
+               (header))
     (when parent-url
       (push (make-hyperdrive-entry :url parent-url
                                    :etc '((display-name . "..")))
             entries))
     (setf directory-entry (hyperdrive--fill-entry directory-entry headers)
-          hyperdrive-entries entries)
+          hyperdrive-entries entries
+          header (format "%s (%s)"
+                         (hyperdrive--format-url url)
+                         (hyperdrive-entry-etag directory-entry)))
     (with-current-buffer buffer
       (hyperdrive-ewoc-mode)
-      (setf ewoc hyperdrive-ewoc)       ; Bind this for the fill-entry lambda.
+      (setf ewoc hyperdrive-ewoc) ; Bind this for the fill-entry lambda.
       (ewoc-filter hyperdrive-ewoc #'ignore)
+      (ewoc-set-hf hyperdrive-ewoc header "")
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
