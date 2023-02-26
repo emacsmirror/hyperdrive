@@ -357,7 +357,7 @@ same ALIAS does not create a new namespace."
                          (hyperdrive-open (hyperdrive--parent url))) )
                   (_ (hyperdrive-message "Unable to load URL %S: %S" plz-error))))))))
 
-(cl-defun hyperdrive-save-buffer (entry)
+(defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
 If buffer was not hyperdrive-backed, it becomes so."
   (interactive
@@ -365,17 +365,16 @@ If buffer was not hyperdrive-backed, it becomes so."
              hyperdrive-current-entry
            ;; Not already a hyperdrive buffer: make and set entry.
            (hyperdrive--read-new-entry))))
+  (hyperdrive-write-buffer entry))
+
+(defun hyperdrive-write-buffer (entry)
+  "Write current buffer to new hyperdrive ENTRY."
+  (interactive (list (hyperdrive--read-new-entry)))
   (unless hyperdrive-mode
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry))
-  (hyperdrive-write-buffer entry))
-
-(cl-defun hyperdrive-write-buffer (entry)
-  "Write current buffer to hyperdrive ENTRY.
-Does not make buffer a hyperdrive-backed
-buffer (cf. `hyperdrive-save-buffer')."
-  (interactive (list (hyperdrive--read-new-entry)))
-  (pcase-let (((cl-struct hyperdrive-entry name url) entry))
+  (pcase-let (((cl-struct hyperdrive-entry name url) entry)
+              (buffer (current-buffer)))
     (hyperdrive-save entry
       :body (save-restriction
               (widen)
@@ -383,18 +382,23 @@ buffer (cf. `hyperdrive-save-buffer')."
       :then (lambda (_response)
               ;; TODO: Fill entry after writing it (and e.g. display
               ;; new etag in mode line).
+              (when (buffer-live-p buffer)
+                (with-current-buffer buffer
+                  (rename-buffer name 'unique)
+                  (set-buffer-modified-p nil)))
               (hyperdrive-message "Wrote: %S to %S" name url))
       :else (lambda (plz-error)
               (pcase-let* (((cl-struct plz-error response) plz-error)
                            ((cl-struct plz-response status) response)
-                           ;; TODO: hypergateway should return 403
+                           ;; TODO: hyper-gateway should return 403
                            ;; when not writable.  See:
                            ;; <https://todo.sr.ht/~ushin/ushin/25>.
                            (message (pcase status
                                       (403 "Hyperdrive not writable")
                                       (_ plz-error))))
                 (hyperdrive-message "Unable to write: %S: %S"
-                                    name message))))))
+                                    name message))))
+    (hyperdrive-message "Saving to %S..." url)))
 
 (defun hyperdrive--write-contents ()
   "Call `hyperdrive-save-buffer' for the current buffer.

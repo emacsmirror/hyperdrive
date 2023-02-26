@@ -44,13 +44,24 @@ A hyperdrive that we know exists, and we know it is empty, and it has never yet 
 
 * File interaction matrix
 
-| Status                                   | Command                 | Correct behavior? |
-|------------------------------------------+-------------------------+-------------------|
-| buffer is backed by writable hyperdrive  | hyperdrive-write-buffer |                   |
-| buffer is backed by read-only hyperdrive | hyperdrive-write-buffer |                   |
-| buffer is backed by file on disk         | hyperdrive-write-buffer |                   |
-| buffer is not backed by anything         | hyperdrive-write-buffer |                   |
-| buffer is backed by writable hyperdrive  | hyperdrive-save-buffer  |                   |
-| buffer is backed by read-only hyperdrive | hyperdrive-save-buffer  |                   |
-| buffer is backed by file on disk         | hyperdrive-save-buffer  |                   |
-| buffer is not backed by anything         | hyperdrive-save-buffer  |                   |
+What Emacs does:
+
+| Buffer backed by | Command      | buffer-file-name                        | buffer-name             |
+|------------------+--------------+-----------------------------------------+-------------------------|
+| nothing          | write-buffer | prompts for and changes to new filename | changes to new basename |
+| nothing          | save-buffer  | prompts for and changes to new filename | changes to new basename |
+| file on disk     | write-buffer | prompts for and changes to new filename | changes to new basename |
+| file on disk     | save-buffer  | does not change                         | does not change         |
+
+What hyperdrive does:
+
+| Buffer backed by             | Command                 | Correct behavior? |
+|------------------------------+-------------------------+-------------------|
+| nothing                      | hyperdrive-write-buffer |                   |
+| nothing                      | hyperdrive-save-buffer  |                   |
+| file on disk                 | hyperdrive-write-buffer |                   |
+| file on disk                 | hyperdrive-save-buffer  |                   |
+| file on writable hyperdrive  | hyperdrive-write-buffer |                   |
+| file on writable hyperdrive  | hyperdrive-save-buffer  |                   |
+| file on read-only hyperdrive | hyperdrive-write-buffer |                   |
+| file on read-only hyperdrive | hyperdrive-save-buffer  |                   |
