@@ -41,3 +41,16 @@ An unknown hyperdrive may or may not exist.  We don't know whether it does.  We 
 :END:
 
 A hyperdrive that we know exists, and we know it is empty, and it has never yet had any content.  Possibly created by us.
+
+* File interaction matrix
+
+| Status                                   | Command                 | Correct behavior? |
+|------------------------------------------+-------------------------+-------------------|
+| buffer is backed by writable hyperdrive  | hyperdrive-write-buffer |                   |
+| buffer is backed by read-only hyperdrive | hyperdrive-write-buffer |                   |
+| buffer is backed by file on disk         | hyperdrive-write-buffer |                   |
+| buffer is not backed by anything         | hyperdrive-write-buffer |                   |
+| buffer is backed by writable hyperdrive  | hyperdrive-save-buffer  |                   |
+| buffer is backed by read-only hyperdrive | hyperdrive-save-buffer  |                   |
+| buffer is backed by file on disk         | hyperdrive-save-buffer  |                   |
+| buffer is not backed by anything         | hyperdrive-save-buffer  |                   |
