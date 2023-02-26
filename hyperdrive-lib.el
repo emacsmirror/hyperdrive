@@ -123,15 +123,20 @@ If no alias or name exists, return URL."
 
 ;;;; Entries
 
-(defun hyperdrive-fill-entry (entry &optional then)
-  "Fill ENTRY's metadata and call THEN."
+(cl-defun hyperdrive-fill-entry
+    (entry &key then
+           (else (lambda (plz-error)
+                   (display-warning 'hyperdrive
+                                    (format "hyperdrive-fill-entry: error: %S" plz-error)))))
+  "Fill ENTRY's metadata and call THEN.
+If request fails, call ELSE (which is passed to `hyperdrive-api',
+which see."
   (declare (indent defun))
   (hyperdrive-api 'head (hyperdrive-entry-url entry)
     :as 'response
     :then (lambda (response)
             (funcall then (hyperdrive--fill-entry entry (plz-response-headers response))))
-    :else (lambda (plz-error)
-            (display-warning 'hyperdrive (format "hyperdrive-fill-entry: error: %S" plz-error)))))
+    :else else))
 
 (defun hyperdrive--fill-entry (entry headers)
   "Fill ENTRY's slot from HEADERS."
@@ -145,6 +150,14 @@ If no alias or name exists, return URL."
           (hyperdrive-entry-etag entry) etag
           (hyperdrive-entry-modified entry) last-modified)
     entry))
+
+(cl-defun hyperdrive-delete-entry (entry &key then else)
+  "Delete ENTRY, then call THEN.
+Call ELSE if request fails."
+  (declare (indent defun))
+  (pcase-let (((cl-struct hyperdrive-entry name url) entry))
+    (hyperdrive-api 'delete url
+      :then then :else else)))
 
 ;;;; Misc.
 

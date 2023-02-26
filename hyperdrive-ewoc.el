@@ -99,14 +99,12 @@ To be used as the pretty-printer for `ewoc-create'."
 (defvar-keymap hyperdrive-ewoc-mode-map
   :parent  special-mode-map
   :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
-  "RET"     #'hyperdrive-ewoc-find-file
-  "^"       #'hyperdrive-ewoc-up-directory
-  "w"       #'hyperdrive-ewoc-copy-filename-as-kill
-  "n" #'hyperdrive-ewoc-next
-  "p" #'hyperdrive-ewoc-previous
-  ;; TODO(alphapapa): Port these commands.
-  ;; "D"       #'hyperdrive-dired-delete-file
-  )
+  "RET" #'hyperdrive-ewoc-find-file
+  "^"   #'hyperdrive-ewoc-up-directory
+  "w"   #'hyperdrive-ewoc-copy-filename-as-kill
+  "n"   #'hyperdrive-ewoc-next
+  "p"   #'hyperdrive-ewoc-previous
+  "D"   #'hyperdrive-ewoc-delete)
 
 (declare-function hyperdrive-revert-buffer "hyperdrive")
 
@@ -146,6 +144,19 @@ To be used as the pretty-printer for `ewoc-create'."
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (message "%s" url)))
+
+(defun hyperdrive-ewoc-delete (entry)
+  "Delete ENTRY."
+  (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+  (let ((buffer (current-buffer)))
+    (hyperdrive-delete-entry entry
+      :then (lambda (_)
+              (when (buffer-live-p buffer)
+                (with-current-buffer buffer
+                  (revert-buffer)))
+              (hyperdrive-message "Deleted: %s" name))
+      :else (lambda (plz-error)
+              (hyperdrive-message "Unable to delete %S: %S" name plz-error)))))
 
 (cl-defun hyperdrive-ewoc-next (&optional (n 1))
   "Move forward N entries."

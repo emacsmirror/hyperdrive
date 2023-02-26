@@ -488,15 +488,23 @@ same ALIAS does not create a new namespace."
   "Open hyperdrive URL."
   (interactive (list (read-string "URL: ")))
   ;; TODO: Ensure gateway is running.
-  (hyperdrive-fill-entry (make-hyperdrive-entry :url url)
-    (lambda (entry)
-      (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-                   ;; MAYBE: Use alist-get instead of cl-find-if.
-                   (handler (or (cdr (cl-find-if (lambda (regexp)
-                                                   (string-match-p regexp type))
-                                                 hyperdrive-type-handlers :key #'car))
-                                #'hyperdrive-handler-default)))
-        (funcall handler entry)))))
+  (let ((entry (make-hyperdrive-entry :url url)))
+    (hyperdrive-fill-entry entry
+      :then (lambda (entry)
+              (pcase-let* (((cl-struct hyperdrive-entry type) entry)
+                           ;; MAYBE: Use alist-get instead of cl-find-if.
+                           (handler (or (cdr (cl-find-if (lambda (regexp)
+                                                           (string-match-p regexp type))
+                                                         hyperdrive-type-handlers :key #'car))
+                                        #'hyperdrive-handler-default)))
+                (funcall handler entry)))
+      :else (lambda (plz-error)
+              (pcase-let* (((cl-struct plz-error response) plz-error)
+                           ((cl-struct plz-response status) response))
+                (pcase status
+                  (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? "))
+                         (hyperdrive-open (hyperdrive--parent-url entry))) )
+                  (_ (hyperdrive-message "Unable to load URL %S: %S" plz-error))))))))
 
 ;;;; API
 
