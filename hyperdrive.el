@@ -313,12 +313,12 @@ same ALIAS does not create a new namespace."
 (defun hyperdrive-mode-on ()
   "Activate `hyperdrive-mode'."
   (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
-  (cl-pushnew #'hyperdrive-save-buffer write-contents-functions))
+  (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
 
 (defun hyperdrive-mode-off ()
   "Deactivate `hyperdrive-mode'."
   (setq-local revert-buffer-function #'revert-buffer--default
-              write-contents-functions (remove #'hyperdrive-save-buffer write-contents-functions)))
+              write-contents-functions (remove #'hyperdrive--write-contents write-contents-functions)))
 
 (define-minor-mode hyperdrive-mode
   "Minor mode for buffers opened from hyperdrives."
@@ -395,6 +395,12 @@ buffer (cf. `hyperdrive-save-buffer')."
                                       (_ plz-error))))
                 (hyperdrive-message "Unable to write: %S: %S"
                                     name message))))))
+
+(defun hyperdrive--write-contents ()
+  "Call `hyperdrive-save-buffer' for the current buffer.
+To be used in `write-contents-functions'."
+  (cl-assert hyperdrive-mode)
+  (hyperdrive-save-buffer hyperdrive-current-entry))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
