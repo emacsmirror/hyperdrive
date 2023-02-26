@@ -109,19 +109,20 @@ To be used as the pretty-printer for `ewoc-create'."
 (declare-function hyperdrive-revert-buffer "hyperdrive")
 
 ;;;###autoload
-(define-derived-mode hyperdrive-ewoc-mode fundamental-mode
+(define-derived-mode hyperdrive-ewoc-mode special-mode
   `("Hyperdrive-EWOC"
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive directory buffers."
+  :interactive nil
   (let ((inhibit-read-only t))
     (erase-buffer))
   (hl-line-mode)
   (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
-  (setf buffer-read-only t
+  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-ewoc-pp)
         ;; TODO(alphapapa): Imenu support.
         ;; imenu-create-index-function #'ement-room--imenu-create-index-function
-        hyperdrive-ewoc (ewoc-create #'hyperdrive-ewoc-pp)))
+        ))
 
 ;;;; Commands
 
@@ -135,7 +136,7 @@ To be used as the pretty-printer for `ewoc-create'."
 (defun hyperdrive-ewoc-up-directory ()
   "Go up to parent directory."
   (interactive)
-  (if-let ((parent-url (hyperdrive--parent-url hyperdrive-current-entry)))
+  (if-let ((parent-url (hyperdrive--parent (hyperdrive-entry-url hyperdrive-current-entry))))
       (hyperdrive-open parent-url)
     (user-error "At root directory")))
 

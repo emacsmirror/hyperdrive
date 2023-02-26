@@ -145,17 +145,6 @@ Passed to `format-time-string', which see."
 
 ;;;; User interaction helper functions
 
-(defun hyperdrive--completing-read-alias ()
-  "Return an alias from `hyperdrive--namespaces'.
-
-Prompt user to select an alias, or if only one namespace exists,
-select it automatically."
-  (if hyperdrive--namespaces
-      (if (= 1 (length hyperdrive--namespaces))
-          (caar hyperdrive--namespaces)
-        (completing-read "Alias: " hyperdrive--namespaces nil t))
-    (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace"))) ; TODO: Prompt user to create namespace here?
-
 ;;;; Commands
 
 (defun hyperdrive-public-key (alias)
@@ -206,33 +195,6 @@ select it automatically."
     (if proc
         (signal-process proc 'sigint)
       (message "Already not running hyper-gateway."))))
-
-(defun hyperdrive--save-buffer ()
-  "Save current buffer to its hyperdrive location.
-Only for `hyperdrive-mode' file buffers."
-  ;; TODO: Rename to hyperdrive--write-buffer ?
-  (cl-assert hyperdrive-current-entry)
-  (pcase-let (((cl-struct hyperdrive-entry url) hyperdrive-current-entry))
-    (hyperdrive-api 'put url
-      :body-type 'binary
-      :body (buffer-substring (point-min) (point-max)))
-    (hyperdrive-message "Saved to: %s" url)))
-
-(defun hyperdrive-write-buffer ()
-  "Write current buffer to a hyperdrive file.
-The buffer may already be a hyperdrive file, or it may not be."
-  (interactive)
-  (pcase-let* ((filename (buffer-file-name))
-               (basename (when filename
-                           (file-name-nondirectory filename)))
-               (alias (hyperdrive--completing-read-alias))
-               (public-key (hyperdrive--public-key-by-alias alias))
-               (name (read-string "Filename: " nil nil basename))
-               (hyperdrive-current-entry
-                (make-hyperdrive-entry
-                 :name name
-                 :url (hyperdrive--make-hyperdrive-url public-key name))))
-    (hyperdrive--save-buffer)))
 
 ;; (defun hyperdrive-save-buffer-by-alias (alias path)
 ;;   "Save contents of current buffer as a file at PATH in namespaced
@@ -302,6 +264,7 @@ same ALIAS does not create a new namespace."
 
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
+  ;; TODO: Override buffer-modified check when buffer is erased.
   (hyperdrive-open (hyperdrive-entry-url hyperdrive-current-entry)))
 
 ;;;; Org links
@@ -350,16 +313,17 @@ same ALIAS does not create a new namespace."
 (defun hyperdrive-mode-on ()
   "Activate `hyperdrive-mode'."
   (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
-  (cl-pushnew #'hyperdrive--save-buffer write-contents-functions))
+  (cl-pushnew #'hyperdrive-save-buffer write-contents-functions))
 
 (defun hyperdrive-mode-off ()
   "Deactivate `hyperdrive-mode'."
   (setq-local revert-buffer-function #'revert-buffer--default
-              write-contents-functions (remove #'hyperdrive--save-buffer write-contents-functions)))
+              write-contents-functions (remove #'hyperdrive-save-buffer write-contents-functions)))
 
 (define-minor-mode hyperdrive-mode
   "Minor mode for buffers opened from hyperdrives."
   :global nil
+  :interactive nil
   :group 'hyperdrive
   :lighter "hyperdrive"
   ;; :keymap (let ((map (make-sparse-keymap)))
@@ -390,8 +354,44 @@ same ALIAS does not create a new namespace."
                            ((cl-struct plz-response status) response))
                 (pcase status
                   (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
-                         (hyperdrive-open (hyperdrive--parent-url entry))) )
+                         (hyperdrive-open (hyperdrive--parent url))) )
                   (_ (hyperdrive-message "Unable to load URL %S: %S" plz-error))))))))
+
+(cl-defun hyperdrive-save-buffer (entry)
+  "Save ENTRY to hyperdrive (interactively, the current buffer).
+If buffer was not hyperdrive-backed, it becomes so."
+  (interactive
+   (list (if hyperdrive-mode
+             hyperdrive-current-entry
+           ;; Not already a hyperdrive buffer: make and set entry.
+           (hyperdrive--read-new-entry))))
+  (unless hyperdrive-mode
+    (hyperdrive-mode)
+    (setq-local hyperdrive-current-entry entry))
+  (hyperdrive-write-buffer entry))
+
+(cl-defun hyperdrive-write-buffer (entry)
+  "Write current buffer to hyperdrive ENTRY.
+Does not make buffer a hyperdrive-backed
+buffer (cf. `hyperdrive-save-buffer')."
+  (interactive (list (hyperdrive--read-new-entry)))
+  (pcase-let (((cl-struct hyperdrive-entry name) entry))
+    (hyperdrive-save entry
+      :body (save-restriction
+              (widen)
+              (buffer-substring-no-properties (point-min) (point-max)))
+      :then (lambda (_response)
+              ;; TODO: Fill entry after writing it (and e.g. display
+              ;; new etag in mode line).
+              (hyperdrive-message "Wrote: %S" name))
+      :else (lambda (plz-error)
+              (pcase-let* (((cl-struct plz-error response) plz-error)
+                           ((cl-struct plz-response status) response)
+                           (message (pcase status
+                                      (403 "Hyperdrive not writable")
+                                      (_ plz-error))))
+                (hyperdrive-message "Unable to write: %S: %S"
+                                    name message))))))
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here

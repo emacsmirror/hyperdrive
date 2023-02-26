@@ -51,7 +51,13 @@ Default handler."
       :as (lambda ()
             (let ((response-buffer (current-buffer))
                   (inhibit-read-only t))
+              ;; TODO: Revisit buffer naming/"visiting" (e.g. what
+              ;; happens if the user opens a Hyperdrive file and then
+              ;; saves another buffer to the same location?).  See
+              ;; also: hyperdrive-save, etc.
               (with-current-buffer (hyperdrive--get-buffer-create entry)
+                (when (buffer-modified-p)
+                  (error "Buffer modified: %S" (current-buffer)))
                 (erase-buffer)
                 (insert-buffer-substring response-buffer)
                 ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
@@ -85,7 +91,7 @@ Default handler."
                             (make-hyperdrive-entry :url entry-url
                                                    :name (url-unhex-string encoded-entry-name))))
                         encoded-entry-names))
-               (parent-url (hyperdrive--parent-url directory-entry))
+               (parent-url (hyperdrive--parent url))
                (ewoc)
                (header))
     (when parent-url

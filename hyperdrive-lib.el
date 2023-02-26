@@ -81,6 +81,8 @@ Capture group matches version number.")
 
 ;;;; API
 
+;; These functions take a URL argument, not a hyperdrive-entry struct.
+
 (cl-defun hyperdrive-api (method url &rest rest)
   "Make hyperdrive API request.
 Calls `hyperdrive--httpify-url' to convert HYPER-URL starting
@@ -96,14 +98,6 @@ The remaining arguments are passed to `plz', which see."
   "Return localhost HTTP URL for HYPER-URL."
   (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
           (substring url (length hyperdrive--hyper-prefix))))
-
-(defun hyperdrive--parent-url (entry)
-  "Return URL of ENTRY's parent.
-If already at top-level directory, return nil."
-  (pcase-let* (((cl-struct hyperdrive-entry url) entry)
-               (parent-url (file-name-directory (directory-file-name url))))
-    (unless (equal parent-url hyperdrive--hyper-prefix)
-      parent-url)))
 
 (defun hyperdrive--format-url (url)
   "Return human-readable version of URL where the public-key is
@@ -121,7 +115,28 @@ If no alias or name exists, return URL."
          url)
       url)))
 
+(cl-defun hyperdrive--write (url &key body then else)
+  "Save BODY (a string) to hyperdrive URL.
+THEN and ELSE are passed to `hyperdrive-api', which see."
+  (declare (indent defun))
+  (hyperdrive-api 'put url
+    ;; TODO: Investigate whether we should use 'text body type for text buffers.
+    :body-type 'binary
+    ;; TODO: Make plz accept a buffer as the body.
+    :body body
+    :then then :else else))
+
+(defun hyperdrive--parent (url)
+  ;; TODO: Maybe rename this?
+  "Return parent URL for URL.
+If already at top-level directory, return nil."
+  (let ((parent-url (file-name-directory (directory-file-name url))))
+    (unless (equal parent-url hyperdrive--hyper-prefix)
+      parent-url)))
+
 ;;;; Entries
+
+;; These functions take a hyperdrive-entry struct argument, not a URL.
 
 (cl-defun hyperdrive-fill
     (entry &key then
@@ -158,6 +173,38 @@ Call ELSE if request fails."
   (pcase-let (((cl-struct hyperdrive-entry url) entry))
     (hyperdrive-api 'delete url
       :then then :else else)))
+
+(cl-defun hyperdrive-save (entry &key body then else)
+  "Save BODY to hyperdrive ENTRY's URL."
+  (declare (indent defun))
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (hyperdrive--write url
+      :body body :then then :else else)))
+
+;;;; Reading from the user
+
+(defun hyperdrive--completing-read-alias ()
+  "Return an alias from `hyperdrive--namespaces'.
+
+Prompt user to select an alias, or if only one namespace exists,
+select it automatically."
+  (if hyperdrive--namespaces
+      (if (= 1 (length hyperdrive--namespaces))
+          (caar hyperdrive--namespaces)
+        (completing-read "Alias: " hyperdrive--namespaces nil t))
+    ;; TODO: Prompt user to create namespace here?
+    (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace")))
+
+(defun hyperdrive--read-new-entry ()
+  "Return new hyperdrive entry with name and URL read from user."
+  (let* ((filename (buffer-file-name))
+         (basename (when filename
+                     (file-name-nondirectory filename)))
+         (name (read-string "Filename: " nil nil basename))
+         (alias (hyperdrive--completing-read-alias))
+         (public-key (hyperdrive--public-key-by-alias alias))
+         (url (hyperdrive--make-hyperdrive-url public-key name)))
+    (make-hyperdrive-entry :name name :url url)))
 
 ;;;; Misc.
 
