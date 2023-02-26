@@ -150,12 +150,12 @@ To be used as the pretty-printer for `ewoc-create'."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
               (buffer (current-buffer)))
-    (hyperdrive-delete-entry entry
+    (hyperdrive-delete entry
       :then (lambda (_)
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
                   (revert-buffer)))
-              (hyperdrive-message "Deleted: %s" name))
+              (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
       :else (lambda (plz-error)
               (hyperdrive-message "Unable to delete %S: %S" name plz-error)))))
 

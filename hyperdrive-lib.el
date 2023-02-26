@@ -151,7 +151,7 @@ which see."
           (hyperdrive-entry-modified entry) last-modified)
     entry))
 
-(cl-defun hyperdrive-delete-entry (entry &key then else)
+(cl-defun hyperdrive-delete (entry &key then else)
   "Delete ENTRY, then call THEN.
 Call ELSE if request fails."
   (declare (indent defun))
