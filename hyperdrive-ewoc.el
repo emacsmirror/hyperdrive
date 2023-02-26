@@ -140,6 +140,7 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-ewoc-copy-filename-as-kill (entry)
   "Copy URL of file at point into the kill ring."
+  ;; TODO: Copy current directory-entry when cursor is on header (or footer?)
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
