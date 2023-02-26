@@ -76,8 +76,8 @@ Capture group matches public key.")
 
 Capture group matches version number.")
 
-(defconst hyperdrive-metadata-filename ".ushin.json"
-  "Location of hyperdrive.el metadata inside hyperdrive.")
+;; (defconst hyperdrive-metadata-filename ".ushin.json"
+;;   "Location of hyperdrive.el metadata inside hyperdrive.")
 
 ;;;; API
 
@@ -106,7 +106,8 @@ replaced with its local alias or public name.
 If no alias or name exists, return URL."
   (let ((display-name (or
                        (hyperdrive--alias url)
-                       (alist-get 'name (hyperdrive-metadata url))))
+                       ;; (alist-get 'name (hyperdrive-metadata url))
+                       ))
         (public-key (hyperdrive--extract-public-key url)))
     (if display-name
         (replace-regexp-in-string
@@ -263,14 +264,14 @@ Path portion of url is URI-encoded."
   "Return alias corresponding to public key in URL. Otherwise, return URL."
   (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--namespaces)))
 
-(defun hyperdrive-metadata (url)
-  "Return alist converted from JSON file at
-`hyperdrive-metadata-filename' in hyperdrive for URL."
-  (let ((json-array-type 'list)
-        (url (progn
-               (string-match hyperdrive--public-key-re url)
-               (match-string 0 url))))
-    (hyperdrive-api 'get (concat url "/" hyperdrive-metadata-filename) :as #'json-read)))
+;; (defun hyperdrive-metadata (url)
+;;   "Return alist converted from JSON file at
+;; `hyperdrive-metadata-filename' in hyperdrive for URL."
+;;   (let ((json-array-type 'list)
+;;         (url (progn
+;;                (string-match hyperdrive--public-key-re url)
+;;                (match-string 0 url))))
+;;     (hyperdrive-api 'get (concat url "/" hyperdrive-metadata-filename) :as #'json-read)))
 
 (defun hyperdrive--extract-path (string)
   "Extract path following public-key from STRING."

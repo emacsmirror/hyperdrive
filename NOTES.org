@@ -63,5 +63,5 @@ What hyperdrive does:
 | file on disk                 | hyperdrive-save-buffer  | yes               |
 | file on writable hyperdrive  | hyperdrive-write-buffer | yes               |
 | file on writable hyperdrive  | hyperdrive-save-buffer  | yes               |
+| file on read-only hyperdrive | hyperdrive-save-buffer  | yes               |
 | file on read-only hyperdrive | hyperdrive-write-buffer |                   |
-| file on read-only hyperdrive | hyperdrive-save-buffer  |                   |
