@@ -155,7 +155,7 @@ which see."
 
 (defun hyperdrive--fill (entry headers)
   "Fill ENTRY's slot from HEADERS."
-  (pcase-let (((map content-length content-type etag last-modified name) headers))
+  (pcase-let (((map content-length content-type etag last-modified) headers))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (setf (hyperdrive-entry-size entry) (when content-length
@@ -163,8 +163,7 @@ which see."
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
           (hyperdrive-entry-etag entry) etag
-          (hyperdrive-entry-modified entry) last-modified
-          (hyperdrive-entry-name entry) name)
+          (hyperdrive-entry-modified entry) last-modified)
     entry))
 
 (cl-defun hyperdrive-delete (entry &key then else)
