@@ -123,11 +123,11 @@ If no alias or name exists, return URL."
 
 ;;;; Entries
 
-(cl-defun hyperdrive-fill-entry
+(cl-defun hyperdrive-fill
     (entry &key then
            (else (lambda (plz-error)
                    (display-warning 'hyperdrive
-                                    (format "hyperdrive-fill-entry: error: %S" plz-error)))))
+                                    (format "hyperdrive-fill: error: %S" plz-error)))))
   "Fill ENTRY's metadata and call THEN.
 If request fails, call ELSE (which is passed to `hyperdrive-api',
 which see."
@@ -135,10 +135,10 @@ which see."
   (hyperdrive-api 'head (hyperdrive-entry-url entry)
     :as 'response
     :then (lambda (response)
-            (funcall then (hyperdrive--fill-entry entry (plz-response-headers response))))
+            (funcall then (hyperdrive--fill entry (plz-response-headers response))))
     :else else))
 
-(defun hyperdrive--fill-entry (entry headers)
+(defun hyperdrive--fill (entry headers)
   "Fill ENTRY's slot from HEADERS."
   (pcase-let (((map content-length content-type etag last-modified) headers))
     (when last-modified

@@ -453,7 +453,7 @@ same ALIAS does not create a new namespace."
   (interactive (list (read-string "URL: ")))
   ;; TODO: Ensure gateway is running.
   (let ((entry (make-hyperdrive-entry :url url)))
-    (hyperdrive-fill-entry entry
+    (hyperdrive-fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
                            ;; MAYBE: Use alist-get instead of cl-find-if.

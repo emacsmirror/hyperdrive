@@ -89,7 +89,7 @@ Default handler."
       (push (make-hyperdrive-entry :url parent-url
                                    :etc '((display-name . "..")))
             entries))
-    (setf directory-entry (hyperdrive--fill-entry directory-entry headers)
+    (setf directory-entry (hyperdrive--fill directory-entry headers)
           hyperdrive-entries entries
           header (format "%s (%s)"
                          (propertize (hyperdrive--format-url url)
@@ -104,7 +104,7 @@ Default handler."
               (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
       (mapc (lambda (entry)
-              (hyperdrive-fill-entry entry
+              (hyperdrive-fill entry
                 :then (lambda (_)
                         ;; NOTE: Ensure that the buffer's window is selected,
                         ;; if it has one.  (Workaround a possible bug in EWOC.)
