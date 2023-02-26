@@ -108,6 +108,7 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (declare-function hyperdrive-revert-buffer "hyperdrive")
 
+;;;###autoload
 (define-derived-mode hyperdrive-ewoc-mode fundamental-mode
   `("Hyperdrive-EWOC"
     ;; TODO: Add more to lighter, e.g. URL.

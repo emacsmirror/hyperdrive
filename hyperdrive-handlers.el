@@ -71,6 +71,7 @@ Default handler."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; FIXME: About half of the time, calls to hyperdrive-ewoc-list
   ;; fail. Issue with sending many rapid HEAD requests?
+  ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
   (pcase-let* (((cl-struct hyperdrive-entry url) directory-entry)
                (buffer (hyperdrive--get-buffer-create directory-entry))
                (inhibit-read-only t)
