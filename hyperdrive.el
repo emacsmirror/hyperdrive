@@ -388,13 +388,14 @@ If buffer was not hyperdrive-backed, it becomes so."
               (hyperdrive-message "Wrote: %S to %S" name url))
       :else (lambda (plz-error)
               (pcase-let* (((cl-struct plz-error response) plz-error)
-                           ((cl-struct plz-response status) response)
+                           ((cl-struct plz-response status body) response)
                            ;; TODO: hyper-gateway should return 403
                            ;; when not writable.  See:
                            ;; <https://todo.sr.ht/~ushin/ushin/25>.
-                           (message (pcase status
-                                      (403 "Hyperdrive not writable")
-                                      (_ plz-error))))
+                           (message (if (and (eq 500 status)
+                                             (string-match-p "SESSION_NOT_WRITABLE" body))
+                                        "Hyperdrive not writable"
+                                      plz-error)))
                 (hyperdrive-message "Unable to write: %S: %S"
                                     name message))))
     (hyperdrive-message "Saving to %S..." url)))

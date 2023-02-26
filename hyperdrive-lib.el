@@ -201,9 +201,15 @@ select it automatically."
 
 (defun hyperdrive--read-new-entry ()
   "Return new hyperdrive entry with name and URL read from user."
+  ;; FIXME: When writing a file to an existing hyperdrive's
+  ;; subdirectory, the subdirectory is not included in the prompt for
+  ;; the path, so unless the user adds it, the file would get written
+  ;; to the root.
   (let* ((filename (buffer-file-name))
-         (basename (when filename
-                     (file-name-nondirectory filename)))
+         (basename (or (when hyperdrive-current-entry
+                         (hyperdrive-entry-name hyperdrive-current-entry))
+                       (when filename
+                         (file-name-nondirectory filename))))
          (default (or basename (buffer-name)))
          (prompt (format "Filename [default %S]: " default))
          (name (read-string prompt nil nil default))
