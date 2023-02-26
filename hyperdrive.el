@@ -502,7 +502,7 @@ same ALIAS does not create a new namespace."
               (pcase-let* (((cl-struct plz-error response) plz-error)
                            ((cl-struct plz-response status) response))
                 (pcase status
-                  (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? "))
+                  (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
                          (hyperdrive-open (hyperdrive--parent-url entry))) )
                   (_ (hyperdrive-message "Unable to load URL %S: %S" plz-error))))))))
 
