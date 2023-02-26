@@ -375,7 +375,7 @@ If buffer was not hyperdrive-backed, it becomes so."
 Does not make buffer a hyperdrive-backed
 buffer (cf. `hyperdrive-save-buffer')."
   (interactive (list (hyperdrive--read-new-entry)))
-  (pcase-let (((cl-struct hyperdrive-entry name) entry))
+  (pcase-let (((cl-struct hyperdrive-entry name url) entry))
     (hyperdrive-save entry
       :body (save-restriction
               (widen)
@@ -383,7 +383,7 @@ buffer (cf. `hyperdrive-save-buffer')."
       :then (lambda (_response)
               ;; TODO: Fill entry after writing it (and e.g. display
               ;; new etag in mode line).
-              (hyperdrive-message "Wrote: %S" name))
+              (hyperdrive-message "Wrote: %S to %S" name url))
       :else (lambda (plz-error)
               (pcase-let* (((cl-struct plz-error response) plz-error)
                            ((cl-struct plz-response status) response)
