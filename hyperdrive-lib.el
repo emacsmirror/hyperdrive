@@ -204,7 +204,7 @@ select it automatically."
   (let* ((filename (buffer-file-name))
          (basename (when filename
                      (file-name-nondirectory filename)))
-         (name (read-string "Filename: " nil nil basename))
+         (name (read-string "Filename: " nil nil (or basename (buffer-name))))
          (alias (hyperdrive--completing-read-alias))
          (public-key (hyperdrive--public-key-by-alias alias))
          (url (hyperdrive--make-hyperdrive-url public-key name)))
