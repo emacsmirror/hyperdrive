@@ -387,6 +387,9 @@ buffer (cf. `hyperdrive-save-buffer')."
       :else (lambda (plz-error)
               (pcase-let* (((cl-struct plz-error response) plz-error)
                            ((cl-struct plz-response status) response)
+                           ;; TODO: hypergateway should return 403
+                           ;; when not writable.  See:
+                           ;; <https://todo.sr.ht/~ushin/ushin/25>.
                            (message (pcase status
                                       (403 "Hyperdrive not writable")
                                       (_ plz-error))))
