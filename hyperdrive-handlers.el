@@ -118,6 +118,7 @@ Default handler."
                               (ewoc-refresh hyperdrive-ewoc))
                           (ewoc-refresh hyperdrive-ewoc)))))
             entries)
+      (set-buffer-modified-p nil)
       (pop-to-buffer (current-buffer)))))
 
 (defun hyperdrive-handler-streamable (entry)
