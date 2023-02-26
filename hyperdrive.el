@@ -218,10 +218,6 @@ select it automatically."
 ;;                       :body (buffer-substring-no-properties (point-min) (point-max)))
 ;;     (call-interactively #'hyperdrive-save-buffer-by-alias)))
 
-(defun hyperdrive-message (message &rest args)
-  "Call `message' prefixing MESSAGE with \"Hyperdrive:\"."
-  (apply #'message (concat "Hyperdrive: " message) args))
-
 (defun hyperdrive--save-buffer ()
   "Save current buffer to its hyperdrive location.
 Only for `hyperdrive-mode' file buffers."

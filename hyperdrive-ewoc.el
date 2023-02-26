@@ -148,7 +148,8 @@ To be used as the pretty-printer for `ewoc-create'."
 (defun hyperdrive-ewoc-delete (entry)
   "Delete ENTRY."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
-  (let ((buffer (current-buffer)))
+  (pcase-let (((cl-struct hyperdrive-entry name) entry)
+              (buffer (current-buffer)))
     (hyperdrive-delete-entry entry
       :then (lambda (_)
               (when (buffer-live-p buffer)

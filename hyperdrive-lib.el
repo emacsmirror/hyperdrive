@@ -155,7 +155,7 @@ which see."
   "Delete ENTRY, then call THEN.
 Call ELSE if request fails."
   (declare (indent defun))
-  (pcase-let (((cl-struct hyperdrive-entry name url) entry))
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
     (hyperdrive-api 'delete url
       :then then :else else)))
 
@@ -257,6 +257,10 @@ audio or video which can be streamed with mpv."
 (defun hyperdrive--version-match (url)
   "Return non-nil if URL contains a version number."
   (string-match hyperdrive--version-re url))
+
+(defun hyperdrive-message (message &rest args)
+  "Call `message' prefixing MESSAGE with \"Hyperdrive:\"."
+  (apply #'message (concat "Hyperdrive: " message) args))
 
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here
