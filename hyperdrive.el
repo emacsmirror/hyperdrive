@@ -355,7 +355,7 @@ same ALIAS does not create a new namespace."
                 (pcase status
                   (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
                          (hyperdrive-open (hyperdrive--parent url))) )
-                  (_ (hyperdrive-message "Unable to load URL %S: %S" plz-error))))))))
+                  (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error))))))))
 
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
@@ -369,6 +369,7 @@ If buffer was not hyperdrive-backed, it becomes so."
 (defun hyperdrive-write-buffer (entry)
   "Write current buffer to new hyperdrive ENTRY."
   (interactive (list (hyperdrive--read-new-entry)))
+  ;; FIXME: Overwrites without prompting if file exists.
   (unless hyperdrive-mode
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry))
@@ -396,8 +397,7 @@ If buffer was not hyperdrive-backed, it becomes so."
                                              (string-match-p "SESSION_NOT_WRITABLE" body))
                                         "Hyperdrive not writable"
                                       plz-error)))
-                (hyperdrive-message "Unable to write: %S: %S"
-                                    name message))))
+                (hyperdrive-message "Unable to write: %S: %S" name message))))
     (hyperdrive-message "Saving to %S..." url)))
 
 (defun hyperdrive--write-contents ()
