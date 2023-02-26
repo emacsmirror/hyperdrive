@@ -66,6 +66,7 @@ Default handler."
 
 (defun hyperdrive-handler-directory (directory-entry)
   "Show directory ENTRY."
+  ;; TODO: Open in same window (but probably still new buffer) (display-buffer-alist ?)
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; FIXME: About half of the time, calls to hyperdrive-ewoc-list
   ;; fail. Issue with sending many rapid HEAD requests?
