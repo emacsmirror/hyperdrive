@@ -46,6 +46,7 @@ Keys are regexps matched against MIME types.")
 (defun hyperdrive-handler-default (entry)
   "Load ENTRY's file into an Emacs buffer.
 Default handler."
+  ;; TODO: Upon first load, modeline stars indicate that buffer has been modified
   (pcase-let (((cl-struct hyperdrive-entry url) entry))
     (hyperdrive-api 'get url
       :as (lambda ()
