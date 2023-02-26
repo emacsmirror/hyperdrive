@@ -207,17 +207,6 @@ select it automatically."
         (signal-process proc 'sigint)
       (message "Already not running hyper-gateway."))))
 
-;; (defun hyperdrive-save-buffer (url)
-;;   "Save contents of current buffer to URL.
-
-;; URL must be writable and not a directory."
-;;   (interactive (list hyperdrive--current-url))
-;;   (if (and url (not (hyperdrive--directory-p url)))
-;;       (hyperdrive-api 'put url
-;;                       :body-type 'binary
-;;                       :body (buffer-substring-no-properties (point-min) (point-max)))
-;;     (call-interactively #'hyperdrive-save-buffer-by-alias)))
-
 (defun hyperdrive--save-buffer ()
   "Save current buffer to its hyperdrive location.
 Only for `hyperdrive-mode' file buffers."
@@ -311,15 +300,6 @@ same ALIAS does not create a new namespace."
 ;;      (list read-url read-filename)))
 ;;   (hyperdrive-api 'get url :as `(file ,filename)))
 
-;; (defun hyperdrive-delete-file (url)
-;;   "Delete file at URL.
-
-;; Note that deleted files can be accessed by checking out a prior
-;; version of the hyperdrive."
-;;   (hyperdrive-api 'delete url)
-;;   (hyperdrive-up-directory url)
-;;   (message "Deleted files can be accessed by checking out a prior version of the hyperdrive."))
-
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
   (hyperdrive-open (hyperdrive-entry-url hyperdrive-current-entry)))
@@ -390,64 +370,6 @@ same ALIAS does not create a new namespace."
       (hyperdrive-mode-on)
     (hyperdrive-mode-off)))
 
-;;;; hyperdrive-dired
-
-;; (defun hyperdrive-dired-insert-directory-contents (url contents)
-;;   "Display hyperdrive directory CONTENTS for URL in a Dired-like interface."
-;;   (insert "  " (propertize url  'face 'hyperdrive-dired-header) ":" "\n"
-;;           "  " (propertize "."  'face 'hyperdrive-dired-directory)  "\n"
-;;           "  " (propertize ".." 'face 'hyperdrive-dired-directory)  "\n")
-;;   (when (equal (car contents) "$/") ;; Remove special top-level directory: https://github.com/RangerMauve/hypercore-fetch/issues/32
-;;     (setq contents (cdr contents)))
-;;   (dolist (item (sort contents #'string<))
-;;     (if (string-match-p "/$" item)
-;;         (insert "  " (propertize item 'face 'hyperdrive-dired-directory) "\n")
-;;       (insert "  " item "\n"))))
-
-;; (defun hyperdrive-dired-find-file ()
-;;   "In `hyperdrive-dired-mode', visit the file or directory named on this line."
-;;   (interactive)
-;;   (hyperdrive-load-url (hyperdrive-dired-get-filename)))
-
-;; (defun hyperdrive-dired-get-filename ()
-;;   "Get the current line's file name, with an error if file does not exist."
-;;   (interactive)
-;;   (let ((raw)
-;;         (filename))
-;;     (if (= 1 (line-number-at-pos))
-;;         hyperdrive--current-url
-;;       (setq raw (string-trim (thing-at-point 'line t)))
-;;       (setq filename
-;;             (cond ((equal "."  raw) hyperdrive--current-url)
-;;                   ((equal ".." raw) (hyperdrive--parent-directory))
-;;                   (t (concat hyperdrive--current-url raw)))))))
-
-;; (defun hyperdrive-dired-copy-filename-as-kill ()
-;;   "Copy hyperdrive url of file at point."
-;;   (interactive)
-;;   (let ((string (hyperdrive-dired-get-filename)))
-;;     (kill-new string)
-;;     (message "%s" string)))
-
-;; (defun hyperdrive-dired-delete-file ()
-;;   "Delete file on current line with confirmation."
-;;   (interactive)
-;;   (when (y-or-n-p "Delete file? ")
-;;     (hyperdrive-delete-file (hyperdrive-dired-get-filename))))
-
-;; (defvar-keymap hyperdrive-dired-mode-map
-;;   :parent  special-mode-map
-;;   :doc "Local keymap for `hyperdrive-dired-mode' buffers."
-;;   "RET"     #'hyperdrive-dired-find-file
-;;   "^"       #'hyperdrive-up-directory
-;;   "w"       #'hyperdrive-dired-copy-filename-as-kill
-;;   "D"       #'hyperdrive-dired-delete-file)
-
-;; (define-derived-mode hyperdrive-dired-mode special-mode "hyperdrive-dired"
-;;   "Major mode for viewing hyperdrive directories.
-;; \\{hyperdrive-dired-mode-map}"
-;;   (hyperdrive-mode +1))
-
 ;;;###autoload
 (defun hyperdrive-open (url)
   "Open hyperdrive URL."
@@ -470,8 +392,6 @@ same ALIAS does not create a new namespace."
                   (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
                          (hyperdrive-open (hyperdrive--parent-url entry))) )
                   (_ (hyperdrive-message "Unable to load URL %S: %S" plz-error))))))))
-
-;;;; API
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
