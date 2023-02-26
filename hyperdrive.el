@@ -363,7 +363,6 @@ If buffer was not hyperdrive-backed, it becomes so."
   (interactive
    (list (if hyperdrive-mode
              hyperdrive-current-entry
-           ;; Not already a hyperdrive buffer: make and set entry.
            (hyperdrive--read-new-entry))))
   (hyperdrive-write-buffer entry))
 
@@ -384,7 +383,7 @@ If buffer was not hyperdrive-backed, it becomes so."
               ;; new etag in mode line).
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
-                  (rename-buffer name 'unique)
+                  (rename-buffer (hyperdrive--format-url url) 'unique)
                   (set-buffer-modified-p nil)))
               (hyperdrive-message "Wrote: %S to %S" name url))
       :else (lambda (plz-error)
