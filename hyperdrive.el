@@ -296,38 +296,6 @@ same ALIAS does not create a new namespace."
 ;;   (hyperdrive--load-url-directory
 ;;    (hyperdrive--make-hyperdrive-url (hyperdrive--public-key-by-alias alias) "")))
 
-;; (defun hyperdrive--load-url-directory (url)
-;;   "Load directory contents at URL."
-;;   (let ((json-array-type 'list))
-;;     (hyperdrive-dired url (hyperdrive-api 'get url :as #'json-read))))
-
-;; (cl-defun hyperdrive-load-url (url)
-;;   "Load contents at URL.
-
-;; If URL is a directory according to `hyperdrive--directory-p',
-;; load it with `hyperdrive-dired'.
-
-;; If URL is streamable according to `hyperdrive--streamable-p',
-;; play it with mpv.
-
-;; Otherwise, load the URL as a buffer with `hyperdrive-find-file'.
-
-;; URL should begin with `hyperdrive--hyper-prefix'."
-;;   (interactive "sURL: ")
-;;   (let* ((headers (plz-response-headers (hyperdrive-api 'head url :as 'response)))
-;;          (url-without-version (hyperdrive--headers-extract-url headers))
-;;          (use-version (hyperdrive--version-match url))
-;;          (directoryp (hyperdrive--directory-p url-without-version))
-;;          (streamablep (hyperdrive--streamable-p headers)))
-;;     (setq url (if use-version (hyperdrive--add-version-to-url
-;;                                url-without-version
-;;                                (hyperdrive--headers-extract-version headers))
-;;                 url-without-version))
-;;     ;; TODO(alphapapa): Refactor this using an alist by MIME type.
-;;     (cond (directoryp (hyperdrive--load-url-directory url))
-;;           (streamablep (hyperdrive--load-url-streamable url))
-;;           (t (hyperdrive--load-url-buffer url)))))
-
 ;; (defun hyperdrive-download-url-as-file (url filename)
 ;;   "Load contents at URL as a file to store at FILENAME.
 
