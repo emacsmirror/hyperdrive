@@ -40,6 +40,7 @@
   "Entries in current hyperdrive buffer.")
 
 (defvar hyperdrive-current-entry)
+(defvar hyperdrive-timestamp-format)
 
 ;;;; Faces
 
@@ -82,9 +83,9 @@ To be used as the pretty-printer for `ewoc-create'."
                          'hyperdrive-directory
                        'default))
                (timestamp (if modified
-                              (format-time-string hyperdrive-timestamp-format-string modified)
-                            "")))
-    (format "%6s  %s  %s" 
+                              (format-time-string hyperdrive-timestamp-format modified)
+                            (format hyperdrive-timestamp-format-string " "))))
+    (format "%6s  %s  %s"
             (propertize (or size "")
                         'face 'hyperdrive-size)
             (propertize timestamp
