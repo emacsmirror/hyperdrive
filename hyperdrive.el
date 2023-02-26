@@ -221,6 +221,7 @@ select it automatically."
 (defun hyperdrive--save-buffer ()
   "Save current buffer to its hyperdrive location.
 Only for `hyperdrive-mode' file buffers."
+  ;; TODO: Rename to hyperdrive--write-buffer ?
   (cl-assert hyperdrive-current-entry)
   (pcase-let (((cl-struct hyperdrive-entry url) hyperdrive-current-entry))
     (hyperdrive-api 'put url
