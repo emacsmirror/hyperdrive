@@ -147,15 +147,19 @@ If already at top-level directory, return nil."
 If request fails, call ELSE (which is passed to `hyperdrive-api',
 which see."
   (declare (indent defun))
-  (hyperdrive-api 'head (hyperdrive-entry-url entry)
-    :as 'response
-    :then (lambda (response)
-            (funcall then (hyperdrive--fill entry (plz-response-headers response))))
-    :else else))
+  (pcase-let (((cl-struct hyperdrive-entry url) entry))
+    (hyperdrive-api 'head url
+      :as 'response
+      :then (lambda (response)
+              (funcall then (hyperdrive--fill entry (plz-response-headers response))))
+      :else else)))
 
 (defun hyperdrive--fill (entry headers)
   "Fill ENTRY's slot from HEADERS."
-  (pcase-let (((map content-length content-type etag last-modified) headers))
+  (pcase-let (((cl-struct hyperdrive-entry name url) entry)
+              ((map content-length content-type etag last-modified) headers))
+    (unless name
+      (setf (hyperdrive-entry-name entry) (file-name-nondirectory url)))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (setf (hyperdrive-entry-size entry) (when content-length

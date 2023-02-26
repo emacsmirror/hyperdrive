@@ -339,8 +339,7 @@ same ALIAS does not create a new namespace."
   "Open hyperdrive URL."
   (interactive (list (read-string "URL: ")))
   ;; TODO: Ensure gateway is running.
-  (let ((entry (make-hyperdrive-entry :url url
-                                      :name (file-name-nondirectory url))))
+  (let ((entry (make-hyperdrive-entry :url url)))
     (hyperdrive-fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
