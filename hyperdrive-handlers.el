@@ -97,12 +97,13 @@ Default handler."
                            :name (url-unhex-string encoded-entry-name)))
                         encoded-entry-names))
                (parent-url (hyperdrive--parent url))
+               (parent-entry (when parent-url
+                               (hyperdrive-url-entry parent-url)))
                (ewoc)
                (header))
-    (when parent-url
-      (push (make-hyperdrive-entry :url parent-url
-                                   :etc '((display-name . "..")))
-            entries))
+    (when parent-entry
+      (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
+      (push parent-entry entries))
     (setf directory-entry (hyperdrive--fill directory-entry headers)
           hyperdrive-entries entries
           header (format "%s (%s)"
