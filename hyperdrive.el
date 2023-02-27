@@ -152,13 +152,13 @@ Passed to `format-time-string', which see."
 
 ;;;; Commands
 
-(defun hyperdrive-public-key (alias)
-  "Copy the formatted public key corresponding to ALIAS to kill-ring."
-  (interactive (list (hyperdrive--completing-read-alias)))
-  (let* ((public-key (hyperdrive--public-key-by-alias alias))
-         (formatted-key (hyperdrive--make-hyperdrive-url public-key "")))
-    (message "%s" formatted-key)
-    (kill-new formatted-key)))
+;; (defun hyperdrive-public-key (alias)
+;;   "Copy the formatted public key corresponding to ALIAS to kill-ring."
+;;   (interactive (list (hyperdrive--completing-read-alias)))
+;;   (let* ((public-key (hyperdrive--public-key-by-alias alias))
+;;          (formatted-key (hyperdrive--make-hyperdrive-url public-key "")))
+;;     (message "%s" formatted-key)
+;;     (kill-new formatted-key)))
 
 (defun hyperdrive--gateway-pid ()
   "Return `hyper-gateway' process id if it's running. Otherwise, return nil."
