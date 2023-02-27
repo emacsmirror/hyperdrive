@@ -169,6 +169,8 @@ which see."
     (hyperdrive-api 'head url
       :as 'response
       :then (lambda (response)
+              ;; FIXME: response includes the body of the message, but this is a HEAD request (remove message when fixed in plz.el)
+              (message "hyperdrive-fill: %S" response)
               (funcall then (hyperdrive--fill entry (plz-response-headers response))))
       :else else)))
 
