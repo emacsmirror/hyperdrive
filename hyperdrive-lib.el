@@ -33,14 +33,14 @@
 
 ;;;; Structs
 
-(cl-defstruct hyperdrive-directory
-  "Represents a directory in a hyperdrive."
-  ;; FIXME: Do we even need this struct?  Or will we need it later?
-  ;; TODO: Add URL slot.
-  (headers nil :documentation "HTTP headers from request.")
-  (modified nil :documentation "Last modified time.")
-  (url nil :documentation "URL returned by gateway.")
-  (entries nil :documentation "Entries in the directory."))
+;; (cl-defstruct hyperdrive-directory
+;;   "Represents a directory in a hyperdrive."
+;;   ;; FIXME: Do we even need this struct?  Or will we need it later?
+;;   ;; TODO: Add URL slot.
+;;   (headers nil :documentation "HTTP headers from request.")
+;;   (modified nil :documentation "Last modified time.")
+;;   (url nil :documentation "URL returned by gateway.")
+;;   (entries nil :documentation "Entries in the directory."))
 
 (cl-defstruct hyperdrive-entry
   "Represents an entry in a hyperdrive."
@@ -75,11 +75,12 @@ i.e. \"hyper://PUBLIC-KEY\".")
   (pcase-let* (((cl-struct url (host public-key) (filename path))
                 (url-generic-parse-url url))
                (hyperdrive (make-hyperdrive :public-key public-key
-                                            :url (concat "hyper://" public-key)))
-               (entry (make-hyperdrive-entry :hyperdrive hyperdrive
-                                             :path path
-                                             :name (string-trim path "/"))))
-    entry))
+                                            :url (concat "hyper://" public-key))))
+    ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
+    ;; :path "/path/to/basename" :name "basename"
+    (make-hyperdrive-entry :hyperdrive hyperdrive
+                           :path path
+                           :name (file-name-nondirectory path))))
 
 ;;;; Variables
 

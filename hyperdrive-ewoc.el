@@ -71,8 +71,7 @@
 To be used as the pretty-printer for `ewoc-create'."
   (pcase-exhaustive thing
     ((pred hyperdrive-entry-p)
-     (insert (hyperdrive-ewoc--format-entry thing)))
-    ((pred hyperdrive-directory-p))))
+     (insert (hyperdrive-ewoc--format-entry thing)))))
 
 (defun hyperdrive-ewoc--format-entry (entry)
   "Return ENTRY formatted as a string."

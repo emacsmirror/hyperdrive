@@ -87,9 +87,14 @@ Default handler."
                (encoded-entry-names (json-read-from-string body))
                (entries
                 (mapcar (lambda (encoded-entry-name)
-                          (let ((entry-url (concat url encoded-entry-name)))
-                            (make-hyperdrive-entry :url entry-url
-                                                   :name (url-unhex-string encoded-entry-name))))
+                          (make-hyperdrive-entry
+                           :hyperdrive (hyperdrive-entry-hyperdrive directory-entry)
+                           ;; TODO: Consider consolidating the following two somehow.
+                           :path (concat "/" encoded-entry-name)
+                           ;; FIXME: Stop decoding the names when
+                           ;; <https://github.com/RangerMauve/hypercore-fetch/issues/62>
+                           ;; is done.
+                           :name (url-unhex-string encoded-entry-name)))
                         encoded-entry-names))
                (parent-url (hyperdrive--parent url))
                (ewoc)
