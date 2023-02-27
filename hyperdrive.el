@@ -371,38 +371,37 @@ If buffer was not hyperdrive-backed, it becomes so."
 If file already exists and OVERWRITEP is nil, prompt the user to
 overwrite."
   (interactive (list (hyperdrive--read-new-entry)))
-  ;; FIXME: Overwrites without prompting if file exists.
+  ;; FIXME: Overwrites without prompting if file exists.  Make new
+  ;; --writable-p based on
+  ;; <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
   (unless hyperdrive-mode
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry))
   (pcase-let (((cl-struct hyperdrive-entry name url) entry)
               (buffer (current-buffer)))
-    (unless (or overwritep
-                (not (hyperdrive--readable-p url))
-                (yes-or-no-p (format "File already exists at: %S.  Overwrite? " url)))
-      (hyperdrive-write entry
-        :body (save-restriction
-                (widen)
-                (buffer-substring-no-properties (point-min) (point-max)))
-        :then (lambda (_response)
-                ;; TODO: Fill entry after writing it (and e.g. display
-                ;; new etag in mode line).
-                (when (buffer-live-p buffer)
-                  (with-current-buffer buffer
-                    (rename-buffer (hyperdrive--format-url url) 'unique)
-                    (set-buffer-modified-p nil)))
-                (hyperdrive-message "Wrote: %S to %S" name url))
-        :else (lambda (plz-error)
-                (pcase-let* (((cl-struct plz-error response) plz-error)
-                             ((cl-struct plz-response status body) response)
-                             ;; TODO: hyper-gateway should return 403
-                             ;; when not writable.  See:
-                             ;; <https://todo.sr.ht/~ushin/ushin/25>.
-                             (message (if (and (eq 500 status)
-                                               (string-match-p "SESSION_NOT_WRITABLE" body))
-                                          "Hyperdrive not writable"
-                                        plz-error)))
-                  (hyperdrive-message "Unable to write: %S: %S" name message)))))
+    (hyperdrive-write entry
+      :body (save-restriction
+              (widen)
+              (buffer-substring-no-properties (point-min) (point-max)))
+      :then (lambda (_response)
+              ;; TODO: Fill entry after writing it (and e.g. display
+              ;; new etag in mode line).
+              (when (buffer-live-p buffer)
+                (with-current-buffer buffer
+                  (rename-buffer (hyperdrive--format-url url) 'unique)
+                  (set-buffer-modified-p nil)))
+              (hyperdrive-message "Wrote: %S to %S" name url))
+      :else (lambda (plz-error)
+              (pcase-let* (((cl-struct plz-error response) plz-error)
+                           ((cl-struct plz-response status body) response)
+                           ;; TODO: hyper-gateway should return 403
+                           ;; when not writable.  See:
+                           ;; <https://todo.sr.ht/~ushin/ushin/25>.
+                           (message (if (and (eq 500 status)
+                                             (string-match-p "SESSION_NOT_WRITABLE" body))
+                                        "Hyperdrive not writable"
+                                      plz-error)))
+                (hyperdrive-message "Unable to write: %S: %S" name message))))
     (hyperdrive-message "Saving to %S..." url)))
 
 (defun hyperdrive--write-contents ()

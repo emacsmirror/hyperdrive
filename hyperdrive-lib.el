@@ -138,19 +138,19 @@ If already at top-level directory, return nil."
     (unless (equal parent-url hyperdrive--hyper-prefix)
       parent-url)))
 
-(defun hyperdrive--readable-p (url)
-  "Return non-nil if URL is readable.
-That is, it is known to exist and its contents are readable.  A
-nil return value does not necessarily mean that the hyperdrive
-does not exist: it may be non-existent, or its contents may be
-currently inaccessible."
-  (when-let ((response (hyperdrive-api 'head url :as 'response :else #'ignore)))
-    (pcase-let* (((cl-struct plz-response headers) response)
-                 ((map etag) headers))
-      ;; TODO: If hyperdrive-gateway is changed to return HTTP 204 for
-      ;; hyperdrive that's never had content, update this.  See:
-      ;; <https://github.com/RangerMauve/hypercore-fetch/issues/57>.
-      (>= etag 1))))
+;; (defun hyperdrive--readable-p (url)
+;;   "Return non-nil if URL is readable.
+;; That is, it is known to exist and its contents are readable.  A
+;; nil return value does not necessarily mean that the hyperdrive
+;; does not exist: it may be non-existent, or its contents may be
+;; currently inaccessible."
+;;   (when-let ((response (hyperdrive-api 'head url :as 'response :else #'ignore)))
+;;     (pcase-let* (((cl-struct plz-response headers) response)
+;;                  ((map etag) headers))
+;;       ;; TODO: If hyperdrive-gateway is changed to return HTTP 204 for
+;;       ;; hyperdrive that's never had content, update this.  See:
+;;       ;; <https://github.com/RangerMauve/hypercore-fetch/issues/57>.
+;;       (>= (string-to-number etag) 1))))
 
 ;;;; Entries
 
