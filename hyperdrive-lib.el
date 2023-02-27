@@ -44,14 +44,42 @@
 
 (cl-defstruct hyperdrive-entry
   "Represents an entry in a hyperdrive."
-  (url nil :documentation "Canonical URL to entry.")
-  (name nil :documentation "Name of entry.")
+  (hyperdrive nil :documentation "The entry's hyperdrive.")
+  ;; (url nil :documentation "Canonical URL to entry.")
+  (name nil :documentation "Filename of entry (excluding leading slash).")
+  (path nil :documentation "Path (including leading slash).")
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
   (etag nil :documentation "Entry's Etag.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
+
+(cl-defstruct hyperdrive
+  "Represents a hyperdrive."
+  (url nil :documentation "URL to hyperdrive, without trailing slash.
+i.e. \"hyper://PUBLIC-KEY\".")
+  (public-key nil :documentation "Hyperdrive's public key.")
+  (alias nil :documentation "Optional local alias.")
+  (readablep nil :documentation "Whether the drive is readable.")
+  (writablep nil :documentation "Whether the drive is writable."))
+
+(defun hyperdrive-entry-url (entry)
+  "Return ENTRY's URL."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
+               ((cl-struct hyperdrive url) hyperdrive))
+    (concat url path)))
+
+(defun hyperdrive-url-entry (url)
+  "Return entry for URL."
+  (pcase-let* (((cl-struct url (host public-key) (filename path))
+                (url-generic-parse-url url))
+               (hyperdrive (make-hyperdrive :public-key public-key
+                                            :url (concat "hyper://" public-key)))
+               (entry (make-hyperdrive-entry :hyperdrive hyperdrive
+                                             :path path
+                                             :name (string-trim path "/"))))
+    entry))
 
 ;;;; Variables
 
@@ -165,21 +193,18 @@ If already at top-level directory, return nil."
 If request fails, call ELSE (which is passed to `hyperdrive-api',
 which see."
   (declare (indent defun))
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive-api 'head url
-      :as 'response
-      :then (lambda (response)
-              ;; FIXME: response includes the body of the message, but this is a HEAD request (remove message when fixed in plz.el)
-              (message "hyperdrive-fill: %S" response)
-              (funcall then (hyperdrive--fill entry (plz-response-headers response))))
-      :else else)))
+  (hyperdrive-api 'head (hyperdrive-entry-url entry)
+    :as 'response
+    :then (lambda (response)
+            (funcall then (hyperdrive--fill entry (plz-response-headers response))))
+    :else else))
 
 (defun hyperdrive--fill (entry headers)
   "Fill ENTRY's slot from HEADERS."
-  (pcase-let (((cl-struct hyperdrive-entry name url) entry)
+  (pcase-let (((cl-struct hyperdrive-entry name path) entry)
               ((map content-length content-type etag last-modified) headers))
     (unless name
-      (setf (hyperdrive-entry-name entry) (file-name-nondirectory url)))
+      (setf (hyperdrive-entry-name entry) (string-trim path "/")))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (setf (hyperdrive-entry-size entry) (when content-length
@@ -194,16 +219,14 @@ which see."
   "Delete ENTRY, then call THEN.
 Call ELSE if request fails."
   (declare (indent defun))
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive-api 'delete url
-      :then then :else else)))
+  (hyperdrive-api 'delete (hyperdrive-entry-url entry)
+    :then then :else else))
 
 (cl-defun hyperdrive-write (entry &key body then else)
   "Write BODY to hyperdrive ENTRY's URL."
   (declare (indent defun))
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive--write url
-      :body body :then then :else else)))
+  (hyperdrive--write (hyperdrive-entry-url entry)
+    :body body :then then :else else))
 
 ;;;; Reading from the user
 
@@ -254,10 +277,9 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (with-current-buffer (get-buffer-create (hyperdrive--format-url url))
-      (setq-local hyperdrive-current-entry entry)
-      (current-buffer))))
+  (with-current-buffer (get-buffer-create (hyperdrive--format-url (hyperdrive-entry-url entry)))
+    (setq-local hyperdrive-current-entry entry)
+    (current-buffer)))
 
 (defun hyperdrive--public-key-by-alias (alias)
   "Return public key corresponding to ALIAS in `hyperdrive--namespaces'."

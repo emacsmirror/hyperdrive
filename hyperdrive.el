@@ -337,9 +337,9 @@ same ALIAS does not create a new namespace."
 ;;;###autoload
 (defun hyperdrive-open (url)
   "Open hyperdrive URL."
-  (interactive (list (read-string "URL: ")))
+  (interactive (list (read-string "Hyperdrive URL: ")))
   ;; TODO: Ensure gateway is running.
-  (let ((entry (make-hyperdrive-entry :url url)))
+  (let ((entry (hyperdrive-url-entry url)))
     (hyperdrive-fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
@@ -374,10 +374,12 @@ overwrite."
   ;; FIXME: Overwrites without prompting if file exists.  Make new
   ;; --writable-p based on
   ;; <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
+  (ignore overwritep)
   (unless hyperdrive-mode
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry))
-  (pcase-let (((cl-struct hyperdrive-entry name url) entry)
+  (pcase-let (((cl-struct hyperdrive-entry name) entry)
+              (url (hyperdrive-entry-url entry))
               (buffer (current-buffer)))
     (hyperdrive-write entry
       :body (save-restriction

@@ -47,28 +47,27 @@ Keys are regexps matched against MIME types.")
   "Load ENTRY's file into an Emacs buffer.
 Default handler."
   ;; FIXME: Make buffer read-only when hyperdrive isn't writable.
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (hyperdrive-api 'get url
-      :as (lambda ()
-            (let ((response-buffer (current-buffer))
-                  (inhibit-read-only t))
-              ;; TODO: Revisit buffer naming/"visiting" (e.g. what
-              ;; happens if the user opens a Hyperdrive file and then
-              ;; saves another buffer to the same location?).  See
-              ;; also: hyperdrive-save, etc.
-              (with-current-buffer (hyperdrive--get-buffer-create entry)
-                (when (buffer-modified-p)
-                  (error "Buffer modified: %S" (current-buffer)))
-                (erase-buffer)
-                (insert-buffer-substring response-buffer)
-                ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-                (when hyperdrive-honor-auto-mode-alist
-                  (let ((buffer-file-name (hyperdrive-entry-url entry)))
-                    (set-auto-mode)))
-                ;; TODO: Option to defer showing buffer.
-                (hyperdrive-mode)
-                (set-buffer-modified-p nil)
-                (pop-to-buffer (current-buffer))))))))
+  (hyperdrive-api 'get (hyperdrive-entry-url entry)
+    :as (lambda ()
+          (let ((response-buffer (current-buffer))
+                (inhibit-read-only t))
+            ;; TODO: Revisit buffer naming/"visiting" (e.g. what
+            ;; happens if the user opens a Hyperdrive file and then
+            ;; saves another buffer to the same location?).  See
+            ;; also: hyperdrive-save, etc.
+            (with-current-buffer (hyperdrive--get-buffer-create entry)
+              (when (buffer-modified-p)
+                (error "Buffer modified: %S" (current-buffer)))
+              (erase-buffer)
+              (insert-buffer-substring response-buffer)
+              ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+              (when hyperdrive-honor-auto-mode-alist
+                (let ((buffer-file-name (hyperdrive-entry-url entry)))
+                  (set-auto-mode)))
+              ;; TODO: Option to defer showing buffer.
+              (hyperdrive-mode)
+              (set-buffer-modified-p nil)
+              (pop-to-buffer (current-buffer)))))))
 
 (declare-function hyperdrive-ewoc-mode "hyperdrive-ewoc")
 
@@ -79,7 +78,7 @@ Default handler."
   ;; FIXME: About half of the time, calls to hyperdrive-ewoc-list
   ;; fail. Issue with sending many rapid HEAD requests?
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
-  (pcase-let* (((cl-struct hyperdrive-entry url) directory-entry)
+  (pcase-let* ((url (hyperdrive-entry-url directory-entry))
                (buffer (hyperdrive--get-buffer-create directory-entry))
                (inhibit-read-only t)
                ((cl-struct plz-response headers body)
@@ -130,8 +129,7 @@ Default handler."
 
 (defun hyperdrive-handler-streamable (entry)
   "Stream ENTRY."
-  (pcase-let (((cl-struct hyperdrive-entry url) entry))
-    (mpv-play-url (hyperdrive--httpify-url url))))
+  (mpv-play-url (hyperdrive--httpify-url (hyperdrive-entry-url entry))))
 
 (defun hyperdrive-handler-json (entry)
   "Show ENTRY.
