@@ -144,7 +144,7 @@ That is, it is known to exist and its contents are readable.  A
 nil return value does not necessarily mean that the hyperdrive
 does not exist: it may be non-existent, or its contents may be
 currently inaccessible."
-  (when-let ((response (hyperdrive-api 'head url :else #'ignore)))
+  (when-let ((response (hyperdrive-api 'head url :as 'response :else #'ignore)))
     (pcase-let* (((cl-struct plz-response headers) response)
                  ((map etag) headers))
       ;; TODO: If hyperdrive-gateway is changed to return HTTP 204 for
