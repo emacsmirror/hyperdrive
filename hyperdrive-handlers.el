@@ -91,7 +91,7 @@ Default handler."
                            :hyperdrive (hyperdrive-entry-hyperdrive directory-entry)
                            ;; TODO: Consider consolidating the following two somehow.
                            :path (concat (hyperdrive-entry-path directory-entry)
-                                         "/" encoded-entry-name)
+                                         encoded-entry-name)
                            ;; FIXME: Stop decoding the names when
                            ;; <https://github.com/RangerMauve/hypercore-fetch/issues/62>
                            ;; is done.
