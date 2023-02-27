@@ -60,7 +60,7 @@
   (url nil :documentation "URL to hyperdrive, without trailing slash.
 i.e. \"hyper://PUBLIC-KEY\".")
   (public-key nil :documentation "Hyperdrive's public key.")
-  (alias nil :documentation "Optional local alias.")
+  (alias nil :documentation "Alias (always and only present for writable hyperdrives).")
   (readablep nil :documentation "Whether the drive is readable.")
   (writablep nil :documentation "Whether the drive is writable."))
 
@@ -79,7 +79,8 @@ i.e. \"hyper://PUBLIC-KEY\".")
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (make-hyperdrive-entry :hyperdrive hyperdrive
-                           :path path
+                           :path (if (string-empty-p path) "/" path)
+                           ;; TODO: Verify that this is the right for directories.
                            :name (file-name-nondirectory path))))
 
 ;;;; Variables
@@ -89,6 +90,7 @@ i.e. \"hyper://PUBLIC-KEY\".")
 (defvar hyperdrive-current-entry)
 (defvar hyperdrive-hyper-gateway-port)
 (defvar hyperdrive--namespaces)
+(defvar hyperdrive-hyperdrives)
 
 (eval-and-compile
   (defconst hyperdrive--hyper-prefix "hyper://"
@@ -243,24 +245,58 @@ select it automatically."
     ;; TODO: Prompt user to create namespace here?
     (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace")))
 
+(defun hyperdrive-completing-read-hyperdrive (&optional predicate)
+  "Return a hyperdrive selected with completion, or a new one.
+If PREDICATE, only offer hyperdrives matching it."
+  ;; FIXME: When writing a file to an existing hyperdrive's
+  ;; subdirectory, the subdirectory is not included in the prompt for
+  ;; the path, so unless the user adds it, the file would get written
+  ;; to the root.
+  ;; TODO: Implement predicate.
+  (ignore predicate)
+  (let* ((aliases (mapcar #'hyperdrive-alias hyperdrive-hyperdrives))
+         (urls (mapcar #'hyperdrive-url hyperdrive-hyperdrives))
+         (candidates (append aliases urls))
+         (input (completing-read "Hyperdrive: " candidates))
+         (selected (cl-find-if (lambda (hyperdrive)
+                                 (or (equal input (hyperdrive-alias hyperdrive))
+                                     (equal input (hyperdrive-url hyperdrive))))
+                               hyperdrive-hyperdrives)))
+    (cond (selected)
+          ((string-match (rx bos "hyper://" (= 52 alnum)
+                             (optional "/" (optional (group (1+ anything)))))
+                         input)
+           ;; User apparently entered a URL.
+           (when (match-string 1 input)
+             (user-error "URL entered is to a hyperdrive file, not a hyperdrive root"))
+           (hyperdrive-entry-hyperdrive (hyperdrive-url-entry input)))
+          ((= 52 (length input))
+           ;; User apparently entered a public key.
+           (make-hyperdrive :public-key input :url (concat "hyper://" input)))
+          ((yes-or-no-p (format "Make new hyperdrive? (%s) " input))
+           (hyperdrive-new input)))))
+
 (defun hyperdrive--read-new-entry ()
   "Return new hyperdrive entry with name and URL read from user."
   ;; FIXME: When writing a file to an existing hyperdrive's
   ;; subdirectory, the subdirectory is not included in the prompt for
   ;; the path, so unless the user adds it, the file would get written
   ;; to the root.
-  (let* ((filename (buffer-file-name))
+  (let* ((hyperdrive (hyperdrive-completing-read-hyperdrive))
+         (filename (buffer-file-name))
          (basename (or (when hyperdrive-current-entry
                          (hyperdrive-entry-name hyperdrive-current-entry))
                        (when filename
                          (file-name-nondirectory filename))))
          (default (or basename (buffer-name)))
          (prompt (format "Filename [default %S]: " default))
-         (name (read-string prompt nil nil default))
-         (alias (hyperdrive--completing-read-alias))
-         (public-key (hyperdrive--public-key-by-alias alias))
-         (url (hyperdrive--make-hyperdrive-url public-key name)))
-    (make-hyperdrive-entry :name name :url url)))
+         (name (read-string prompt nil nil default)))
+    (make-hyperdrive-entry :hyperdrive hyperdrive :name name)))
+
+(defun hyperdrive-new (alias)
+  "Return new hyperdrive for ALIAS."
+  (let ((url (hyperdrive-api 'post (concat "hyper://localhost/?key=" alias))))
+    (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
 
 ;;;; Misc.
 

@@ -134,7 +134,12 @@ Passed to `format-time-string', which see."
 ;;;; Internal variables
 
 (persist-defvar hyperdrive--namespaces nil
+                ;; TODO: Refactor this into hyperdrive-hyperdrives.
                 "List of cons pairs mapping an alias to a public key."
+                hyperdrive-persist-location)
+
+(persist-defvar hyperdrive-hyperdrives nil
+                "List of known hyperdrives."
                 hyperdrive-persist-location)
 
 (defconst hyperdrive--org-link-type "hyper" "Org mode link type.")
