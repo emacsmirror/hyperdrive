@@ -24,6 +24,8 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'map)
+(require 'pcase)
 
 (require 'compat)
 (require 'persist)
@@ -55,6 +57,7 @@
 
 (defvar hyperdrive-timestamp-format-string nil)
 
+(defvar hyperdrive-current-entry)
 (defvar hyperdrive-hyper-gateway-port)
 (defvar hyperdrive--namespaces)
 

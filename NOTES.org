@@ -65,3 +65,11 @@ What hyperdrive does:
 | file on writable hyperdrive  | hyperdrive-save-buffer  | yes               |
 | file on read-only hyperdrive | hyperdrive-save-buffer  | yes               |
 | file on read-only hyperdrive | hyperdrive-write-buffer | yes               |
+
+** Overwriting existing Hyperdrive files
+
+| Hyperdrive URL status | Command      | Should                      | Correct behavior? |
+|-----------------------+--------------+-----------------------------+-------------------|
+| Already exists        | write-buffer | Prompt to overwrite         |                   |
+| Already exists        | save-buffer  | Overwrite without prompting |                   |
+
