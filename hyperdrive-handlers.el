@@ -128,7 +128,8 @@ Default handler."
                               ;; TODO: Use `ewoc-invalidate' on individual entries
                               ;; (maybe later, as performance comes to matter more).
                               (ewoc-refresh hyperdrive-ewoc))
-                          (ewoc-refresh hyperdrive-ewoc)))))
+                          (with-current-buffer (ewoc-buffer ewoc)
+                            (ewoc-refresh hyperdrive-ewoc))))))
             entries)
       (set-buffer-modified-p nil)
       (pop-to-buffer (current-buffer)))))
