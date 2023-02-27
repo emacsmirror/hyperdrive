@@ -46,6 +46,7 @@ Keys are regexps matched against MIME types.")
 (defun hyperdrive-handler-default (entry)
   "Load ENTRY's file into an Emacs buffer.
 Default handler."
+  ;; FIXME: Make buffer read-only when hyperdrive isn't writable.
   (pcase-let (((cl-struct hyperdrive-entry url) entry))
     (hyperdrive-api 'get url
       :as (lambda ()
