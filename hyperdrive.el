@@ -435,6 +435,9 @@ To be used in `write-contents-functions'."
 ;; (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
 ;;             browse-url-handlers :test #'equal)
 
+;; TODO: Implement link following.
+;; TODO: Store links from directory buffer.
+
 (eval-when-compile
   (require 'ol))
 
