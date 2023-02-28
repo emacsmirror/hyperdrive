@@ -77,6 +77,7 @@
 (require 'map)
 (require 'rx)
 
+(require 'compat)
 (require 'plz)
 (require 'mpv)
 (require 'persist)
