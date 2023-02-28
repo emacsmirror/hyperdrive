@@ -131,6 +131,14 @@ Passed to `format-time-string', which see."
                (format "%%%ss"
                        (string-width (format-time-string value))))))
 
+(defcustom hyperdrive-directory-display-buffer-action
+  '(display-buffer-same-window)
+  "Display buffer action for hyperdrive directories.
+Passed to `display-buffer', which see."
+  :type '(choice (const :tag "Same window" (display-buffer-same-window))
+                 (const :tag "Pop up window" (display-buffer-pop-up-window))
+                 (sexp :tag "Other")))
+
 ;;;; Internal variables
 
 (persist-defvar hyperdrive--namespaces nil

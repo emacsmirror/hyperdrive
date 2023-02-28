@@ -31,6 +31,7 @@
 (defvar hyperdrive-ewoc)
 (defvar hyperdrive-entries)
 (defvar hyperdrive-timestamp-format)
+(defvar hyperdrive-directory-display-buffer-action)
 
 ;;;; Handlers
 
@@ -133,7 +134,7 @@ Default handler."
                             (ewoc-refresh hyperdrive-ewoc))))))
             entries)
       (set-buffer-modified-p nil)
-      (pop-to-buffer (current-buffer)))))
+      (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action))))
 
 (defun hyperdrive-handler-streamable (entry)
   "Stream ENTRY."
