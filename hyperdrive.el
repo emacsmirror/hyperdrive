@@ -428,6 +428,8 @@ To be used in `write-contents-functions'."
 
 ;;;; Links
 
+(require 'browse-url)
+
 (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
             browse-url-handlers :test #'equal)
 
