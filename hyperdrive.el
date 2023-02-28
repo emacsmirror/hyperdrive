@@ -460,8 +460,10 @@ An alist keyed by major mode.")
                        (caar org-stored-links)))
                (urlobj (url-generic-parse-url link))
                ((cl-struct url filename) urlobj)
-               (target (when (string-match (rx (group (1+ anything))
-                                               "::" (group (1+ anything))) filename)
+               (target (when (and filename
+                                  (string-match (rx (group (1+ anything))
+                                                    "::" (group (1+ anything)))
+                                                filename))
                          (match-string 2 filename))))
     (when target
       (setf (url-filename urlobj) (match-string 1 filename)
