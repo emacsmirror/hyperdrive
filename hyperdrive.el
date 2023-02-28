@@ -470,6 +470,8 @@ An alist keyed by major mode.")
   ;; TODO: Since we are only interested in the target, not the file-name, couldn't we set buffer-file-name to "" (or maybe "_" if empty string doesn't work)?
   (pcase-let* ((buffer-file-name (or buffer-file-name
                                      (hyperdrive-entry-url hyperdrive-current-entry)))
+               ;; FIXME: I tested this on a header with CUSTOM_ID set, and the link target was set to the heading string, not "#CUSTOM_ID".
+               ;; TODO: Related to above, org mode prefixes CUSTOM_ID targets with "#". Since we are now using "#" to separate the filename from the target, what should we use to distinguish CUSTOM_ID targets?
                (org-link (org-store-link nil))
                (org-link-target (progn
                                   (string-match org-link-bracket-re org-link)
