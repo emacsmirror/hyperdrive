@@ -461,10 +461,11 @@ An alist keyed by major mode.")
   (cl-assert hyperdrive-mode)
   (pcase-let* ((buffer-file-name (or buffer-file-name
                                      (hyperdrive-entry-url hyperdrive-current-entry)))
-               (link (progn
-                       (org-store-link nil)
-                       (caar org-stored-links)))
-               (urlobj (url-generic-parse-url link))
+               (org-link (org-store-link nil))
+               (org-link-target (progn
+                                  (string-match org-link-bracket-re org-link)
+                                  (match-string 1)))
+               (urlobj (url-generic-parse-url org-link-target))
                ((cl-struct url filename) urlobj)
                (target (when (and filename
                                   (string-match (rx (group (1+ anything))
