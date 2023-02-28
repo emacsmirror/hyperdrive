@@ -446,6 +446,7 @@ To be used in `write-contents-functions'."
   "Functions that return a link target for a buffer.
 An alist keyed by major mode.")
 
+;; FIXME: Targets have "%5D%5D" (decoded "]]") appended to them
 (defun hyperdrive-kill-link ()
   "Return hyperdrive link to current buffer's file."
   (interactive)
