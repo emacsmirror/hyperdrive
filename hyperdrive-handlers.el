@@ -68,6 +68,14 @@ Default handler."
               ;; TODO: Option to defer showing buffer.
               (hyperdrive-mode)
               (set-buffer-modified-p nil)
+              ;; FIXME: Do this in a wrapper.
+              ;; (when target
+              ;;   ;; FIXME: This is specific to Org files and doesn't
+              ;;   ;; quite belong here.  (OTOH we could use this
+              ;;   ;; function to find text in non-Org files, too, I
+              ;;   ;; think.)
+              ;;   (require 'ol)
+              ;;   (org-link-search target))
               (pop-to-buffer (current-buffer)))))))
 
 (declare-function hyperdrive-ewoc-mode "hyperdrive-ewoc")

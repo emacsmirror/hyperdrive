@@ -72,16 +72,19 @@ i.e. \"hyper://PUBLIC-KEY\".")
 
 (defun hyperdrive-url-entry (url)
   "Return entry for URL."
-  (pcase-let* (((cl-struct url (host public-key) (filename path))
+  (pcase-let* (((cl-struct url (host public-key) (filename path) target)
                 (url-generic-parse-url url))
                (hyperdrive (make-hyperdrive :public-key public-key
-                                            :url (concat "hyper://" public-key))))
+                                            :url (concat "hyper://" public-key)))
+               (etc (when target
+                      (list (cons 'target target)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (make-hyperdrive-entry :hyperdrive hyperdrive
                            :path (if (string-empty-p path) "/" path)
                            ;; TODO: Verify that this is the right for directories.
-                           :name (file-name-nondirectory path))))
+                           :name (file-name-nondirectory path)
+                           :etc etc)))
 
 ;;;; Variables
 
@@ -250,7 +253,7 @@ select it automatically."
     ;; TODO: Prompt user to create namespace here?
     (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace")))
 
-(defun hyperdrive-completing-read-hyperdrive (&optional predicate)
+(cl-defun hyperdrive-completing-read-hyperdrive (&key predicate (prompt "Hyperdrive: "))
   "Return a hyperdrive selected with completion, or a new one.
 If PREDICATE, only offer hyperdrives matching it."
   ;; FIXME: When writing a file to an existing hyperdrive's
@@ -262,7 +265,7 @@ If PREDICATE, only offer hyperdrives matching it."
   (let* ((aliases (mapcar #'hyperdrive-alias hyperdrive-hyperdrives))
          (urls (mapcar #'hyperdrive-url hyperdrive-hyperdrives))
          (candidates (append aliases urls))
-         (input (completing-read "Hyperdrive: " candidates))
+         (input (completing-read prompt candidates))
          (selected (cl-find-if (lambda (hyperdrive)
                                  (or (equal input (hyperdrive-alias hyperdrive))
                                      (equal input (hyperdrive-url hyperdrive))))

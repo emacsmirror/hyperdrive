@@ -150,7 +150,7 @@ Passed to `display-buffer', which see."
                 "List of known hyperdrives."
                 hyperdrive-persist-location)
 
-(defconst hyperdrive--org-link-type "hyper" "Org mode link type.")
+(defconst hyperdrive-org-link-type "hyper" "Org mode link type.")
 
 (defvar-local hyperdrive-current-entry nil
   "Entry for current buffer.")
@@ -319,7 +319,8 @@ same ALIAS does not create a new namespace."
 ;; 			  (org-link-search search)
 ;;                         (error "%s" (nth 1 err)))))))))
 
-;; (org-link-set-parameters hyperdrive--org-link-type :store #'hyperdrive-store-link :follow #'hyperdrive-open-link)
+;; (org-link-set-parameters hyperdrive-org-link-type
+;;                          :store #'hyperdrive-store-link :follow #'hyperdrive-open-link)
 
 ;;;; hyperdrive-mode
 
@@ -350,7 +351,7 @@ same ALIAS does not create a new namespace."
 ;;;###autoload
 (defun hyperdrive-open (url)
   "Open hyperdrive URL."
-  (interactive (list (read-string "Hyperdrive URL: ")))
+  (interactive (list (read-string "Open Hyperdrive URL: ")))
   ;; TODO: Ensure gateway is running.
   (let ((entry (hyperdrive-url-entry url)))
     (hyperdrive-fill entry
@@ -424,6 +425,48 @@ overwrite."
 To be used in `write-contents-functions'."
   (cl-assert hyperdrive-mode)
   (hyperdrive-save-buffer hyperdrive-current-entry))
+
+;;;; Links
+
+(cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
+            browse-url-handlers :test #'equal)
+
+(defvar hyperdrive-link-target-functions
+  `((org-mode . hyperdrive-link-org-target))
+  "Functions that return a link target for a buffer.
+An alist keyed by major mode.")
+
+(defun hyperdrive-kill-link ()
+  "Return hyperdrive link to current buffer's file."
+  (interactive)
+  (unless hyperdrive-mode
+    (user-error "Buffer is not visiting a hyperdrive file")) 
+  (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
+         (target-fn (alist-get major-mode hyperdrive-link-target-functions))
+         (target (when target-fn
+                   (funcall target-fn))))
+    (when target
+      (setf url (concat url "#" (url-hexify-string target))))
+    (kill-new url)
+    (message "%s" url)))
+
+(defun hyperdrive-link-org-target ()
+  "Return target string for current Org buffer."
+  (cl-assert (eq 'org-mode major-mode))
+  (pcase-let* ((link (progn
+                       (org-store-link nil)
+                       (caar org-stored-links)))
+               (urlobj (url-generic-parse-url link))
+               ((cl-struct url filename) urlobj)
+               (target (when (string-match (rx (group (1+ anything))
+                                               "::" (group (1+ anything))) filename)
+                         (match-string 2 filename))))
+    (when target
+      (setf (url-filename urlobj) (match-string 1 filename)
+            (url-target urlobj) target))
+    (url-recreate-url urlobj)))
+
+;;;; Footer
 
 (provide 'hyperdrive)
 ;;; hyperdrive.el ends here
