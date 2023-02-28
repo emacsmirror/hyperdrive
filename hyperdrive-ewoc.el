@@ -125,6 +125,8 @@ To be used as the pretty-printer for `ewoc-create'."
 
 ;;;; Commands
 
+;; TODO: Implement sorting by size, type, etc.
+
 (declare-function hyperdrive-open "hyperdrive")
 
 (defun hyperdrive-ewoc-find-file (entry)
