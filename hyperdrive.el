@@ -466,7 +466,7 @@ An alist keyed by major mode.")
                (org-link-target (progn
                                   (string-match org-link-bracket-re org-link)
                                   (match-string 1 org-link)))
-               (org-link ((string-trim-left org-link (rx "file:"))))
+               (org-link (string-trim-left org-link (rx "file:")))
                (urlobj (url-generic-parse-url org-link-target))
                ((cl-struct url filename) urlobj)
                (target (when (and filename
