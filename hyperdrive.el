@@ -467,6 +467,7 @@ An alist keyed by major mode.")
   (cl-assert hyperdrive-mode)
   ;; NOTE: We must fool `org-store-link' because it refuses to return
   ;; a link if the buffer has no filename.
+  ;; TODO: Since we are only interested in the target, not the file-name, couldn't we set buffer-file-name to "" (or maybe "_" if empty string doesn't work)?
   (pcase-let* ((buffer-file-name (or buffer-file-name
                                      (hyperdrive-entry-url hyperdrive-current-entry)))
                (org-link (org-store-link nil))
