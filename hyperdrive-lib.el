@@ -190,8 +190,13 @@ If already at top-level directory, return nil."
 (cl-defun hyperdrive-fill
     (entry &key then
            (else (lambda (plz-error)
-                   (display-warning 'hyperdrive
-                                    (format "hyperdrive-fill: error: %S" plz-error)))))
+                   ;; FIXME: Use a message instead of a warning for
+                   ;; now, because the 404 errors for filenames with
+                   ;; spaces are annoying as warnings.
+                   (hyperdrive-message (format "hyperdrive-fill: error: %S" plz-error) )
+                   ;; (display-warning 'hyperdrive
+                   ;;                  (format "hyperdrive-fill: error: %S" plz-error))
+                   )))
   "Fill ENTRY's metadata and call THEN.
 If request fails, call ELSE (which is passed to `hyperdrive-api',
 which see."
