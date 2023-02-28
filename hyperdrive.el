@@ -431,8 +431,12 @@ To be used in `write-contents-functions'."
 
 (require 'browse-url)
 
+;; TODO: Hook into browse-url-handlers (but only on Emacs 28+).
 ;; (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
 ;;             browse-url-handlers :test #'equal)
+
+(eval-when-compile
+  (require 'ol))
 
 (defvar hyperdrive-link-target-functions
   `((org-mode . hyperdrive-link-org-target))
@@ -453,13 +457,12 @@ An alist keyed by major mode.")
     (kill-new url)
     (message "%s" url)))
 
-(eval-when-compile
-  (require 'ol))
-
 (defun hyperdrive-link-org-target ()
   "Return target string for current Org buffer."
   (cl-assert (eq 'org-mode major-mode))
   (cl-assert hyperdrive-mode)
+  ;; NOTE: We must fool `org-store-link' because it refuses to return
+  ;; a link if the buffer has no filename.
   (pcase-let* ((buffer-file-name (or buffer-file-name
                                      (hyperdrive-entry-url hyperdrive-current-entry)))
                (org-link (org-store-link nil))
@@ -468,16 +471,12 @@ An alist keyed by major mode.")
                                   (match-string 1 org-link)))
                (org-link (string-trim-left org-link (rx "file:")))
                (urlobj (url-generic-parse-url org-link))
-               ((cl-struct url filename) urlobj)
-               (target (when (and filename
-                                  (string-match (rx (group (1+ anything))
-                                                    "::" (group (1+ anything)))
-                                                filename))
-                         (match-string 2 filename))))
-    (when target
-      (setf (url-filename urlobj) (match-string 1 filename)
-            (url-target urlobj) target))
-    (url-recreate-url urlobj)))
+               ((cl-struct url filename) urlobj))
+    (when (and filename
+               (string-match (rx (group (1+ anything))
+                                 "::" (group (1+ anything)))
+                             filename))
+      (match-string 2 filename))))
 
 ;;;; Footer
 
