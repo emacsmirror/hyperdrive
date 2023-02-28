@@ -452,10 +452,16 @@ An alist keyed by major mode.")
     (kill-new url)
     (message "%s" url)))
 
+(eval-when-compile
+  (require 'ol))
+
 (defun hyperdrive-link-org-target ()
   "Return target string for current Org buffer."
   (cl-assert (eq 'org-mode major-mode))
-  (pcase-let* ((link (progn
+  (cl-assert hyperdrive-mode)
+  (pcase-let* ((buffer-file-name (or buffer-file-name
+                                     (hyperdrive-entry-url hyperdrive-current-entry)))
+               (link (progn
                        (org-store-link nil)
                        (caar org-stored-links)))
                (urlobj (url-generic-parse-url link))
