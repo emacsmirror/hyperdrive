@@ -430,8 +430,8 @@ To be used in `write-contents-functions'."
 
 (require 'browse-url)
 
-(cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
-            browse-url-handlers :test #'equal)
+;; (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
+;;             browse-url-handlers :test #'equal)
 
 (defvar hyperdrive-link-target-functions
   `((org-mode . hyperdrive-link-org-target))
