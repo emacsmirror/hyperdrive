@@ -57,25 +57,27 @@
 
 (cl-defstruct hyperdrive
   "Represents a hyperdrive."
-  (url nil :documentation "URL to hyperdrive, without trailing slash.
-i.e. \"hyper://PUBLIC-KEY\".")
   (public-key nil :documentation "Hyperdrive's public key.")
   (alias nil :documentation "Alias (always and only present for writable hyperdrives).")
   (readablep nil :documentation "Whether the drive is readable.")
   (writablep nil :documentation "Whether the drive is writable."))
 
+(defun hyperdrive-url (hyperdrive)
+  "Return a \"hyper://\"-prefixed URL from a HYPERDRIVE struct.
+URL does not have a trailing slash, i.e., \"hyper://PUBLIC-KEY\"."
+  (concat "hyper://" (hyperdrive-public-key hyperdrive)))
+
 (defun hyperdrive-entry-url (entry)
   "Return ENTRY's URL."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               ((cl-struct hyperdrive url) hyperdrive))
+               (url (hyperdrive-url hyperdrive)))
     (concat url path)))
 
 (defun hyperdrive-url-entry (url)
   "Return entry for URL."
   (pcase-let* (((cl-struct url (host public-key) (filename path) target)
                 (url-generic-parse-url url))
-               (hyperdrive (make-hyperdrive :public-key public-key
-                                            :url (concat "hyper://" public-key)))
+               (hyperdrive (make-hyperdrive :public-key public-key))
                (etc (when target
                       (list (cons 'target target)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
@@ -280,7 +282,7 @@ If PREDICATE, only offer hyperdrives matching it."
            (hyperdrive-entry-hyperdrive (hyperdrive-url-entry input)))
           ((= 52 (length input))
            ;; User apparently entered a public key.
-           (make-hyperdrive :public-key input :url (concat "hyper://" input)))
+           (make-hyperdrive :public-key input))
           ((yes-or-no-p (format "Make new hyperdrive? (%s) " input))
            (hyperdrive-new input)))))
 
