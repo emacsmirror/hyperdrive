@@ -179,7 +179,7 @@ Passed to `display-buffer', which see."
 (defun hyperdrive--gateway-ready-p ()
   "Return non-nil if hyper-gateway is ready."
   (let (readyp)
-    (hyperdrive-api 'get (concat hyperdrive--hyper-prefix "localhost/?key=")
+    (hyperdrive-api 'get "hyper://localhost"
       :else (lambda (err)
               (unless (and (plz-error-curl-error err)
                            ;; "Failed to connect to host."
