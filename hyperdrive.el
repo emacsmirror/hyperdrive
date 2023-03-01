@@ -191,6 +191,21 @@ Passed to `display-buffer', which see."
                   (setq readyp t)))))
     readyp))
 
+(defun hyperdrive--alias-url (alias)
+  "Return URL to hyperdrive known as ALIAS, or nil if it doesn't exist.
+That is, if the ALIAS has been used to create a local
+hyperdrive."
+  (condition-case err
+      (pcase (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string alias))
+               :as 'response)
+        ((and (pred plz-response-p)
+              response
+              (guard (= 200 (plz-response-status response))))
+         (plz-response-body response)))
+    (plz-http-error (if (= 400 (plz-response-status (plz-error-response err)))
+                        nil
+                      (signal 'plz-http-error err)))))
+
 ;;;###autoload
 (defun hyperdrive-start-gateway ()
   "Start `hyper-gateway' if not already running."
