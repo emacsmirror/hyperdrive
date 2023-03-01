@@ -317,7 +317,7 @@ If PREDICATE, only offer hyperdrives matching it."
                 ;; NOTE: Working around issue in plz whereby the
                 ;; stderr process sentinel sometimes leaves "stderr
                 ;; finished" garbage in the response body in older
-                ;; Emacs versions.
+                ;; Emacs versions.  See: <https://github.com/alphapapa/plz.el/issues/23>.
                 (string-match (rx bos (group "hyper://" (1+ nonl))) response)
                 (match-string 1 response)))
          (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
