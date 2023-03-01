@@ -56,27 +56,27 @@ Default handler."
             ;; happens if the user opens a Hyperdrive file and then
             ;; saves another buffer to the same location?).  See
             ;; also: hyperdrive-save, etc.
-            (with-current-buffer (hyperdrive--get-buffer-create entry)
-              (when (buffer-modified-p)
-                (error "Buffer modified: %S" (current-buffer)))
-              (erase-buffer)
-              (insert-buffer-substring response-buffer)
-              ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-              (when hyperdrive-honor-auto-mode-alist
-                (let ((buffer-file-name (hyperdrive-entry-url entry)))
-                  (set-auto-mode)))
-              ;; TODO: Option to defer showing buffer.
-              (hyperdrive-mode)
-              (set-buffer-modified-p nil)
-              ;; FIXME: Do this in a wrapper.
-              ;; (when target
-              ;;   ;; FIXME: This is specific to Org files and doesn't
-              ;;   ;; quite belong here.  (OTOH we could use this
-              ;;   ;; function to find text in non-Org files, too, I
-              ;;   ;; think.)
-              ;;   (require 'ol)
-              ;;   (org-link-search target))
-              (pop-to-buffer (current-buffer)))))))
+            (switch-to-buffer (hyperdrive--get-buffer-create entry))
+            (when (buffer-modified-p)
+              (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
+            (erase-buffer)
+            (insert-buffer-substring response-buffer)
+            ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+            (when hyperdrive-honor-auto-mode-alist
+              (let ((buffer-file-name (hyperdrive-entry-url entry)))
+                (set-auto-mode)))
+            ;; TODO: Option to defer showing buffer.
+            (hyperdrive-mode)
+            (set-buffer-modified-p nil)
+            ;; FIXME: Do this in a wrapper.
+            ;; (when target
+            ;;   ;; FIXME: This is specific to Org files and doesn't
+            ;;   ;; quite belong here.  (OTOH we could use this
+            ;;   ;; function to find text in non-Org files, too, I
+            ;;   ;; think.)
+            ;;   (require 'ol)
+            ;;   (org-link-search target))
+            (pop-to-buffer (current-buffer))))))
 
 (declare-function hyperdrive-ewoc-mode "hyperdrive-ewoc")
 
