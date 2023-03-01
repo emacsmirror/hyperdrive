@@ -92,7 +92,7 @@ raw URL, not an Org link."
       ;; destructuring plists with pcase-let, we use an alist here.
       `((type . "hyper") (link . ,raw-url) (description . ,heading)))))
 
-(defun hyperdrive-link-org-follow (url _prefix)
+(defun hyperdrive-link-org-follow (url &optional _prefix)
   ;; TODO: Do we need to do anything if prefix is used?
   "Follow hyperdrive URL."
   (pcase-let* ((urlobj (url-generic-parse-url url))
