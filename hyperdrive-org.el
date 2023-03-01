@@ -41,6 +41,7 @@
 ;;             browse-url-handlers :test #'equal)
 
 ;; TODO: Store links from directory buffer.
+;; TODO: Store links to non-Org files
 
 (defun hyperdrive-link-org-store ()
   "Store an Org link to the entry at point in current Org buffer.
