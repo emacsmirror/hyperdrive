@@ -270,9 +270,9 @@ If PREDICATE, only offer hyperdrives matching it."
          (input (completing-read prompt candidates))
          (selected (cl-find-if (lambda (hyperdrive)
                                  (or (equal input (hyperdrive-alias hyperdrive))
-                                     ;; TODO: Do we want to match against hyper://PUBLIC-KEY/ (w/ trailing slash) also?
-                                     ;; (hyperdrive-url hyperdrive) does not include trailing slash
-                                     (equal input (hyperdrive-url hyperdrive))))
+                                     (equal input (hyperdrive-url hyperdrive))
+                                     ;; In case the user adds a trailing slash.
+                                     (equal input (concat (hyperdrive-url hyperdrive) "/"))))
                                hyperdrive-hyperdrives)))
     (cond (selected)
           ((string-match (rx bos "hyper://" (= 52 alnum)
