@@ -212,7 +212,7 @@ hyperdrive."
   "Start `hyper-gateway' if not already running."
   (interactive)
   (unless (hyperdrive--gateway-ready-p)
-    (let ((buf (get-buffer-create "hyper-gateway")))
+    (let ((buf (get-buffer-create " *hyper-gateway*")))
       (with-current-buffer buf (erase-buffer))
       (make-process
        :name "hyper-gateway"
