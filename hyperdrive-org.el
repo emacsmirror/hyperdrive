@@ -82,8 +82,7 @@ raw URL, not an Org link."
          (heading (nth 4 (org-heading-components)))
          (custom-id (org-entry-get (point) "CUSTOM_ID"))
          (generated-id (org-entry-get (point) "ID"))
-         (heading-regexp (org-link-heading-search-string))
-         (fragment (or custom-id generated-id heading-regexp))
+         (fragment (or custom-id generated-id heading))
          (raw-url (concat url "#" (url-hexify-string fragment))))
     (if raw-url-p
         raw-url
@@ -111,7 +110,7 @@ TARGET may be a CUSTOM_ID, an ID, or a headline."
   ;; neither does Org always do so.
   (goto-char (or (org-find-property "CUSTOM_ID" target)
                  (org-find-property "ID" target)
-                 (org-find-exact-headline-in-buffer (string-trim-left target (rx "*")))
+                 (org-find-exact-headline-in-buffer target)
                  (error "Hyperdrive: Unable to find entry in file: %S" target))))
 
 (org-link-set-parameters "hyper"
