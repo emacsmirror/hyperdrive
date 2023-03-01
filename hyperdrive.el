@@ -227,17 +227,6 @@ hyperdrive."
         (signal-process proc 'sigint)
       (message "Already not running hyper-gateway."))))
 
-;; (defun hyperdrive-save-buffer-by-alias (alias path)
-;;   "Save contents of current buffer as a file at PATH in namespaced
-;; hyperdrive corresponding to ALIAS.
-
-;; PATH represents the absolute path inside the hyperdrive."
-;;   (interactive (list
-;;                 (hyperdrive--completing-read-alias)
-;;                 (read-string "Path in hyperdrive: ")))
-;;   (hyperdrive-save-buffer
-;;    (hyperdrive--make-hyperdrive-url (hyperdrive--public-key-by-alias alias) path)))
-
 ;; (defun hyperdrive-upload-files (alias relative-dir files)
 ;; TODO: Update this.
 ;;   "Upload files from the local filesystem to the hyperdrive for ALIAS.
