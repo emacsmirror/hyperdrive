@@ -281,7 +281,10 @@ If PREDICATE, only offer hyperdrives matching it."
                     hyperdrive-hyperdrives)
         input)))
 
-(cl-defun hyperdrive-complete-url (&key (prompt "Hyperdrive alias or URL: "))
+(cl-defun hyperdrive-complete-url
+    (&key (prompt (if hyperdrive-hyperdrives
+                      "Hyperdrive alias or URL: "
+                    "Hyperdrive URL: ")))
   "Return hyperdrive URL selected with completion."
   (let ((selected (hyperdrive-complete-hyperdrive :prompt prompt)))
     (pcase selected
@@ -290,7 +293,9 @@ If PREDICATE, only offer hyperdrives matching it."
             (guard (string-prefix-p "hyper://" selected)))
        ;; User input a hyperdrive URL: return it.
        selected)
-      (_ (user-error "Please select a known hyperdrive or input a hyper:// URL")))))
+      (_ (user-error (if hyperdrive-hyperdrives
+                         "Please select a known hyperdrive or input a hyper:// URL"
+                       "Please input a hyper:// URL"))))))
 
 (defun hyperdrive--read-new-entry ()
   "Return new hyperdrive entry with path and hyperdrive read from user."
