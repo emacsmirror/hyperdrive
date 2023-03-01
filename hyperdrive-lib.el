@@ -309,7 +309,7 @@ If PREDICATE, only offer hyperdrives matching it."
 
 (defun hyperdrive-new (alias)
   "Return new hyperdrive for ALIAS."
-  (let ((url (hyperdrive-api 'post (concat "hyper://localhost/?key=" alias))))
+  (let ((url (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias)))))
     (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
 
 ;;;; Misc.
