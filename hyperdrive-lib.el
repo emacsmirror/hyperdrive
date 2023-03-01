@@ -31,6 +31,10 @@
 (require 'persist)
 (require 'plz)
 
+;;;; Declarations
+
+(declare-function hyperdrive-open "hyperdrive")
+
 ;;;; Structs
 
 ;; (cl-defstruct hyperdrive-directory
@@ -271,14 +275,14 @@ select it automatically."
 If PREDICATE, only offer hyperdrives matching it."
   ;; TODO: Implement predicate.
   (ignore predicate)
-  (let* ((candidates (mapcar #'hyperdrive-format-hyperdrive hyperdrive-hyperdrives))
-         (input (completing-read prompt candidates)))
-    (or (cl-find-if (lambda (hyperdrive)
-                      (or (equal input (hyperdrive-alias hyperdrive))
-                          (equal input (hyperdrive-url hyperdrive))
-                          ;; In case the user adds a trailing slash.
-                          (equal input (concat (hyperdrive-url hyperdrive) "/"))))
-                    hyperdrive-hyperdrives)
+  (let* ((candidates (mapcar (lambda (hyperdrive)
+                               (cons (concat (when (hyperdrive-alias hyperdrive)
+                                               (concat (hyperdrive-alias hyperdrive) " "))
+                                             (hyperdrive-url hyperdrive))
+                                     hyperdrive))
+                             hyperdrive-hyperdrives))
+         (input (completing-read prompt (mapcar #'car candidates))))
+    (or (alist-get input candidates nil nil #'equal)
         input)))
 
 (cl-defun hyperdrive-complete-url
