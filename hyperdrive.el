@@ -207,7 +207,7 @@ hyperdrive."
                       (signal 'plz-http-error err)))))
 
 ;;;###autoload
-(defun hyperdrive-start-gateway ()
+(defun hyperdrive-start ()
   "Start `hyper-gateway' if not already running."
   (interactive)
   (unless (hyperdrive--gateway-ready-p)
@@ -218,7 +218,7 @@ hyperdrive."
        :buffer buf
        :command (list hyperdrive-hyper-gateway-command "--writable" "true" "run")))))
 
-(defun hyperdrive-stop-gateway ()
+(defun hyperdrive-stop ()
   "Stop the `hyper-gateway' process."
   (interactive)
   (let ((proc (hyperdrive--gateway-pid)))
