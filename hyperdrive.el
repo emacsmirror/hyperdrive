@@ -490,12 +490,15 @@ raw URL, not an Org link."
          (raw-url (concat url "#" (url-hexify-string fragment))))
     (if raw-url-p
         raw-url
-      (list :type "hyper" :link raw-url :description heading))))
+      ;; NOTE: Due to annoying issues with older versions of Emacs
+      ;; that have older versions of map.el that don't support
+      ;; destructuring plists with pcase-let, we use an alist here.
+      `((type . "hyper") (link . ,raw-url) (description . ,heading)))))
 
 (defun hyperdrive-link-org-store ()
   (when (and (eq 'org-mode major-mode)
              hyperdrive-mode)
-    (pcase-let (((map :type :link :description) (hyperdrive--link-org)))
+    (pcase-let (((map type link description) (hyperdrive--link-org)))
       (org-link-store-props :type type :link link :description description)
       t)))
 
