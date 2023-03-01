@@ -261,15 +261,6 @@ select it automatically."
     ;; TODO: Prompt user to create namespace here?
     (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace")))
 
-(defun hyperdrive-format-hyperdrive (hyperdrive)
-  "Return HYPERDRIVE formatted nicely."
-  (let ((alias (hyperdrive-alias hyperdrive))
-        (url (hyperdrive-url hyperdrive)))
-    (if alias
-        ;; TODO: Add face to alias.
-        (format "%s %s/" alias url)
-      (format "%s/" url))))
-
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate (prompt "Hyperdrive: "))
   "Return a hyperdrive selected with completion, or the input if nothing matches.
 If PREDICATE, only offer hyperdrives matching it."
