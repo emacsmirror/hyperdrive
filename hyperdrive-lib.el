@@ -316,7 +316,7 @@ If PREDICATE, only offer hyperdrives matching it."
 
 (defun hyperdrive-new (alias)
   "Open new hyperdrive for ALIAS."
-  (interactive (read-string "New hyperdrive alias: "))
+  (interactive (list (read-string) "New hyperdrive alias: "))
   (let* ((url (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias))))
          (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
     (setf (hyperdrive-alias hyperdrive) alias)
