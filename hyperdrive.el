@@ -329,7 +329,8 @@ same ALIAS does not create a new namespace."
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
   (declare (indent defun))
-  (interactive (list (read-string "Open Hyperdrive URL: ")))
+  (interactive
+   (list (hyperdrive-complete-url)))
   ;; TODO: Ensure gateway is running.
   (let ((entry (hyperdrive-url-entry url)))
     (hyperdrive-fill entry

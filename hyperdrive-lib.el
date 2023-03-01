@@ -257,42 +257,37 @@ select it automatically."
     ;; TODO: Prompt user to create namespace here?
     (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace")))
 
-(cl-defun hyperdrive-completing-read-hyperdrive (&key predicate (prompt "Hyperdrive: "))
-  "Return a hyperdrive selected with completion, or a new one.
+(cl-defun hyperdrive-complete-hyperdrive (&key predicate (prompt "Hyperdrive: "))
+  "Return a hyperdrive selected with completion, or the input if nothing matches.
 If PREDICATE, only offer hyperdrives matching it."
-  ;; FIXME: When writing a file to an existing hyperdrive's
-  ;; subdirectory, the subdirectory is not included in the prompt for
-  ;; the path, so unless the user adds it, the file would get written
-  ;; to the root.
   ;; TODO: Implement predicate.
   (ignore predicate)
   (let* ((aliases (mapcar #'hyperdrive-alias hyperdrive-hyperdrives))
          (urls (mapcar #'hyperdrive-url hyperdrive-hyperdrives))
          (candidates (append aliases urls))
-         (input (completing-read prompt candidates))
-         (selected (cl-find-if (lambda (hyperdrive)
-                                 (or (equal input (hyperdrive-alias hyperdrive))
-                                     (equal input (hyperdrive-url hyperdrive))
-                                     ;; In case the user adds a trailing slash.
-                                     (equal input (concat (hyperdrive-url hyperdrive) "/"))))
-                               hyperdrive-hyperdrives)))
-    (cond (selected)
-          ((string-match (rx bos "hyper://" (= 52 alnum)
-                             (optional "/" (optional (group (1+ anything)))))
-                         input)
-           ;; User apparently entered a URL.
-           (when (match-string 1 input)
-             (user-error "URL entered is to a hyperdrive file, not a hyperdrive root"))
-           (hyperdrive-entry-hyperdrive (hyperdrive-url-entry input)))
-          ((= 52 (length input))
-           ;; User apparently entered a public key.
-           (make-hyperdrive :public-key input))
-          ((yes-or-no-p (format "Make new hyperdrive? (%s) " input))
-           (hyperdrive-new input)))))
+         (input (completing-read prompt candidates)))
+    (or (cl-find-if (lambda (hyperdrive)
+                      (or (equal input (hyperdrive-alias hyperdrive))
+                          (equal input (hyperdrive-url hyperdrive))
+                          ;; In case the user adds a trailing slash.
+                          (equal input (concat (hyperdrive-url hyperdrive) "/"))))
+                    hyperdrive-hyperdrives)
+        input)))
+
+(cl-defun hyperdrive-complete-url (&key (prompt "Hyperdrive alias or URL: "))
+  "Return hyperdrive URL selected with completion."
+  (let ((selected (hyperdrive-complete-hyperdrive :prompt prompt)))
+    (pcase selected
+      ((pred hyperdrive-p) (hyperdrive-url selected))
+      ((and (pred stringp)
+            (guard (string-prefix-p "hyper://" selected)))
+       ;; User input a hyperdrive URL: return it.
+       selected)
+      (_ (user-error "Please select a known hyperdrive or input a hyper:// URL")))))
 
 (defun hyperdrive--read-new-entry ()
   "Return new hyperdrive entry with path and hyperdrive read from user."
-  (let* ((hyperdrive (hyperdrive-completing-read-hyperdrive))
+  (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
          (filename (buffer-file-name))
          (basename (or (when hyperdrive-current-entry
                          (hyperdrive-entry-name hyperdrive-current-entry))
