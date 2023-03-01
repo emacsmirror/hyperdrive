@@ -297,48 +297,6 @@ same ALIAS does not create a new namespace."
   ;; TODO: Override buffer-modified check when buffer is erased.
   (hyperdrive-open (hyperdrive-entry-url hyperdrive-current-entry)))
 
-;;;; Org links
-
-;; TODO: Update Org link functions.
-
-;; (defun hyperdrive-store-link ()
-;;   "Store a link to the hyperdrive file.
-
-;; In a `hyperdrive-dired' buffer, store link to file at point. In a
-;; buffer with `hyperdrive-mode' enabled, store file corresponding
-;; to current buffer."
-;;   (cond
-;;    ((derived-mode-p 'hyperdrive-dired-mode)
-;;     (setq org-store-link-plist nil)
-;;     (org-link-store-props :type hyperdrive--org-link-type
-;;                           :link (hyperdrive-dired-get-filename)))
-;;    ((bound-and-true-p hyperdrive-mode)
-;;     (setq org-store-link-plist nil)
-;;     (org-link-store-props :type hyperdrive--org-link-type
-;;                           :link hyperdrive--current-url))))
-
-;; (defun hyperdrive-open-link (url)
-;;   "Open the hyperdrive URL, pulling latest updates from the network.
-
-;; Call `org-*' functions to handle search option if URL contains it."
-;;   (let* ((url-without-option (car (split-string url "::")))
-;;          (option (cadr (split-string url "::")))
-;;          (line (and option
-;;                     (string-match-p "\\`[0-9]+\\'" option)
-;; 		    (list (string-to-number option))))
-;;          (search (and (not line) option)))
-;;     (hyperdrive-load-url (concat "hyper:" url-without-option))
-;;     (when option
-;;       (with-current-buffer (hyperdrive--get-buffer-create url)
-;;         (cond (line (org-goto-line line)
-;; 		    (when (derived-mode-p 'org-mode) (org-fold-reveal)))
-;; 	      (search (condition-case err
-;; 			  (org-link-search search)
-;;                         (error "%s" (nth 1 err)))))))))
-
-;; (org-link-set-parameters hyperdrive-org-link-type
-;;                          :store #'hyperdrive-store-link :follow #'hyperdrive-open-link)
-
 ;;;; hyperdrive-mode
 
 (defun hyperdrive-mode-on ()
