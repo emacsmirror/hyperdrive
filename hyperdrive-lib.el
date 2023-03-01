@@ -70,8 +70,10 @@ URL does not have a trailing slash, i.e., \"hyper://PUBLIC-KEY\"."
 (defun hyperdrive-entry-url (entry)
   "Return ENTRY's URL."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (url (hyperdrive-url hyperdrive)))
-    (concat url path)))
+               (url (hyperdrive-url hyperdrive))
+               (encoded-path (url-hexify-string
+                              path (cons ?/ url-unreserved-chars))))
+    (concat url encoded-path)))
 
 (defun hyperdrive-url-entry (url)
   "Return entry for URL."

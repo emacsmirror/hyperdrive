@@ -447,43 +447,63 @@ To be used in `write-contents-functions'."
 An alist keyed by major mode.")
 
 ;; FIXME: Targets have "%5D%5D" (decoded "]]") appended to them
-(defun hyperdrive-kill-link ()
-  "Return hyperdrive link to current buffer's file."
-  (interactive)
-  (unless hyperdrive-mode
-    (user-error "Buffer is not visiting a hyperdrive file")) 
-  (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
-         (target-fn (alist-get major-mode hyperdrive-link-target-functions))
-         (target (when target-fn
-                   (funcall target-fn))))
-    (when target
-      (setf url (concat url "#" (url-hexify-string target))))
-    (kill-new url)
-    (message "%s" url)))
+;; (defun hyperdrive-kill-link ()
+;;   "Return hyperdrive link to current buffer's file."
+;;   (interactive)
+;;   (unless hyperdrive-mode
+;;     (user-error "Buffer is not visiting a hyperdrive file")) 
+;;   (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
+;;          (target-fn (alist-get major-mode hyperdrive-link-target-functions))
+;;          (target (when target-fn
+;;                    (funcall target-fn))))
+;;     (when target
+;;       (setf url (concat url "#" (url-hexify-string target))))
+;;     (kill-new url)
+;;     (message "%s" url)))
 
-(defun hyperdrive-link-org-target ()
-  "Return target string for current Org buffer."
+(defun hyperdrive--link-org (&optional raw-url-p)
+  "Return Org link plist for current Org buffer.
+Attempts to link to the entry at point.  If RAW-URL-P, return a
+raw URL, not an Org link."
+  ;; NOTE: Ideally we would simply reuse Org's internal functions to
+  ;; store links, like `org-store-link'.  However, its API is not
+  ;; designed to be used by external libraries, and requires ugly
+  ;; hacks like tricking it into thinking that the buffer has a local
+  ;; filename; and even then, it doesn't seem possible to control how
+  ;; it generates target fragments like we need.  So it's simpler for
+  ;; us to reimplement some of the logic here.
+  ;;
+  ;; Also, it appears that Org links to ID properties (not CUSTOM_ID)
+  ;; can't have filename parts, i.e. they can only link to the
+  ;; generated ID and leave locating the entry's file to Org's cache,
+  ;; which isn't suitable for our purposes.  So instead, we generate
+  ;; our own link type which, in that case, includes both the filename
+  ;; and the ID or CUSTOM_ID.
   (cl-assert (eq 'org-mode major-mode))
   (cl-assert hyperdrive-mode)
-  ;; NOTE: We must fool `org-store-link' because it refuses to return
-  ;; a link if the buffer has no filename.
-  ;; TODO: Since we are only interested in the target, not the file-name, couldn't we set buffer-file-name to "" (or maybe "_" if empty string doesn't work)?
-  (pcase-let* ((buffer-file-name (or buffer-file-name
-                                     (hyperdrive-entry-url hyperdrive-current-entry)))
-               ;; FIXME: I tested this on a header with CUSTOM_ID set, and the link target was set to the heading string, not "#CUSTOM_ID".
-               ;; TODO: Related to above, org mode prefixes CUSTOM_ID targets with "#". Since we are now using "#" to separate the filename from the target, what should we use to distinguish CUSTOM_ID targets?
-               (org-link (org-store-link nil))
-               (org-link-target (progn
-                                  (string-match org-link-bracket-re org-link)
-                                  (match-string 1 org-link)))
-               (org-link (string-trim-left org-link (rx "file:")))
-               (urlobj (url-generic-parse-url org-link))
-               ((cl-struct url filename) urlobj))
-    (when (and filename
-               (string-match (rx (group (1+ anything))
-                                 "::" (group (1+ anything)))
-                             filename))
-      (match-string 2 filename))))
+  (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
+         (heading (nth 4 (org-heading-components)))
+         (custom-id (org-entry-get (point) "CUSTOM_ID"))
+         (generated-id (org-entry-get (point) "ID"))
+         (heading-regexp (org-link-heading-search-string))
+         (fragment (or custom-id generated-id heading-regexp))
+         (raw-url (concat url "#" (url-hexify-string fragment))))
+    (if raw-url-p
+        raw-url
+      (list :type "hyper" :link raw-url :description heading))))
+
+(defun hyperdrive-link-org-store ()
+  (when (and (eq 'org-mode major-mode)
+             hyperdrive-mode)
+    (pcase-let (((map :type :link :description) (hyperdrive--link-org)))
+      (org-link-store-props :type type :link link :description description)
+      t)))
+
+(org-link-set-parameters "hyper"
+                         :store #'hyperdrive-link-org-store
+                         ;; FIXME: Add follow function.
+                         ;; :follow #'hyperdrive-link-org-follow
+                         )
 
 ;;;; Footer
 
