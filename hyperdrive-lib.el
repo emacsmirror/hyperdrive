@@ -312,7 +312,14 @@ If PREDICATE, only offer hyperdrives matching it."
 (defun hyperdrive-new (alias)
   "Open new hyperdrive for ALIAS."
   (interactive (list (read-string "New hyperdrive alias: ")))
-  (let* ((url (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias))))
+  (let* ((response (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias))))
+         (url (progn
+                ;; NOTE: Working around issue in plz whereby the
+                ;; stderr process sentinel sometimes leaves "stderr
+                ;; finished" garbage in the response body in older
+                ;; Emacs versions.
+                (string-match (rx bos (group "hyper://" (1+ nonl))) response)
+                (match-string 1 response)))
          (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
     (setf (hyperdrive-alias hyperdrive) alias)
     (hyperdrive-persist hyperdrive)
