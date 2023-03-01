@@ -109,6 +109,13 @@ Default handler."
                            ;; is done.
                            :name (url-unhex-string encoded-entry-name)))
                         encoded-entry-names))
+               ;; TODO: Consider adding a working-directory-entry. It more closely resembles
+               ;;       dired, and it would be useful to put the point on something
+               ;;       representing the current directory, enabling users to copy a link to
+               ;;       the working directory with `hyperdrive-ewoc-copy-filename-as-kill' or
+               ;;       click a visible button to reload the current directory (an alternative
+               ;;       to `hyperdrive-revert-buffer'). `hyperdrive-ewoc-previous' does not
+               ;;       allow user to move point to the header.
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
