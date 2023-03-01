@@ -74,9 +74,17 @@
 
 (require 'cl-lib)
 (require 'json)
-;; TODO: Remove dependency on map 0.3?
-(require 'map)
 (require 'rx)
+
+;; NOTE: On older versions of Emacs with older built-in versions of
+;; `map', it's not possible to force Emacs to load the newer version
+;; of the library when compiling the package; we can only
+;; "Package-Requires" it to cause it to be installed.  So in the case
+;; that a user encounters an error caused by macro-expanding an older
+;; version of the library, the user would need to delete the
+;; hyperdrive package, restart Emacs, and reinstall this package to
+;; fix it.
+(require 'map)
 
 (require 'compat)
 (require 'plz)
