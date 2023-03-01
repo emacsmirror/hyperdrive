@@ -291,11 +291,7 @@ If PREDICATE, only offer hyperdrives matching it."
            (hyperdrive-new input)))))
 
 (defun hyperdrive--read-new-entry ()
-  "Return new hyperdrive entry with name and URL read from user."
-  ;; FIXME: When writing a file to an existing hyperdrive's
-  ;; subdirectory, the subdirectory is not included in the prompt for
-  ;; the path, so unless the user adds it, the file would get written
-  ;; to the root.
+  "Return new hyperdrive entry with path and hyperdrive read from user."
   (let* ((hyperdrive (hyperdrive-completing-read-hyperdrive))
          (filename (buffer-file-name))
          (basename (or (when hyperdrive-current-entry
@@ -303,9 +299,13 @@ If PREDICATE, only offer hyperdrives matching it."
                        (when filename
                          (file-name-nondirectory filename))))
          (default (or basename (buffer-name)))
-         (prompt (format "Filename [default %S]: " default))
-         (name (read-string prompt nil nil default)))
-    (make-hyperdrive-entry :hyperdrive hyperdrive :name name)))
+         (prompt (format "File path [default %S]: " default))
+         (path (read-string prompt nil nil default)))
+    (make-hyperdrive-entry :hyperdrive hyperdrive
+                           :name (file-name-nondirectory path)
+                           :path (if (string-prefix-p "/" path)
+                                     path
+                                   (concat "/" path)))))
 
 (defun hyperdrive-new (alias)
   "Return new hyperdrive for ALIAS."
