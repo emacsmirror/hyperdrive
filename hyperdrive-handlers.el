@@ -140,16 +140,16 @@ Default handler."
             entries)
       (mapc (lambda (entry)
               (hyperdrive-fill entry
-                               :then (lambda (_)
-                                       ;; NOTE: Ensure that the buffer's window is selected,
-                                       ;; if it has one.  (Workaround a possible bug in EWOC.)
-                                       (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                                           (with-selected-window buffer-window
-                                             ;; TODO: Use `ewoc-invalidate' on individual entries
-                                             ;; (maybe later, as performance comes to matter more).
-                                             (ewoc-refresh hyperdrive-ewoc))
-                                         (with-current-buffer (ewoc-buffer ewoc)
-                                           (ewoc-refresh hyperdrive-ewoc))))))
+                :then (lambda (_)
+                        ;; NOTE: Ensure that the buffer's window is selected,
+                        ;; if it has one.  (Workaround a possible bug in EWOC.)
+                        (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                            (with-selected-window buffer-window
+                              ;; TODO: Use `ewoc-invalidate' on individual entries
+                              ;; (maybe later, as performance comes to matter more).
+                              (ewoc-refresh hyperdrive-ewoc))
+                          (with-current-buffer (ewoc-buffer ewoc)
+                            (ewoc-refresh hyperdrive-ewoc))))))
             entries)
       (set-buffer-modified-p nil)
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
