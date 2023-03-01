@@ -181,6 +181,7 @@ Passed to `display-buffer', which see."
   "Return non-nil if hyper-gateway is ready."
   (let (readyp)
     (hyperdrive-api 'get "hyper://localhost"
+      ;; FIXME: Don't use else handler, since plz should not call it after a synchronous request
       :else (lambda (err)
               (unless (and (plz-error-curl-error err)
                            ;; "Failed to connect to host."
