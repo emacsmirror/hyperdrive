@@ -74,6 +74,7 @@
 
 (require 'cl-lib)
 (require 'json)
+;; TODO: Remove dependency on map 0.3?
 (require 'map)
 (require 'rx)
 
