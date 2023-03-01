@@ -61,6 +61,7 @@ Default handler."
               (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
             (erase-buffer)
             (insert-buffer-substring response-buffer)
+            (goto-char (point-min))
             ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
             (when hyperdrive-honor-auto-mode-alist
               (let ((buffer-file-name (hyperdrive-entry-url entry)))
