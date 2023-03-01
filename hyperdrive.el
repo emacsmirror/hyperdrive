@@ -351,27 +351,32 @@ same ALIAS does not create a new namespace."
     (hyperdrive-mode-off)))
 
 ;;;###autoload
-(defun hyperdrive-open (url)
-  "Open hyperdrive URL."
+(cl-defun hyperdrive-open (url &key then)
+  "Open hyperdrive URL.
+THEN may be a function to call in the buffer opened by the
+handler after it returns."
+  (declare (indent defun))
   (interactive (list (read-string "Open Hyperdrive URL: ")))
   ;; TODO: Ensure gateway is running.
   (let ((entry (hyperdrive-url-entry url)))
     (hyperdrive-fill entry
-      :then (lambda (entry)
-              (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-                           ;; MAYBE: Use alist-get instead of cl-find-if.
-                           (handler (or (cdr (cl-find-if (lambda (regexp)
-                                                           (string-match-p regexp type))
-                                                         hyperdrive-type-handlers :key #'car))
-                                        #'hyperdrive-handler-default)))
-                (funcall handler entry)))
-      :else (lambda (plz-error)
-              (pcase-let* (((cl-struct plz-error response) plz-error)
-                           ((cl-struct plz-response status) response))
-                (pcase status
-                  (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
-                         (hyperdrive-open (hyperdrive--parent url))) )
-                  (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error))))))))
+                     :then (lambda (entry)
+                             (pcase-let* (((cl-struct hyperdrive-entry type) entry)
+                                          ;; MAYBE: Use alist-get instead of cl-find-if.
+                                          (handler (or (cdr (cl-find-if (lambda (regexp)
+                                                                          (string-match-p regexp type))
+                                                                        hyperdrive-type-handlers :key #'car))
+                                                       #'hyperdrive-handler-default)))
+                               (funcall handler entry)
+                               (when then
+                                 (funcall then))))
+                     :else (lambda (plz-error)
+                             (pcase-let* (((cl-struct plz-error response) plz-error)
+                                          ((cl-struct plz-response status) response))
+                               (pcase status
+                                 (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
+                                        (hyperdrive-open (hyperdrive--parent url))) )
+                                 (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error))))))))
 
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).

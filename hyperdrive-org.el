@@ -98,9 +98,10 @@ raw URL, not an Org link."
   (pcase-let* ((urlobj (url-generic-parse-url url))
                ((cl-struct url target) urlobj))
     (setf (url-target urlobj) nil)
-    (hyperdrive-open (url-recreate-url urlobj))
-    (when (eq 'org-mode major-mode)
-      (hyperdrive--link-org-goto target))))
+    (hyperdrive-open (url-recreate-url urlobj)
+      :then (lambda ()
+              (when (eq 'org-mode major-mode)
+                (hyperdrive--link-org-goto target))))))
 
 (defun hyperdrive--link-org-goto (target)
   "Go to TARGET in current Org buffer.
