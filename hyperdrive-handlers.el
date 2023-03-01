@@ -44,7 +44,7 @@ Keys are regexps matched against MIME types.")
 
 (declare-function hyperdrive-mode "hyperdrive")
 
-(defun hyperdrive-handler-default (entry)
+(cl-defun hyperdrive-handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 Default handler."
   ;; FIXME: Make buffer read-only when hyperdrive isn't writable.
@@ -76,11 +76,13 @@ Default handler."
             ;;   ;; think.)
             ;;   (require 'ol)
             ;;   (org-link-search target))
-            (pop-to-buffer (current-buffer))))))
+            (pop-to-buffer (current-buffer))
+            (when then
+              (funcall then))))))
 
 (declare-function hyperdrive-ewoc-mode "hyperdrive-ewoc")
 
-(defun hyperdrive-handler-directory (directory-entry)
+(cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show directory ENTRY."
   ;; TODO: Open in same window (but probably still new buffer) (display-buffer-alist ?)
   ;; NOTE: ENTRY is not necessarily "filled" yet.
@@ -130,25 +132,27 @@ Default handler."
             entries)
       (mapc (lambda (entry)
               (hyperdrive-fill entry
-                :then (lambda (_)
-                        ;; NOTE: Ensure that the buffer's window is selected,
-                        ;; if it has one.  (Workaround a possible bug in EWOC.)
-                        (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                            (with-selected-window buffer-window
-                              ;; TODO: Use `ewoc-invalidate' on individual entries
-                              ;; (maybe later, as performance comes to matter more).
-                              (ewoc-refresh hyperdrive-ewoc))
-                          (with-current-buffer (ewoc-buffer ewoc)
-                            (ewoc-refresh hyperdrive-ewoc))))))
+                               :then (lambda (_)
+                                       ;; NOTE: Ensure that the buffer's window is selected,
+                                       ;; if it has one.  (Workaround a possible bug in EWOC.)
+                                       (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                                           (with-selected-window buffer-window
+                                             ;; TODO: Use `ewoc-invalidate' on individual entries
+                                             ;; (maybe later, as performance comes to matter more).
+                                             (ewoc-refresh hyperdrive-ewoc))
+                                         (with-current-buffer (ewoc-buffer ewoc)
+                                           (ewoc-refresh hyperdrive-ewoc))))))
             entries)
       (set-buffer-modified-p nil)
-      (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action))))
+      (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
+      (when then
+        (funcall then)))))
 
-(defun hyperdrive-handler-streamable (entry)
+(cl-defun hyperdrive-handler-streamable (entry &key _then)
   "Stream ENTRY."
   (mpv-play-url (hyperdrive--httpify-url (hyperdrive-entry-url entry))))
 
-(defun hyperdrive-handler-json (entry)
+(cl-defun hyperdrive-handler-json (entry &key _then)
   "Show ENTRY.
 If ENTRY is a directory (if its URL ends in \"/\"), pass to
 `hyperdrive-handler-directory'.  Otherwise, open with
