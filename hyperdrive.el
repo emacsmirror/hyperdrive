@@ -202,7 +202,7 @@ hyperdrive."
               response
               (guard (= 200 (plz-response-status response))))
          (plz-response-body response)))
-    (plz-http-error (if (= 400 (plz-response-status (plz-error-response err)))
+    (plz-http-error (if (= 400 (plz-response-status (plz-error-response (cdr err))))
                         nil
                       (signal 'plz-http-error err)))))
 
