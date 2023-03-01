@@ -196,6 +196,7 @@ Passed to `display-buffer', which see."
   "Return URL to hyperdrive known as ALIAS, or nil if it doesn't exist.
 That is, if the ALIAS has been used to create a local
 hyperdrive."
+  ;; TODO: Should this function go inside hyperdrive-lib.el?
   (condition-case err
       (pcase (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string alias))
                :as 'response)
