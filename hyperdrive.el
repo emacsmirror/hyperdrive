@@ -84,6 +84,7 @@
 
 (require 'hyperdrive-lib)
 (require 'hyperdrive-handlers)
+(require 'hyperdrive-org)
 
 (defgroup hyperdrive nil
   "Emacs gateway to the Hypercore network."
@@ -426,87 +427,6 @@ overwrite."
 To be used in `write-contents-functions'."
   (cl-assert hyperdrive-mode)
   (hyperdrive-save-buffer hyperdrive-current-entry))
-
-;;;; Links
-
-(require 'browse-url)
-
-;; TODO: Hook into browse-url-handlers (but only on Emacs 28+).
-;; (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
-;;             browse-url-handlers :test #'equal)
-
-;; TODO: Implement link following.
-;; TODO: Store links from directory buffer.
-
-(eval-when-compile
-  (require 'ol))
-
-(defvar hyperdrive-link-target-functions
-  `((org-mode . hyperdrive-link-org-target))
-  "Functions that return a link target for a buffer.
-An alist keyed by major mode.")
-
-;; FIXME: Targets have "%5D%5D" (decoded "]]") appended to them
-;; (defun hyperdrive-kill-link ()
-;;   "Return hyperdrive link to current buffer's file."
-;;   (interactive)
-;;   (unless hyperdrive-mode
-;;     (user-error "Buffer is not visiting a hyperdrive file")) 
-;;   (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
-;;          (target-fn (alist-get major-mode hyperdrive-link-target-functions))
-;;          (target (when target-fn
-;;                    (funcall target-fn))))
-;;     (when target
-;;       (setf url (concat url "#" (url-hexify-string target))))
-;;     (kill-new url)
-;;     (message "%s" url)))
-
-(defun hyperdrive--link-org (&optional raw-url-p)
-  "Return Org link plist for current Org buffer.
-Attempts to link to the entry at point.  If RAW-URL-P, return a
-raw URL, not an Org link."
-  ;; NOTE: Ideally we would simply reuse Org's internal functions to
-  ;; store links, like `org-store-link'.  However, its API is not
-  ;; designed to be used by external libraries, and requires ugly
-  ;; hacks like tricking it into thinking that the buffer has a local
-  ;; filename; and even then, it doesn't seem possible to control how
-  ;; it generates target fragments like we need.  So it's simpler for
-  ;; us to reimplement some of the logic here.
-  ;;
-  ;; Also, it appears that Org links to ID properties (not CUSTOM_ID)
-  ;; can't have filename parts, i.e. they can only link to the
-  ;; generated ID and leave locating the entry's file to Org's cache,
-  ;; which isn't suitable for our purposes.  So instead, we generate
-  ;; our own link type which, in that case, includes both the filename
-  ;; and the ID or CUSTOM_ID.
-  (cl-assert (eq 'org-mode major-mode))
-  (cl-assert hyperdrive-mode)
-  (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
-         (heading (nth 4 (org-heading-components)))
-         (custom-id (org-entry-get (point) "CUSTOM_ID"))
-         (generated-id (org-entry-get (point) "ID"))
-         (heading-regexp (org-link-heading-search-string))
-         (fragment (or custom-id generated-id heading-regexp))
-         (raw-url (concat url "#" (url-hexify-string fragment))))
-    (if raw-url-p
-        raw-url
-      ;; NOTE: Due to annoying issues with older versions of Emacs
-      ;; that have older versions of map.el that don't support
-      ;; destructuring plists with pcase-let, we use an alist here.
-      `((type . "hyper") (link . ,raw-url) (description . ,heading)))))
-
-(defun hyperdrive-link-org-store ()
-  (when (and (eq 'org-mode major-mode)
-             hyperdrive-mode)
-    (pcase-let (((map type link description) (hyperdrive--link-org)))
-      (org-link-store-props :type type :link link :description description)
-      t)))
-
-(org-link-set-parameters "hyper"
-                         :store #'hyperdrive-link-org-store
-                         ;; FIXME: Add follow function.
-                         ;; :follow #'hyperdrive-link-org-follow
-                         )
 
 ;;;; Footer
 
