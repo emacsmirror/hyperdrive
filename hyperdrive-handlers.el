@@ -30,7 +30,6 @@
 (defvar hyperdrive-honor-auto-mode-alist)
 (defvar hyperdrive-ewoc)
 (defvar hyperdrive-entries)
-(defvar hyperdrive-timestamp-format)
 (defvar hyperdrive-directory-display-buffer-action)
 
 ;;;; Handlers
