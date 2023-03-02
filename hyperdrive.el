@@ -281,6 +281,7 @@ hyperdrive."
   ;; :keymap (let ((map (make-sparse-keymap)))
   ;;           ;; TODO: Redo this command.
   ;;           (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
+  ;;           ;; TODO: Add function and binding to copy URL of current hyperdrive-mode file
   ;;           map)
   (if hyperdrive-mode
       (hyperdrive-mode-on)
