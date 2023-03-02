@@ -311,7 +311,8 @@ such hyperdrive is known."
 (defun hyperdrive-new (alias)
   "Open new hyperdrive for ALIAS."
   (interactive (list (read-string "New hyperdrive alias: ")))
-  (let* ((response (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias))))
+  (let* ((response (with-local-quit
+                     (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias)))))
          (url (progn
                 ;; NOTE: Working around issue in plz whereby the
                 ;; stderr process sentinel sometimes leaves "stderr

@@ -47,38 +47,39 @@ Keys are regexps matched against MIME types.")
   "Load ENTRY's file into an Emacs buffer.
 Default handler."
   ;; FIXME: Make buffer read-only when hyperdrive isn't writable.
-  (hyperdrive-api 'get (hyperdrive-entry-url entry)
-    :as (lambda ()
-          (let ((response-buffer (current-buffer))
-                (inhibit-read-only t))
-            ;; TODO: Revisit buffer naming/"visiting" (e.g. what
-            ;; happens if the user opens a Hyperdrive file and then
-            ;; saves another buffer to the same location?).  See
-            ;; also: hyperdrive-save, etc.
-            (switch-to-buffer (hyperdrive--get-buffer-create entry))
-            (when (buffer-modified-p)
-              (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
-            (erase-buffer)
-            (insert-buffer-substring response-buffer)
-            (goto-char (point-min))
-            ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-            (when hyperdrive-honor-auto-mode-alist
-              (let ((buffer-file-name (hyperdrive-entry-url entry)))
-                (set-auto-mode)))
-            ;; TODO: Option to defer showing buffer.
-            (hyperdrive-mode)
-            (set-buffer-modified-p nil)
-            ;; FIXME: Do this in a wrapper.
-            ;; (when target
-            ;;   ;; FIXME: This is specific to Org files and doesn't
-            ;;   ;; quite belong here.  (OTOH we could use this
-            ;;   ;; function to find text in non-Org files, too, I
-            ;;   ;; think.)
-            ;;   (require 'ol)
-            ;;   (org-link-search target))
-            (pop-to-buffer (current-buffer))
-            (when then
-              (funcall then))))))
+  (with-local-quit
+    (hyperdrive-api 'get (hyperdrive-entry-url entry)
+      :as (lambda ()
+            (let ((response-buffer (current-buffer))
+                  (inhibit-read-only t))
+              ;; TODO: Revisit buffer naming/"visiting" (e.g. what
+              ;; happens if the user opens a Hyperdrive file and then
+              ;; saves another buffer to the same location?).  See
+              ;; also: hyperdrive-save, etc.
+              (switch-to-buffer (hyperdrive--get-buffer-create entry))
+              (when (buffer-modified-p)
+                (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
+              (erase-buffer)
+              (insert-buffer-substring response-buffer)
+              (goto-char (point-min))
+              ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+              (when hyperdrive-honor-auto-mode-alist
+                (let ((buffer-file-name (hyperdrive-entry-url entry)))
+                  (set-auto-mode)))
+              ;; TODO: Option to defer showing buffer.
+              (hyperdrive-mode)
+              (set-buffer-modified-p nil)
+              ;; FIXME: Do this in a wrapper.
+              ;; (when target
+              ;;   ;; FIXME: This is specific to Org files and doesn't
+              ;;   ;; quite belong here.  (OTOH we could use this
+              ;;   ;; function to find text in non-Org files, too, I
+              ;;   ;; think.)
+              ;;   (require 'ol)
+              ;;   (org-link-search target))
+              (pop-to-buffer (current-buffer))
+              (when then
+                (funcall then)))))))
 
 (declare-function hyperdrive-ewoc-mode "hyperdrive-ewoc")
 
@@ -94,7 +95,8 @@ Default handler."
                (inhibit-read-only t)
                ((cl-struct plz-response headers body)
                 ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
-                (hyperdrive-api 'get url :as 'response))
+                (with-local-quit
+                  (hyperdrive-api 'get url :as 'response)))
                (entry-names (json-read-from-string body))
                (entries
                 (mapcar (lambda (entry-name)

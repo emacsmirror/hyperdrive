@@ -173,16 +173,17 @@ Passed to `display-buffer', which see."
 (defun hyperdrive--gateway-ready-p ()
   "Return non-nil if hyper-gateway is ready."
   (let (readyp)
-    (hyperdrive-api 'get "hyper://localhost"
-      ;; FIXME: Don't use else handler, since plz should not call it after a synchronous request
-      :else (lambda (err)
-              (unless (and (plz-error-curl-error err)
-                           ;; "Failed to connect to host."
-                           (= 7 (car (plz-error-curl-error err))))
-                ;; Status code 400 is expected when hyper-gateway is running
-                ;; See https://github.com/RangerMauve/hyper-gateway/issues/3
-                (when (= 400 (plz-response-status (plz-error-response err)))
-                  (setq readyp t)))))
+    (with-local-quit
+      (hyperdrive-api 'get "hyper://localhost"
+        ;; FIXME: Don't use else handler, since plz should not call it after a synchronous request
+        :else (lambda (err)
+                (unless (and (plz-error-curl-error err)
+                             ;; "Failed to connect to host."
+                             (= 7 (car (plz-error-curl-error err))))
+                  ;; Status code 400 is expected when hyper-gateway is running
+                  ;; See https://github.com/RangerMauve/hyper-gateway/issues/3
+                  (when (= 400 (plz-response-status (plz-error-response err)))
+                    (setq readyp t))))))
     readyp))
 
 (defun hyperdrive--alias-url (alias)
@@ -191,8 +192,9 @@ That is, if the ALIAS has been used to create a local
 hyperdrive."
   ;; TODO: Should this function go inside hyperdrive-lib.el?
   (condition-case err
-      (pcase (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string alias))
-               :as 'response)
+      (pcase (with-local-quit
+               (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string alias))
+                 :as 'response))
         ((and (pred plz-response-p)
               response
               (guard (= 200 (plz-response-status response))))
