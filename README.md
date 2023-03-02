@@ -95,35 +95,52 @@ has them.
 
 ## Usage
 
-### Create a namespace
+### Start/stop the gateway
 
-You can have multiple hyperdrives, where each one contains an isolated
-or "namespaced" set of files. Use `M-x hyperdrive-create-namespace` to
-create a new namespace.
+To connect with peers, you'll need to start the `hyper-gateway` with
+`M-x hyperdrive-start`. When you're ready to disconnect from the
+network, run `M-x hyperdrive-stop`.
 
-Each namespaced hyperdrive has an `alias`, the local "petname" given to
-a namespaced hyperdrive. An `alias` combines with your secret master
-key, which is generated for you by `hyper-gateway`, to produce a public
-key which uniquely identifies that hyperdrive. You can load one of your
-own hyperdrives with `M-x hyperdrive-load-alias`. Other people cannot
-load one of your hyperdrives by its `alias`; they will need its public
-key, which you can get with `M-x hyperdrive-public-key`.
+### Create a hyperdrive
 
-### Write a buffer to a hyperdrive
+You can have multiple hyperdrives, each one containing its own set of
+files. Use `M-x hyperdrive-new` to create a new hyperdrive from an
+`alias`, which can be anything you like. That alias will be combined
+with your secret master key, which is generated for you by
+`hyper-gateway`, to produce a public key that uniquely identifies that
+hyperdrive. `hyperdrive-new` is idempotent since the same alias will
+always produce the same public key.
+
+### Open a hyperdrive
+
+You can view the contents of a hyperdrive with `M-x hyperdrive-open`.
+While you can always paste in a new full `hyper://` URL,
+`hyperdrive-open` remembers the hyperdrives you have already created
+or visited, and it will autocomplete those URLs for you.
+
+TODO: Add paragraph on directory view and possible commands
+
+### Write to a hyperdrive
 
 You can write a buffer to a hyperdrive with `hyperdrive-write-buffer`,
-which will prompt you for an `alias` and `path` if the current buffer
-is not already stored in your hyperdrive. If you are editing an
-existing hyperdrive "file", `hyperdrive-write-buffer` will silently
-update the current hyperdrive url with the new content.
+which will prompt you for one of hyperdrives you have created as well
+as the path in that hyperdrive where you want to store the file. If
+you are editing an existing hyperdrive file, `hyperdrive-save-buffer`
+will silently update the current hyperdrive entry with the new content.
 
-### Load a hyperdrive
+### Link to a hyperdrive
 
-`hyperdrive-load-alias` loads one of your previously created
-hyperdrives by prompting you for its `alias`.
+TODO: Describe org links and regular links
 
-To load someone else's hyperdrive or a particular location inside of a
-hyperdrive, run `M-x hyperdrive-open` and paste in the URL.
+### Share a hyperdrive
+
+Only you can load one of your created hyperdrives by its alias. When
+sharing a hyperdrive with someone else, you will need to copy its full
+URL with `M-x hyperdrive-copy-url`. With that URL, others can load
+files from your hyperdrive directly from your machine or from other
+peers who have previously loaded those files from hyperdrive.
+
+TODO: Sharing a link to a particular hyperdrive file
 
 ### Upload files from your filesystem
 
@@ -168,6 +185,14 @@ Alternatively, you could select files by tag with Karl Voit's
 a "non-splitting" approach where public and private files exist in the
 same directory. You can write any function you like to determine which
 files to share!
+
+## Concepts
+
+TODO: hyperdrives, sparse replication
+
+## Glossary
+
+TODO: files (which aren't really files), directories (which aren't really directories)
 
 ## Bugs and Patches
 
