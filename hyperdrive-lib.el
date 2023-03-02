@@ -104,7 +104,6 @@ URL does not have a trailing slash, i.e., \"hyper://PUBLIC-KEY\"."
 
 (defvar hyperdrive-current-entry)
 (defvar hyperdrive-hyper-gateway-port)
-(defvar hyperdrive--namespaces)
 (defvar hyperdrive-hyperdrives)
 
 (eval-and-compile
@@ -348,15 +347,6 @@ both point to the same content."
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))
 
-(defun hyperdrive--extract-public-key (string)
-  "Extract public-key from STRING using `hyperdrive--public-key-re'."
-  (when (string-match hyperdrive--public-key-re string)
-    (match-string 1 string)))
-
-(defun hyperdrive--alias (url)
-  "Return alias corresponding to public key in URL. Otherwise, return URL."
-  (car (rassoc (hyperdrive--extract-public-key url) hyperdrive--namespaces)))
-
 ;; (defun hyperdrive-metadata (url)
 ;;   "Return alist converted from JSON file at
 ;; `hyperdrive-metadata-filename' in hyperdrive for URL."
@@ -366,50 +356,9 @@ both point to the same content."
 ;;                (match-string 0 url))))
 ;;     (hyperdrive-api 'get (concat url "/" hyperdrive-metadata-filename) :as #'json-read)))
 
-(defun hyperdrive--extract-path (string)
-  "Extract path following public-key from STRING."
-  (substring string (+ (length hyperdrive--hyper-prefix)
-                       (length (hyperdrive--extract-public-key string)))))
-
-(defun hyperdrive--add-version-to-url (link version)
-  "Add VERSION number to url from LINK and (optionally) VERSION.
-
-This function returns a url of the form \"hyper://\" + public-key
-+ path or \"hyper://\" + public-key + version number + path,
-while urls from hyper-gateway response headers lack version
-numbers."
-  (concat hyperdrive--hyper-prefix
-          (hyperdrive--extract-public-key link)
-          (and version (concat "+" version))
-          (hyperdrive--extract-path link)))
-
-(defun hyperdrive--headers-extract-url (headers)
-  "Extract url from response HEADERS.
-
-Returned url does not contain version number."
-  (let ((str (alist-get 'link headers)))
-    (when (string-match (rx "<" (group (one-or-more anything)) ">")
-                        str)
-      (match-string 1 str))))
-
-(defun hyperdrive--headers-extract-version (headers)
-  "Extract version number (etag) from response HEADERS.
-
-Version number is of type string"
-  (alist-get 'etag headers))
-
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
   (string-suffix-p "/" (hyperdrive-entry-url entry)))
-
-(defun hyperdrive--streamable-p (headers)
-  "Return non-nil if response HEADERS indicate that the content is
-audio or video which can be streamed with mpv."
-  (string-match (rx (or "audio" "video")) (alist-get 'content-type headers)))
-
-(defun hyperdrive--version-match (url)
-  "Return non-nil if URL contains a version number."
-  (string-match hyperdrive--version-re url))
 
 (defun hyperdrive-message (message &rest args)
   "Call `message' prefixing MESSAGE with \"Hyperdrive:\"."
