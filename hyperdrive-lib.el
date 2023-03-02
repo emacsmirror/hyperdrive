@@ -249,18 +249,6 @@ Call ELSE if request fails."
 
 ;;;; Reading from the user
 
-(defun hyperdrive--completing-read-alias ()
-  "Return an alias from `hyperdrive--namespaces'.
-
-Prompt user to select an alias, or if only one namespace exists,
-select it automatically."
-  (if hyperdrive--namespaces
-      (if (= 1 (length hyperdrive--namespaces))
-          (caar hyperdrive--namespaces)
-        (completing-read "Alias: " hyperdrive--namespaces nil t))
-    ;; TODO: Prompt user to create namespace here?
-    (user-error "No namespace defined. Please run M-x hyperdrive-create-namespace")))
-
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate (prompt "Hyperdrive: "))
   "Return a hyperdrive selected with completion, or the input if nothing matches.
 If PREDICATE, only offer hyperdrives matching it."
@@ -353,21 +341,6 @@ both point to the same content."
   (with-current-buffer (get-buffer-create (hyperdrive--format-url (hyperdrive-entry-url entry)))
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))
-
-(defun hyperdrive--public-key-by-alias (alias)
-  "Return public key corresponding to ALIAS in `hyperdrive--namespaces'."
-  (cdr (assoc alias hyperdrive--namespaces)))
-
-(defun hyperdrive--make-hyperdrive-url (public-key raw-path)
-  "Return `hyperdrive--hyper-prefix'-prefixed url from PUBLIC-KEY and RAW-PATH.
-
-Path portion of url is URI-encoded."
-  (let* ((encoded-portion (url-hexify-string
-                           (if (string-prefix-p "/" raw-path) (substring raw-path 1) raw-path)
-                           ;; Leave slashes unencoded.  See <https://todo.sr.ht/~ushin/ushin/39>.
-                           (cons ?/ url-unreserved-chars)))
-         (path (concat "/" encoded-portion)))
-    (concat hyperdrive--hyper-prefix public-key path)))
 
 (defun hyperdrive--extract-public-key (string)
   "Extract public-key from STRING using `hyperdrive--public-key-re'."

@@ -153,32 +153,15 @@ Passed to `display-buffer', which see."
 
 ;;;; Internal variables
 
-(persist-defvar hyperdrive--namespaces nil
-                ;; TODO: Refactor this into hyperdrive-hyperdrives.
-                "List of cons pairs mapping an alias to a public key."
-                hyperdrive-persist-location)
-
 (persist-defvar hyperdrive-hyperdrives (make-hash-table :test #'equal)
                 "List of known hyperdrives."
                 hyperdrive-persist-location)
-
-(defconst hyperdrive-org-link-type "hyper" "Org mode link type.")
 
 (defvar-local hyperdrive-current-entry nil
   "Entry for current buffer.")
 (put 'hyperdrive-current-entry 'permanent-local t)
 
-;;;; User interaction helper functions
-
 ;;;; Commands
-
-;; (defun hyperdrive-public-key (alias)
-;;   "Copy the formatted public key corresponding to ALIAS to kill-ring."
-;;   (interactive (list (hyperdrive--completing-read-alias)))
-;;   (let* ((public-key (hyperdrive--public-key-by-alias alias))
-;;          (formatted-key (hyperdrive--make-hyperdrive-url public-key "")))
-;;     (message "%s" formatted-key)
-;;     (kill-new formatted-key)))
 
 (defun hyperdrive--gateway-pid ()
   "Return `hyper-gateway' process id if it's running. Otherwise, return nil."
@@ -257,28 +240,6 @@ hyperdrive."
 ;;         (insert-file-contents path)
 ;;         (hyperdrive-save-buffer-by-alias
 ;;          alias (concat "/" (file-relative-name path relative-dir)))))))
-
-(defun hyperdrive-create-namespace (alias)
-  "Create a hyperdrive namespace from an alphanumeric ALIAS.
-
-This adds a new cons pair to `hyperdrive--namespaces'.
-
-This function is idempotent; running it multiple times with the
-same ALIAS does not create a new namespace."
-  (interactive "sNamespace alias: ")
-  (let ((public-key (hyperdrive--extract-public-key
-                     (plz-response-body
-                      (hyperdrive-api 'post (concat hyperdrive--hyper-prefix "localhost/?key=" alias)
-                        :as 'response)))))
-    (cl-pushnew (cons alias public-key) hyperdrive--namespaces :test #'equal)
-    (message "%s: %s" alias (hyperdrive--make-hyperdrive-url public-key ""))))
-
-;; (defun hyperdrive-load-alias (alias)
-;;   ;; TODO: Update this.
-;;   "Load hyperdrive corresponding to ALIAS."
-;;   (interactive (list (hyperdrive--completing-read-alias)))
-;;   (hyperdrive--load-url-directory
-;;    (hyperdrive--make-hyperdrive-url (hyperdrive--public-key-by-alias alias) "")))
 
 ;; (defun hyperdrive-download-url-as-file (url filename)
 ;;   "Load contents at URL as a file to store at FILENAME.
