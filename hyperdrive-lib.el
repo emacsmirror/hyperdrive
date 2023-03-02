@@ -266,7 +266,8 @@ select it automatically."
 If PREDICATE, only offer hyperdrives matching it."
   ;; TODO: Implement predicate.
   (ignore predicate)
-  (let* ((candidates (mapcar (lambda (hyperdrive)
+  (let* ((completion-styles (cons 'substring completion-styles))
+         (candidates (mapcar (lambda (hyperdrive)
                                (cons (concat (when (hyperdrive-alias hyperdrive)
                                                (concat (hyperdrive-alias hyperdrive) " "))
                                              (hyperdrive-url hyperdrive))
