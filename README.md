@@ -138,7 +138,7 @@ Only you can load one of your created hyperdrives by its alias. When
 sharing a hyperdrive with someone else, you will need to copy its full
 URL with `M-x hyperdrive-copy-url`. With that URL, others can load
 files from your hyperdrive directly from your machine or from other
-peers who have previously loaded those files from hyperdrive.
+peers who have previously loaded those files from your hyperdrive.
 
 TODO: Sharing a link to a particular hyperdrive file
 
