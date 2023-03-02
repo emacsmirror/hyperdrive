@@ -406,6 +406,14 @@ To be used in `write-contents-functions'."
   (cl-assert hyperdrive-mode)
   (hyperdrive-save-buffer hyperdrive-current-entry))
 
+(defun hyperdrive-copy-url (hyperdrive)
+  "Save HYPERDRIVE's URL to the kill ring.
+Interactively, prompts for hyperdrive from
+`hyperdrive-hyperdrives'."
+  (interactive (list (hyperdrive-complete-hyperdrive)))
+  (kill-new (hyperdrive-url hyperdrive))
+  (message "%s" (hyperdrive-url hyperdrive)))
+
 ;;;; Footer
 
 (provide 'hyperdrive)
