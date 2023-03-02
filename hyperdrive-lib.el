@@ -328,6 +328,13 @@ such hyperdrive is known."
 (defun hyperdrive-persist (hyperdrive)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'."
   (puthash (hyperdrive-public-key hyperdrive) hyperdrive hyperdrive-hyperdrives)
+  ;; FIXME: `persist-save' deletes the persisted entry when
+  ;;
+  ;; (equal (symbol-value 'hyperdrive-hyperdrives) (persist-default 'hyperdrive-hyperdrives))
+  ;;
+  ;; Since `hyperdrive-hyperdrives' is a hash table, `persist-default'
+  ;; always points to the current version, meaning that the above sexp
+  ;; evals to 't. Therefore, `hyperdrive-hyperdrives' never gets persisted.
   (persist-save 'hyperdrive-hyperdrives))
 
 ;;;; Misc.
