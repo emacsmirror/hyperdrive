@@ -96,19 +96,18 @@ Default handler."
                ((cl-struct plz-response headers body)
                 ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
                 (hyperdrive-api 'get url :as 'response))
-               (encoded-entry-names (json-read-from-string body))
+               (entry-names (json-read-from-string body))
                (entries
-                (mapcar (lambda (encoded-entry-name)
+                (mapcar (lambda (entry-name)
                           (make-hyperdrive-entry
                            :hyperdrive (hyperdrive-entry-hyperdrive directory-entry)
-                           ;; TODO: Consider consolidating the following two somehow.
-                           :path (concat (hyperdrive-entry-path directory-entry)
-                                         encoded-entry-name)
-                           ;; FIXME: Stop decoding the names when
-                           ;; <https://github.com/RangerMauve/hypercore-fetch/issues/62>
-                           ;; is done.
-                           :name (url-unhex-string encoded-entry-name)))
-                        encoded-entry-names))
+                           ;; Rather than storing just the path and making a function to return
+                           ;; the name, we store the name as-is because, for one thing, the name
+                           ;; could theoretically contain a slash, and `file-name-nondirectory'
+                           ;; would return the wrong value in that case.
+                           :path (concat (hyperdrive-entry-path directory-entry) entry-name)
+                           :name entry-name))
+                        entry-names))
                ;; TODO: Consider adding a working-directory-entry. It more closely resembles
                ;;       dired, and it would be useful to put the point on something
                ;;       representing the current directory, enabling users to copy a link to
