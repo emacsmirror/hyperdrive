@@ -330,6 +330,8 @@ buffer opened by the handler."
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
 If buffer was not hyperdrive-backed, it becomes so."
+  ;; TODO: Improve docstrings of `hyperdrive-save-buffer' and
+  ;; `hyperdrive-write-buffer' after we've sorted out their behavior.
   (interactive
    (list (if hyperdrive-mode
              hyperdrive-current-entry
