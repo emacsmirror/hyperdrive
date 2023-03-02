@@ -147,6 +147,7 @@ Default handler."
             entries)
       (set-buffer-modified-p nil)
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
+      ;; TODO: Consider (goto-char (point-min))
       (when then
         (funcall then)))))
 
