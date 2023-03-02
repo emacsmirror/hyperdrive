@@ -147,7 +147,7 @@ To be used as the pretty-printer for `ewoc-create'."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
-    (message "%s" url)))
+    (hyperdrive-message "%s" url)))
 
 (defun hyperdrive-ewoc-delete (entry)
   "Delete ENTRY."

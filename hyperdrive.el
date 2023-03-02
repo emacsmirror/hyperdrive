@@ -220,7 +220,7 @@ hyperdrive."
   (let ((proc (hyperdrive--gateway-pid)))
     (if proc
         (signal-process proc 'sigint)
-      (message "Already not running hyper-gateway."))))
+      (hyperdrive-message "Already not running hyper-gateway."))))
 
 ;; (defun hyperdrive-upload-files (alias relative-dir files)
 ;; TODO: Update this.
@@ -369,10 +369,11 @@ overwrite."
                            ;; TODO: hyper-gateway should return 403
                            ;; when not writable.  See:
                            ;; <https://todo.sr.ht/~ushin/ushin/25>.
-                           (message (if (and (eq 500 status)
-                                             (string-match-p "SESSION_NOT_WRITABLE" body))
-                                        "Hyperdrive not writable"
-                                      plz-error)))
+                           (hyperdrive-message
+                            (if (and (eq 500 status)
+                                     (string-match-p "SESSION_NOT_WRITABLE" body))
+                                "Hyperdrive not writable"
+                              plz-error)))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
     (hyperdrive-message "Saving to %S..." url)))
 
@@ -388,7 +389,7 @@ Interactively, prompts for hyperdrive from
 `hyperdrive-hyperdrives'."
   (interactive (list (hyperdrive-complete-hyperdrive)))
   (kill-new (hyperdrive-url hyperdrive))
-  (message "%s" (hyperdrive-url hyperdrive)))
+  (hyperdrive-message "%s" (hyperdrive-url hyperdrive)))
 
 ;;;; Footer
 
