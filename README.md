@@ -104,12 +104,12 @@ network, run `M-x hyperdrive-stop`.
 ### Create a hyperdrive
 
 You can have multiple hyperdrives, each one containing its own set of
-files. Use `M-x hyperdrive-new` to create a new hyperdrive from an
-`alias`, which can be anything you like. That alias will be combined
-with your secret master key, which is generated for you by
-`hyper-gateway`, to produce a public key that uniquely identifies that
-hyperdrive. `hyperdrive-new` is idempotent since the same alias will
-always produce the same public key.
+files. Run `M-x hyperdrive-new` then type in an `alias` to create a
+new hyperdrive. That alias will be combined with your secret master
+key, which is generated for you by `hyper-gateway`, to produce a
+public key that uniquely identifies that hyperdrive. `hyperdrive-new`
+is idempotent since the same alias will always produce the same public
+key.
 
 ### Open a hyperdrive
 
