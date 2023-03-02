@@ -292,16 +292,22 @@ hyperdrive."
   "Open hyperdrive URL.
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
-  ;; TODO: Throw more descriptive error when attempting to open a url before running `hyperdrive-start'. The current error is
+  ;; TODO: Throw more descriptive error when attempting to open a url
+  ;; before running `hyperdrive-start'. The current error is
+  ;;
   ;; error in process sentinel: funcall: Wrong type argument: arrayp, nil
   ;; error in process sentinel: Wrong type argument: arrayp, nil
   (declare (indent defun))
   (interactive
    (list (hyperdrive-complete-url)))
   ;; TODO: Ensure gateway is running.
-  ;; TODO: When possible, check whether drive is writable with a HEAD
-  ;; request, and set writablep in the struct. See:
-  ;; <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
+  ;;
+  ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
+  ;; struct. If the hyperdrive already exists in hyperdrive-hyperdrives, there's no need to send a HEAD
+  ;; request, since the value will never change. We only need to send a HEAD request when calling
+  ;; `hyperdrive-open-url' on an unknown URL. Since `hyperdrive-complete-url' only returns a URL, we'll
+  ;; need to parse the URL and then call `gethash' (or refactor `hyperdrive-complete-url').
+  ;; See: <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
   (let ((entry (hyperdrive-url-entry url)))
     (hyperdrive-fill entry
       :then (lambda (entry)
