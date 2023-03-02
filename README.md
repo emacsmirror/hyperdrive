@@ -178,12 +178,11 @@ inbox](https://lists.sr.ht/~ushin/ushin).
 
 ## Acknowledgments
 
+[Adam Porter](https://github.com/alphapapa/) for rewriting
+`hyperdrive.el` and for his work on `plz.el`.
+
 [Mauve Signweaver](https://mauve.moe/) for their guidance into the
 world of p2p as well as the development of `hyper-gateway`.
-
-[Adam Porter](https://github.com/alphapapa/) for his feedback on the
-structure and design of `hyperdrive.el` as well as the development of
-`plz.el`.
 
 [Karl Voit](https://karl-voit.at/) for his feedback, especially the
 suggestion that we allow for a non-splitting approach which avoids
