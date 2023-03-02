@@ -330,6 +330,9 @@ same ALIAS does not create a new namespace."
   "Open hyperdrive URL.
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
+  ;; TODO: Throw more descriptive error when attempting to open a url before running `hyperdrive-start'. The current error is
+  ;; error in process sentinel: funcall: Wrong type argument: arrayp, nil
+  ;; error in process sentinel: Wrong type argument: arrayp, nil
   (declare (indent defun))
   (interactive
    (list (hyperdrive-complete-url)))
