@@ -327,7 +327,8 @@ If PREDICATE, only offer hyperdrives matching it."
 
 (defun hyperdrive-persist (hyperdrive)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'."
-  (cl-pushnew hyperdrive hyperdrive-hyperdrives :test #'equal :key #'hyperdrive-public-key))
+  (cl-pushnew hyperdrive hyperdrive-hyperdrives :test #'equal :key #'hyperdrive-public-key)
+  (persist-save 'hyperdrive-hyperdrives))
 
 ;;;; Misc.
 
