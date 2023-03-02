@@ -1,1 +1,1 @@
-/home/joseph/.local/src/hyperdrive.el/.makem.sh/makem.sh
+.makem.sh/makem.sh
