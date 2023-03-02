@@ -257,6 +257,8 @@ If no alias exists, return the URL as-is."
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate (prompt "Hyperdrive: "))
   "Return a hyperdrive selected with completion, or the input if nothing matches.
 If PREDICATE, only offer hyperdrives matching it."
+  ;; TODO: Return hyperdrive without prompting if `hyperdrive-hyperdrives' only contains
+  ;; one key. At the very least, we should do this when the predicate is writablep.
   (let* ((completion-styles (cons 'substring completion-styles))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (concat (when (hyperdrive-alias hyperdrive)
