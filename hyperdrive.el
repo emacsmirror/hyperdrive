@@ -391,7 +391,7 @@ overwrite."
                            ;; TODO: hyper-gateway should return 403
                            ;; when not writable.  See:
                            ;; <https://todo.sr.ht/~ushin/ushin/25>.
-                           (hyperdrive-message
+                           (message
                             (if (and (eq 500 status)
                                      (string-match-p "SESSION_NOT_WRITABLE" body))
                                 "Hyperdrive not writable"
