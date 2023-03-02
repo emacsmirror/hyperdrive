@@ -124,9 +124,10 @@
   "If non-nil, use file extension of hyperdrive file to set `major-mode'."
   :type 'boolean)
 
-(defcustom hyperdrive-persist-location (locate-user-emacs-file "var/hyperdrive")
+(defcustom hyperdrive-persist-location nil
   "Location where `persist' will store data."
-  :type 'sexp)
+  :type '(choice (const :tag "Use default persist location" nil)
+                 (file :tag "Custom location")))
 
 (defcustom hyperdrive-download-directory "~/"
   "Location where `hyperdrive-download-url-as-file' will download files."
