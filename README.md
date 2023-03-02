@@ -188,7 +188,7 @@ files to share!
 
 ## Concepts
 
-TODO: hyperdrives, sparse replication
+TODO: hyperdrives, sparse replication, gateway
 
 ## Glossary
 
