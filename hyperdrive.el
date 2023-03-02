@@ -346,6 +346,17 @@ overwrite."
   ;; <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
   (ignore overwritep)
   (unless hyperdrive-mode
+    ;; FIXME: Reusing the same buffer does not remove buffer-file-name. If you call
+    ;; `hyperdrive-write-buffer' from a file-visiting buffer, the buffer name as well as
+    ;; `revert-buffer-function' and `write-contents-functions' will be set. Now, any attempt to
+    ;; reopen the file you started with opens the renamed buffer. The only way to open the file
+    ;; in a new buffer is to kill the renamed buffer (or set its `buffer-file-name' to nil).
+    ;;
+    ;; I tried adding (set-visited-file-name nil) inside `hyperdrive-mode-on', but that
+    ;; resets `major-mode', `revert-buffer-function', and `write-contents-functions'.
+    ;;
+    ;; Should we be concerned about other potential permanent-local
+    ;; variables besides `buffer-file-name' messing things up?
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry))
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
