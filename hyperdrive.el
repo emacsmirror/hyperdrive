@@ -395,7 +395,9 @@ overwrite."
                                 "Hyperdrive not writable"
                               plz-error)))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
-    (hyperdrive-message "Saving to %S..." url)))
+    (hyperdrive-message "Saving to %S..." url)
+    ;; TODO: Consider copying url to new file to kill-ring after writing buffer
+    ))
 
 (defun hyperdrive--write-contents ()
   "Call `hyperdrive-save-buffer' for the current buffer.
