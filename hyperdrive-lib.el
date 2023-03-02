@@ -148,23 +148,6 @@ The remaining arguments are passed to `plz', which see."
   (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
           (substring url (length hyperdrive--hyper-prefix))))
 
-(defun hyperdrive--format-url (url)
-  "Return human-readable version of URL where the public-key is
-replaced with its local alias or public name.
-
-If no alias or name exists, return URL."
-  (let ((display-name (or
-                       (hyperdrive--alias url)
-                       ;; (alist-get 'name (hyperdrive-metadata url))
-                       ))
-        (public-key (hyperdrive--extract-public-key url)))
-    (if display-name
-        (replace-regexp-in-string
-         (regexp-quote (concat hyperdrive--hyper-prefix public-key))
-         (concat (substring public-key 0 6) "<" display-name ">" ":")
-         url)
-      url)))
-
 (cl-defun hyperdrive--write (url &key body then else)
   "Save BODY (a string) to hyperdrive URL.
 THEN and ELSE are passed to `hyperdrive-api', which see."
@@ -250,6 +233,25 @@ Call ELSE if request fails."
   (declare (indent defun))
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
+
+(defun hyperdrive--format-entry-url (entry)
+  "Return human-readable version of ENTRY's URL.
+
+If alias exists, return a URL of the format \"alias\" + \"<\"
+\"truncated public-key\" + \">:\" + \"path\", like so:
+
+\"foobar<e133t7>:/path/to/file.txt\"
+
+If no alias exists, return the URL as-is."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
+               ((cl-struct hyperdrive public-key alias) hyperdrive)
+               (display-name (or alias
+                                 ;; TODO: Use public name if available
+                                 ;; (alist-get 'name (hyperdrive-metadata entry))
+                                 )))
+    (if display-name
+        (concat display-name "<" (substring public-key 0 6) ">:" path)
+      (hyperdrive-entry-url entry))))
 
 ;;;; Reading from the user
 
@@ -342,7 +344,7 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (with-current-buffer (get-buffer-create (hyperdrive--format-url (hyperdrive-entry-url entry)))
+  (with-current-buffer (get-buffer-create (hyperdrive--format-entry-url entry))
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))
 

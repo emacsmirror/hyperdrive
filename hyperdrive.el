@@ -355,7 +355,7 @@ overwrite."
               ;; new etag in mode line).
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
-                  (rename-buffer (hyperdrive--format-url url) 'unique)
+                  (rename-buffer (hyperdrive--format-entry-url entry) 'unique)
                   (set-buffer-modified-p nil)))
               (hyperdrive-message "Wrote: %S to %S" name url))
       :else (lambda (plz-error)

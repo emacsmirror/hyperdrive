@@ -122,7 +122,7 @@ Default handler."
     (setf directory-entry (hyperdrive--fill directory-entry headers)
           hyperdrive-entries entries
           header (format "%s (%s)"
-                         (propertize (hyperdrive--format-url url)
+                         (propertize (hyperdrive--format-entry-url directory-entry)
                                      'face 'hyperdrive-header)
                          (hyperdrive-entry-etag directory-entry)))
     (with-current-buffer buffer
