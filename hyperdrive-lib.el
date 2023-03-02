@@ -260,6 +260,7 @@ If PREDICATE, only offer hyperdrives matching it."
   (let* ((completion-styles (cons 'substring completion-styles))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (concat (when (hyperdrive-alias hyperdrive)
+                                               ;; TODO: Use different face for alias?
                                                (concat (hyperdrive-alias hyperdrive) " "))
                                              (hyperdrive-url hyperdrive))
                                      hyperdrive))
