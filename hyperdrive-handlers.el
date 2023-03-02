@@ -152,6 +152,7 @@ Default handler."
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   "Stream ENTRY."
+  ;; TODO: Remove mpv dependency
   (mpv-play-url (hyperdrive--httpify-url (hyperdrive-entry-url entry))))
 
 (cl-defun hyperdrive-handler-json (entry &key _then)
