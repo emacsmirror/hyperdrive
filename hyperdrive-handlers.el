@@ -101,10 +101,6 @@ Default handler."
                 (mapcar (lambda (entry-name)
                           (make-hyperdrive-entry
                            :hyperdrive (hyperdrive-entry-hyperdrive directory-entry)
-                           ;; Rather than storing just the path and making a function to return
-                           ;; the name, we store the name as-is because, for one thing, the name
-                           ;; could theoretically contain a slash, and `file-name-nondirectory'
-                           ;; would return the wrong value in that case.
                            :path (concat (hyperdrive-entry-path directory-entry) entry-name)
                            :name entry-name))
                         entry-names))
