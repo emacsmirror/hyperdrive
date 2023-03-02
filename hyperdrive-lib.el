@@ -264,15 +264,13 @@ select it automatically."
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate (prompt "Hyperdrive: "))
   "Return a hyperdrive selected with completion, or the input if nothing matches.
 If PREDICATE, only offer hyperdrives matching it."
-  ;; TODO: Implement predicate.
-  (ignore predicate)
   (let* ((completion-styles (cons 'substring completion-styles))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (concat (when (hyperdrive-alias hyperdrive)
                                                (concat (hyperdrive-alias hyperdrive) " "))
                                              (hyperdrive-url hyperdrive))
                                      hyperdrive))
-                             hyperdrive-hyperdrives))
+                             (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives))))
          (input (completing-read prompt (mapcar #'car candidates))))
     (or (alist-get input candidates nil nil #'equal)
         input)))
@@ -294,8 +292,10 @@ If PREDICATE, only offer hyperdrives matching it."
                        "Please input a hyper:// URL"))))))
 
 (defun hyperdrive--read-new-entry ()
-  "Return new hyperdrive entry with path and hyperdrive read from user."
-  (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
+  "Return new hyperdrive entry with path and hyperdrive read from user.
+Prompts user for a writable hyperdrive and signals an error if no
+such hyperdrive is known."
+  (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
          (filename (buffer-file-name))
          (basename (or (when hyperdrive-current-entry
                          (hyperdrive-entry-name hyperdrive-current-entry))
@@ -304,6 +304,8 @@ If PREDICATE, only offer hyperdrives matching it."
          (default (or basename (buffer-name)))
          (prompt (format "File path [default %S]: " default))
          (path (read-string prompt nil nil default)))
+    (unless (hyperdrive-p hyperdrive)
+      (user-error "No such hyperdrive: %S.  Use `hyperdrive-new' to create one first" hyperdrive))
     (make-hyperdrive-entry :hyperdrive hyperdrive
                            :name (file-name-nondirectory path)
                            :path (if (string-prefix-p "/" path)
@@ -322,13 +324,14 @@ If PREDICATE, only offer hyperdrives matching it."
                 (string-match (rx bos (group "hyper://" (1+ nonl))) response)
                 (match-string 1 response)))
          (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
-    (setf (hyperdrive-alias hyperdrive) alias)
+    (setf (hyperdrive-alias hyperdrive) alias
+          (hyperdrive-writablep hyperdrive) t)
     (hyperdrive-persist hyperdrive)
     (hyperdrive-open url)))
 
 (defun hyperdrive-persist (hyperdrive)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'."
-  (cl-pushnew hyperdrive hyperdrive-hyperdrives :test #'equal :key #'hyperdrive-public-key)
+  (puthash (hyperdrive-public-key hyperdrive) hyperdrive hyperdrive-hyperdrives)
   (persist-save 'hyperdrive-hyperdrives))
 
 ;;;; Misc.

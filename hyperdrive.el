@@ -158,7 +158,7 @@ Passed to `display-buffer', which see."
                 "List of cons pairs mapping an alias to a public key."
                 hyperdrive-persist-location)
 
-(persist-defvar hyperdrive-hyperdrives nil
+(persist-defvar hyperdrive-hyperdrives (make-hash-table :test #'equal)
                 "List of known hyperdrives."
                 hyperdrive-persist-location)
 
@@ -222,6 +222,7 @@ hyperdrive."
 (defun hyperdrive-start ()
   "Start `hyper-gateway' if not already running."
   (interactive)
+  ;; TODO: Verify that the latest version is installed.  See: <https://github.com/RangerMauve/hyper-gateway/issues/9>.
   (unless (hyperdrive--gateway-ready-p)
     (let ((buf (get-buffer-create " *hyper-gateway*")))
       (with-current-buffer buf (erase-buffer))
@@ -333,6 +334,9 @@ buffer opened by the handler."
   (interactive
    (list (hyperdrive-complete-url)))
   ;; TODO: Ensure gateway is running.
+  ;; TODO: When possible, check whether drive is writable with a HEAD
+  ;; request, and set writablep in the struct. See:
+  ;; <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
   (let ((entry (hyperdrive-url-entry url)))
     (hyperdrive-fill entry
       :then (lambda (entry)
@@ -343,7 +347,9 @@ buffer opened by the handler."
                                                          hyperdrive-type-handlers :key #'car))
                                         #'hyperdrive-handler-default)))
                 (funcall handler entry :then then)
-                (hyperdrive-persist (hyperdrive-entry-hyperdrive entry))))
+                (unless (gethash (hyperdrive-public-key (hyperdrive-entry-hyperdrive entry))
+                                 hyperdrive-hyperdrives)
+                  (hyperdrive-persist (hyperdrive-entry-hyperdrive entry)))))
       :else (lambda (plz-error)
               (pcase-let* (((cl-struct plz-error response) plz-error)
                            ((cl-struct plz-response status) response))
