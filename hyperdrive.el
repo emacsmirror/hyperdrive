@@ -397,6 +397,7 @@ overwrite."
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
     (hyperdrive-message "Saving to %S..." url)
     ;; TODO: Consider copying url to new file to kill-ring after writing buffer
+    ;; TODO: Reload relevant hyperdrive-ewoc buffers after writing buffer (if ewoc buffers display etag, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
 
 (defun hyperdrive--write-contents ()
