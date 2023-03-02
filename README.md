@@ -185,5 +185,5 @@ inbox](https://lists.sr.ht/~ushin/ushin).
 world of p2p as well as the development of `hyper-gateway`.
 
 [Karl Voit](https://karl-voit.at/) for his feedback, especially the
-suggestion that we allow for a non-splitting approach which avoids
-unnecessary borders within topics.
+suggestion that we allow for a non-splitting approach for uploading
+files from the filesystem.
