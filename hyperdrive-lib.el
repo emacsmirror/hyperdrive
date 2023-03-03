@@ -33,6 +33,8 @@
 
 ;;;; Declarations
 
+(defvar hyperdrive-request-queue)
+
 (declare-function hyperdrive-open "hyperdrive")
 
 ;;;; Structs
@@ -142,6 +144,13 @@ The remaining arguments are passed to `plz', which see."
   (declare (indent defun))
   (apply #'plz method (hyperdrive--httpify-url url) rest))
 
+(defun hyperdrive-api-queue (queue method url &rest args)
+  "Put `hyperdrive-api' request to URL with METHOD on QUEUE.
+Like `hyperdrive-api', but uses `plz-queue', which see."
+  (declare (indent defun))
+  (plz-queue queue
+    (apply #'plz method (hyperdrive--httpify-url url) args)))
+
 (defun hyperdrive--httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
   (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
@@ -209,11 +218,13 @@ If already at top-level directory, return nil."
 If request fails, call ELSE (which is passed to `hyperdrive-api',
 which see."
   (declare (indent defun))
-  (hyperdrive-api 'head (hyperdrive-entry-url entry)
-    :as 'response
-    :then (lambda (response)
-            (funcall then (hyperdrive--fill entry (plz-response-headers response))))
-    :else else))
+  (plz-run
+   (hyperdrive-api-queue hyperdrive-request-queue
+     'head (hyperdrive-entry-url entry)
+     :as 'response
+     :then (lambda (response)
+             (funcall then (hyperdrive--fill entry (plz-response-headers response))))
+     :else else)))
 
 (defun hyperdrive--fill (entry headers)
   "Fill ENTRY's slot from HEADERS."
