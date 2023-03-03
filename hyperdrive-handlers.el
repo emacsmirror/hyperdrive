@@ -140,12 +140,16 @@ Default handler."
             entries)
       (when prev-node-data
         ;; Try to return point to where it was before reverting the buffer.
-        (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
-                         (lambda (node-data)
-                           (hyperdrive-entry-equal prev-node-data node-data)))))
-            (goto-char (ewoc-location node))
-          (goto-char (point-min))
-          (forward-line (1- prev-line))))
+        ;; FIXME: This doesn't always work correctly, apparently due
+        ;; to the async filling of entries and refreshing of the EWOC.
+        ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
+        ;;                  (lambda (node-data)
+        ;;                    (hyperdrive-entry-equal prev-node-data node-data)))))
+        ;;     (goto-char (ewoc-location node))
+        ;;   (goto-char (point-min))
+        ;;   (forward-line (1- prev-line)))
+        (goto-char (point-min))
+        (forward-line (1- prev-line)))
       (mapc (lambda (entry)
               (hyperdrive-fill entry
                 :then (lambda (_)
