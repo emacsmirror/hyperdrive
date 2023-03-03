@@ -301,11 +301,6 @@ hyperdrive."
   "Open hyperdrive URL.
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
-  ;; TODO: [#A] Throw more descriptive error when attempting to open a url
-  ;; before running `hyperdrive-start'. The current error is
-  ;;
-  ;; error in process sentinel: funcall: Wrong type argument: arrayp, nil
-  ;; error in process sentinel: Wrong type argument: arrayp, nil
   (declare (indent defun))
   (interactive
    (list (hyperdrive-complete-url)))
@@ -334,12 +329,13 @@ buffer opened by the handler."
                   (hyperdrive-persist (hyperdrive-entry-hyperdrive entry)))
                 (funcall handler entry :then then)))
       :else (lambda (plz-error)
-              (pcase-let* (((cl-struct plz-error response) plz-error)
-                           ((cl-struct plz-response status) response))
-                (pcase status
-                  (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
-                         (hyperdrive-open (hyperdrive--parent url))) )
-                  (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error))))))))
+              (pcase-let (((cl-struct plz-error curl-error response) plz-error))
+                (if curl-error
+                    (error "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
+                  (pcase (plz-response-status response)
+                    (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
+                           (hyperdrive-open (hyperdrive--parent url))) )
+                    (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error)))))))))
 
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
