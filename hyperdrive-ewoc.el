@@ -113,7 +113,7 @@ To be used as the pretty-printer for `ewoc-create'."
   :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
   "RET" #'hyperdrive-ewoc-find-file
   "^"   #'hyperdrive-ewoc-up-directory
-  "w"   #'hyperdrive-ewoc-copy-filename-as-kill
+  "w"   #'hyperdrive-ewoc-copy-url-as-kill
   "n"   #'hyperdrive-ewoc-next
   "p"   #'hyperdrive-ewoc-previous
   "D"   #'hyperdrive-ewoc-delete)
@@ -155,12 +155,14 @@ exists."
       (hyperdrive-open parent-url)
     (user-error "At root directory")))
 
-(defun hyperdrive-ewoc-copy-filename-as-kill (entry)
-  "Copy URL of file at point into the kill ring."
-  ;; TODO: Copy current directory-entry when cursor is on header (or
-  ;;       footer?). This may be be awkward UI, since `ewoc-previous'
-  ;;       will never land point on the header.
-  (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+(defun hyperdrive-ewoc-copy-url-as-kill (entry)
+  "Copy URL of ENTRY into the kill ring.
+Interactively, copy entry at point."
+  (interactive (list (if (= 1 (line-number-at-pos))
+                         ;; Point on header: copy directory's entry.
+                         hyperdrive-current-entry
+                       ;; Point on a file entry: copy its entry.
+                       (ewoc-data (ewoc-locate hyperdrive-ewoc)))))
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (hyperdrive-message "%s" url)))
