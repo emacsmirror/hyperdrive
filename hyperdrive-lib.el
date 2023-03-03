@@ -237,23 +237,23 @@ Call ELSE if request fails."
 
 (defun hyperdrive--format-entry-url (entry)
   "Return human-readable version of ENTRY's URL.
+Return URL formatted like:
 
-If alias exists, return a URL of the format \"alias\" + \"<\"
-\"truncated public-key\" + \">:\" + \"path\", like so:
+  PUBLIC-KEY-FRAGMENT<ALIAS>:/PATH/TO/FILE
 
-\"foobar<e133t7>:/path/to/file.txt\"
-
-If no alias exists, return the URL as-is."
+If entry's hyperdrive has no alias, it is omitted.  Entire string
+has `help-echo' property showing the entry's full URL."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                ((cl-struct hyperdrive public-key alias) hyperdrive)
                (display-name (or (when alias
-                                   (propertize alias 'face 'hyperdrive-alias))
+                                   (concat "<" (propertize alias 'face 'hyperdrive-alias) ">"))
                                  ;; TODO: Use public name if available
                                  ;; (alist-get 'name (hyperdrive-metadata entry))
-                                 )))
-    (if display-name
-        (concat display-name "<" (substring public-key 0 6) ">:" path)
-      (hyperdrive-entry-url entry))))
+                                 ))
+               (shortened-key (concat (substring public-key 0 6) "…")))
+    (propertize (concat (propertize shortened-key 'face 'hyperdrive-public-key)
+                        display-name ":" path)
+                'help-echo (hyperdrive-entry-url entry))))
 
 ;;;; Reading from the user
 

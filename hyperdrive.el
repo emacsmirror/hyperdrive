@@ -156,6 +156,9 @@ Passed to `display-buffer', which see."
 (defface hyperdrive-alias '((t :inherit font-lock-doc-face))
   "Applied to hyperdrive aliases.")
 
+(defface hyperdrive-public-key '((t :inherit font-lock-constant-face))
+  "Applied to hyperdrive public keys.")
+
 ;;;; Internal variables
 
 ;; NOTE: `persist' currently does not work correctly with hash tables

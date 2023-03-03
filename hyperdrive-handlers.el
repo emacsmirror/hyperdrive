@@ -106,16 +106,16 @@ Default handler."
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
+               (formatted-url (hyperdrive--format-entry-url directory-entry))
                (ewoc) (header) ;; (prev-node-data) (prev-line)
                )
+    (add-face-text-property 0 (length formatted-url) 'hyperdrive-header 'append formatted-url)
     (when parent-entry
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
       (push parent-entry entries))
     (setf directory-entry (hyperdrive--fill directory-entry headers)
           hyperdrive-entries entries
-          header (format "%s (%s)"
-                         (propertize (hyperdrive--format-entry-url directory-entry)
-                                     'face 'hyperdrive-header)
+          header (format "%s (%s)" formatted-url
                          (hyperdrive-entry-etag directory-entry)))
     (with-current-buffer buffer
       ;; (when (and (bound-and-true-p hyperdrive-ewoc)
