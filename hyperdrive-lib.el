@@ -37,15 +37,6 @@
 
 ;;;; Structs
 
-;; (cl-defstruct hyperdrive-directory
-;;   "Represents a directory in a hyperdrive."
-;;   ;; FIXME: Do we even need this struct?  Or will we need it later?
-;;   ;; TODO: Add URL slot.
-;;   (headers nil :documentation "HTTP headers from request.")
-;;   (modified nil :documentation "Last modified time.")
-;;   (url nil :documentation "URL returned by gateway.")
-;;   (entries nil :documentation "Entries in the directory."))
-
 (cl-defstruct hyperdrive-entry
   "Represents an entry in a hyperdrive."
   (hyperdrive nil :documentation "The entry's hyperdrive.")
