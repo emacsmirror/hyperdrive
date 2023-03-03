@@ -169,9 +169,6 @@ Passed to `display-buffer', which see."
   "Entry for current buffer.")
 (put 'hyperdrive-current-entry 'permanent-local t)
 
-(defvar hyperdrive-request-queue (make-plz-queue :limit 5)
-  "Queue for API requests.")
-
 ;;;; Commands
 
 (defun hyperdrive--gateway-pid ()
