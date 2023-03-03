@@ -43,7 +43,6 @@
 ;; (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
 ;;             browse-url-handlers :test #'equal)
 
-;; TODO: [#B] Store links from directory buffer.
 ;; TODO: [#B] Store links to non-Org files
 
 (defun hyperdrive-link-org-store ()
