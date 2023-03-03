@@ -126,13 +126,14 @@ Default handler."
                                      'face 'hyperdrive-header)
                          (hyperdrive-entry-etag directory-entry)))
     (with-current-buffer buffer
-      (hyperdrive-ewoc-mode)
-      (setf ewoc hyperdrive-ewoc) ; Bind this for the fill-entry lambda.
-      (when (ewoc-nth ewoc 0)
+      (when (and hyperdrive-ewoc
+                 (ewoc-nth hyperdrive-ewoc 0))
         ;; When EWOC has nodes, remember the current node and line so
         ;; we can try to keep point.
-        (setf prev-node-data (ewoc-data (ewoc-locate ewoc))
+        (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-ewoc))
               prev-line (line-number-at-pos)))
+      (hyperdrive-ewoc-mode)
+      (setf ewoc hyperdrive-ewoc)  ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-ewoc #'ignore)
       (ewoc-set-hf hyperdrive-ewoc header "")
       (mapc (lambda (entry)
