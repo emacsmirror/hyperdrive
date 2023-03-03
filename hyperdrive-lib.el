@@ -184,6 +184,17 @@ If already at top-level directory, return nil."
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
+(defun hyperdrive-entry-equal (a b)
+  "Return non-nil if hyperdrive entries A and B are equal."
+  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key a-key))))
+               a)
+              ((cl-struct hyperdrive-entry (path b-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
+               b))
+    (and (equal a-path b-path)
+         (equal a-key b-key))))
+
 (cl-defun hyperdrive-fill
     (entry &key then
            (else (lambda (plz-error)
