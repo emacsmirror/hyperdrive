@@ -161,11 +161,14 @@ Default handler."
                             (with-selected-window buffer-window
                               ;; TODO: Use `ewoc-invalidate' on individual entries
                               ;; (maybe later, as performance comes to matter more).
-                              (ewoc-refresh hyperdrive-ewoc))
+                              (ewoc-refresh hyperdrive-ewoc)
+                              (goto-char (point-min)))
                           (with-current-buffer (ewoc-buffer ewoc)
-                            (ewoc-refresh hyperdrive-ewoc))))))
+                            (ewoc-refresh hyperdrive-ewoc)
+                            (goto-char (point-min)))))))
             entries)
       (set-buffer-modified-p nil)
+      (goto-char (point-min))
       (when then
         (funcall then)))))
 
