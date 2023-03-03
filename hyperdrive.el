@@ -153,9 +153,17 @@ Passed to `display-buffer', which see."
 
 ;;;; Internal variables
 
-(persist-defvar hyperdrive-hyperdrives (make-hash-table :test #'equal)
+;; NOTE: `persist' currently does not work correctly with hash tables
+;; if the default value of a persisted variable is one; it considers
+;; them equal at save time and so deletes the persisted variable file.
+;; To work around this, we set the default value to nil and initialize
+;; it to a hash table "manually".
+;; TODO: File a bug report against persist.el.
+(persist-defvar hyperdrive-hyperdrives nil
                 "List of known hyperdrives."
                 hyperdrive-persist-location)
+(unless hyperdrive-hyperdrives
+  (setf hyperdrive-hyperdrives (make-hash-table :test #'equal)))
 
 (defvar-local hyperdrive-current-entry nil
   "Entry for current buffer.")
