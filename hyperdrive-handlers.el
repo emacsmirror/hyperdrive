@@ -155,10 +155,9 @@ Default handler."
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
       (when prev-node-data
         ;; Try to return point to where it was before reverting the buffer.
-        (if-let ((node (car
-                        (ewoc-collect hyperdrive-ewoc
-                                      (lambda (node-data)
-                                        (hyperdrive-entry-equal prev-node-data node-data))))))
+        (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
+                         (lambda (node-data)
+                           (hyperdrive-entry-equal prev-node-data node-data)))))
             (goto-char (ewoc-location node))
           (goto-char (point-min))
           (forward-line (1- prev-line))))
