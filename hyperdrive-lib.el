@@ -248,6 +248,7 @@ If ABBREVIATE-KEY, the public key is shortened to 6 characters
 and an ellipsis.  If WITH-PROTOCOL, \"hyper://\" is prepended.
 Entire string has `help-echo' property showing the entry's full
 URL."
+  ;; TODO: Add user option to disable abbreviating keys.
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                ((cl-struct hyperdrive public-key alias) hyperdrive)
                (protocol (when with-protocol
