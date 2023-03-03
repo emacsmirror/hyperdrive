@@ -185,6 +185,34 @@ Interactively, copy entry at point."
 (cl-defun hyperdrive-ewoc-next (&optional (n 1))
   "Move forward N entries."
   (interactive "p")
+  (cond ((= 1 (line-number-at-pos))
+         ;; Point on header: move into first entry.
+         (forward-line 1))
+        ;; ((= (line-number-at-pos)
+        ;;     (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+        ;;  ;; Point is at last entry: don't move.
+        ;;  (goto-char (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+        (t
+         ;; Point is elsewhere: move to next entry.
+         (hyperdrive-ewoc-move n))))
+
+(cl-defun hyperdrive-ewoc-previous (&optional (n 1))
+  "Move backward N entries."
+  (interactive "p")
+  (cond ((= 2 (line-number-at-pos))
+         ;; Point on first entry: move into header.
+         (forward-line -1))
+        ((> (line-number-at-pos)
+            (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+         ;; Point is past last entry: move to last entry.
+         (goto-char (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+        (t
+         ;; Point is elsewhere: move to previous entry.
+         (hyperdrive-ewoc-move (- n)))))
+
+(cl-defun hyperdrive-ewoc-move (&optional (n 1))
+  "Move forward N entries."
+  (interactive "p")
   (let ((next-fn (pcase n
                    ((pred (< 0)) #'ewoc-next)
                    ((pred (> 0)) #'ewoc-prev)))
@@ -198,11 +226,6 @@ Interactively, copy entry at point."
       (cl-incf i))
     (when target-node
       (goto-char (ewoc-location target-node)))))
-
-(cl-defun hyperdrive-ewoc-previous (&optional (n 1))
-  "Move backward N entries."
-  (interactive "p")
-  (hyperdrive-ewoc-next (- n)))
 
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here
