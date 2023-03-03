@@ -151,6 +151,11 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
+;;;;; Faces
+
+(defface hyperdrive-alias '((t :inherit font-lock-doc-face))
+  "Applied to hyperdrive aliases.")
+
 ;;;; Internal variables
 
 ;; NOTE: `persist' currently does not work correctly with hash tables

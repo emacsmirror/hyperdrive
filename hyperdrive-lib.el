@@ -246,7 +246,8 @@ If alias exists, return a URL of the format \"alias\" + \"<\"
 If no alias exists, return the URL as-is."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                ((cl-struct hyperdrive public-key alias) hyperdrive)
-               (display-name (or alias
+               (display-name (or (when alias
+                                   (propertize alias 'face 'hyperdrive-alias))
                                  ;; TODO: Use public name if available
                                  ;; (alist-get 'name (hyperdrive-metadata entry))
                                  )))
@@ -261,10 +262,12 @@ If no alias exists, return the URL as-is."
 If PREDICATE, only offer hyperdrives matching it."
   (let* ((completion-styles (cons 'substring completion-styles))
          (candidates (mapcar (lambda (hyperdrive)
-                               (cons (concat (when (hyperdrive-alias hyperdrive)
-                                               ;; TODO: [#A] Use different face for alias?
-                                               (concat (hyperdrive-alias hyperdrive) " "))
-                                             (hyperdrive-url hyperdrive))
+                               (cons (concat
+                                      (when (hyperdrive-alias hyperdrive)
+                                        (concat (propertize (hyperdrive-alias hyperdrive)
+                                                            'face 'hyperdrive-alias)
+                                                " "))
+                                      (hyperdrive-url hyperdrive))
                                      hyperdrive))
                              (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives))))
          (input (completing-read prompt (mapcar #'car candidates))))
