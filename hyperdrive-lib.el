@@ -235,7 +235,7 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
 
-(cl-defun hyperdrive--format-entry-url (entry &key abbreviate-key)
+(cl-defun hyperdrive--format-entry-url (entry &key abbreviate-key (with-protocol t))
   "Return human-readable version of ENTRY's URL.
 Return URL formatted like:
 
@@ -252,7 +252,9 @@ has `help-echo' property showing the entry's full URL."
                                  )))
     (when abbreviate-key
       (setf public-key (concat (substring public-key 0 6) "…")))
-    (propertize (concat (propertize public-key 'face 'hyperdrive-public-key)
+    (propertize (concat (when with-protocol
+                          "hyper://")
+                        (propertize public-key 'face 'hyperdrive-public-key)
                         display-name ":" path)
                 'help-echo (hyperdrive-entry-url entry))))
 
