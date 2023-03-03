@@ -138,6 +138,14 @@ Default handler."
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
+      (when prev-node-data
+        ;; Try to return point to where it was before reverting the buffer.
+        (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
+                         (lambda (node-data)
+                           (hyperdrive-entry-equal prev-node-data node-data)))))
+            (goto-char (ewoc-location node))
+          (goto-char (point-min))
+          (forward-line (1- prev-line))))
       (mapc (lambda (entry)
               (hyperdrive-fill entry
                 :then (lambda (_)
@@ -153,14 +161,6 @@ Default handler."
             entries)
       (set-buffer-modified-p nil)
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
-      (when prev-node-data
-        ;; Try to return point to where it was before reverting the buffer.
-        (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
-                         (lambda (node-data)
-                           (hyperdrive-entry-equal prev-node-data node-data)))))
-            (goto-char (ewoc-location node))
-          (goto-char (point-min))
-          (forward-line (1- prev-line))))
       (when then
         (funcall then)))))
 
