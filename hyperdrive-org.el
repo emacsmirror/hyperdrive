@@ -55,10 +55,9 @@ which see."
                  ('org-mode (hyperdrive--link-org))
                  ('hyperdrive-ewoc-mode
                   (let ((entry (hyperdrive-ewoc--entry-at-point)))
-                    (list :type "hyper://"
-                          :link (hyperdrive-entry-url entry)
-                          :description (hyperdrive--format-entry-url entry :with-alias nil
-                                                                     )))))))
+                    `((type . "hyper://")
+                      (link . ,(hyperdrive-entry-url entry))
+                      (description . ,(hyperdrive--format-entry-url entry :with-alias nil))))))))
     (org-link-store-props :type type :link link :description description)
     t))
 
