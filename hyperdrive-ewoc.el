@@ -187,13 +187,10 @@ Interactively, copy entry at point."
   (interactive "p")
   (cond ((= 1 (line-number-at-pos))
          ;; Point on header: move into first entry.
-         (forward-line 1))
-        ;; ((= (line-number-at-pos)
-        ;;     (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
-        ;;  ;; Point is at last entry: don't move.
-        ;;  (goto-char (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+         (forward-line 1)) 
         (t
-         ;; Point is elsewhere: move to next entry.
+         ;; Point is elsewhere: move to next entry (`ewoc-next' won't
+         ;; move past the last entry).
          (hyperdrive-ewoc-move n))))
 
 (cl-defun hyperdrive-ewoc-previous (&optional (n 1))
