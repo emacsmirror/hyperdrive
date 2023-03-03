@@ -35,14 +35,6 @@
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
 (declare-function hyperdrive-ewoc--entry-at-point "hyperdrive-ewoc")
 
-;;;; Links
-
-;; (require 'browse-url)
-
-;; TODO: Hook into browse-url-handlers (but only on Emacs 28+)?
-;; (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-open)
-;;             browse-url-handlers :test #'equal)
-
 ;; TODO: [#B] Store links to non-Org files
 
 (defun hyperdrive-link-org-store ()

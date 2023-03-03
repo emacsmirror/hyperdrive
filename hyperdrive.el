@@ -177,6 +177,21 @@ Passed to `display-buffer', which see."
   "Entry for current buffer.")
 (put 'hyperdrive-current-entry 'permanent-local t)
 
+;;;; Links
+
+(defvar browse-url-handlers)
+
+(defun hyperdrive-browse-url (url &rest _ignore)
+  "Browse hyperdrive URL."
+  (hyperdrive-open url))
+
+(when (version<= "28.1" emacs-version)
+  (require 'browse-url)
+
+  (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-browse-url)
+              browse-url-handlers :test #'equal)
+  (cl-pushnew "hyper://" thing-at-point-uri-schemes :test #'equal))
+
 ;;;; Commands
 
 (defun hyperdrive--gateway-pid ()
