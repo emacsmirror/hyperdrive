@@ -235,27 +235,30 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
 
-(cl-defun hyperdrive--format-entry-url (entry &key abbreviate-key (with-protocol t))
+(cl-defun hyperdrive--format-entry-url
+    (entry &key abbreviate-key (use-alias t) (with-protocol t))
   "Return human-readable version of ENTRY's URL.
 Return URL formatted like:
 
-  PUBLIC-KEY<ALIAS>:/PATH/TO/FILE
+  hyper://[ALIAS]/PATH/TO/FILE
+  hyper://PUBLIC-KEY/PATH/TO/FILE
 
-If entry's hyperdrive has no alias, it is omitted.  Entire string
-has `help-echo' property showing the entry's full URL."
+If USE-ALIAS, the public-key is replaced with it, when available.
+If ABBREVIATE-KEY, the public key is shortened to 6 characters
+and an ellipsis.  If WITH-PROTOCOL, \"hyper://\" is prepended.
+Entire string has `help-echo' property showing the entry's full
+URL."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                ((cl-struct hyperdrive public-key alias) hyperdrive)
-               (display-name (or (when alias
-                                   (concat "<" (propertize alias 'face 'hyperdrive-alias) ">"))
-                                 ;; TODO: Use public name if available
-                                 ;; (alist-get 'name (hyperdrive-metadata entry))
-                                 )))
-    (when abbreviate-key
-      (setf public-key (concat (substring public-key 0 6) "…")))
-    (propertize (concat (when with-protocol
-                          "hyper://")
-                        (propertize public-key 'face 'hyperdrive-public-key)
-                        display-name ":" path)
+               (protocol (when with-protocol
+                           "hyper://"))
+               (host (if (and use-alias alias)
+                         (propertize (concat "[" alias "]") 'face 'hyperdrive-alias)
+                       (propertize (if abbreviate-key
+                                       (concat (substring public-key 0 6) "…")
+                                     public-key)
+                                   'face 'hyperdrive-public-key))))
+    (propertize (concat protocol host path)
                 'help-echo (hyperdrive-entry-url entry))))
 
 ;;;; Reading from the user
