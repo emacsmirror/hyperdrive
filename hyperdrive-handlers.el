@@ -23,8 +23,7 @@
 
 ;;; Code:
 
-(require 'ewoc)
-
+(require 'hyperdrive-ewoc)
 (require 'hyperdrive-lib)
 
 (defvar hyperdrive-honor-auto-mode-alist)
