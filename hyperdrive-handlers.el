@@ -115,8 +115,7 @@ Default handler."
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
-               (ewoc)
-               (header))
+               (ewoc) (header) (prev-node-data) (prev-line))
     (when parent-entry
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
       (push parent-entry entries))
@@ -129,6 +128,11 @@ Default handler."
     (with-current-buffer buffer
       (hyperdrive-ewoc-mode)
       (setf ewoc hyperdrive-ewoc) ; Bind this for the fill-entry lambda.
+      (when (ewoc-nth ewoc 0)
+        ;; When EWOC has nodes, remember the current node and line so
+        ;; we can try to keep point.
+        (setf prev-node-data (ewoc-data (ewoc-locate ewoc))
+              prev-line (line-number-at-pos)))
       (ewoc-filter hyperdrive-ewoc #'ignore)
       (ewoc-set-hf hyperdrive-ewoc header "")
       (mapc (lambda (entry)
@@ -149,7 +153,13 @@ Default handler."
             entries)
       (set-buffer-modified-p nil)
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
-      ;; TODO: Consider (goto-char (point-min))
+      (when prev-node-data
+        ;; Try to return point to where it was before reverting the buffer.
+        (if-let ((node (car (ewoc-collect ewoc (lambda (node)
+                                                 (equal prev-node-data (ewoc-data node))) ))))
+            (goto-char (ewoc-location node))
+          (goto-char (point-min))
+          (forward-line prev-line)))
       (when then
         (funcall then)))))
 
