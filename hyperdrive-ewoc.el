@@ -142,7 +142,9 @@ To be used as the pretty-printer for `ewoc-create'."
 (declare-function hyperdrive-open "hyperdrive")
 
 (defun hyperdrive-ewoc-find-file (entry)
-  "Find ENTRY at point."
+  "Find ENTRY at point.
+Switch to a buffer visiting ENTRY, creating one if none already
+exists."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
   (hyperdrive-open (hyperdrive-entry-url entry)))
 
