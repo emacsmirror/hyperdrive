@@ -150,6 +150,7 @@ Default handler."
         ;;   (forward-line (1- prev-line)))
         (goto-char (point-min))
         (forward-line (1- prev-line)))
+      (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
       (mapc (lambda (entry)
               (hyperdrive-fill entry
                 :then (lambda (_)
@@ -164,7 +165,6 @@ Default handler."
                             (hyperdrive-funcall-preserving-point #'ewoc-refresh hyperdrive-ewoc))))))
             entries)
       (set-buffer-modified-p nil)
-      (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
       (when then
         (funcall then)))))
 
