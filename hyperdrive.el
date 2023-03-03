@@ -368,6 +368,8 @@ overwrite."
     ;;
     ;; Should we be concerned about other potential permanent-local
     ;; variables besides `buffer-file-name' messing things up?
+
+    ;; Possible fix: Just (setf buffer-file-name nil).
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry))
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
