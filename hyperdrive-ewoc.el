@@ -137,7 +137,7 @@ To be used as the pretty-printer for `ewoc-create'."
 
 ;;;; Commands
 
-;; TODO: [#A] Implement sorting by size, type, etc.
+;; TODO: Implement sorting by size, type, etc.
 
 (declare-function hyperdrive-open "hyperdrive")
 
