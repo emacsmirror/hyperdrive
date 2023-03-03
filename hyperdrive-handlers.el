@@ -147,9 +147,9 @@ Default handler."
                             (with-selected-window buffer-window
                               ;; TODO: Use `ewoc-invalidate' on individual entries
                               ;; (maybe later, as performance comes to matter more).
-                              (ewoc-refresh hyperdrive-ewoc))
+                              (hyperdrive-funcall-preserving-point #'ewoc-refresh hyperdrive-ewoc))
                           (with-current-buffer (ewoc-buffer ewoc)
-                            (ewoc-refresh hyperdrive-ewoc))))))
+                            (hyperdrive-funcall-preserving-point #'ewoc-refresh hyperdrive-ewoc))))))
             entries)
       (set-buffer-modified-p nil)
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
@@ -162,6 +162,12 @@ Default handler."
           (forward-line prev-line)))
       (when then
         (funcall then)))))
+
+(defun hyperdrive-funcall-preserving-point (fn &rest args)
+  "Call FN keeping point."
+  (let ((pos (point)))
+    (apply fn args)
+    (goto-char pos)))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   "Stream ENTRY."
