@@ -84,7 +84,6 @@ Default handler."
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show directory ENTRY."
-  ;; TODO: Open in same window (but probably still new buffer) (display-buffer-alist ?)
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; FIXME: About half of the time, calls to hyperdrive-ewoc-list
   ;; fail. Issue with sending many rapid HEAD requests?
@@ -104,13 +103,6 @@ Default handler."
                            :path (concat (hyperdrive-entry-path directory-entry) entry-name)
                            :name entry-name))
                         entry-names))
-               ;; TODO: Consider adding a working-directory-entry. It more closely resembles
-               ;;       dired, and it would be useful to put the point on something
-               ;;       representing the current directory, enabling users to copy a link to
-               ;;       the working directory with `hyperdrive-ewoc-copy-filename-as-kill' or
-               ;;       click a visible button to reload the current directory (an alternative
-               ;;       to `hyperdrive-revert-buffer'). `hyperdrive-ewoc-previous' does not
-               ;;       allow user to move point to the header.
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
@@ -180,7 +172,7 @@ Default handler."
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   "Stream ENTRY."
-  ;; TODO: Remove mpv dependency
+  ;; TODO: [#B] Remove mpv dependency
   (mpv-play-url (hyperdrive--httpify-url (hyperdrive-entry-url entry))))
 
 (cl-defun hyperdrive-handler-json (entry &key _then)

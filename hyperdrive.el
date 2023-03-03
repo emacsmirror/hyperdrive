@@ -267,7 +267,7 @@ hyperdrive."
 
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
-  ;; TODO: Override buffer-modified check when buffer is erased.
+  ;; TODO: [#C] Override buffer-modified check when buffer is erased.
   (hyperdrive-open (hyperdrive-entry-url hyperdrive-current-entry)))
 
 ;;;; hyperdrive-mode
@@ -289,7 +289,7 @@ hyperdrive."
   :group 'hyperdrive
   :lighter "hyperdrive"
   ;; :keymap (let ((map (make-sparse-keymap)))
-  ;;           ;; TODO: Redo this command.
+  ;;           ;; TODO: [#C] Redo this command.
   ;;           (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
   ;;           map)
   (if hyperdrive-mode
@@ -301,7 +301,7 @@ hyperdrive."
   "Open hyperdrive URL.
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
-  ;; TODO: Throw more descriptive error when attempting to open a url
+  ;; TODO: [#A] Throw more descriptive error when attempting to open a url
   ;; before running `hyperdrive-start'. The current error is
   ;;
   ;; error in process sentinel: funcall: Wrong type argument: arrayp, nil
@@ -309,8 +309,6 @@ buffer opened by the handler."
   (declare (indent defun))
   (interactive
    (list (hyperdrive-complete-url)))
-  ;; TODO: Ensure gateway is running.
-  ;;
   ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
   ;; struct. If the hyperdrive already exists in hyperdrive-hyperdrives, there's no need to send a HEAD
   ;; request, since the value will never change. We only need to send a HEAD request when calling
