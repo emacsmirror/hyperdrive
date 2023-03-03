@@ -126,7 +126,7 @@ Default handler."
                                      'face 'hyperdrive-header)
                          (hyperdrive-entry-etag directory-entry)))
     (with-current-buffer buffer
-      (when (and hyperdrive-ewoc
+      (when (and (bound-and-true-p hyperdrive-ewoc)
                  (ewoc-nth hyperdrive-ewoc 0))
         ;; When EWOC has nodes, remember the current node and line so
         ;; we can try to keep point.
