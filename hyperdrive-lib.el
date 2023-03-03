@@ -236,7 +236,7 @@ Call ELSE if request fails."
     :body body :then then :else else))
 
 (cl-defun hyperdrive--format-entry-url
-    (entry &key abbreviate-key (use-alias t) (with-protocol t))
+    (entry &key abbreviate-key (with-alias t) (with-protocol t))
   "Return human-readable version of ENTRY's URL.
 Return URL formatted like:
 
@@ -253,7 +253,7 @@ URL."
                ((cl-struct hyperdrive public-key alias) hyperdrive)
                (protocol (when with-protocol
                            "hyper://"))
-               (host (if (and use-alias alias)
+               (host (if (and with-alias alias)
                          (propertize (concat "[" alias "]") 'face 'hyperdrive-alias)
                        (propertize (if abbreviate-key
                                        (concat (substring public-key 0 6) "…")
