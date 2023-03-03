@@ -283,7 +283,6 @@ hyperdrive."
   ;; :keymap (let ((map (make-sparse-keymap)))
   ;;           ;; TODO: Redo this command.
   ;;           (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
-  ;;           ;; TODO: Add function and binding to copy URL of current hyperdrive-mode file
   ;;           map)
   (if hyperdrive-mode
       (hyperdrive-mode-on)
@@ -410,13 +409,14 @@ To be used in `write-contents-functions'."
   (cl-assert hyperdrive-mode)
   (hyperdrive-save-buffer hyperdrive-current-entry))
 
-(defun hyperdrive-copy-url (hyperdrive)
-  "Save HYPERDRIVE's URL to the kill ring.
-Interactively, prompts for hyperdrive from
-`hyperdrive-hyperdrives'."
-  (interactive (list (hyperdrive-complete-hyperdrive)))
-  (kill-new (hyperdrive-url hyperdrive))
-  (hyperdrive-message "%s" (hyperdrive-url hyperdrive)))
+(defun hyperdrive-copy-url (entry)
+  "Save hyperdrive ENTRY's URL to the kill ring.
+Interactively, uses `hyperdrive-current-entry', from either a
+hyperdrive directory listing or a `hyperdrive-mode' file buffer."
+  (interactive (list hyperdrive-current-entry))
+  (let ((url (hyperdrive-entry-url entry)))
+    (kill-new url)
+    (hyperdrive-message "%s" url)))
 
 ;;;; Footer
 
