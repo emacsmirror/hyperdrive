@@ -142,14 +142,14 @@ with `hyperdrive--hyper-prefix' to a URL starting with
 
 The remaining arguments are passed to `plz', which see."
   (declare (indent defun))
-  (apply #'plz method (hyperdrive--httpify-url url) rest))
+  (apply #'plz method (hyperdrive--httpify-url url) :noquery t rest))
 
 (defun hyperdrive-api-queue (queue method url &rest args)
   "Put `hyperdrive-api' request to URL with METHOD on QUEUE.
 Like `hyperdrive-api', but uses `plz-queue', which see."
   (declare (indent defun))
   (plz-queue queue
-    (apply #'plz method (hyperdrive--httpify-url url) args)))
+    (apply #'plz method (hyperdrive--httpify-url url) :noquery t args)))
 
 (defun hyperdrive--httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
