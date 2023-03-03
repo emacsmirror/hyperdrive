@@ -62,9 +62,14 @@ which see."
     t))
 
 (defun hyperdrive--link-org (&optional raw-url-p)
-  "Return Org link plist for current Org buffer.
+  "Return Org alist for current Org buffer.
 Attempts to link to the entry at point.  If RAW-URL-P, return a
 raw URL, not an Org link."
+  ;; NOTE: We would like to return a plist rather than an alist, but
+  ;; the version of `map' included with Emacs 27 doesn't support that,
+  ;; and depending on a later version won't force Emacs to actually
+  ;; use it when compiling this package, so for now we avoid
+  ;; destructuring plists with `pcase-let'.
   ;; NOTE: Ideally we would simply reuse Org's internal functions to
   ;; store links, like `org-store-link'.  However, its API is not
   ;; designed to be used by external libraries, and requires ugly
