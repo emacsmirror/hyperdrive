@@ -107,8 +107,6 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (declare-function hyperdrive-revert-buffer "hyperdrive")
 
-;; FIXME: We should not autoload hyperdrive-ewoc-mode, since it should not be interactive.
-;;;###autoload
 (define-derived-mode hyperdrive-ewoc-mode special-mode
   `("Hyperdrive-EWOC"
     ;; TODO: Add more to lighter, e.g. URL.
