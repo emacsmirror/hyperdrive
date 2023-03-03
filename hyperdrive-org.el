@@ -25,12 +25,15 @@
 
 (require 'org)
 
+(require 'hyperdrive-lib)
+
 (defvar hyperdrive-mode)
 (defvar hyperdrive-current-entry)
 
 (declare-function hyperdrive-mode "hyperdrive")
 (declare-function hyperdrive-open "hyperdrive")
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
+(declare-function hyperdrive-ewoc--entry-at-point "hyperdrive-ewoc")
 
 ;;;; Links
 
@@ -47,11 +50,17 @@
   "Store an Org link to the entry at point in current Org buffer.
 To be called by `org-store-link'.  Calls `org-link-store-props',
 which see."
-  (when (and (eq 'org-mode major-mode)
-             hyperdrive-mode)
-    (pcase-let (((map type link description) (hyperdrive--link-org)))
-      (org-link-store-props :type type :link link :description description)
-      t)))
+  (pcase-let (((map type link description)
+               (pcase-exhaustive major-mode
+                 ('org-mode (hyperdrive--link-org))
+                 ('hyperdrive-ewoc-mode
+                  (let ((entry (hyperdrive-ewoc--entry-at-point)))
+                    (list :type "hyper://"
+                          :link (hyperdrive-entry-url entry)
+                          :description (hyperdrive--format-entry-url entry :with-alias nil
+                                                                     )))))))
+    (org-link-store-props :type type :link link :description description)
+    t))
 
 (defun hyperdrive--link-org (&optional raw-url-p)
   "Return Org link plist for current Org buffer.

@@ -155,14 +155,23 @@ exists."
       (hyperdrive-open parent-url)
     (user-error "At root directory")))
 
+(defun hyperdrive-ewoc--entry-at-point ()
+  "Return entry at point.
+With point on header, return directory entry."
+  (cond ((= 1 (line-number-at-pos))
+         ;; Point on header: copy directory's entry.
+         hyperdrive-current-entry)
+        ((> (line-number-at-pos)
+            (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+         ;; Point is below the last entry: return nil.
+         nil)
+        (t
+         ;; Point on a file entry: copy its entry.
+         (ewoc-data (ewoc-locate hyperdrive-ewoc)))))
+
 (defun hyperdrive-ewoc-copy-url-as-kill (entry)
-  "Copy URL of ENTRY into the kill ring.
-Interactively, copy entry at point."
-  (interactive (list (if (= 1 (line-number-at-pos))
-                         ;; Point on header: copy directory's entry.
-                         hyperdrive-current-entry
-                       ;; Point on a file entry: copy its entry.
-                       (ewoc-data (ewoc-locate hyperdrive-ewoc)))))
+  "Copy URL of ENTRY into the kill ring."
+  (interactive (list (hyperdrive-ewoc--entry-at-point)))
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (hyperdrive-message "%s" url)))
