@@ -106,7 +106,7 @@ Default handler."
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
-               (formatted-url (hyperdrive--format-entry-url directory-entry))
+               (formatted-url (hyperdrive--format-entry-url directory-entry :abbreviate-key t))
                (ewoc) (header) ;; (prev-node-data) (prev-line)
                )
     (add-face-text-property 0 (length formatted-url) 'hyperdrive-header 'append formatted-url)

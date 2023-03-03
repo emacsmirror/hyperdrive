@@ -235,11 +235,11 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
 
-(defun hyperdrive--format-entry-url (entry)
+(cl-defun hyperdrive--format-entry-url (entry &key abbreviate-key)
   "Return human-readable version of ENTRY's URL.
 Return URL formatted like:
 
-  PUBLIC-KEY-FRAGMENT<ALIAS>:/PATH/TO/FILE
+  PUBLIC-KEY<ALIAS>:/PATH/TO/FILE
 
 If entry's hyperdrive has no alias, it is omitted.  Entire string
 has `help-echo' property showing the entry's full URL."
@@ -249,9 +249,10 @@ has `help-echo' property showing the entry's full URL."
                                    (concat "<" (propertize alias 'face 'hyperdrive-alias) ">"))
                                  ;; TODO: Use public name if available
                                  ;; (alist-get 'name (hyperdrive-metadata entry))
-                                 ))
-               (shortened-key (concat (substring public-key 0 6) "…")))
-    (propertize (concat (propertize shortened-key 'face 'hyperdrive-public-key)
+                                 )))
+    (when abbreviate-key
+      (setf public-key (concat (substring public-key 0 6) "…")))
+    (propertize (concat (propertize public-key 'face 'hyperdrive-public-key)
                         display-name ":" path)
                 'help-echo (hyperdrive-entry-url entry))))
 
@@ -262,12 +263,9 @@ has `help-echo' property showing the entry's full URL."
 If PREDICATE, only offer hyperdrives matching it."
   (let* ((completion-styles (cons 'substring completion-styles))
          (candidates (mapcar (lambda (hyperdrive)
-                               (cons (concat
-                                      (when (hyperdrive-alias hyperdrive)
-                                        (concat (propertize (hyperdrive-alias hyperdrive)
-                                                            'face 'hyperdrive-alias)
-                                                " "))
-                                      (hyperdrive-url hyperdrive))
+                               (cons (hyperdrive--format-entry-url
+                                      (make-hyperdrive-entry :hyperdrive hyperdrive :path "/")
+                                      :abbreviate-key t)
                                      hyperdrive))
                              (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives))))
          (input (completing-read prompt (mapcar #'car candidates))))
@@ -348,7 +346,7 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (with-current-buffer (get-buffer-create (hyperdrive--format-entry-url entry))
+  (with-current-buffer (get-buffer-create (hyperdrive--format-entry-url entry :abbreviate-key t))
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))
 
