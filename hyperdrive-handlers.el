@@ -114,7 +114,8 @@ Default handler."
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
-               (ewoc) (header) (prev-node-data) (prev-line))
+               (ewoc) (header) ;; (prev-node-data) (prev-line)
+               )
     (when parent-entry
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
       (push parent-entry entries))
@@ -125,12 +126,12 @@ Default handler."
                                      'face 'hyperdrive-header)
                          (hyperdrive-entry-etag directory-entry)))
     (with-current-buffer buffer
-      (when (and (bound-and-true-p hyperdrive-ewoc)
-                 (ewoc-nth hyperdrive-ewoc 0))
-        ;; When EWOC has nodes, remember the current node and line so
-        ;; we can try to keep point.
-        (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-ewoc))
-              prev-line (line-number-at-pos)))
+      ;; (when (and (bound-and-true-p hyperdrive-ewoc)
+      ;;            (ewoc-nth hyperdrive-ewoc 0))
+      ;;   ;; When EWOC has nodes, remember the current node and line so
+      ;;   ;; we can try to keep point.
+      ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-ewoc))
+      ;;         prev-line (line-number-at-pos)))
       (hyperdrive-ewoc-mode)
       (setf ewoc hyperdrive-ewoc)  ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-ewoc #'ignore)
@@ -138,18 +139,18 @@ Default handler."
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
-      (when prev-node-data
-        ;; Try to return point to where it was before reverting the buffer.
-        ;; FIXME: This doesn't always work correctly, apparently due
-        ;; to the async filling of entries and refreshing of the EWOC.
-        ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
-        ;;                  (lambda (node-data)
-        ;;                    (hyperdrive-entry-equal prev-node-data node-data)))))
-        ;;     (goto-char (ewoc-location node))
-        ;;   (goto-char (point-min))
-        ;;   (forward-line (1- prev-line)))
-        (goto-char (point-min))
-        (forward-line (1- prev-line)))
+      ;; (when prev-node-data
+      ;;   ;; Try to return point to where it was before reverting the buffer.
+      ;;   ;; FIXME: This doesn't always work correctly, apparently due
+      ;;   ;; to the async filling of entries and refreshing of the EWOC.
+      ;;   ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
+      ;;   ;;                  (lambda (node-data)
+      ;;   ;;                    (hyperdrive-entry-equal prev-node-data node-data)))))
+      ;;   ;;     (goto-char (ewoc-location node))
+      ;;   ;;   (goto-char (point-min))
+      ;;   ;;   (forward-line (1- prev-line)))
+      ;;   (goto-char (point-min))
+      ;;   (forward-line (1- prev-line)))
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
       (mapc (lambda (entry)
               (hyperdrive-fill entry
@@ -160,19 +161,19 @@ Default handler."
                             (with-selected-window buffer-window
                               ;; TODO: Use `ewoc-invalidate' on individual entries
                               ;; (maybe later, as performance comes to matter more).
-                              (hyperdrive-funcall-preserving-point #'ewoc-refresh hyperdrive-ewoc))
+                              (ewoc-refresh hyperdrive-ewoc))
                           (with-current-buffer (ewoc-buffer ewoc)
-                            (hyperdrive-funcall-preserving-point #'ewoc-refresh hyperdrive-ewoc))))))
+                            (ewoc-refresh hyperdrive-ewoc))))))
             entries)
       (set-buffer-modified-p nil)
       (when then
         (funcall then)))))
 
-(defun hyperdrive-funcall-preserving-point (fn &rest args)
-  "Call FN keeping point."
-  (let ((pos (point)))
-    (apply fn args)
-    (goto-char pos)))
+;; (defun hyperdrive-funcall-preserving-point (fn &rest args)
+;;   "Call FN keeping point."
+;;   (let ((pos (point)))
+;;     (apply fn args)
+;;     (goto-char pos)))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   "Stream ENTRY."
