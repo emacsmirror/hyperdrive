@@ -35,13 +35,13 @@
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
 (declare-function hyperdrive-ewoc--entry-at-point "hyperdrive-ewoc")
 
-(defun hyperdrive-link-org-store ()
+(defun hyperdrive-org-link-store ()
   "Store an Org link to the entry at point in current Org buffer.
 To be called by `org-store-link'.  Calls `org-link-store-props',
 which see."
   (pcase-let (((map type link description)
                (pcase major-mode
-                 ('org-mode (hyperdrive--link-org))
+                 ('org-mode (hyperdrive--org-link))
                  ('hyperdrive-ewoc-mode
                   (let ((entry (hyperdrive-ewoc--entry-at-point)))
                     `((type . "hyper://")
@@ -56,7 +56,7 @@ which see."
     (org-link-store-props :type type :link link :description description)
     t))
 
-(defun hyperdrive--link-org (&optional raw-url-p)
+(defun hyperdrive--org-link (&optional raw-url-p)
   "Return Org alist for current Org buffer.
 Attempts to link to the entry at point.  If RAW-URL-P, return a
 raw URL, not an Org link."
@@ -99,7 +99,7 @@ raw URL, not an Org link."
         ;; destructuring plists with pcase-let, we use an alist here.
         `((type . "hyper") (link . ,raw-url) (description . ,heading))))))
 
-(defun hyperdrive-link-org-follow (url &optional _prefix)
+(defun hyperdrive-org-link-follow (url &optional _prefix)
   ;; TODO: Do we need to do anything if prefix is used?
   "Follow hyperdrive URL."
   (pcase-let* ((urlobj (url-generic-parse-url url))
@@ -108,9 +108,9 @@ raw URL, not an Org link."
     (hyperdrive-open (url-recreate-url urlobj)
       :then (lambda ()
               (when (eq 'org-mode major-mode)
-                (hyperdrive--link-org-goto target))))))
+                (hyperdrive--org-link-goto target))))))
 
-(defun hyperdrive--link-org-goto (target)
+(defun hyperdrive--org-link-goto (target)
   "Go to TARGET in current Org buffer.
 TARGET may be a CUSTOM_ID, an ID, or a headline."
   (cl-assert (eq 'org-mode major-mode))
@@ -123,8 +123,8 @@ TARGET may be a CUSTOM_ID, an ID, or a headline."
                  (error "Hyperdrive: Unable to find entry in file: %S" target))))
 
 (org-link-set-parameters "hyper"
-                         :store #'hyperdrive-link-org-store
-                         :follow #'hyperdrive-link-org-follow)
+                         :store #'hyperdrive-org-link-store
+                         :follow #'hyperdrive-org-link-follow)
 
 ;;;; Footer
 
