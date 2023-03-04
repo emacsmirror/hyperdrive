@@ -85,19 +85,19 @@ raw URL, not an Org link."
   ;; first, and it's up to the follow function to determine which it
   ;; is (which is very simple; see below).
   (cl-assert (eq 'org-mode major-mode))
-  (cl-assert hyperdrive-mode)
-  (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
-         (heading (nth 4 (org-heading-components)))
-         (custom-id (org-entry-get (point) "CUSTOM_ID"))
-         (generated-id (org-entry-get (point) "ID"))
-         (fragment (or custom-id generated-id heading))
-         (raw-url (concat url "#" (url-hexify-string fragment))))
-    (if raw-url-p
-        raw-url
-      ;; NOTE: Due to annoying issues with older versions of Emacs
-      ;; that have older versions of map.el that don't support
-      ;; destructuring plists with pcase-let, we use an alist here.
-      `((type . "hyper") (link . ,raw-url) (description . ,heading)))))
+  (when hyperdrive-mode
+    (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
+           (heading (nth 4 (org-heading-components)))
+           (custom-id (org-entry-get (point) "CUSTOM_ID"))
+           (generated-id (org-entry-get (point) "ID"))
+           (fragment (or custom-id generated-id heading))
+           (raw-url (concat url "#" (url-hexify-string fragment))))
+      (if raw-url-p
+          raw-url
+        ;; NOTE: Due to annoying issues with older versions of Emacs
+        ;; that have older versions of map.el that don't support
+        ;; destructuring plists with pcase-let, we use an alist here.
+        `((type . "hyper") (link . ,raw-url) (description . ,heading))))))
 
 (defun hyperdrive-link-org-follow (url &optional _prefix)
   ;; TODO: Do we need to do anything if prefix is used?
