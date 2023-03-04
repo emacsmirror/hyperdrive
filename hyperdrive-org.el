@@ -35,8 +35,6 @@
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
 (declare-function hyperdrive-ewoc--entry-at-point "hyperdrive-ewoc")
 
-;; TODO: [#B] Store links to non-Org files
-
 (defun hyperdrive-link-org-store ()
   "Store an Org link to the entry at point in current Org buffer.
 To be called by `org-store-link'.  Calls `org-link-store-props',
@@ -48,7 +46,12 @@ which see."
                   (let ((entry (hyperdrive-ewoc--entry-at-point)))
                     `((type . "hyper://")
                       (link . ,(hyperdrive-entry-url entry))
-                      (description . ,(hyperdrive--format-entry-url entry :with-alias nil))))))))
+                      (description . ,(hyperdrive--format-entry-url entry :with-alias nil)))))
+                 (_ (cl-assert hyperdrive-mode)
+                    `((type . "hyper://")
+                      (link . ,(hyperdrive-entry-url hyperdrive-current-entry))
+                      (description . ,(hyperdrive--format-entry-url hyperdrive-current-entry
+                                                                    :with-alias nil)))))))
     (org-link-store-props :type type :link link :description description)
     t))
 
