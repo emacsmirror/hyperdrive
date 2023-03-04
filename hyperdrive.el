@@ -180,6 +180,7 @@ Passed to `display-buffer', which see."
 ;;;; Links
 
 (defvar browse-url-handlers)
+(defvar thing-at-point-uri-schemes)
 
 (defun hyperdrive-browse-url (url &rest _ignore)
   "Browse hyperdrive URL."
@@ -187,6 +188,7 @@ Passed to `display-buffer', which see."
 
 (when (version<= "28.1" emacs-version)
   (require 'browse-url)
+  (require 'thingatpt)
 
   (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-browse-url)
               browse-url-handlers :test #'equal)
