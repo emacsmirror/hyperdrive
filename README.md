@@ -41,19 +41,18 @@ with the `package-install` command.
 versions prior to Emacs 29. `compat.el` can be installed from GNU ELPA
 with the `package-install` command.
 
-### Manual
+### Quelpa + use-package
 
-Clone this repository:
-
-```
-git clone https://git.sr.ht/~ushin/hyperdrive.el/ ~/.local/src/hyperdrive.el/
-```
-
-Add the following lines to your init.el file:
+Install
+[quelpa-use-package](https://github.com/quelpa/quelpa-use-package),
+then add the following lines to your `init.el` file:
 
 ```
-(add-to-list 'load-path "~/.local/src/hyperdrive.el/")
-(require 'hyperdrive)
+(add-to-list 'exec-path (expand-file-name "~/.local/bin/")) ;; Directory containing hyper-gateway executable
+
+(use-package hyperdrive
+  :quelpa (hyperdrive :fetcher git
+                      :url "https://git.sr.ht/~ushin/hyperdrive.el"))
 ```
 
 ## Quickstart
