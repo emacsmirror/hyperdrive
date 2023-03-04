@@ -257,38 +257,8 @@ hyperdrive."
         (signal-process proc 'sigint)
       (hyperdrive-message "Already not running hyper-gateway."))))
 
-;; (defun hyperdrive-upload-files (alias relative-dir files)
-;; TODO: Update this.
-;;   "Upload files from the local filesystem to the hyperdrive for ALIAS.
-
-;; RELATIVE-DIR is the directory relative to which files in the
-;; hyperdrive will be inserted.
-
-;; FILES can be either be a list of filepaths (strings) or a
-;; function which returns a list of filepaths."
-;;   (let ((file-list
-;;          (if (functionp files)
-;;              (funcall files)
-;;            files)))
-;;     (dolist (path file-list)
-;;       (with-temp-buffer
-;;         (insert-file-contents path)
-;;         (hyperdrive-save-buffer-by-alias
-;;          alias (concat "/" (file-relative-name path relative-dir)))))))
-
-;; (defun hyperdrive-download-url-as-file (url filename)
-;;   "Load contents at URL as a file to store at FILENAME.
-
-;; URL should begin with `hyperdrive--hyper-prefix'."
-;;   (interactive
-;;    (let* ((read-url (read-string "URL: "))
-;;           (read-filename (read-string "Filename: "
-;;                                       (expand-file-name
-;;                                        (file-name-nondirectory
-;;                                         (hyperdrive--extract-path read-url))
-;;                                        hyperdrive-download-directory))))
-;;      (list read-url read-filename)))
-;;   (hyperdrive-api 'get url :as `(file ,filename)))
+;; TODO: Command to upload one or more files.
+;; TODO: Command to download files.
 
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."

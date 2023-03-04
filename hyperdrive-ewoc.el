@@ -66,19 +66,6 @@
 
 ;;;; Functions
 
-;; (defun hyperdrive--ewoc-last-matching (ewoc predicate)
-;;   "Return the last node in EWOC matching PREDICATE.
-;; PREDICATE is called with node's data.  Searches backward from
-;; last node."
-;;   ;; Copied from `ement-room--ewoc-last-matching'.
-;;   (declare (indent defun))
-;;   ;; Intended to be like `ewoc-collect', but returning as soon as a match is found.
-;;   (cl-loop with node = (ewoc-nth ewoc -1)
-;;            while node
-;;            when (funcall predicate (ewoc-data node))
-;;            return node
-;;            do (setf node (ewoc-prev ewoc node))))
-
 (defun hyperdrive-ewoc-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."

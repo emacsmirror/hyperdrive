@@ -115,9 +115,6 @@ Capture group matches public key.")
 
 Capture group matches version number.")
 
-;; (defconst hyperdrive-metadata-filename ".ushin.json"
-;;   "Location of hyperdrive.el metadata inside hyperdrive.")
-
 ;;;; API
 
 ;; These functions take a URL argument, not a hyperdrive-entry struct.
@@ -355,15 +352,6 @@ both point to the same content."
   (with-current-buffer (get-buffer-create (hyperdrive--format-entry-url entry :abbreviate-key t))
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))
-
-;; (defun hyperdrive-metadata (url)
-;;   "Return alist converted from JSON file at
-;; `hyperdrive-metadata-filename' in hyperdrive for URL."
-;;   (let ((json-array-type 'list)
-;;         (url (progn
-;;                (string-match hyperdrive--public-key-re url)
-;;                (match-string 0 url))))
-;;     (hyperdrive-api 'get (concat url "/" hyperdrive-metadata-filename) :as #'json-read)))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
