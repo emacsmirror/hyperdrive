@@ -78,7 +78,7 @@ will prompt you for an alias for your namespace. This can be anything
 you want, so long it only contains numbers and letters.
 
 Now, put something in your hyperdrive with `M-x
-hyperdrive-save-buffer`, which will prompt you for the path where the
+hyperdrive-write-buffer`, which will prompt you for the path where the
 current buffer should be stored inside your hyperdrive.
 
 Copy the public key (unique identifier) of the hyperdrive by running
@@ -86,8 +86,8 @@ Copy the public key (unique identifier) of the hyperdrive by running
 
 Send the public key to a friend who has installed `hyperdrive.el` and
 run `M-x hyperdrive-start-gateway`. On your friend's machine, run `M-x
-hyperdrive-load-url` and paste in the public key. Your shared files
-are now on your friend's machine!
+hyperdrive-open` and paste in the public key. Your shared files are
+now on your friend's machine!
 
 **Be careful what you publish!** Anyone with your public key can
 download those shared files from you, your friend, or anyone else who
@@ -95,35 +95,52 @@ has them.
 
 ## Usage
 
-### Create a namespace
+### Start/stop the gateway
 
-You can have multiple hyperdrives, where each one contains an isolated
-or "namespaced" set of files. Use `M-x hyperdrive-create-namespace` to
-create a new namespace.
+To connect with peers, you'll need to start the `hyper-gateway` with
+`M-x hyperdrive-start`. When you're ready to disconnect from the
+network, run `M-x hyperdrive-stop`.
 
-Each namespaced hyperdrive has an `alias`, the local "petname" given to
-a namespaced hyperdrive. An `alias` combines with your secret master
-key, which is generated for you by `hyper-gateway`, to produce a public
-key which uniquely identifies that hyperdrive. You can load one of your
-own hyperdrives with `M-x hyperdrive-load-alias`. Other people cannot
-load one of your hyperdrives by its `alias`; they will need its public
-key, which you can get with `M-x hyperdrive-public-key`.
+### Create a hyperdrive
 
-### Save a buffer to a hyperdrive
+You can have multiple hyperdrives, each one containing its own set of
+files. Run `M-x hyperdrive-new` then type in an `alias` to create a
+new hyperdrive. That alias will be combined with your secret master
+key, which is generated for you by `hyper-gateway`, to produce a
+public key that uniquely identifies that hyperdrive. `hyperdrive-new`
+is idempotent since the same alias will always produce the same public
+key.
 
-You can save a buffer to a hyperdrive with `hyperdrive-save-buffer`,
-which will prompt you for an `alias` and `path` if the current buffer
-is not already stored in your hyperdrive. If you are editing an
-existing hyperdrive "file", `hyperdrive-save-buffer` will silently
-update the current hyperdrive url with the new content.
+### Open a hyperdrive
 
-### Load a hyperdrive
+You can view the contents of a hyperdrive with `M-x hyperdrive-open`.
+While you can always paste in a new full `hyper://` URL,
+`hyperdrive-open` remembers the hyperdrives you have already created
+or visited, and it will autocomplete those URLs for you.
 
-`hyperdrive-load-alias` loads one of your previously created
-hyperdrives by prompting you for its `alias`.
+TODO: Add paragraph on directory view and possible commands
 
-To load someone else's hyperdrive or a particular location inside of a
-hyperdrive, run `M-x hyperdrive-load-url` and paste in the URL.
+### Write to a hyperdrive
+
+You can write a buffer to a hyperdrive with `hyperdrive-write-buffer`,
+which will prompt you for one of hyperdrives you have created as well
+as the path in that hyperdrive where you want to store the file. If
+you are editing an existing hyperdrive file, `hyperdrive-save-buffer`
+will silently update the current hyperdrive entry with the new content.
+
+### Link to a hyperdrive
+
+TODO: Describe org links and regular links
+
+### Share a hyperdrive
+
+Only you can load one of your created hyperdrives by its alias. When
+sharing a hyperdrive with someone else, you will need to copy its full
+URL with `M-x hyperdrive-copy-url`. With that URL, others can load
+files from your hyperdrive directly from your machine or from other
+peers who have previously loaded those files from your hyperdrive.
+
+TODO: Sharing a link to a particular hyperdrive file
 
 ### Upload files from your filesystem
 
@@ -169,6 +186,14 @@ a "non-splitting" approach where public and private files exist in the
 same directory. You can write any function you like to determine which
 files to share!
 
+## Concepts
+
+TODO: hyperdrives, sparse replication, gateway
+
+## Glossary
+
+TODO: files (which aren't really files), directories (which aren't really directories)
+
 ## Bugs and Patches
 
 Bugs can be submitted to the [ushin issue
@@ -178,13 +203,12 @@ inbox](https://lists.sr.ht/~ushin/ushin).
 
 ## Acknowledgments
 
+[Adam Porter](https://github.com/alphapapa/) for rewriting
+`hyperdrive.el` and for his work on `plz.el`.
+
 [Mauve Signweaver](https://mauve.moe/) for their guidance into the
 world of p2p as well as the development of `hyper-gateway`.
 
-[Adam Porter](https://github.com/alphapapa/) for his feedback on the
-structure and design of `hyperdrive.el` as well as the development of
-`plz.el`.
-
 [Karl Voit](https://karl-voit.at/) for his feedback, especially the
-suggestion that we allow for a non-splitting approach which avoids
-unnecessary borders within topics.
+suggestion that we allow for a non-splitting approach for uploading
+files from the filesystem.

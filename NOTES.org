@@ -1,0 +1,92 @@
+
+* PROJECT Conference presentation
+
+** PROJECT Screencast
+DEADLINE: <2023-03-09 Thu>
+:LOGBOOK:
+- State "PROJECT"    from              [2023-02-28 Tue 18:13]
+:END:
+
+*** Issues to solve before screencast
+
++ [ ] [[https://todo.sr.ht/~ushin/ushin/21][~ushin/ushin#21: Store link with search options in `hyperdrive-store-link` — sourcehut todo]]
++ [ ] [[https://todo.sr.ht/~ushin/ushin/17][~ushin/ushin#17: Handle uri-encoding — sourcehut todo]] (maybe not absolutely necessary for screencast)
+
+* Response matrix
+:PROPERTIES:
+:ID:       3381f0a8-7d75-4e1e-90e4-f4d9adf6015e
+:END:
+
+Currently observed behavior.
+
+| Request for                                           | Returns         | # |
+|-------------------------------------------------------+-----------------+---|
+| URL to valid hyperdrive without content               | Etag == 1       |   |
+| URL to unknown (i.e. network-inaccessible) hyperdrive | Etag == 1       | ! |
+| URL to valid hyperdrive that has ever had content     | Etag > 1        |   |
+| URL to valid hyperdrive directory but invalid file    | HTTP 404        |   |
+| URL with too-short public key                         | HTTP 500        |   |
+
+** Ideals?
+:PROPERTIES:
+:ID:       3f2fa76c-0a35-4b5f-bc8e-91a2d55c6db2
+:END:
+
+What we'd ideally like the behavior to be.
+
+| Request for                           | HTTP            | Etag |
+|---------------------------------------+-----------------+------|
+| Obviously malformed URLs              | 400 Bad Request | N/A  |
+| [[id:5951fa2d-6f95-41e0-9fd0-066ae06dbc3e][Unknown hyperdrive]]                    | 404 Not Found   | N/A  |
+| [[id:aeb2dcd3-ec0f-42a6-aec2-9a7ba6eb163f][Known hyperdrive (never had content)]]  | 204 No Content  | N/A  |
+| Known hyperdrive (has or had content) | 200 OK          | >= 1 |
+
+To distinguish whether peers are available, ideally we would use another header, something like ~X-Hyperdrive-Peers~.
+
+** Glossary
+
+*** Unknown hyperdrive
+:PROPERTIES:
+:ID:       5951fa2d-6f95-41e0-9fd0-066ae06dbc3e
+:END:
+
+An unknown hyperdrive may or may not exist.  We don't know whether it does.  We have never received any information about it.
+
+*** Known hyperdrive (never had content)
+:PROPERTIES:
+:ID:       aeb2dcd3-ec0f-42a6-aec2-9a7ba6eb163f
+:END:
+
+A hyperdrive that we know exists, and we know it is empty, and it has never yet had any content.  Possibly created by us.
+
+* File interaction matrix
+
+What Emacs does:
+
+| Buffer backed by | Command      | buffer-file-name                        | buffer-name             |
+|------------------+--------------+-----------------------------------------+-------------------------|
+| nothing          | write-buffer | prompts for and changes to new filename | changes to new basename |
+| nothing          | save-buffer  | prompts for and changes to new filename | changes to new basename |
+| file on disk     | write-buffer | prompts for and changes to new filename | changes to new basename |
+| file on disk     | save-buffer  | does not change                         | does not change         |
+
+What hyperdrive does:
+
+| Buffer backed by             | Command                 | Correct behavior? |
+|------------------------------+-------------------------+-------------------|
+| nothing                      | hyperdrive-write-buffer | yes               |
+| nothing                      | hyperdrive-save-buffer  | yes               |
+| file on disk                 | hyperdrive-write-buffer | yes               |
+| file on disk                 | hyperdrive-save-buffer  | yes               |
+| file on writable hyperdrive  | hyperdrive-write-buffer | yes               |
+| file on writable hyperdrive  | hyperdrive-save-buffer  | yes               |
+| file on read-only hyperdrive | hyperdrive-save-buffer  | yes               |
+| file on read-only hyperdrive | hyperdrive-write-buffer | yes               |
+
+** Overwriting existing Hyperdrive files
+
+| Hyperdrive URL status | Command      | Should                      | Correct behavior? |
+|-----------------------+--------------+-----------------------------+-------------------|
+| Already exists        | write-buffer | Prompt to overwrite         |                   |
+| Already exists        | save-buffer  | Overwrite without prompting |                   |
+
