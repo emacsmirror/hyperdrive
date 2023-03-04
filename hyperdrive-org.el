@@ -40,18 +40,19 @@
 To be called by `org-store-link'.  Calls `org-link-store-props',
 which see."
   (pcase-let (((map type link description)
-               (pcase-exhaustive major-mode
+               (pcase major-mode
                  ('org-mode (hyperdrive--link-org))
                  ('hyperdrive-ewoc-mode
                   (let ((entry (hyperdrive-ewoc--entry-at-point)))
                     `((type . "hyper://")
                       (link . ,(hyperdrive-entry-url entry))
                       (description . ,(hyperdrive--format-entry-url entry :with-alias nil)))))
-                 (_ (cl-assert hyperdrive-mode)
-                    `((type . "hyper://")
-                      (link . ,(hyperdrive-entry-url hyperdrive-current-entry))
-                      (description . ,(hyperdrive--format-entry-url hyperdrive-current-entry
-                                                                    :with-alias nil)))))))
+                 ((guard hyperdrive-mode)
+                  `((type . "hyper://")
+                    (link . ,(hyperdrive-entry-url hyperdrive-current-entry))
+                    (description . ,(hyperdrive--format-entry-url hyperdrive-current-entry
+                                                                  :with-alias nil))))
+                 (_ (user-error "Not a hyperdrive buffer")))))
     (org-link-store-props :type type :link link :description description)
     t))
 
