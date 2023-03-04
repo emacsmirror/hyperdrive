@@ -26,6 +26,7 @@
 (require 'cl-lib)
 (require 'map)
 (require 'pcase)
+(require 'url-util)
 
 (require 'compat)
 (require 'persist)
