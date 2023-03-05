@@ -293,19 +293,39 @@ hyperdrive."
 
 ;;;###autoload
 (cl-defun hyperdrive-open (url &key then)
+  ;; TODO: Rename this function to `hyperdrive-find-file' and emulate `find-file' docstring.
   "Open hyperdrive URL.
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
   (declare (indent defun))
   (interactive
    (list (hyperdrive-complete-url)))
+  ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
+  ;; TODO: What to do if user inputs a path ending with "/"?
+  ;;       Entering such a path to `find-file' echoes:
+  ;;
+  ;;       "Use M-x make-directory RET RET to create the directory and its parents"
+  ;;
+  ;;       Then Emacs then opens a new buffer with `buffer-file-name'
+  ;;       set to the directory. Once the directory has been created,
+  ;;       any attempt to call `save-buffer' gives the prompt:
+  ;;
+  ;;       "changed on disk; really edit the buffer? (y, n, r or C-h) "
+  ;;
+  ;;       Upon entering "y", it errors:
+  ;;
+  ;;       "basic-save-buffer-2: Opening output file: Is a directory, /path/to/file/"
+  ;;
+  ;;       We probably don't want to emulate the `find-file' behavior
+  ;;       in this edge case.
   ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
   ;; struct. If the hyperdrive already exists in hyperdrive-hyperdrives, there's no need to send a HEAD
   ;; request, since the value will never change. We only need to send a HEAD request when calling
   ;; `hyperdrive-open-url' on an unknown URL. Since `hyperdrive-complete-url' only returns a URL, we'll
   ;; need to parse the URL and then call `gethash' (or refactor `hyperdrive-complete-url').
   ;; See: <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
-  (let ((entry (hyperdrive-url-entry url)))
+  (let* ((entry (hyperdrive-url-entry url))
+         (hyperdrive (hyperdrive-entry-hyperdrive entry)))
     (hyperdrive-fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
@@ -315,15 +335,19 @@ buffer opened by the handler."
                                                          hyperdrive-type-handlers :key #'car))
                                         #'hyperdrive-handler-default)))
                 ;; TODO: Only persist hyperdrive if hyperdrive-hyperdrives doesn't already contain it.
-                (hyperdrive-persist (hyperdrive-entry-hyperdrive entry))
+                (hyperdrive-persist hyperdrive)
                 (funcall handler entry :then then)))
       :else (lambda (plz-error)
               (pcase-let (((cl-struct plz-error curl-error response) plz-error))
                 (if curl-error
                     (error "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
                   (pcase (plz-response-status response)
+                    ((and 404
+                          (guard (hyperdrive-writablep hyperdrive)))
+                     ;; TODO: Prompt to create new file or just go ahead an open a new buffer, like `find-file'.
+                     )
                     (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
-                           (hyperdrive-open (hyperdrive--parent url))) )
+                           (hyperdrive-open (hyperdrive--parent url))))
                     (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error)))))))))
 
 (defun hyperdrive-save-buffer (entry)
