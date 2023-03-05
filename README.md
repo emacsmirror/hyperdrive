@@ -6,11 +6,9 @@ peer-to-peer file sharing. `hyperdrive.el` is an independent project
 built by [USHIN](https://ushin.org) which provides an Emacs interface
 for managing hyperdrives.
 
-## Installation
+## Dependencies
 
-### Dependencies
-
-#### `hyper-gateway`
+### `hyper-gateway`
 
 `hyperdrive.el` relies on
 [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for
@@ -22,77 +20,39 @@ name you gave to the `hyper-gateway` binary. One way to do this is by
 renaming the binary to `hyper-gateway`, the default value for
 `hyperdrive-hyper-gateway-command`.
 
-#### `plz.el`
+## Installation
 
-`hyperdrive.el` uses [plz.el](https://github.com/alphapapa/plz.el) for
-sending HTTP requests to `hyper-gateway`. `plz.el` can be installed
-from GNU ELPA with the `package-install` command.
-
-#### `mpv.el`
-
-`hyperdrive.el` uses [mpv.el](https://github.com/kljohann/mpv.el) for
-streaming audio and video. `mpv.el` can be installed from GNU ELPA
-with the `package-install` command.
-
-#### `compat.el`
-
-`hyperdrive.el` relies on
-[compat.el](https://github.com/emacs-compat/compat) to support Emacs
-versions prior to Emacs 29. `compat.el` can be installed from GNU ELPA
-with the `package-install` command.
-
-### Quelpa + use-package
-
-Install
-[quelpa-use-package](https://github.com/quelpa/quelpa-use-package),
-then add the following lines to your `init.el` file:
+The recommended way to install `hyperdrive.el` is with
+[quelpa-use-package](https://github.com/quelpa/quelpa-use-package).
+To install it, follow the instructions in its documentation; or you
+may evaluate the following code:
 
 ```
-(add-to-list 'exec-path (expand-file-name "~/.local/bin/")) ;; Directory containing hyper-gateway executable
+;; Add the MELPA package repository to Emacs's package configuration and refresh the contents.
+(cl-pushnew '("melpa" . "https://melpa.org/packages/") package-archives :test #'equal)
+(package-refresh-contents)
 
+;; Install and load quelpa-use-package.
+(package-install 'quelpa-use-package)
+(require 'quelpa-use-package)
+```
+
+Then add this form to your `init.el` file and evaluate it:
+
+```
 (use-package hyperdrive
   :quelpa (hyperdrive :fetcher git
-                      :url "https://git.sr.ht/~ushin/hyperdrive.el"))
+                      :url "https://git.sr.ht/~ushin/hyperdrive.el")
+  :config
+  ;; Assuming that the hyper-gateway executable is in "~/.local/bin"
+  (add-to-list 'exec-path (expand-file-name "~/.local/bin/")))
 ```
 
-## Quickstart
-
-Add the following lines to your `init.el` file:
-
-```
-(add-to-list 'load-path "~/.local/src/hyperdrive.el/")
-(require 'hyperdrive)
-```
-
-Alternatively, with `use-package`:
-```
-(use-package hyperdrive
-  :load-path "~/.local/src/hyperdrive.el/")
-```
-
-First, run `M-x hyperdrive-start-gateway` to start `hyper-gateway`.
-
-Next, create a namespace with `M-x hyperdrive-create-namespace`, which
-will prompt you for an alias for your namespace. This can be anything
-you want, so long it only contains numbers and letters.
-
-Now, put something in your hyperdrive with `M-x
-hyperdrive-write-buffer`, which will prompt you for the path where the
-current buffer should be stored inside your hyperdrive.
-
-Copy the public key (unique identifier) of the hyperdrive by running
-`M-x hyperdrive-public-key`.
-
-Send the public key to a friend who has installed `hyperdrive.el` and
-run `M-x hyperdrive-start-gateway`. On your friend's machine, run `M-x
-hyperdrive-open` and paste in the public key. Your shared files are
-now on your friend's machine!
+## Usage
 
 **Be careful what you publish!** Anyone with your public key can
 download those shared files from you, your friend, or anyone else who
 has them.
-
-## Usage
 
 ### Start/stop the gateway
 
