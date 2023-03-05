@@ -23,11 +23,11 @@
 
 ;;; Code:
 
-(require 'hyperdrive-ewoc)
+(require 'hyperdrive-dir)
 (require 'hyperdrive-lib)
 
 (defvar hyperdrive-honor-auto-mode-alist)
-(defvar hyperdrive-ewoc)
+(defvar hyperdrive-dir)
 (defvar hyperdrive-entries)
 (defvar hyperdrive-directory-display-buffer-action)
 
@@ -82,12 +82,12 @@ Default handler."
               (when then
                 (funcall then)))))))
 
-(declare-function hyperdrive-ewoc-mode "hyperdrive-ewoc")
+(declare-function hyperdrive-dir-mode "hyperdrive-dir")
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show directory ENTRY."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
-  ;; FIXME: About half of the time, calls to hyperdrive-ewoc-list
+  ;; FIXME: About half of the time, calls to hyperdrive-dir-list
   ;; fail. Issue with sending many rapid HEAD requests?
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
   (pcase-let* ((url (hyperdrive-entry-url directory-entry))
@@ -121,24 +121,24 @@ Default handler."
           header (format "%s (%s)" formatted-url
                          (hyperdrive-entry-etag directory-entry)))
     (with-current-buffer buffer
-      ;; (when (and (bound-and-true-p hyperdrive-ewoc)
-      ;;            (ewoc-nth hyperdrive-ewoc 0))
+      ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)
+      ;;            (ewoc-nth hyperdrive-dir-ewoc 0))
       ;;   ;; When EWOC has nodes, remember the current node and line so
       ;;   ;; we can try to keep point.
-      ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-ewoc))
+      ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))
       ;;         prev-line (line-number-at-pos)))
-      (hyperdrive-ewoc-mode)
-      (setf ewoc hyperdrive-ewoc)  ; Bind this for the hyperdrive-fill lambda.
-      (ewoc-filter hyperdrive-ewoc #'ignore)
-      (ewoc-set-hf hyperdrive-ewoc header "")
+      (hyperdrive-dir-mode)
+      (setf ewoc hyperdrive-dir-ewoc)  ; Bind this for the hyperdrive-fill lambda.
+      (ewoc-filter hyperdrive-dir-ewoc #'ignore)
+      (ewoc-set-hf hyperdrive-dir-ewoc header "")
       (mapc (lambda (entry)
-              (ewoc-enter-last hyperdrive-ewoc entry))
+              (ewoc-enter-last hyperdrive-dir-ewoc entry))
             entries)
       ;; (when prev-node-data
       ;;   ;; Try to return point to where it was before reverting the buffer.
       ;;   ;; FIXME: This doesn't always work correctly, apparently due
       ;;   ;; to the async filling of entries and refreshing of the EWOC.
-      ;;   ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
+      ;;   ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-dir-ewoc
       ;;   ;;                  (lambda (node-data)
       ;;   ;;                    (hyperdrive-entry-equal prev-node-data node-data)))))
       ;;   ;;     (goto-char (ewoc-location node))
@@ -156,10 +156,10 @@ Default handler."
                             (with-selected-window buffer-window
                               ;; TODO: Use `ewoc-invalidate' on individual entries
                               ;; (maybe later, as performance comes to matter more).
-                              (ewoc-refresh hyperdrive-ewoc)
+                              (ewoc-refresh hyperdrive-dir-ewoc)
                               (goto-char (point-min)))
                           (with-current-buffer (ewoc-buffer ewoc)
-                            (ewoc-refresh hyperdrive-ewoc)
+                            (ewoc-refresh hyperdrive-dir-ewoc)
                             (goto-char (point-min)))))))
             entries)
       (set-buffer-modified-p nil)

@@ -33,7 +33,7 @@
 (declare-function hyperdrive-mode "hyperdrive")
 (declare-function hyperdrive-open "hyperdrive")
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
-(declare-function hyperdrive-ewoc--entry-at-point "hyperdrive-ewoc")
+(declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
 (defun hyperdrive-org-link-store ()
   "Store an Org link to the entry at point in current Org buffer.
@@ -42,8 +42,8 @@ which see."
   (pcase-let (((map type link description)
                (pcase major-mode
                  ('org-mode (hyperdrive--org-link))
-                 ('hyperdrive-ewoc-mode
-                  (let ((entry (hyperdrive-ewoc--entry-at-point)))
+                 ('hyperdrive-dir-mode
+                  (let ((entry (hyperdrive-dir--entry-at-point)))
                     `((type . "hyper://")
                       (link . ,(hyperdrive-entry-url entry))
                       (description . ,(hyperdrive--format-entry-url entry :with-alias nil)))))

@@ -1,4 +1,4 @@
-;;; hyperdrive-ewoc.el --- EWOC frontend for hyperdrive  -*- lexical-binding: t; -*-
+;;; hyperdrive-dir.el --- Hyperdrive directory frontend  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023  USHIN, Inc.
 
@@ -33,7 +33,7 @@
 
 ;;;; Variables
 
-(defvar-local hyperdrive-ewoc nil
+(defvar-local hyperdrive-dir-ewoc nil
   "EWOC for current hyperdrive buffer.")
 
 (defvar-local hyperdrive-entries nil
@@ -66,14 +66,14 @@
 
 ;;;; Functions
 
-(defun hyperdrive-ewoc-pp (thing)
+(defun hyperdrive-dir-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."
   (pcase-exhaustive thing
     ((pred hyperdrive-entry-p)
-     (insert (hyperdrive-ewoc--format-entry thing)))))
+     (insert (hyperdrive-dir--format-entry thing)))))
 
-(defun hyperdrive-ewoc--format-entry (entry)
+(defun hyperdrive-dir--format-entry (entry)
   "Return ENTRY formatted as a string."
   (pcase-let* (((cl-struct hyperdrive-entry size modified) entry)
                (size (when size
@@ -95,20 +95,20 @@ To be used as the pretty-printer for `ewoc-create'."
 
 ;;;; Mode
 
-(defvar-keymap hyperdrive-ewoc-mode-map
+(defvar-keymap hyperdrive-dir-mode-map
   :parent  special-mode-map
-  :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
-  "RET" #'hyperdrive-ewoc-find-file
-  "^"   #'hyperdrive-ewoc-up-directory
-  "w"   #'hyperdrive-ewoc-copy-url-as-kill
-  "n"   #'hyperdrive-ewoc-next
-  "p"   #'hyperdrive-ewoc-previous
-  "D"   #'hyperdrive-ewoc-delete)
+  :doc "Local keymap for `hyperdrive-dir-mode' buffers."
+  "RET" #'hyperdrive-dir-find-file
+  "^"   #'hyperdrive-dir-up
+  "w"   #'hyperdrive-dir-copy-url-as-kill
+  "n"   #'hyperdrive-dir-next
+  "p"   #'hyperdrive-dir-previous
+  "D"   #'hyperdrive-dir-delete)
 
 (declare-function hyperdrive-revert-buffer "hyperdrive")
 
-(define-derived-mode hyperdrive-ewoc-mode special-mode
-  `("Hyperdrive-EWOC"
+(define-derived-mode hyperdrive-dir-mode special-mode
+  `("Hyperdrive-dir"
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive directory buffers."
@@ -117,7 +117,7 @@ To be used as the pretty-printer for `ewoc-create'."
     (erase-buffer))
   (hl-line-mode)
   (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
-  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-ewoc-pp)
+  (setf hyperdrive-dir-ewoc (ewoc-create #'hyperdrive-dir-pp)
         ;; TODO(alphapapa): Imenu support.
         ;; imenu-create-index-function #'ement-room--imenu-create-index-function
         ))
@@ -128,42 +128,42 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (declare-function hyperdrive-open "hyperdrive")
 
-(defun hyperdrive-ewoc-find-file (entry)
-  "In hyperdrive EWOC, visit the file or directory named on this line."
-  (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+(defun hyperdrive-dir-find-file (entry)
+  "In hyperdrive-dir, visit the file or directory named on this line."
+  (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
   (hyperdrive-open (hyperdrive-entry-url entry)))
 
-(defun hyperdrive-ewoc-up-directory ()
+(defun hyperdrive-dir-up ()
   "Go up to parent directory."
   (interactive)
   (if-let ((parent-url (hyperdrive--parent (hyperdrive-entry-url hyperdrive-current-entry))))
       (hyperdrive-open parent-url)
     (user-error "At root directory")))
 
-(defun hyperdrive-ewoc--entry-at-point ()
+(defun hyperdrive-dir--entry-at-point ()
   "Return entry at point.
 With point on header, return directory entry."
   (cond ((= 1 (line-number-at-pos))
          ;; Point on header: copy directory's entry.
          hyperdrive-current-entry)
         ((> (line-number-at-pos)
-            (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+            (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-dir-ewoc -1))))
          ;; Point is below the last entry: return nil.
          nil)
         (t
          ;; Point on a file entry: copy its entry.
-         (ewoc-data (ewoc-locate hyperdrive-ewoc)))))
+         (ewoc-data (ewoc-locate hyperdrive-dir-ewoc)))))
 
-(defun hyperdrive-ewoc-copy-url-as-kill (entry)
+(defun hyperdrive-dir-copy-url-as-kill (entry)
   "Copy URL of ENTRY into the kill ring."
-  (interactive (list (hyperdrive-ewoc--entry-at-point)))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (hyperdrive-message "%s" url)))
 
-(defun hyperdrive-ewoc-delete (entry)
+(defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
-  (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+  (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
               (buffer (current-buffer)))
     (when (yes-or-no-p (format "Delete %S? " name))
@@ -176,7 +176,7 @@ With point on header, return directory entry."
         :else (lambda (plz-error)
                 (hyperdrive-message "Unable to delete %S: %S" name plz-error))))))
 
-(cl-defun hyperdrive-ewoc-next (&optional (n 1))
+(cl-defun hyperdrive-dir-next (&optional (n 1))
   "Move forward N entries."
   (interactive "p")
   (cond ((= 1 (line-number-at-pos))
@@ -185,38 +185,38 @@ With point on header, return directory entry."
         (t
          ;; Point is elsewhere: move to next entry (`ewoc-next' won't
          ;; move past the last entry).
-         (hyperdrive-ewoc-move n))))
+         (hyperdrive-dir-move n))))
 
-(cl-defun hyperdrive-ewoc-previous (&optional (n 1))
+(cl-defun hyperdrive-dir-previous (&optional (n 1))
   "Move backward N entries."
   (interactive "p")
   (cond ((= 2 (line-number-at-pos))
          ;; Point on first entry: move into header.
          (forward-line -1))
         ((> (line-number-at-pos)
-            (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+            (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-dir-ewoc -1))))
          ;; Point is past last entry: move to last entry.
-         (goto-char (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+         (goto-char (ewoc-location (ewoc-nth hyperdrive-dir-ewoc -1))))
         (t
          ;; Point is elsewhere: move to previous entry.
-         (hyperdrive-ewoc-move (- n)))))
+         (hyperdrive-dir-move (- n)))))
 
-(cl-defun hyperdrive-ewoc-move (&optional (n 1))
+(cl-defun hyperdrive-dir-move (&optional (n 1))
   "Move forward N entries."
   (interactive "p")
   (let ((next-fn (pcase n
                    ((pred (< 0)) #'ewoc-next)
                    ((pred (> 0)) #'ewoc-prev)))
-        (node (ewoc-locate hyperdrive-ewoc))
+        (node (ewoc-locate hyperdrive-dir-ewoc))
         (i 0)
         (n (abs n))
         target-node)
     (while (and (< i n)
-                (setf node (funcall next-fn hyperdrive-ewoc node)))
+                (setf node (funcall next-fn hyperdrive-dir-ewoc node)))
       (setf target-node node)
       (cl-incf i))
     (when target-node
       (goto-char (ewoc-location target-node)))))
 
-(provide 'hyperdrive-ewoc)
-;;; hyperdrive-ewoc.el ends here
+(provide 'hyperdrive-dir)
+;;; hyperdrive-dir.el ends here
