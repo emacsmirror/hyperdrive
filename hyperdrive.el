@@ -374,6 +374,7 @@ overwrite."
   ;; <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
   (ignore overwritep)
   (unless hyperdrive-mode
+    ;; TODO: Remove faces/overlays that might be applied to current buffer.
     ;; FIXME: Reusing the same buffer does not remove buffer-file-name. If you call
     ;; `hyperdrive-write-buffer' from a file-visiting buffer, the buffer name as well as
     ;; `revert-buffer-function' and `write-contents-functions' will be set. Now, any attempt to
