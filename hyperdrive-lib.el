@@ -207,7 +207,8 @@ which see."
     :as 'response
     :then (lambda (response)
             (funcall then (hyperdrive--fill entry (plz-response-headers response))))
-    :else else))
+    :else else
+    :noquery t))
 
 (defun hyperdrive--fill (entry headers)
   "Fill ENTRY's slot from HEADERS."

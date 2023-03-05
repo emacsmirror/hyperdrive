@@ -48,6 +48,7 @@ Default handler."
   ;; FIXME: Make buffer read-only when hyperdrive isn't writable.
   (with-local-quit
     (hyperdrive-api 'get (hyperdrive-entry-url entry)
+      :noquery t
       :as (lambda ()
             (let ((response-buffer (current-buffer))
                   (inhibit-read-only t))
@@ -94,7 +95,8 @@ Default handler."
                ((cl-struct plz-response headers body)
                 ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
                 (with-local-quit
-                  (hyperdrive-api 'get url :as 'response)))
+                  (hyperdrive-api 'get url :as 'response
+                    :noquery t)))
                (entry-names (json-read-from-string body))
                (entries
                 (mapcar (lambda (entry-name)

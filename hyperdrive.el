@@ -207,7 +207,7 @@ Passed to `display-buffer', which see."
   "Return non-nil if hyper-gateway is ready."
   (let (readyp)
     (with-local-quit
-      (hyperdrive-api 'get "hyper://localhost"
+      (hyperdrive-api 'get "hyper://localhost" :noquery t
         ;; FIXME: Don't use else handler, since plz should not call it after a synchronous request
         :else (lambda (err)
                 (unless (and (plz-error-curl-error err)
@@ -227,7 +227,7 @@ hyperdrive."
   (condition-case err
       (pcase (with-local-quit
                (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string alias))
-                 :as 'response))
+                 :as 'response :noquery t))
         ((and (pred plz-response-p)
               response
               (guard (= 200 (plz-response-status response))))
