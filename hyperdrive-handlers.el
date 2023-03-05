@@ -68,6 +68,7 @@ Default handler."
                   (set-auto-mode)))
               ;; TODO: Option to defer showing buffer.
               (hyperdrive-mode)
+              (setf buffer-undo-history nil)
               (set-buffer-modified-p nil)
               ;; FIXME: Do this in a wrapper.
               ;; (when target
