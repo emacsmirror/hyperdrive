@@ -74,21 +74,6 @@ URL does not have a trailing slash, i.e., \"hyper://PUBLIC-KEY\"."
                               path (cons ?/ url-unreserved-chars))))
     (concat url encoded-path)))
 
-(defun hyperdrive-url-entry (url)
-  "Return entry for URL."
-  (pcase-let* (((cl-struct url (host public-key) (filename path) target)
-                (url-generic-parse-url url))
-               (hyperdrive (make-hyperdrive :public-key public-key))
-               (etc (when target
-                      (list (cons 'target target)))))
-    ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
-    ;; :path "/path/to/basename" :name "basename"
-    (make-hyperdrive-entry :hyperdrive hyperdrive
-                           :path (if (string-empty-p path) "/" path)
-                           ;; TODO: Verify that this is the right for directories.
-                           :name (file-name-nondirectory path)
-                           :etc etc)))
-
 ;;;; Variables
 
 (defvar hyperdrive-timestamp-format-string nil)
@@ -168,6 +153,26 @@ If already at top-level directory, return nil."
 ;;       ;; <https://github.com/RangerMauve/hypercore-fetch/issues/57>.
 ;;       (>= (string-to-number etag) 1))))
 
+(defun hyperdrive-url-entry (url)
+  "Return entry for URL.
+Set entry's hyperdrive slot to persisted hyperdrive if it exists."
+  (pcase-let* (((cl-struct url (host public-key) (filename path) target)
+                (url-generic-parse-url url))
+               ;; TODO: For now, no other function besides `hyperdrive-url-entry'
+               ;; calls `make-hyperdrive', but perhaps it would be better to
+               ;; override the `make-hyperdrive' constructor to retrieve existing
+               ;; hyperdrive from `hyperdrive-hyperdrives'?
+               (hyperdrive (or (gethash public-key hyperdrive-hyperdrives)
+                               (make-hyperdrive :public-key public-key)))
+               (etc (when target
+                      (list (cons 'target target)))))
+    ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
+    ;; :path "/path/to/basename" :name "basename"
+    (make-hyperdrive-entry :hyperdrive hyperdrive
+                           :path (if (string-empty-p path) "/" path)
+                           ;; TODO: Verify that this is the right for directories.
+                           :name (file-name-nondirectory path)
+                           :etc etc)))
 ;;;; Entries
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
