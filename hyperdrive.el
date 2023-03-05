@@ -334,7 +334,6 @@ buffer opened by the handler."
                                                            (string-match-p regexp type))
                                                          hyperdrive-type-handlers :key #'car))
                                         #'hyperdrive-handler-default)))
-                ;; TODO: Only persist hyperdrive if hyperdrive-hyperdrives doesn't already contain it.
                 (hyperdrive-persist hyperdrive)
                 (funcall handler entry :then then)))
       :else (lambda (plz-error)
