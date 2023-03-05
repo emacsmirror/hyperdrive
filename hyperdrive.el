@@ -292,20 +292,23 @@ hyperdrive."
     (hyperdrive-mode-off)))
 
 ;;;###autoload
-(cl-defun hyperdrive-open (url &key then)
+(cl-defun hyperdrive-open (url &key then recurse)
+  ;; TODO: Rename this function to `hyperdrive-find-file' and emulate `find-file' docstring.
   "Open hyperdrive URL.
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
   (declare (indent defun))
   (interactive
    (list (hyperdrive-complete-url)))
+  ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
   ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
   ;; struct. If the hyperdrive already exists in hyperdrive-hyperdrives, there's no need to send a HEAD
   ;; request, since the value will never change. We only need to send a HEAD request when calling
   ;; `hyperdrive-open-url' on an unknown URL. Since `hyperdrive-complete-url' only returns a URL, we'll
   ;; need to parse the URL and then call `gethash' (or refactor `hyperdrive-complete-url').
   ;; See: <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
-  (let ((entry (hyperdrive-url-entry url)))
+  (let* ((entry (hyperdrive-url-entry url))
+         (hyperdrive (hyperdrive-entry-hyperdrive entry)))
     (hyperdrive-fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
@@ -313,24 +316,44 @@ buffer opened by the handler."
                            (handler (or (cdr (cl-find-if (lambda (regexp)
                                                            (string-match-p regexp type))
                                                          hyperdrive-type-handlers :key #'car))
-                                        #'hyperdrive-handler-default))
-                           (persisted-hyperdrive
-                            (gethash (hyperdrive-public-key (hyperdrive-entry-hyperdrive entry))
-                                     hyperdrive-hyperdrives)))
-                ;; Persisted hyperdrive may contain an alias, while the entry
-                ;; from (hyperdrive-url-entry url) will never have an alias.
-                (if persisted-hyperdrive
-                    (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
-                  (hyperdrive-persist (hyperdrive-entry-hyperdrive entry)))
+                                        #'hyperdrive-handler-default)))
+                (hyperdrive-persist hyperdrive)
                 (funcall handler entry :then then)))
       :else (lambda (plz-error)
-              (pcase-let (((cl-struct plz-error curl-error response) plz-error))
-                (if curl-error
-                    (error "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
-                  (pcase (plz-response-status response)
-                    (404 (when (yes-or-no-p (format "URL not found: %S.  Try to load parent directory? " url))
-                           (hyperdrive-open (hyperdrive--parent url))) )
-                    (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error)))))))))
+              (cl-labels ((go-up
+                           () (pcase recurse
+                                (1 (hyperdrive-open (hyperdrive--parent url)))
+                                (`t (hyperdrive-open (hyperdrive--parent url)
+                                                     :recurse t))
+                                (_ (pcase (prompt-to-go-up)
+                                     ((and (or 1 `t) recurse)
+                                      (hyperdrive-open (hyperdrive--parent url) :recurse recurse))))))
+                          (prompt-to-go-up
+                           () (pcase-exhaustive
+                                  (read-answer "URL not found: %S.  Try to load parent directory? "
+                                               '(("yes" ?y "go up one level")
+                                                 ("no" ?n "exit")
+                                                 ("recurse" ?! "go up until directory found")))
+                                ("yes" 1)
+                                ("recurse" t)
+                                ("no" nil))))
+                (pcase-let (((cl-struct plz-error curl-error response) plz-error))
+                  (if curl-error
+                      (error "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
+                    (pcase (plz-response-status response)
+                      (404 ;; Path not found.
+                       (cond ((string-suffix-p "/" url)
+                              ;; Path ends in a slash (and hyperdrive does not
+                              ;; support empty directories): offer to go up the tree.
+                              (go-up))
+                             ;; Path does not end in a slash.
+                             ((hyperdrive-writablep hyperdrive)
+                              ;; Hyperdrive is writable: create a new buffer that will be saved to that path.
+                              nil)
+                             (t
+                              ;; Hyperdrive not writable: offer to go up.
+                              (go-up))))
+                      (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error))))))))))
 
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
