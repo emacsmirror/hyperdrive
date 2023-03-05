@@ -330,7 +330,7 @@ buffer opened by the handler."
                                       (hyperdrive-open (hyperdrive--parent url) :recurse recurse))))))
                           (prompt-to-go-up
                            () (pcase-exhaustive
-                                  (read-answer "URL not found: %S.  Try to load parent directory? "
+                                  (read-answer (format "URL not found: %S.  Try to load parent directory? " url)
                                                '(("yes" ?y "go up one level")
                                                  ("no" ?n "exit")
                                                  ("recurse" ?! "go up until directory found")))
