@@ -361,14 +361,14 @@ If buffer was not hyperdrive-backed, it becomes so."
   (interactive
    (list (if hyperdrive-mode
              hyperdrive-current-entry
-           (hyperdrive--read-new-entry))))
+           (hyperdrive-read-entry :predicate #'hyperdrive-writablep))))
   (hyperdrive-write-buffer entry 'overwrite))
 
 (defun hyperdrive-write-buffer (entry &optional overwritep)
   "Write current buffer to new hyperdrive ENTRY.
 If file already exists and OVERWRITEP is nil, prompt the user to
 overwrite."
-  (interactive (list (hyperdrive--read-new-entry)))
+  (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep)))
   ;; FIXME: Overwrites without prompting if file exists.  Make new
   ;; --writable-p based on
   ;; <https://github.com/RangerMauve/hypercore-fetch/issues/60>.

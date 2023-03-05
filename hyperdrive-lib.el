@@ -297,11 +297,12 @@ If PREDICATE, only offer hyperdrives matching it."
                          "Please select a known hyperdrive or input a hyper:// URL"
                        "Please input a hyper:// URL"))))))
 
-(defun hyperdrive--read-new-entry ()
+(defun hyperdrive-read-entry (&key predicate)
   "Return new hyperdrive entry with path and hyperdrive read from user.
-Prompts user for a writable hyperdrive and signals an error if no
-such hyperdrive is known."
-  (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
+Prompts user for a hyperdrive and signals an error if no
+such hyperdrive is known.
+If PREDICATE, only offer hyperdrives matching it."
+  (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate))
          (filename (buffer-file-name))
          (basename (or (when hyperdrive-current-entry
                          (hyperdrive-entry-name hyperdrive-current-entry))
@@ -311,7 +312,7 @@ such hyperdrive is known."
          (prompt (format "File path [default %S]: " default))
          (path (read-string prompt nil nil default)))
     (unless (hyperdrive-p hyperdrive)
-      (user-error "No such hyperdrive: %S.  Use `hyperdrive-new' to create one first" hyperdrive))
+      (user-error "No such hyperdrive: %S.  Use `hyperdrive-new' to create a new one" hyperdrive))
     (make-hyperdrive-entry :hyperdrive hyperdrive
                            :name (file-name-nondirectory path)
                            :path (if (string-prefix-p "/" path)
