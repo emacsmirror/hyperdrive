@@ -159,10 +159,9 @@ If already at top-level directory, return nil."
 Set entry's hyperdrive slot to persisted hyperdrive if it exists."
   (pcase-let* (((cl-struct url (host public-key) (filename path) target)
                 (url-generic-parse-url url))
-               ;; TODO: For now, no other function besides `hyperdrive-url-entry'
-               ;; calls `make-hyperdrive', but perhaps it would be better to
-               ;; override the `make-hyperdrive' constructor to retrieve existing
-               ;; hyperdrive from `hyperdrive-hyperdrives'?
+               ;; TODO: For now, no other function besides `hyperdrive-url-entry' calls
+               ;; `make-hyperdrive', but perhaps it would be good to add a function which wraps
+               ;; `make-hyperdrive' and returns either an existing hyperdrive or a new one?
                (hyperdrive (or (gethash public-key hyperdrive-hyperdrives)
                                (make-hyperdrive :public-key public-key)))
                (etc (when target
