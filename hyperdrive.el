@@ -313,15 +313,9 @@ buffer opened by the handler."
                            (handler (or (cdr (cl-find-if (lambda (regexp)
                                                            (string-match-p regexp type))
                                                          hyperdrive-type-handlers :key #'car))
-                                        #'hyperdrive-handler-default))
-                           (persisted-hyperdrive
-                            (gethash (hyperdrive-public-key (hyperdrive-entry-hyperdrive entry))
-                                     hyperdrive-hyperdrives)))
-                ;; Persisted hyperdrive may contain an alias, while the entry
-                ;; from (hyperdrive-url-entry url) will never have an alias.
-                (if persisted-hyperdrive
-                    (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
-                  (hyperdrive-persist (hyperdrive-entry-hyperdrive entry)))
+                                        #'hyperdrive-handler-default)))
+                ;; TODO: Only persist hyperdrive if hyperdrive-hyperdrives doesn't already contain it.
+                (hyperdrive-persist (hyperdrive-entry-hyperdrive entry))
                 (funcall handler entry :then then)))
       :else (lambda (plz-error)
               (pcase-let (((cl-struct plz-error curl-error response) plz-error))
