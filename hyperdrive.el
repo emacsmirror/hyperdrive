@@ -321,13 +321,11 @@ buffer opened by the handler."
                 (funcall handler entry :then then)))
       :else (lambda (plz-error)
               (cl-labels ((go-up
-                           () (pcase recurse
-                                (1 (hyperdrive-open (hyperdrive--parent url)))
-                                (`t (hyperdrive-open (hyperdrive--parent url)
-                                                     :recurse t))
-                                (_ (pcase (prompt-to-go-up)
-                                     ((and (or 1 `t) recurse)
-                                      (hyperdrive-open (hyperdrive--parent url) :recurse recurse))))))
+                           () (if recurse
+                                  (hyperdrive-open (hyperdrive--parent url) :recurse t)
+                                (pcase (prompt-to-go-up)
+                                  (1 (hyperdrive-open (hyperdrive--parent url)))
+                                  (`t (hyperdrive-open (hyperdrive--parent url) :recurse t)))))
                           (prompt-to-go-up
                            () (pcase-exhaustive
                                   (read-answer (format "URL not found: %S.  Try to load parent directory? " url)
