@@ -87,8 +87,6 @@ Default handler."
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show directory ENTRY."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
-  ;; FIXME: About half of the time, calls to hyperdrive-dir-list
-  ;; fail. Issue with sending many rapid HEAD requests?
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
   (pcase-let* ((url (hyperdrive-entry-url directory-entry))
                (buffer (hyperdrive--get-buffer-create directory-entry))
