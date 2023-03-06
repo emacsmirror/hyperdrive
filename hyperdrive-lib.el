@@ -297,7 +297,7 @@ If PREDICATE, only offer hyperdrives matching it."
                          "Please select a known hyperdrive or input a hyper:// URL"
                        "Please input a hyper:// URL"))))))
 
-(defun hyperdrive-read-entry (&key predicate)
+(cl-defun hyperdrive-read-entry (&key predicate)
   "Return new hyperdrive entry with path and hyperdrive read from user.
 Prompts user for a hyperdrive and signals an error if no
 such hyperdrive is known.
