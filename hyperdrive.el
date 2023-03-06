@@ -292,14 +292,19 @@ hyperdrive."
     (hyperdrive-mode-off)))
 
 ;;;###autoload
+(defun hyperdrive-find-file (entry)
+  "Find hyperdrive ENTRY.
+Interactively, prompts for known hyperdrive and path."
+  (interactive (list (hyperdrive-read-entry)))
+  (hyperdrive-open (hyperdrive-entry-url entry)))
+
+;;;###autoload
 (cl-defun hyperdrive-open (url &key then recurse)
-  ;; TODO: Rename this function to `hyperdrive-find-file' and emulate `find-file' docstring.
   "Open hyperdrive URL.
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
   (declare (indent defun))
-  (interactive
-   (list (hyperdrive-complete-url)))
+  (interactive (list (read-string "Hyperdrive URL: ")))
   ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
   ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
   ;; struct. If the hyperdrive already exists in hyperdrive-hyperdrives, there's no need to send a HEAD
