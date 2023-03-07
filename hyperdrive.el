@@ -347,7 +347,7 @@ buffer opened by the handler."
                              ;; Path does not end in a slash.
                              ((hyperdrive-writablep hyperdrive)
                               ;; Hyperdrive is writable: create a new buffer that will be saved to that path.
-                              nil)
+                              (switch-to-buffer (hyperdrive--get-buffer-create entry)))
                              (t
                               ;; Hyperdrive not writable: offer to go up.
                               (go-up))))
