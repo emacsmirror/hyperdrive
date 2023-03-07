@@ -388,8 +388,8 @@ overwrite."
     ;; variables besides `buffer-file-name' messing things up?
 
     ;; Possible fix: Just (setf buffer-file-name nil).
-    (hyperdrive-mode)
-    (setq-local hyperdrive-current-entry entry))
+    (hyperdrive-mode))
+  (setq-local hyperdrive-current-entry entry)
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
               (url (hyperdrive-entry-url entry))
               (buffer (current-buffer)))
