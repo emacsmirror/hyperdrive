@@ -337,6 +337,7 @@ buffer opened by the handler."
                                 ("no" nil))))
                 (pcase-let (((cl-struct plz-error curl-error response) plz-error))
                   (if curl-error
+                      ;; TODO: Handle error 28: timeout
                       (error "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
                     (pcase (plz-response-status response)
                       (404 ;; Path not found.
