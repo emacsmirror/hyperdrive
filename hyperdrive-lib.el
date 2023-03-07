@@ -202,9 +202,7 @@ Set entry's hyperdrive slot to persisted hyperdrive if it exists."
   "Fill ENTRY's metadata and call THEN.
 If request fails, call ELSE (which is passed to `hyperdrive-api',
 which see."
-  (declare (indent defun)
-           (debug sexp &rest [&or [":then" def-body]
-                                  [":else" def-body]]))
+  (declare (indent defun))
   (hyperdrive-api 'head (hyperdrive-entry-url entry)
     :as 'response
     :then (lambda (response)
