@@ -35,7 +35,7 @@
 ;;;; Declarations
 
 (declare-function hyperdrive-mode "hyperdrive")
-(declare-function hyperdrive-open "hyperdrive")
+(declare-function hyperdrive-open-url "hyperdrive")
 
 ;;;; Structs
 
@@ -318,7 +318,7 @@ If PREDICATE, only offer hyperdrives matching it."
     (setf (hyperdrive-alias hyperdrive) alias
           (hyperdrive-writablep hyperdrive) t)
     (hyperdrive-persist hyperdrive)
-    (hyperdrive-open url)))
+    (hyperdrive-open-url url)))
 
 (defun hyperdrive-persist (hyperdrive)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'."

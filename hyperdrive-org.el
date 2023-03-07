@@ -31,7 +31,7 @@
 (defvar hyperdrive-current-entry)
 
 (declare-function hyperdrive-mode "hyperdrive")
-(declare-function hyperdrive-open "hyperdrive")
+(declare-function hyperdrive-open-url "hyperdrive")
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
@@ -107,7 +107,7 @@ raw URL, not an Org link."
   (pcase-let* ((urlobj (url-generic-parse-url url))
                ((cl-struct url target) urlobj))
     (setf (url-target urlobj) nil)
-    (hyperdrive-open (url-recreate-url urlobj)
+    (hyperdrive-open-url (url-recreate-url urlobj)
       :then (lambda ()
               (when (eq 'org-mode major-mode)
                 (hyperdrive--org-link-goto target))))))

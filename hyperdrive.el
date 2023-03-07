@@ -184,7 +184,7 @@ Passed to `display-buffer', which see."
 
 (defun hyperdrive-browse-url (url &rest _ignore)
   "Browse hyperdrive URL."
-  (hyperdrive-open url))
+  (hyperdrive-open-url url))
 
 (when (version<= "28.1" emacs-version)
   (require 'browse-url)
@@ -263,7 +263,7 @@ hyperdrive."
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
   ;; TODO: [#C] Override buffer-modified check when buffer is erased.
-  (hyperdrive-open (hyperdrive-entry-url hyperdrive-current-entry)))
+  (hyperdrive-open-url (hyperdrive-entry-url hyperdrive-current-entry)))
 
 ;;;; hyperdrive-mode
 
@@ -290,10 +290,10 @@ hyperdrive."
   "Find hyperdrive ENTRY.
 Interactively, prompts for known hyperdrive and path."
   (interactive (list (hyperdrive-read-entry)))
-  (hyperdrive-open (hyperdrive-entry-url entry)))
+  (hyperdrive-open-url (hyperdrive-entry-url entry)))
 
 ;;;###autoload
-(cl-defun hyperdrive-open (url &key then recurse)
+(cl-defun hyperdrive-open-url (url &key then recurse)
   "Open hyperdrive URL.
 THEN may be a function to pass to the handler to call in the
 buffer opened by the handler."
@@ -322,10 +322,10 @@ buffer opened by the handler."
       :else (lambda (plz-error)
               (cl-labels ((go-up
                            () (if recurse
-                                  (hyperdrive-open (hyperdrive--parent url) :recurse t)
+                                  (hyperdrive-open-url (hyperdrive--parent url) :recurse t)
                                 (pcase (prompt-to-go-up)
-                                  (1 (hyperdrive-open (hyperdrive--parent url)))
-                                  (`t (hyperdrive-open (hyperdrive--parent url) :recurse t)))))
+                                  (1 (hyperdrive-open-url (hyperdrive--parent url)))
+                                  (`t (hyperdrive-open-url (hyperdrive--parent url) :recurse t)))))
                           (prompt-to-go-up
                            () (pcase-exhaustive
                                   (read-answer (format "URL not found: %S.  Try to load parent directory? " url)

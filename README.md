@@ -73,7 +73,7 @@ key.
 ### Open a hyperdrive
 
 You can open a hyperdrive folder or file by pasting in a `hyper://`
-URL after `M-x hyperdrive-open`. Alternatively, `M-x
+URL after `M-x hyperdrive-open-url`. Alternatively, `M-x
 hyperdrive-find-file` remembers hyperdrives you have already created
 or visited. It will prompt you to select a known hyperdrive by its
 public key or alias and then enter a path inside that hyperdrive.
