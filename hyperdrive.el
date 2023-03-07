@@ -375,7 +375,7 @@ overwrite."
   (ignore overwritep)
   (unless hyperdrive-mode
     ;; TODO: Remove faces/overlays that might be applied to current buffer.
-    ;; FIXME: Reusing the same buffer does not remove buffer-file-name. If you call
+    ;; FIXME(A): Reusing the same buffer does not remove buffer-file-name. If you call
     ;; `hyperdrive-write-buffer' from a file-visiting buffer, the buffer name as well as
     ;; `revert-buffer-function' and `write-contents-functions' will be set. Now, any attempt to
     ;; reopen the file you started with opens the renamed buffer. The only way to open the file
