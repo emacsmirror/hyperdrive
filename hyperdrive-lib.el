@@ -271,15 +271,14 @@ URL."
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate (prompt "Hyperdrive: "))
   "Return a hyperdrive selected with completion.
 If PREDICATE, only offer hyperdrives matching it."
-  (let* ((completion-styles (cons 'substring completion-styles))
-         (candidates (mapcar (lambda (hyperdrive)
-                               (cons (hyperdrive--format-entry-url
-                                      (make-hyperdrive-entry :hyperdrive hyperdrive :path "/")
-                                      :abbreviate-key t)
-                                     hyperdrive))
-                             (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives))))
-         (input (completing-read prompt (mapcar #'car candidates) nil 'require-match)))
-    (alist-get input candidates nil nil #'equal)))
+  (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
+         candidates)
+    (dolist (hyperdrive hyperdrives)
+      (push (cons (hyperdrive-public-key hyperdrive) hyperdrive) candidates)
+      (when-let ((alias (hyperdrive-alias hyperdrive)))
+        (push (cons alias hyperdrive) candidates)))
+    (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match)
+               candidates nil nil #'equal)))
 
 (cl-defun hyperdrive-read-entry (&key predicate)
   "Return new hyperdrive entry with path and hyperdrive read from user.
