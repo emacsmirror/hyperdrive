@@ -312,6 +312,7 @@ buffer opened by the handler."
   ;; `hyperdrive-open-url' on an unknown URL. Since `hyperdrive-complete-url' only returns a URL, we'll
   ;; need to parse the URL and then call `gethash' (or refactor `hyperdrive-complete-url').
   ;; See: <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
+  ;; TODO: What happens if the user tries to open a hyperdrive file that's already open in a buffer?
   (let* ((entry (hyperdrive-url-entry url))
          (hyperdrive (hyperdrive-entry-hyperdrive entry)))
     (hyperdrive-fill entry
