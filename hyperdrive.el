@@ -267,29 +267,23 @@ hyperdrive."
 
 ;;;; hyperdrive-mode
 
-(defun hyperdrive-mode-on ()
-  "Activate `hyperdrive-mode'."
-  (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
-  (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
-
-(defun hyperdrive-mode-off ()
-  "Deactivate `hyperdrive-mode'."
-  (setq-local revert-buffer-function #'revert-buffer--default
-              write-contents-functions (remove #'hyperdrive--write-contents write-contents-functions)))
-
 (define-minor-mode hyperdrive-mode
   "Minor mode for buffers opened from hyperdrives."
   :global nil
   :interactive nil
   :group 'hyperdrive
-  :lighter "hyperdrive"
+  :lighter " hyperdrive"
   ;; :keymap (let ((map (make-sparse-keymap)))
   ;;           ;; TODO: [#C] Redo this command.
   ;;           (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
   ;;           map)
   (if hyperdrive-mode
-      (hyperdrive-mode-on)
-    (hyperdrive-mode-off)))
+      (progn
+        (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
+        (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
+    (setq-local revert-buffer-function #'revert-buffer--default
+                write-contents-functions
+                (remove #'hyperdrive--write-contents write-contents-functions))))
 
 ;;;###autoload
 (defun hyperdrive-find-file (entry)

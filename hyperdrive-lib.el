@@ -340,6 +340,7 @@ In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
   (with-current-buffer (get-buffer-create (hyperdrive--format-entry-url entry :abbreviate-key t))
+    (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))
 

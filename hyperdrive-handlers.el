@@ -61,15 +61,14 @@ Default handler."
                 (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
               (erase-buffer)
               (insert-buffer-substring response-buffer)
+              (setf buffer-undo-list nil)
+              (set-buffer-modified-p nil)
               (goto-char (point-min))
               ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
               (when hyperdrive-honor-auto-mode-alist
                 (let ((buffer-file-name (hyperdrive-entry-url entry)))
                   (set-auto-mode)))
               ;; TODO: Option to defer showing buffer.
-              (hyperdrive-mode)
-              (setf buffer-undo-list nil)
-              (set-buffer-modified-p nil)
               ;; FIXME: Do this in a wrapper.
               ;; (when target
               ;;   ;; FIXME: This is specific to Org files and doesn't
