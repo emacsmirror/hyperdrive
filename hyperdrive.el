@@ -252,10 +252,8 @@ hyperdrive."
 (defun hyperdrive-stop ()
   "Stop the `hyper-gateway' process."
   (interactive)
-  (let ((proc (hyperdrive--gateway-pid)))
-    (if proc
-        (signal-process proc 'sigint)
-      (hyperdrive-message "Already not running hyper-gateway."))))
+  (when (hyperdrive--gateway-pid)
+    (signal-process (hyperdrive--gateway-pid) 'sigint)))
 
 ;; TODO: Command to upload one or more files.
 ;; TODO: Command to download files.
