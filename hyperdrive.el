@@ -43,7 +43,7 @@
 ;; ensure that it is executable and in your $PATH.
 
 ;; Ensure that `hyperdrive-hyper-gateway-command' is set to the name
-;; you gave to the `hyper-gateway` binary. One way to do this is by
+;; you gave to the `hyper-gateway` binary.  One way to do this is by
 ;; renaming the binary to `hyper-gateway`, the default value for
 ;; `hyperdrive-hyper-gateway-command'.
 
@@ -197,7 +197,7 @@ Passed to `display-buffer', which see."
 ;;;; Commands
 
 (defun hyperdrive--gateway-pid ()
-  "Return `hyper-gateway' process id if it's running. Otherwise, return nil."
+  "Return `hyper-gateway' process id if it's running, otherwise nil."
   (let ((output
          (shell-command-to-string (concat "pgrep " hyperdrive-hyper-gateway-command))))
     (when (> (length output) 0)
@@ -293,8 +293,9 @@ Interactively, prompts for known hyperdrive and path."
 ;;;###autoload
 (cl-defun hyperdrive-open-url (url &key then recurse)
   "Open hyperdrive URL.
-THEN may be a function to pass to the handler to call in the
-buffer opened by the handler."
+If RECURSE, proceed up the directory hierarchy if given path is
+not found.  THEN may be a function to pass to the handler to call
+in the buffer opened by the handler."
   (declare (indent defun))
   (interactive (list (read-string "Hyperdrive URL: ")))
   ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
@@ -339,7 +340,7 @@ buffer opened by the handler."
                      (hyperdrive-message "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
                     (`(,curl-code . ,message) ;; Any other curl error.
                      (hyperdrive-message "curl error: %s: %S" curl-code message))
-                    (_  ;; Any other error is an HTTP error.
+                    (_ ;; Any other error is an HTTP error.
                      (pcase (plz-response-status response)
                        (404 ;; Path not found.
                         (cond ((string-suffix-p "/" url)

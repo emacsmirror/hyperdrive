@@ -19,7 +19,7 @@
 
 ;;; Commentary:
 
-;; 
+;;
 
 ;;; Code:
 
@@ -90,7 +90,7 @@ URL does not have a trailing slash, i.e., \"hyper://PUBLIC-KEY\"."
 
 (defconst hyperdrive--public-key-re
   (rx (eval hyperdrive--hyper-prefix) (group (= 52 alphanumeric)))
-  "Regex to match \"hyper://\" + public key.
+  "Regexp to match \"hyper://\" + public key.
 
 Capture group matches public key.")
 
@@ -98,7 +98,7 @@ Capture group matches public key.")
   (rx (eval hyperdrive--hyper-prefix)
       (one-or-more alnum)
       (group "+" (one-or-more num)))
-  "Regex to match \"hyper://\" + public key or alias + version number.
+  "Regexp to match \"hyper://\" + public key or alias + version number.
 
 Capture group matches version number.")
 
@@ -107,13 +107,13 @@ Capture group matches version number.")
 ;; These functions take a URL argument, not a hyperdrive-entry struct.
 
 (cl-defun hyperdrive-api (method url &rest rest)
-  "Make hyperdrive API request.
+  "Make hyperdrive API request by METHOD to URL.
 Calls `hyperdrive--httpify-url' to convert HYPER-URL starting
 with `hyperdrive--hyper-prefix' to a URL starting with
 \"http://localhost:4973/hyper/\" (assuming that
 `hyper-gateway-port' is \"4973\").
 
-The remaining arguments are passed to `plz', which see."
+REST is passed to `plz', which see."
   (declare (indent defun))
   (apply #'plz method (hyperdrive--httpify-url url) rest))
 
@@ -247,11 +247,11 @@ Return URL formatted like:
   hyper://[ALIAS]/PATH/TO/FILE
   hyper://PUBLIC-KEY/PATH/TO/FILE
 
-If USE-ALIAS, the public-key is replaced with it, when available.
-If ABBREVIATE-KEY, the public key is shortened to 6 characters
-and an ellipsis.  If WITH-PROTOCOL, \"hyper://\" is prepended.
-Entire string has `help-echo' property showing the entry's full
-URL."
+If WITH-ALIAS, the public-key is replaced with it, when
+available.  If ABBREVIATE-KEY, the public key is shortened to 6
+characters and an ellipsis.  If WITH-PROTOCOL, \"hyper://\" is
+prepended.  Entire string has `help-echo' property showing the
+entry's full URL."
   ;; TODO: Add user option to disable abbreviating keys.
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                ((cl-struct hyperdrive public-key alias) hyperdrive)
@@ -270,7 +270,8 @@ URL."
 
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate (prompt "Hyperdrive: "))
   "Return a hyperdrive selected with completion.
-If PREDICATE, only offer hyperdrives matching it."
+If PREDICATE, only offer hyperdrives matching it.  Prompt with
+PROMPT."
   (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
          candidates)
     (dolist (hyperdrive hyperdrives)
@@ -329,8 +330,8 @@ If PREDICATE, only offer hyperdrives matching it."
 
 (defun hyperdrive--get-buffer-create (entry)
   "Return buffer for ENTRY.
-Names buffer, sets `buffer-file-name' and
-`hyperdrive-current-entry'.
+In the buffer, `hyperdrive-mode' is activated and
+`hyperdrive-current-entry' is set.
 
 This function helps prevent duplicate `hyperdrive-mode' buffers
 by ensuring that buffer names always use the namespace alias
@@ -349,7 +350,7 @@ both point to the same content."
   (string-suffix-p "/" (hyperdrive-entry-url entry)))
 
 (defun hyperdrive-message (message &rest args)
-  "Call `message' prefixing MESSAGE with \"Hyperdrive:\"."
+  "Call `message' with MESSAGE and ARGS, prefixing MESSAGE with \"Hyperdrive:\"."
   (apply #'message (concat "Hyperdrive: " message) args))
 
 (provide 'hyperdrive-lib)

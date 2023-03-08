@@ -129,7 +129,9 @@ To be used as the pretty-printer for `ewoc-create'."
 (declare-function hyperdrive-open-url "hyperdrive")
 
 (defun hyperdrive-dir-find-file (entry)
-  "In hyperdrive-dir, visit the file or directory named on this line."
+  "Visit hyperdrive ENTRY.
+Interactively, visit file or directory at point in
+`hyperdrive-dir' buffer."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
   (hyperdrive-open-url (hyperdrive-entry-url entry)))
 
@@ -181,7 +183,7 @@ With point on header, return directory entry."
   (interactive "p")
   (cond ((= 1 (line-number-at-pos))
          ;; Point on header: move into first entry.
-         (forward-line 1)) 
+         (forward-line 1))
         (t
          ;; Point is elsewhere: move to next entry (`ewoc-next' won't
          ;; move past the last entry).

@@ -19,7 +19,7 @@
 
 ;;; Commentary:
 
-;; 
+;;
 
 ;;; Code:
 
@@ -44,7 +44,7 @@ Keys are regexps matched against MIME types.")
 
 (cl-defun hyperdrive-handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
-Default handler."
+If then, then call THEN with no arguments.  Default handler."
   ;; FIXME: Make buffer read-only when hyperdrive isn't writable.
   (with-local-quit
     (hyperdrive-api 'get (hyperdrive-entry-url entry)
@@ -84,7 +84,8 @@ Default handler."
 (declare-function hyperdrive-dir-mode "hyperdrive-dir")
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
-  "Show directory ENTRY."
+  "Show DIRECTORY-ENTRY.
+If then, then call THEN with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
   (pcase-let* ((url (hyperdrive-entry-url directory-entry))
@@ -125,7 +126,7 @@ Default handler."
       ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))
       ;;         prev-line (line-number-at-pos)))
       (hyperdrive-dir-mode)
-      (setf ewoc hyperdrive-dir-ewoc)  ; Bind this for the hyperdrive-fill lambda.
+      (setf ewoc hyperdrive-dir-ewoc) ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-dir-ewoc #'ignore)
       (ewoc-set-hf hyperdrive-dir-ewoc header "")
       (mapc (lambda (entry)
