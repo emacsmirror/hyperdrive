@@ -1,3 +1,4 @@
 /*.elc
 /.sandbox/
 makem.sh
+/.dir-locals2.el
