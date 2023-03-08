@@ -334,23 +334,26 @@ buffer opened by the handler."
                                 ("recurse" t)
                                 ("no" nil))))
                 (pcase-let (((cl-struct plz-error curl-error response) plz-error))
-                  (if curl-error
-                      ;; TODO: Handle error 28: timeout
-                      (error "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
-                    (pcase (plz-response-status response)
-                      (404 ;; Path not found.
-                       (cond ((string-suffix-p "/" url)
-                              ;; Path ends in a slash (and hyperdrive does not
-                              ;; support empty directories): offer to go up the tree.
-                              (go-up))
-                             ;; Path does not end in a slash.
-                             ((hyperdrive-writablep hyperdrive)
-                              ;; Hyperdrive is writable: create a new buffer that will be saved to that path.
-                              (switch-to-buffer (hyperdrive--get-buffer-create entry)))
-                             (t
-                              ;; Hyperdrive not writable: offer to go up.
-                              (go-up))))
-                      (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error))))))))))
+                  (pcase curl-error
+                    (`(7 . ,_message) ;; Connection fails, most likely the gateway isn't started yet.
+                     (hyperdrive-message "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
+                    (`(,curl-code . ,message) ;; Any other curl error.
+                     (hyperdrive-message "curl error: %s: %S" curl-code message))
+                    (_  ;; Any other error is an HTTP error.
+                     (pcase (plz-response-status response)
+                       (404 ;; Path not found.
+                        (cond ((string-suffix-p "/" url)
+                               ;; Path ends in a slash (and hyperdrive does not
+                               ;; support empty directories): offer to go up the tree.
+                               (go-up))
+                              ;; Path does not end in a slash.
+                              ((hyperdrive-writablep hyperdrive)
+                               ;; Hyperdrive is writable: create a new buffer that will be saved to that path.
+                               (switch-to-buffer (hyperdrive--get-buffer-create entry)))
+                              (t
+                               ;; Hyperdrive not writable: offer to go up.
+                               (go-up))))
+                       (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error)))))))))))
 
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
