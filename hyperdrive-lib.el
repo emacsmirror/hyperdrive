@@ -129,7 +129,7 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
   (hyperdrive-api 'put url
     ;; TODO: Investigate whether we should use 'text body type for text buffers.
     :body-type 'binary
-    ;; TODO: Make plz accept a buffer as the body.
+    ;; TODO: plz accepts buffer as a body, we should refactor calls to hyperdrive--write to pass in a buffer instead of a buffer-string.
     :body body
     :then then :else else))
 
