@@ -273,12 +273,17 @@ entry's full URL."
 If PREDICATE, only offer hyperdrives matching it.  Prompt with
 PROMPT."
   (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
+         (default (when hyperdrive-current-entry
+                    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) hyperdrive-current-entry)
+                                 ((cl-struct hyperdrive alias public-key) hyperdrive))
+                      (when (member hyperdrive hyperdrives)
+                        (or alias public-key)))))
          candidates)
     (dolist (hyperdrive hyperdrives)
       (push (cons (hyperdrive-public-key hyperdrive) hyperdrive) candidates)
       (when-let ((alias (hyperdrive-alias hyperdrive)))
         (push (cons alias hyperdrive) candidates)))
-    (or (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match)
+    (or (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match nil nil default)
                    candidates nil nil #'equal)
         (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
 
