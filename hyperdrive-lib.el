@@ -278,8 +278,9 @@ PROMPT."
       (push (cons (hyperdrive-public-key hyperdrive) hyperdrive) candidates)
       (when-let ((alias (hyperdrive-alias hyperdrive)))
         (push (cons alias hyperdrive) candidates)))
-    (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match)
-               candidates nil nil #'equal)))
+    (or (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match)
+                   candidates nil nil #'equal)
+        (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
 
 (cl-defun hyperdrive-read-entry (&key predicate)
   "Return new hyperdrive entry with path and hyperdrive read from user.
@@ -295,8 +296,6 @@ If PREDICATE, only offer hyperdrives matching it."
          (default (or basename (buffer-name)))
          (prompt (format "File path [default %S]: " default))
          (path (read-string prompt nil nil default)))
-    (unless (hyperdrive-p hyperdrive)
-      (user-error "No such hyperdrive: %S.  Use `hyperdrive-new' to create a new one" hyperdrive))
     (make-hyperdrive-entry :hyperdrive hyperdrive
                            :name (file-name-nondirectory path)
                            :path (if (string-prefix-p "/" path)
