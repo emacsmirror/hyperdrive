@@ -293,14 +293,9 @@ Prompts user for a hyperdrive and signals an error if no
 such hyperdrive is known.
 If PREDICATE, only offer hyperdrives matching it."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate))
-         (filename (buffer-file-name))
-         (basename (or (when hyperdrive-current-entry
-                         (hyperdrive-entry-name hyperdrive-current-entry))
-                       (when filename
-                         (file-name-nondirectory filename))))
-         (default (or basename (buffer-name)))
-         (prompt (format "File path [default %S]: " default))
-         (path (read-string prompt nil nil default)))
+         (default "/")
+         (prompt (format "File path (default %S): " default))
+         (path (read-string prompt default nil default)))
     (make-hyperdrive-entry :hyperdrive hyperdrive
                            :name (file-name-nondirectory path)
                            :path (if (string-prefix-p "/" path)
