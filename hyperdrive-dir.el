@@ -156,12 +156,12 @@ With point on header, return directory entry."
          ;; Point on a file entry: copy its entry.
          (ewoc-data (ewoc-locate hyperdrive-dir-ewoc)))))
 
+(declare-function hyperdrive-copy-url "hyperdrive")
+
 (defun hyperdrive-dir-copy-url-as-kill (entry)
   "Copy URL of ENTRY into the kill ring."
   (interactive (list (hyperdrive-dir--entry-at-point)))
-  (let ((url (hyperdrive-entry-url entry)))
-    (kill-new url)
-    (hyperdrive-message "%s" url)))
+  (hyperdrive-copy-url entry))
 
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
