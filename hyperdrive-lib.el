@@ -293,16 +293,21 @@ characters and an ellipsis.  If WITH-PROTOCOL, \"hyper://\" is
 prepended.  Entire string has `help-echo' property showing the
 entry's full URL."
   ;; TODO: Add user option to disable abbreviating keys.
+  ;; TODO: Add user option to prioritize alias, domain, public-key,
+  ;; and (eventually) public names and local names.
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               ((cl-struct hyperdrive public-key alias) hyperdrive)
+               ((cl-struct hyperdrive public-key alias domains) hyperdrive)
                (protocol (when with-protocol
                            "hyper://"))
-               (host (if (and with-alias alias)
-                         (propertize (concat "[" alias "]") 'face 'hyperdrive-alias)
-                       (propertize (if abbreviate-key
-                                       (concat (substring public-key 0 6) "…")
-                                     public-key)
-                                   'face 'hyperdrive-public-key))))
+               (host (cond
+                      ((and with-alias alias)
+                       (propertize (concat "[" alias "]") 'face 'hyperdrive-alias))
+                      ;; TODO: Add domains face or rename alias face?
+                      (domains (propertize (car domains) 'face 'hyperdrive-alias))
+                      (t (propertize (if abbreviate-key
+                                         (concat (substring public-key 0 6) "…")
+                                       public-key)
+                                     'face 'hyperdrive-public-key)))))
     (propertize (concat protocol host path)
                 'help-echo (hyperdrive-entry-url entry))))
 
