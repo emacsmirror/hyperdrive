@@ -71,6 +71,7 @@ URL does not have a trailing slash, i.e., \"hyper://PUBLIC-KEY\".
 
 If HYPERDRIVE's public-key slot is empty, use first domain in
 domains slot."
+  ;; TODO: Add option to prefer domain over public-key
   (pcase-let* (((cl-struct hyperdrive public-key domains) hyperdrive)
                ;; TODO: Fallback to secondary domains?
                (host (or public-key (car domains))))
