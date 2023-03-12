@@ -321,14 +321,18 @@ PROMPT."
   (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
          (default (when hyperdrive-current-entry
                     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) hyperdrive-current-entry)
-                                 ((cl-struct hyperdrive alias public-key) hyperdrive))
+                                 ((cl-struct hyperdrive public-key alias domains) hyperdrive))
                       (when (member hyperdrive hyperdrives)
-                        (or alias public-key)))))
+                        (or alias (car domains) public-key)))))
          candidates)
     (dolist (hyperdrive hyperdrives)
-      (push (cons (hyperdrive-public-key hyperdrive) hyperdrive) candidates)
-      (when-let ((alias (hyperdrive-alias hyperdrive)))
-        (push (cons alias hyperdrive) candidates)))
+      (pcase-let (((cl-struct hyperdrive public-key alias domains) hyperdrive))
+        (push (cons public-key hyperdrive) candidates)
+        (when alias
+          (push (cons alias hyperdrive) candidates))
+        (when domains
+          (dolist (domain domains)
+            (push (cons domain hyperdrive) candidates)))))
     (or (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match nil nil default)
                    candidates nil nil #'equal)
         (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
