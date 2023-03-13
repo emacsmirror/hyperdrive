@@ -330,9 +330,8 @@ PROMPT."
         (push (cons public-key hyperdrive) candidates)
         (when alias
           (push (cons alias hyperdrive) candidates))
-        (when domains
-          (dolist (domain domains)
-            (push (cons domain hyperdrive) candidates)))))
+        (dolist (domain domains)
+          (push (cons domain hyperdrive) candidates))))
     (or (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match nil nil default)
                    candidates nil nil #'equal)
         (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
