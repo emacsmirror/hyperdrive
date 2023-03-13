@@ -353,7 +353,6 @@ If PREDICATE, only offer hyperdrives matching it."
 
 (defun hyperdrive-new (alias)
   "Open new hyperdrive for ALIAS."
-  ;; TODO: Why do hashtable entries created here have #1= prepended to them?
   (interactive (list (read-string "New hyperdrive alias: ")))
   (let* ((response (with-local-quit
                      (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias)))))
