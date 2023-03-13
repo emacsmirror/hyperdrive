@@ -198,6 +198,7 @@ Passed to `display-buffer', which see."
 ;;;; Commands
 
 ;; TODO(B): Emacs bookmark support.
+;; TODO(A): Command to rename paths.
 
 (defun hyperdrive--gateway-pid ()
   "Return `hyper-gateway' process id if it's running, otherwise nil."
