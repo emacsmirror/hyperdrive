@@ -60,13 +60,22 @@
   "Represents a hyperdrive."
   (public-key nil :documentation "Hyperdrive's public key.")
   (alias nil :documentation "Alias (always and only present for writable hyperdrives).")
+  ;; TODO: Where to invalidate old domains?
+  (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
   (readablep nil :documentation "Whether the drive is readable.")
   (writablep nil :documentation "Whether the drive is writable."))
 
 (defun hyperdrive-url (hyperdrive)
   "Return a \"hyper://\"-prefixed URL from a HYPERDRIVE struct.
-URL does not have a trailing slash, i.e., \"hyper://PUBLIC-KEY\"."
-  (concat "hyper://" (hyperdrive-public-key hyperdrive)))
+URL does not have a trailing slash, i.e., \"hyper://PUBLIC-KEY\".
+
+If HYPERDRIVE's public-key slot is empty, use first domain in
+domains slot."
+  ;; TODO: Add option to prefer domain over public-key
+  (pcase-let* (((cl-struct hyperdrive public-key domains) hyperdrive)
+               ;; TODO: Fallback to secondary domains?
+               (host (or public-key (car domains))))
+    (concat "hyper://" host)))
 
 (defun hyperdrive-entry-url (entry)
   "Return ENTRY's URL."
@@ -157,14 +166,21 @@ If already at top-level directory, return nil."
 
 (defun hyperdrive-url-entry (url)
   "Return entry for URL.
-Set entry's hyperdrive slot to persisted hyperdrive if it exists."
-  (pcase-let* (((cl-struct url (host public-key) (filename path) target)
+Set entry's hyperdrive slot to persisted hyperdrive if it exists.
+
+If URL host is a DNSLink domain, returned entry will have an
+empty public-key slot."
+  (pcase-let* (((cl-struct url host (filename path) target)
                 (url-generic-parse-url url))
                ;; TODO: For now, no other function besides `hyperdrive-url-entry' calls
                ;; `make-hyperdrive', but perhaps it would be good to add a function which wraps
                ;; `make-hyperdrive' and returns either an existing hyperdrive or a new one?
-               (hyperdrive (or (gethash public-key hyperdrive-hyperdrives)
-                               (make-hyperdrive :public-key public-key)))
+               (hyperdrive (pcase host
+                             ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
+                              (make-hyperdrive :domains (list host)))
+                             (_ ; Assume host is a public-key
+                              (or (gethash host hyperdrive-hyperdrives)
+                                  (make-hyperdrive :public-key host)))))
                (etc (when target
                       (list (cons 'target target)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
@@ -211,9 +227,26 @@ which see."
     :noquery t))
 
 (defun hyperdrive--fill (entry headers)
-  "Fill ENTRY's slot from HEADERS."
-  (pcase-let (((cl-struct hyperdrive-entry name path) entry)
-              ((map content-length content-type etag last-modified) headers))
+  "Fill ENTRY from HEADERS.
+
+The following ENTRY slots are filled:
+- name
+- type
+- etag
+- modified
+
+The following ENTRY hyperdrive slots are filled:
+- public-key
+- domains (merged with current persisted value)
+"
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path) entry)
+               ((map link content-length content-type etag last-modified) headers)
+               ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
+               (public-key (progn
+                             (string-match hyperdrive--public-key-re link)
+                             (match-string 1 link)))
+               (persisted-hyperdrive (gethash public-key hyperdrive-hyperdrives))
+               (domain (car (hyperdrive-domains hyperdrive))))
     (unless name
       (setf (hyperdrive-entry-name entry) (string-trim path "/")))
     (when last-modified
@@ -224,6 +257,14 @@ which see."
           (hyperdrive-entry-type entry) content-type
           (hyperdrive-entry-etag entry) etag
           (hyperdrive-entry-modified entry) last-modified)
+    (when domain
+      (if persisted-hyperdrive
+          ;; The previous call to hyperdrive-entry-url did not retrieve the
+          ;; persisted hyperdrive because we had no public-key, only a domain.
+          (progn
+            (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
+            (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
+        (setf (hyperdrive-public-key hyperdrive) public-key)))
     entry))
 
 (cl-defun hyperdrive-delete (entry &key then else)
@@ -253,16 +294,21 @@ characters and an ellipsis.  If WITH-PROTOCOL, \"hyper://\" is
 prepended.  Entire string has `help-echo' property showing the
 entry's full URL."
   ;; TODO: Add user option to disable abbreviating keys.
+  ;; TODO: Add user option to prioritize alias, domain, public-key,
+  ;; and (eventually) public names and local names.
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               ((cl-struct hyperdrive public-key alias) hyperdrive)
+               ((cl-struct hyperdrive public-key alias domains) hyperdrive)
                (protocol (when with-protocol
                            "hyper://"))
-               (host (if (and with-alias alias)
-                         (propertize (concat "[" alias "]") 'face 'hyperdrive-alias)
-                       (propertize (if abbreviate-key
-                                       (concat (substring public-key 0 6) "…")
-                                     public-key)
-                                   'face 'hyperdrive-public-key))))
+               (host (cond
+                      ((and with-alias alias)
+                       (propertize (concat "[" alias "]") 'face 'hyperdrive-alias))
+                      ;; TODO: Add domains face or rename alias face?
+                      (domains (propertize (car domains) 'face 'hyperdrive-alias))
+                      (t (propertize (if abbreviate-key
+                                         (concat (substring public-key 0 6) "…")
+                                       public-key)
+                                     'face 'hyperdrive-public-key)))))
     (propertize (concat protocol host path)
                 'help-echo (hyperdrive-entry-url entry))))
 
@@ -275,14 +321,17 @@ PROMPT."
   (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
          (default (when hyperdrive-current-entry
                     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) hyperdrive-current-entry)
-                                 ((cl-struct hyperdrive alias public-key) hyperdrive))
+                                 ((cl-struct hyperdrive public-key alias domains) hyperdrive))
                       (when (member hyperdrive hyperdrives)
-                        (or alias public-key)))))
+                        (or alias (car domains) public-key)))))
          candidates)
     (dolist (hyperdrive hyperdrives)
-      (push (cons (hyperdrive-public-key hyperdrive) hyperdrive) candidates)
-      (when-let ((alias (hyperdrive-alias hyperdrive)))
-        (push (cons alias hyperdrive) candidates)))
+      (pcase-let (((cl-struct hyperdrive public-key alias domains) hyperdrive))
+        (push (cons public-key hyperdrive) candidates)
+        (when alias
+          (push (cons alias hyperdrive) candidates))
+        (dolist (domain domains)
+          (push (cons domain hyperdrive) candidates))))
     (or (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match nil nil default)
                    candidates nil nil #'equal)
         (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
@@ -304,6 +353,7 @@ If PREDICATE, only offer hyperdrives matching it."
 
 (defun hyperdrive-new (alias)
   "Open new hyperdrive for ALIAS."
+  ;; TODO: Why do hashtable entries created here have #1= prepended to them?
   (interactive (list (read-string "New hyperdrive alias: ")))
   (let* ((response (with-local-quit
                      (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias)))))
