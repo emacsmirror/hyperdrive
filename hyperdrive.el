@@ -196,6 +196,8 @@ Passed to `display-buffer', which see."
 
 ;;;; Commands
 
+;; TODO(B): Emacs bookmark support.
+
 (defun hyperdrive--gateway-pid ()
   "Return `hyper-gateway' process id if it's running, otherwise nil."
   (let ((output
