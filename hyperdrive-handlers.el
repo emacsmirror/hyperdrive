@@ -89,7 +89,6 @@ If then, then call THEN with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
   (pcase-let* ((url (hyperdrive-entry-url directory-entry))
-               (buffer (hyperdrive--get-buffer-create directory-entry))
                (inhibit-read-only t)
                ((cl-struct plz-response headers body)
                 ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
@@ -118,7 +117,7 @@ If then, then call THEN with no arguments."
           hyperdrive-entries entries
           header (format "%s (%s)" formatted-url
                          (hyperdrive-entry-etag directory-entry)))
-    (with-current-buffer buffer
+    (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
       ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)
       ;;            (ewoc-nth hyperdrive-dir-ewoc 0))
       ;;   ;; When EWOC has nodes, remember the current node and line so
