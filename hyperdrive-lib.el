@@ -227,7 +227,7 @@ which see."
     :noquery t))
 
 (defun hyperdrive--fill (entry headers)
-  "Fill ENTRY from HEADERS.
+  "Fill ENTRY and its hyperdrive from HEADERS.
 
 The following ENTRY slots are filled:
 - name
