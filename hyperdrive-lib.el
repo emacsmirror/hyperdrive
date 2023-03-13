@@ -237,8 +237,7 @@ The following ENTRY slots are filled:
 
 The following ENTRY hyperdrive slots are filled:
 - public-key
-- domains (merged with current persisted value)
-"
+- domains (merged with current persisted value)"
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path) entry)
                ((map link content-length content-type etag last-modified) headers)
                ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
