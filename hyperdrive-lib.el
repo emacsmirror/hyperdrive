@@ -280,7 +280,7 @@ made synchronously for its contents."
                                              :path "/.well-known/host-meta.json"))
                (metadata (with-local-quit
                            (hyperdrive-api 'get (hyperdrive-entry-url entry)
-                             :as #'json-read :noquery t))))
+                             :as #'json-read :else #'ignore :noquery t))))
     (when metadata
       (setf (hyperdrive-metadata hyperdrive) metadata)
       (hyperdrive-persist hyperdrive))
@@ -324,28 +324,33 @@ processed in order, and the first available type is used.
 
 If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
 `help-echo' property showing the entry's full URL."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               ((cl-struct hyperdrive public-key metadata alias domains) hyperdrive)
-               ((map name) metadata)
+  (pcase-let* (((cl-struct hyperdrive-entry path) entry)
                (protocol (when with-protocol
                            "hyper://"))
                ;; TODO: Add domains face or rename alias face?
-               (host (or (cl-loop for format in host-format
-                                  when (pcase format
-                                         ('public-key
-                                          (propertize public-key 'face 'hyperdrive-public-key))
-                                         ('short-key
-                                          (propertize (concat (substring public-key 0 6) "…")
-                                                      'face 'hyperdrive-public-key))
-                                         ('public-name name)
-                                         ((and 'domain (guard (car domains)))
-                                          (propertize (car domains) 'face 'hyperdrive-alias))
-                                         ((and 'alias (guard alias))
-                                          (propertize (concat "[" alias "]") 'face 'hyperdrive-alias)))
-                                  return it)
-                         public-key)))
+               (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
+                                              :format host-format)))
     (propertize (concat protocol host path)
                 'help-echo (hyperdrive-entry-url entry))))
+
+(cl-defun hyperdrive--format-host (hyperdrive &key format)
+  "Return HYPERDRIVE's hostname formatted according to FORMAT, or nil."
+  (pcase-let* (((cl-struct hyperdrive public-key domains alias
+                           (metadata (map name)))
+                hyperdrive))
+    (cl-loop for f in format
+             when (pcase f
+                    ('public-key
+                     (propertize public-key 'face 'hyperdrive-public-key))
+                    ('short-key
+                     (propertize (concat (substring public-key 0 6) "…")
+                                 'face 'hyperdrive-public-key))
+                    ('public-name name)
+                    ((and 'domain (guard (car domains)))
+                     (propertize (car domains) 'face 'hyperdrive-alias))
+                    ((and 'alias (guard alias))
+                     (propertize alias 'face 'hyperdrive-alias)))
+             return it)))
 
 ;;;; Reading from the user
 

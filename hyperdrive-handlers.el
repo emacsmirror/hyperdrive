@@ -116,8 +116,7 @@ If then, then call THEN with no arguments."
       (push parent-entry entries))
     (setf directory-entry (hyperdrive--fill directory-entry headers)
           hyperdrive-entries entries
-          header (format "%s (%s)" formatted-url
-                         (hyperdrive-entry-etag directory-entry)))
+          header (hyperdrive--directory-header directory-entry))
     (hyperdrive-fill-public-metadata (hyperdrive-entry-hyperdrive directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
       ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)
@@ -165,6 +164,24 @@ If then, then call THEN with no arguments."
       (goto-char (point-min))
       (when then
         (funcall then)))))
+
+(defun hyperdrive--directory-header (entry)
+  "Return header for ENTRY."
+  ;; TODO(A): Ensure that this is shown correctly on first load for DNSlink URLs.
+  (let* ((alias (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
+                                         :format '(alias)))
+         (public-name (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
+                                               :format '(public-name)))
+         (handle (cond (alias
+                        (concat "alias:" (propertize alias 'face 'hyperdrive-alias)))
+                       (public-name
+                        (concat "name:" (propertize public-name 'face 'hyperdrive-alias)))))
+         (url (hyperdrive--format-entry-url entry :host-format '(short-key)))
+         (version (hyperdrive-entry-etag entry)))
+    (concat (when handle
+              (format "(%s) " handle))
+            url
+            (format " (version:%s)" version))))
 
 ;; (defun hyperdrive-funcall-preserving-point (fn &rest args)
 ;;   "Call FN keeping point."
