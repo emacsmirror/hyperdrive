@@ -154,6 +154,8 @@ Passed to `display-buffer', which see."
 
 ;;;;; Faces
 
+;; TODO(A): Rename "alias" to "seed".
+
 (defface hyperdrive-alias '((t :inherit font-lock-doc-face))
   "Applied to hyperdrive aliases.")
 
@@ -173,6 +175,10 @@ Passed to `display-buffer', which see."
                 hyperdrive-persist-location)
 (unless hyperdrive-hyperdrives
   (setf hyperdrive-hyperdrives (make-hash-table :test #'equal)))
+
+;; TODO: Flesh out the persist hook.
+;; (defvar hyperdrive-persist-hook nil
+;;   :type 'hook)
 
 (defvar-local hyperdrive-current-entry nil
   "Entry for current buffer.")
