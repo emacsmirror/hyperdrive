@@ -60,6 +60,7 @@
 (cl-defstruct hyperdrive
   "Represents a hyperdrive."
   (public-key nil :documentation "Hyperdrive's public key.")
+  (metadata nil :documentation "Public metadata alist.")
   (alias nil :documentation "Alias (always and only present for writable hyperdrives).")
   ;; TODO: Where to invalidate old domains?
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
@@ -93,6 +94,7 @@ domains slot."
 (defvar hyperdrive-current-entry)
 (defvar hyperdrive-hyper-gateway-port)
 (defvar hyperdrive-hyperdrives)
+(defvar hyperdrive-default-host-format)
 
 (eval-and-compile
   (defconst hyperdrive--hyper-prefix "hyper://"
@@ -267,6 +269,27 @@ The following ENTRY hyperdrive slots are filled:
         (setf (hyperdrive-public-key hyperdrive) public-key)))
     entry))
 
+;; TODO: Call `hyperdrive-fill-public-metadata' in other appropriate places.
+(defun hyperdrive-fill-public-metadata (hyperdrive)
+  "Fill HYPERDRIVE's public metadata and return it.
+Looks in filenames from `hyperdrive-public-metadata-filenames'.
+When HYPERDRIVE has a public metadata file, another request is
+made synchronously for its contents."
+  (declare (indent defun))
+  (pcase-let* ((entry (make-hyperdrive-entry :hyperdrive hyperdrive
+                                             :path "/.well-known/host-meta.json"))
+               (metadata (with-local-quit
+                           (hyperdrive-api 'get (hyperdrive-entry-url entry)
+                             :as #'json-read :noquery t))))
+    (when metadata
+      (setf (hyperdrive-metadata hyperdrive) metadata)
+      (hyperdrive-persist hyperdrive))
+    hyperdrive))
+
+;; TODO: This.
+;; (defun hyperdrive-set-public-metadata (hyperdrive)
+;;   )
+
 (cl-defun hyperdrive-delete (entry &key then else)
   "Delete ENTRY, then call THEN.
 Call ELSE if request fails."
@@ -281,34 +304,46 @@ Call ELSE if request fails."
     :body body :then then :else else))
 
 (cl-defun hyperdrive--format-entry-url
-    (entry &key abbreviate-key (with-alias t) (with-protocol t))
+    (entry &key (host-format hyperdrive-default-host-format)
+           (with-protocol t))
   "Return human-readable version of ENTRY's URL.
 Return URL formatted like:
 
   hyper://[ALIAS]/PATH/TO/FILE
+  hyper://DOMAIN/PATH/TO/FILE
+  hyper://PUBLIC-NAME/PATH/TO/FILE
+  hyper://SHORT-KEY/PATH/TO/FILE
   hyper://PUBLIC-KEY/PATH/TO/FILE
 
-If WITH-ALIAS, the public-key is replaced with it, when
-available.  If ABBREVIATE-KEY, the public key is shortened to 6
-characters and an ellipsis.  If WITH-PROTOCOL, \"hyper://\" is
-prepended.  Entire string has `help-echo' property showing the
-entry's full URL."
-  ;; TODO: Add user option to disable abbreviating keys.
-  ;; TODO: Add user option to prioritize alias, domain, public-key,
-  ;; and (eventually) public names and local names.
+HOST-FORMAT may be a list of symbols specifying how to format the
+entry's hyperdrive, including: `public-key' to use the full
+public key, `short-key' to shorten the public key, `name' to use
+the public name, `domain' to use the DNSLink domain, or `alias'
+to use the seed value (for writable hyperdrives).  The list is
+processed in order, and the first available type is used.
+
+If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
+`help-echo' property showing the entry's full URL."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               ((cl-struct hyperdrive public-key alias domains) hyperdrive)
+               ((cl-struct hyperdrive public-key metadata alias domains) hyperdrive)
+               ((map name) metadata)
                (protocol (when with-protocol
                            "hyper://"))
-               (host (cond
-                      ((and with-alias alias)
-                       (propertize (concat "[" alias "]") 'face 'hyperdrive-alias))
-                      ;; TODO: Add domains face or rename alias face?
-                      (domains (propertize (car domains) 'face 'hyperdrive-alias))
-                      (t (propertize (if abbreviate-key
-                                         (concat (substring public-key 0 6) "…")
-                                       public-key)
-                                     'face 'hyperdrive-public-key)))))
+               ;; TODO: Add domains face or rename alias face?
+               (host (or (cl-loop for format in host-format
+                                  when (pcase format
+                                         ('public-key
+                                          (propertize public-key 'face 'hyperdrive-public-key))
+                                         ('short-key
+                                          (propertize (concat (substring public-key 0 6) "…")
+                                                      'face 'hyperdrive-public-key))
+                                         ('public-name name)
+                                         ((and 'domain (guard (car domains)))
+                                          (propertize (car domains) 'face 'hyperdrive-alias))
+                                         ((and 'alias (guard alias))
+                                          (propertize (concat "[" alias "]") 'face 'hyperdrive-alias)))
+                                  return it)
+                         public-key)))
     (propertize (concat protocol host path)
                 'help-echo (hyperdrive-entry-url entry))))
 
@@ -388,7 +423,7 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (with-current-buffer (get-buffer-create (hyperdrive--format-entry-url entry :abbreviate-key t))
+  (with-current-buffer (get-buffer-create (hyperdrive--format-entry-url entry))
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))

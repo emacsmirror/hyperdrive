@@ -152,6 +152,18 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
+(defcustom hyperdrive-default-host-format
+  '(alias domain public-name short-key public-key)
+  "Default format for displaying hyperdrive hostnames.
+Each option is checked in order, and the first available type is
+used."
+  :type '(repeat
+          (choice (const :tag "Alias" alias)
+                  (const :tag "DNSLink domain" domain)
+                  (const :tag "Public name (well-known)" public-name)
+                  (const :tag "Shortened public key" short-key)
+                  (const :tag "Full public key" public-key))))
+
 ;;;;; Faces
 
 ;; TODO(A): Rename "alias" to "seed".

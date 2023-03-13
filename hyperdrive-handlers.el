@@ -107,7 +107,7 @@ If then, then call THEN with no arguments."
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
-               (formatted-url (hyperdrive--format-entry-url directory-entry :abbreviate-key t))
+               (formatted-url (hyperdrive--format-entry-url directory-entry))
                (ewoc) (header) ;; (prev-node-data) (prev-line)
                )
     (add-face-text-property 0 (length formatted-url) 'hyperdrive-header 'append formatted-url)
@@ -118,6 +118,7 @@ If then, then call THEN with no arguments."
           hyperdrive-entries entries
           header (format "%s (%s)" formatted-url
                          (hyperdrive-entry-etag directory-entry)))
+    (hyperdrive-fill-public-metadata (hyperdrive-entry-hyperdrive directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
       ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)
       ;;            (ewoc-nth hyperdrive-dir-ewoc 0))
