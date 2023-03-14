@@ -153,12 +153,12 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other")))
 
 (defcustom hyperdrive-default-host-format
-  '(alias domain public-name short-key public-key)
+  '(seed domain public-name short-key public-key)
   "Default format for displaying hyperdrive hostnames.
 Each option is checked in order, and the first available type is
 used."
   :type '(repeat
-          (choice (const :tag "Alias" alias)
+          (choice (const :tag "Seed" seed)
                   (const :tag "DNSLink domain" domain)
                   (const :tag "Public name (well-known)" public-name)
                   (const :tag "Shortened public key" short-key)
@@ -166,10 +166,8 @@ used."
 
 ;;;;; Faces
 
-;; TODO(A): Rename "alias" to "seed".
-
-(defface hyperdrive-alias '((t :inherit font-lock-doc-face))
-  "Applied to hyperdrive aliases.")
+(defface hyperdrive-seed '((t :inherit font-lock-doc-face))
+  "Applied to hyperdrive seeds.")
 
 (defface hyperdrive-public-key '((t :inherit font-lock-constant-face))
   "Applied to hyperdrive public keys.")
@@ -241,14 +239,14 @@ used."
                     (setq readyp t))))))
     readyp))
 
-(defun hyperdrive--alias-url (alias)
-  "Return URL to hyperdrive known as ALIAS, or nil if it doesn't exist.
-That is, if the ALIAS has been used to create a local
+(defun hyperdrive--seed-url (seed)
+  "Return URL to hyperdrive known as SEED, or nil if it doesn't exist.
+That is, if the SEED has been used to create a local
 hyperdrive."
   ;; TODO: Should this function go inside hyperdrive-lib.el?
   (condition-case err
       (pcase (with-local-quit
-               (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string alias))
+               (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string seed))
                  :as 'response :noquery t))
         ((and (pred plz-response-p)
               response

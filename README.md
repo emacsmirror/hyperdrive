@@ -63,11 +63,11 @@ network, run `M-x hyperdrive-stop`.
 ### Create a hyperdrive
 
 You can have multiple hyperdrives, each one containing its own set of
-files. Run `M-x hyperdrive-new` then type in an `alias` to create a
-new hyperdrive. That alias will be combined with your secret master
-key, which is generated for you by `hyper-gateway`, to produce a
-public key that uniquely identifies that hyperdrive. `hyperdrive-new`
-is idempotent since the same alias will always produce the same public
+files. Run `M-x hyperdrive-new` then type in a `seed` to create a new
+hyperdrive. That seed will be combined with your secret master key,
+which is generated for you by `hyper-gateway`, to produce a public key
+that uniquely identifies that hyperdrive. `hyperdrive-new` is
+idempotent since the same seed will always produce the same public
 key.
 
 ### Open a hyperdrive
@@ -76,7 +76,7 @@ You can open a hyperdrive folder or file by pasting in a `hyper://`
 URL after `M-x hyperdrive-open-url`. Alternatively, `M-x
 hyperdrive-find-file` remembers hyperdrives you have already created
 or visited. It will prompt you to select a known hyperdrive by its
-public key or alias and then enter a path inside that hyperdrive.
+public key or seed and then enter a path inside that hyperdrive.
 
 TODO: Add paragraph on directory view and possible commands
 
@@ -94,7 +94,7 @@ TODO: Describe org links and regular links
 
 ### Share a hyperdrive
 
-Only you can load one of your created hyperdrives by its alias. When
+Only you can load one of your created hyperdrives by its seed. When
 sharing a hyperdrive with someone else, you will need to copy its full
 URL with `M-x hyperdrive-copy-url`. With that URL, others can load
 files from your hyperdrive directly from your machine or from other
@@ -105,11 +105,11 @@ TODO: Sharing a link to a particular hyperdrive file
 ### Upload files from your filesystem
 
 `hyperdrive-upload-files` lets you upload files from your filesystem
-to a hyperdrive. It accepts an `alias`, a `relative-dir`, the
-directory on your filesystem which will be the top-level or root
-directory of the hyperdrive, and the list of `files` to be shared in
-the hyperdrive. `files` can either be a list of filepaths or a
-function which returns a list of filepaths.
+to a hyperdrive. It accepts a `seed`, a `relative-dir`, the directory
+on your filesystem which will be the top-level or root directory of
+the hyperdrive, and the list of `files` to be shared in the
+hyperdrive. `files` can either be a list of filepaths or a function
+which returns a list of filepaths.
 
 In order to upload files to a hyperdrive, you must first create it
 with `hyperdrive-create-namespace`.
@@ -120,7 +120,7 @@ with `hyperdrive-create-namespace`.
 
 ```
 (defun my/hyperdrive-upload-files-foo ()
-  "Upload all files inside of \"~/public/\" to hyperdrive with alias \"foo\"."
+  "Upload all files inside of \"~/public/\" to hyperdrive with seed \"foo\"."
   (interactive)
   (hyperdrive-upload-files "foo" "~/public/"
                            (lambda () (directory-files-recursively "~/public/" ""))))

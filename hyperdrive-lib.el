@@ -61,7 +61,7 @@
   "Represents a hyperdrive."
   (public-key nil :documentation "Hyperdrive's public key.")
   (metadata nil :documentation "Public metadata alist.")
-  (alias nil :documentation "Alias (always and only present for writable hyperdrives).")
+  (seed nil :documentation "Seed (always and only present for writable hyperdrives).")
   ;; TODO: Where to invalidate old domains?
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
   (readablep nil :documentation "Whether the drive is readable.")
@@ -111,7 +111,7 @@ Capture group matches public key.")
   (rx (eval hyperdrive--hyper-prefix)
       (one-or-more alnum)
       (group "+" (one-or-more num)))
-  "Regexp to match \"hyper://\" + public key or alias + version number.
+  "Regexp to match \"hyper://\" + public key or seed + version number.
 
 Capture group matches version number.")
 
@@ -310,7 +310,7 @@ Call ELSE if request fails."
   "Return human-readable version of ENTRY's URL.
 Return URL formatted like:
 
-  hyper://[ALIAS]/PATH/TO/FILE
+  hyper://[SEED]/PATH/TO/FILE
   hyper://DOMAIN/PATH/TO/FILE
   hyper://PUBLIC-NAME/PATH/TO/FILE
   hyper://SHORT-KEY/PATH/TO/FILE
@@ -319,7 +319,7 @@ Return URL formatted like:
 HOST-FORMAT may be a list of symbols specifying how to format the
 entry's hyperdrive, including: `public-key' to use the full
 public key, `short-key' to shorten the public key, `name' to use
-the public name, `domain' to use the DNSLink domain, or `alias'
+the public name, `domain' to use the DNSLink domain, or `seed'
 to use the seed value (for writable hyperdrives).  The list is
 processed in order, and the first available type is used.
 
@@ -335,7 +335,7 @@ If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format)
   "Return HYPERDRIVE's hostname formatted according to FORMAT, or nil."
-  (pcase-let* (((cl-struct hyperdrive public-key domains alias
+  (pcase-let* (((cl-struct hyperdrive public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
     (cl-loop for f in format
@@ -347,9 +347,9 @@ If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
                                  'face 'hyperdrive-public-key))
                     ('public-name name)
                     ((and 'domain (guard (car domains)))
-                     (propertize (car domains) 'face 'hyperdrive-alias))
-                    ((and 'alias (guard alias))
-                     (propertize alias 'face 'hyperdrive-alias)))
+                     (propertize (car domains) 'face 'hyperdrive-seed))
+                    ((and 'seed (guard seed))
+                     (propertize seed 'face 'hyperdrive-seed)))
              return it)))
 
 ;;;; Reading from the user
@@ -361,15 +361,15 @@ PROMPT."
   (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
          (default (when hyperdrive-current-entry
                     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) hyperdrive-current-entry)
-                                 ((cl-struct hyperdrive public-key alias domains) hyperdrive))
+                                 ((cl-struct hyperdrive public-key seed domains) hyperdrive))
                       (when (member hyperdrive hyperdrives)
-                        (or alias (car domains) public-key)))))
+                        (or seed (car domains) public-key)))))
          candidates)
     (dolist (hyperdrive hyperdrives)
-      (pcase-let (((cl-struct hyperdrive public-key alias domains) hyperdrive))
+      (pcase-let (((cl-struct hyperdrive public-key seed domains) hyperdrive))
         (push (cons public-key hyperdrive) candidates)
-        (when alias
-          (push (cons alias hyperdrive) candidates))
+        (when seed
+          (push (cons seed hyperdrive) candidates))
         (dolist (domain domains)
           (push (cons domain hyperdrive) candidates))))
     (or (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match nil nil default)
@@ -391,11 +391,11 @@ If PREDICATE, only offer hyperdrives matching it."
                                      path
                                    (concat "/" path)))))
 
-(defun hyperdrive-new (alias)
-  "Open new hyperdrive for ALIAS."
-  (interactive (list (read-string "New hyperdrive alias: ")))
+(defun hyperdrive-new (seed)
+  "Open new hyperdrive for SEED."
+  (interactive (list (read-string "New hyperdrive seed: ")))
   (let* ((response (with-local-quit
-                     (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string alias)))))
+                     (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string seed)))))
          (url (progn
                 ;; NOTE: Working around issue in plz whereby the
                 ;; stderr process sentinel sometimes leaves "stderr
@@ -404,7 +404,7 @@ If PREDICATE, only offer hyperdrives matching it."
                 (string-match (rx bos (group "hyper://" (1+ nonl))) response)
                 (match-string 1 response)))
          (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
-    (setf (hyperdrive-alias hyperdrive) alias
+    (setf (hyperdrive-seed hyperdrive) seed
           (hyperdrive-writablep hyperdrive) t)
     (hyperdrive-persist hyperdrive)
     (hyperdrive-open-url url)))
@@ -422,7 +422,7 @@ In the buffer, `hyperdrive-mode' is activated and
 `hyperdrive-current-entry' is set.
 
 This function helps prevent duplicate `hyperdrive-mode' buffers
-by ensuring that buffer names always use the namespace alias
+by ensuring that buffer names always use the namespace seed
 corresponding to URL if possible.
 
 In other words, this avoids the situation where a buffer called

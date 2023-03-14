@@ -163,15 +163,15 @@ If then, then call THEN with no arguments."
 (defun hyperdrive--directory-header (entry)
   "Return header for ENTRY."
   ;; TODO(A): Ensure that this is shown correctly on first load for DNSlink URLs.
-  (let* ((alias (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                         :format '(alias)))
+  (let* ((seed (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
+                                        :format '(seed)))
          (public-name (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                                :format '(public-name)))
-         (handle (cond (alias
-                        (concat "alias:" (propertize alias 'face 'hyperdrive-alias)))
+         (handle (cond (seed
+                        (concat "seed:" (propertize seed 'face 'hyperdrive-seed)))
                        (public-name
                         ;; TODO: Add public-name face or rename seed face?
-                        (concat "name:" (propertize public-name 'face 'hyperdrive-alias)))))
+                        (concat "name:" (propertize public-name 'face 'hyperdrive-seed)))))
          (url (hyperdrive--format-entry-url entry :host-format '(short-key)))
          (version (hyperdrive-entry-etag entry)))
     (concat (when handle
