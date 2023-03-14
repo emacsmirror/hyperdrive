@@ -170,6 +170,7 @@ If then, then call THEN with no arguments."
          (handle (cond (alias
                         (concat "alias:" (propertize alias 'face 'hyperdrive-alias)))
                        (public-name
+                        ;; TODO: Add public-name face or rename seed face?
                         (concat "name:" (propertize public-name 'face 'hyperdrive-alias)))))
          (url (hyperdrive--format-entry-url entry :host-format '(short-key)))
          (version (hyperdrive-entry-etag entry)))

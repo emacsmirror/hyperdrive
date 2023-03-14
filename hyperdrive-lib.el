@@ -328,7 +328,6 @@ If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
   (pcase-let* (((cl-struct hyperdrive-entry path) entry)
                (protocol (when with-protocol
                            "hyper://"))
-               ;; TODO: Add domains face or rename alias face?
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format)))
     (propertize (concat protocol host path)
