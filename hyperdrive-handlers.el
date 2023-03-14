@@ -27,7 +27,6 @@
 (require 'hyperdrive-dir)
 (require 'hyperdrive-lib)
 
-(defvar hyperdrive-honor-auto-mode-alist)
 (defvar hyperdrive-dir)
 (defvar hyperdrive-entries)
 (defvar hyperdrive-directory-display-buffer-action)
@@ -65,10 +64,6 @@ If then, then call THEN with no arguments.  Default handler."
               (setf buffer-undo-list nil)
               (set-buffer-modified-p nil)
               (goto-char (point-min))
-              ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-              (when hyperdrive-honor-auto-mode-alist
-                (let ((buffer-file-name (hyperdrive-entry-url entry)))
-                  (set-auto-mode)))
               ;; TODO: Option to defer showing buffer.
               ;; FIXME: Do this in a wrapper.
               ;; (when target
