@@ -310,7 +310,7 @@ Call ELSE if request fails."
   "Return human-readable version of ENTRY's URL.
 Return URL formatted like:
 
-  hyper://[SEED]/PATH/TO/FILE
+  hyper://SEED/PATH/TO/FILE
   hyper://DOMAIN/PATH/TO/FILE
   hyper://PUBLIC-NAME/PATH/TO/FILE
   hyper://SHORT-KEY/PATH/TO/FILE
