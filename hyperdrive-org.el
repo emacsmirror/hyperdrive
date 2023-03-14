@@ -41,21 +41,20 @@
   "Store an Org link to the entry at point in current Org buffer.
 To be called by `org-store-link'.  Calls `org-link-store-props',
 which see."
-  (pcase-let (((map type link description)
-               (pcase major-mode
-                 ('org-mode (hyperdrive--org-link))
-                 ('hyperdrive-dir-mode
-                  (let ((entry (hyperdrive-dir--entry-at-point)))
-                    `((type . "hyper://")
-                      (link . ,(hyperdrive-entry-url entry))
-                      (description . ,(hyperdrive--format-entry-url entry)))))
-                 ((guard hyperdrive-mode)
-                  `((type . "hyper://")
-                    (link . ,(hyperdrive-entry-url hyperdrive-current-entry))
-                    (description . ,(hyperdrive--format-entry-url hyperdrive-current-entry))))
-                 (_ (user-error "Not a hyperdrive buffer")))))
-    (org-link-store-props :type type :link link :description description)
-    t))
+  (when hyperdrive-current-entry
+    (pcase-let (((map type link description)
+                 (pcase major-mode
+                   ('org-mode (hyperdrive--org-link))
+                   ('hyperdrive-dir-mode
+                    (let ((entry (hyperdrive-dir--entry-at-point)))
+                      `((type . "hyper://")
+                        (link . ,(hyperdrive-entry-url entry))
+                        (description . ,(hyperdrive--format-entry-url entry)))))
+                   (_ `((type . "hyper://")
+                        (link . ,(hyperdrive-entry-url hyperdrive-current-entry))
+                        (description . ,(hyperdrive--format-entry-url hyperdrive-current-entry)))))))
+      (org-link-store-props :type type :link link :description description)
+      t)))
 
 (defun hyperdrive--org-link (&optional raw-url-p)
   "Return Org alist for current Org buffer.
