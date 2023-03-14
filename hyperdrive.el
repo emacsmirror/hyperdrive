@@ -289,6 +289,10 @@ hyperdrive."
 
 (define-minor-mode hyperdrive-mode
   "Minor mode for buffers opened from hyperdrives."
+  ;; TODO: When users change the major-mode inside a buffer visiting hyperdrive file,
+  ;; `hyperdrive-mode' is disabled. We check for `hyperdrive-mode' inside a number of
+  ;; hyperdrive-* functions. Should we instead check for `hyperdrive-current-entry'
+  ;; and disregard the current value of `hyperdrive-mode'?
   :global nil
   :interactive nil
   :group 'hyperdrive
