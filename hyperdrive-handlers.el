@@ -102,10 +102,8 @@ If then, then call THEN with no arguments."
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
-               (formatted-url (hyperdrive--format-entry-url directory-entry))
                (ewoc) (header) ;; (prev-node-data) (prev-line)
                )
-    (add-face-text-property 0 (length formatted-url) 'hyperdrive-header 'append formatted-url)
     (when parent-entry
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
       (push parent-entry entries))
