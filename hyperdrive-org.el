@@ -110,7 +110,7 @@ raw URL, not an Org link."
     (setf (url-target urlobj) nil)
     (hyperdrive-open-url (url-recreate-url urlobj)
       :then (lambda ()
-              (when (eq 'org-mode major-mode)
+              (when (and (eq 'org-mode major-mode) target)
                 (hyperdrive--org-link-goto target))))))
 
 (defun hyperdrive--org-link-goto (target)
