@@ -304,6 +304,8 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
 
+;; TODO: Consider removing `hyperdrive-entry-url', since it duplicates
+;; the functionality of `hyperdrive--format-entry-url'.
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format hyperdrive-default-host-format)
            (with-protocol t))
