@@ -89,11 +89,12 @@ raw URL, not an Org link."
   (cl-assert (eq 'org-mode major-mode))
   (when hyperdrive-mode
     (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
-           (heading (nth 4 (org-heading-components)))
+           (heading (org-entry-get (point) "ITEM"))
            (custom-id (org-entry-get (point) "CUSTOM_ID"))
            (generated-id (org-entry-get (point) "ID"))
            (fragment (or custom-id generated-id heading))
-           (raw-url (concat url "#" (url-hexify-string fragment))))
+           (raw-url (concat url (when fragment
+                                  (concat "#" (url-hexify-string fragment))))))
       (if raw-url-p
           raw-url
         ;; NOTE: Due to annoying issues with older versions of Emacs
