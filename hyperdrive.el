@@ -272,6 +272,11 @@ hyperdrive."
    :name "hyper-gateway"
    :command '("systemctl" "--user" "stop" "hyper-gateway")))
 
+(defun hyperdrive--active-p ()
+  "Return non-nil when `hyper-gateway' systemd service is active.
+Otherwise, return nil."
+  (equal "active" (string-trim-right (shell-command-to-string "systemctl --user is-active hyper-gateway"))))
+
 ;; TODO: Command to upload one or more files.
 ;; TODO: Command to download files.
 
