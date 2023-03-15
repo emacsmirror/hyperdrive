@@ -258,22 +258,19 @@ hyperdrive."
 
 ;;;###autoload
 (defun hyperdrive-start ()
-  "Start `hyper-gateway' if not already running."
+  "Start `hyper-gateway' systemd service if not already running."
   (interactive)
   ;; TODO: Verify that the latest version is installed.  See: <https://github.com/RangerMauve/hyper-gateway/issues/9>.
-  (unless (hyperdrive--gateway-ready-p)
-    (let ((buf (get-buffer-create " *hyper-gateway*")))
-      (with-current-buffer buf (erase-buffer))
-      (make-process
-       :name "hyper-gateway"
-       :buffer buf
-       :command (list hyperdrive-hyper-gateway-command "--writable" "true" "run")))))
+  (make-process
+   :name "hyper-gateway"
+   :command '("systemctl" "--user" "start" "hyper-gateway")))
 
 (defun hyperdrive-stop ()
-  "Stop the `hyper-gateway' process."
+  "Stop `hyper-gateway' systemd service."
   (interactive)
-  (when (hyperdrive--gateway-pid)
-    (signal-process (hyperdrive--gateway-pid) 'sigint)))
+  (make-process
+   :name "hyper-gateway"
+   :command '("systemctl" "--user" "stop" "hyper-gateway")))
 
 ;; TODO: Command to upload one or more files.
 ;; TODO: Command to download files.
