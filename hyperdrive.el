@@ -277,6 +277,13 @@ hyperdrive."
 Otherwise, return nil."
   (equal "active" (string-trim-right (shell-command-to-string "systemctl --user is-active hyper-gateway"))))
 
+(defun hyperdrive-status ()
+  "Check whether `hyper-gateway' systemd service is running."
+  (interactive)
+  (if (hyperdrive--active-p)
+      (hyperdrive-message "Gateway is running.")
+    (hyperdrive-message "Gateway is not running.")))
+
 ;; TODO: Command to upload one or more files.
 ;; TODO: Command to download files.
 
