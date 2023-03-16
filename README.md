@@ -1,4 +1,4 @@
-# hyperdrive.el - Emacs gateway to the Hypercore network
+# hyperdrive.el - P2P filesystem in Emacs
 
 [Hyperdrive](https://docs.holepunch.to/building-blocks/hyperdrive) is
 a secure, real-time distributed file system designed for easy
