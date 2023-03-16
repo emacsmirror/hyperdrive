@@ -68,7 +68,7 @@ hyperdrive. That seed will be combined with your secret master key,
 which is generated for you by `hyper-gateway`, to produce a public key
 that uniquely identifies that hyperdrive. `hyperdrive-new` is
 idempotent since the same seed will always produce the same public
-key.
+key. For this reason, a hyperdrive's seed cannot be changed.
 
 ### Open a hyperdrive
 
