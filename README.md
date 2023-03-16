@@ -167,11 +167,33 @@ files to share!
 
 ## Concepts
 
-TODO: hyperdrives, sparse replication, gateway
+### Hyper-gateway
 
-## Glossary
+[Hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) handles
+interactions with hyperdrive under the hood, and it runs a local HTTP
+server which accepts HTTP requests. In `hyperdrive.el`, P2P
+interactions consist mostly of, e.g., `GET` requests to download files
+and `PUT` requests to write files to a hyperdrive.
 
-TODO: files (which aren't really files), directories (which aren't really directories)
+### Sparse replication
+
+[Hyperdrive](https://docs.holepunch.to/building-blocks/hyperdrive) is
+sparsely replicated, meaning that peers can download particular files
+from a hyperdrive without having to get the whole drive. This reduces
+both load times and disk usage.
+
+### Hyperdrive entries
+
+Instead of files and folders, Hyperdrive has entries and entry
+prefixes. It's possible for a "file" entry and a "folder" entry prefix
+to have the same name, like `hyper://<public-key>/path/to/` (a
+"directory") and `hyper://<public-key>/path/to` (a "file"). In this
+case, the directory listing for `hyper://<public-key>/path/` would
+display the `to` entry but not the `to/` entry prefix. Because entry
+prefixes only exist when they prefix an entry, deleting the last
+"file" in a "directory" causes the "directory" to disappear as well.
+When a hyperdrive "file" or "directory" is not found, `hyperdrive.el`
+prompts to go to the parent "directory."
 
 ## Bugs and Patches
 
