@@ -108,11 +108,14 @@ be appended to the stored URL.
 
 Only you can load one of your created hyperdrives by its seed. When
 sharing a hyperdrive with someone else, you will need to copy its full
-URL with `M-x hyperdrive-copy-url`. With that URL, others can load
-files from your hyperdrive directly from your machine or from other
-peers who have previously loaded those files from your hyperdrive.
+URL. Peers can load your hyperdrive files directly from your computer
+or from other peers who previously loaded those files.
 
-TODO: Sharing a link to a particular hyperdrive file
+It is possible to use [DNSLink](https://dnslink.io/) to link to a
+hyperdrive with a domain name instead of a public key, like
+`hyper://example.org/path/to/file`. Create a TXT record at
+`_dnslink.example.org` with the contents `/hyper/<public-key>` (no
+trailing slash).
 
 ### Upload files from your filesystem
 
