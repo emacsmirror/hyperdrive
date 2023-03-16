@@ -78,7 +78,14 @@ hyperdrive-find-file` remembers hyperdrives you have already created
 or visited. It will prompt you to select a known hyperdrive by its
 public key or seed and then enter a path inside that hyperdrive.
 
-TODO: Add paragraph on directory view and possible commands
+The following keybindings are available inside the directory view by
+default:
+
+- `n` and `p` move between entries
+- `RET` opens file or directory at point
+- `^` goes up to the parent directory
+- `D` deletes the file or directory (recursively) at point
+- `w` copies the URL of the file or directory at point
 
 ### Write to a hyperdrive
 
