@@ -206,7 +206,6 @@ With point on header, return directory entry."
 
 (cl-defun hyperdrive-dir-move (&optional (n 1))
   "Move forward N entries."
-  (interactive "p")
   (let ((next-fn (pcase n
                    ((pred (< 0)) #'ewoc-next)
                    ((pred (> 0)) #'ewoc-prev)))
