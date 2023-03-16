@@ -115,7 +115,11 @@ It is possible to use [DNSLink](https://dnslink.io/) to link to a
 hyperdrive with a domain name instead of a public key, like
 `hyper://example.org/path/to/file`. Create a TXT record at
 `_dnslink.example.org` with the contents `/hyper/<public-key>` (no
-trailing slash).
+trailing slash). Note: relying on DNS adds another point of
+centralization, reducing the durability of your link. `hyperdrive.el`
+somewhat mitigates this issue by remembering which public key the DNS
+record resolved to, so that peers can use the stored public key itself
+for subsequent connections.
 
 ### Upload files from your filesystem
 
