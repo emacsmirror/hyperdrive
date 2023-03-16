@@ -97,7 +97,12 @@ will silently update the current hyperdrive entry with the new content.
 
 ### Link to a hyperdrive
 
-TODO: Describe org links and regular links
+In addition to copying the URL at point in the directory view, you can
+run `hyperdrive-copy-url` to copy the URL of the current hyperdrive
+file or directory. If the current file is an org-mode file,
+`org-store-link` will store a link to the hyperdrive file, and if
+point is inside a heading, its `CUSTOM_ID`, `ID`, or heading text will
+be appended to the stored URL.
 
 ### Share a hyperdrive
 
