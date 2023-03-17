@@ -261,16 +261,24 @@ hyperdrive."
   "Start `hyper-gateway' systemd service if not already running."
   (interactive)
   ;; TODO: Verify that the latest version is installed.  See: <https://github.com/RangerMauve/hyper-gateway/issues/9>.
-  (make-process
-   :name "hyper-gateway"
-   :command '("systemctl" "--user" "start" "hyper-gateway")))
+  (let ((buffer (get-buffer-create " *hyperdrive-start*")))
+    (unwind-protect
+        (unless (zerop
+                 (with-current-buffer buffer
+                   (call-process "systemctl" nil (list buffer t) nil '("--user" "start" "hyper-gateway.service"))))
+          (error "Unable to start hyper-gateway: %S" (buffer-string)))
+      (kill-buffer buffer))))
 
 (defun hyperdrive-stop ()
   "Stop `hyper-gateway' systemd service."
   (interactive)
-  (make-process
-   :name "hyper-gateway"
-   :command '("systemctl" "--user" "stop" "hyper-gateway")))
+  (let ((buffer (get-buffer-create " *hyperdrive-stop*")))
+    (unwind-protect
+        (unless (zerop
+                 (with-current-buffer buffer
+                   (call-process "systemctl" nil (list buffer t) nil '("--user" "stop" "hyper-gateway.service"))))
+          (error "Unable to stop hyper-gateway: %S" (buffer-string)))
+      (kill-buffer buffer))))
 
 (defun hyperdrive--active-p ()
   "Return non-nil when `hyper-gateway' systemd service is active.
