@@ -307,7 +307,7 @@ Call ELSE if request fails."
 
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format hyperdrive-default-host-format)
-           (with-protocol t))
+           (with-protocol t) (with-help-echo t))
   "Return ENTRY's URL.
 Returns URL formatted like:
 
@@ -324,8 +324,9 @@ the public name, `domain' to use the DNSLink domain, or `seed'
 to use the seed value (for writable hyperdrives).  The list is
 processed in order, and the first available type is used.
 
-If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
-`help-echo' property showing the entry's full URL."
+If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
+propertize string with `help-echo' property showing the entry's
+full URL."
   (pcase-let* (((cl-struct hyperdrive-entry path) entry)
                (protocol (when with-protocol
                            "hyper://"))
@@ -334,9 +335,12 @@ If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
                (encoded-path (url-hexify-string
                               path (cons ?/ url-unreserved-chars)))
                (url (concat protocol host encoded-path)))
-    (propertize url
-                'help-echo (hyperdrive--format-entry-url
-                            entry :with-protocol t :host-format '(public-key domain)))))
+    (if with-help-echo
+        (propertize url
+                    'help-echo (hyperdrive--format-entry-url
+                                entry :with-protocol t :host-format '(public-key domain)
+                                :with-help-echo nil))
+      url)))
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format)
   "Return HYPERDRIVE's hostname formatted according to FORMAT, or nil."
