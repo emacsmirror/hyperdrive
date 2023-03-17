@@ -301,6 +301,9 @@ hyperdrive."
 
 ;;;; hyperdrive-mode
 
+;; TODO: Investigate possibility of not having `hyperdrive-mode', of
+;; just using `hyperdrive-current-entry'.
+
 (define-minor-mode hyperdrive-mode
   "Minor mode for buffers opened from hyperdrives."
   ;; TODO: When users change the major-mode inside a buffer visiting hyperdrive file,
