@@ -30,6 +30,7 @@
 (defvar hyperdrive-dir)
 (defvar hyperdrive-entries)
 (defvar hyperdrive-directory-display-buffer-action)
+(defvar hyperdrive-stream-player-command)
 
 ;;;; Handlers
 
@@ -185,8 +186,12 @@ If then, then call THEN with no arguments."
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   "Stream ENTRY."
-  ;; TODO: [#B] Remove mpv dependency
-  (mpv-play-url (hyperdrive--httpify-url (hyperdrive-entry-url entry))))
+  ;; FIXME: Don't use shell-command in the long run.
+  (let ((shell-command-buffer-name-async " *hyperdrive-stream-player*")
+        (display-buffer-alist '((display-buffer-no-window))))
+    (async-shell-command
+     (format hyperdrive-stream-player-command
+             (hyperdrive--httpify-url (hyperdrive-entry-url entry))))))
 
 (cl-defun hyperdrive-handler-json (entry &key _then)
   "Show ENTRY.

@@ -7,7 +7,7 @@
 ;; Maintainer: Joseph Turner <joseph@ushin.org>
 ;; Created: 2022
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.3.2") (plz "0.4") (mpv "0.2.0") (persist "0.5"))
+;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.3.2") (plz "0.4") (persist "0.5"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
@@ -163,6 +163,11 @@ used."
                   (const :tag "Public name (well-known)" public-name)
                   (const :tag "Shortened public key" short-key)
                   (const :tag "Full public key" public-key))))
+
+(defcustom hyperdrive-stream-player-command "mpv \"%s\""
+  "Command used to play streamable URLs externally.
+In the command, \"%s\" is replaced with the URL."
+  :type 'string)
 
 ;;;;; Faces
 
