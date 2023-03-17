@@ -346,6 +346,8 @@ in the buffer opened by the handler."
   ;; need to parse the URL and then call `gethash' (or refactor `hyperdrive-complete-url').
   ;; See: <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
   ;; TODO: What happens if the user tries to open a hyperdrive file that's already open in a buffer?
+  ;; FIXME: Some of the synchronous filling functions we've added now cause this to be blocking,
+  ;; which is very noticeable when a file can't be loaded from the gateway and eventually times out.
   (let* ((entry (hyperdrive-url-entry url))
          (hyperdrive (hyperdrive-entry-hyperdrive entry)))
     (hyperdrive-fill entry
