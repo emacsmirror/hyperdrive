@@ -36,7 +36,6 @@
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
-;;;###autoload
 (defun hyperdrive-org-link-store ()
   "Store an Org link to the entry at point in current Org buffer.
 To be called by `org-store-link'.  Calls `org-link-store-props',
@@ -100,7 +99,6 @@ raw URL, not an Org link."
         ;; destructuring plists with pcase-let, we use an alist here.
         `((type . "hyper") (link . ,raw-url) (description . ,heading))))))
 
-;;;###autoload
 (defun hyperdrive-org-link-follow (url &optional _prefix)
   ;; TODO: Do we need to do anything if prefix is used?
   "Follow hyperdrive URL."

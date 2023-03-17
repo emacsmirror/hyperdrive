@@ -397,6 +397,7 @@ in the buffer opened by the handler."
                                (go-up))))
                        (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error)))))))))))
 
+;;;###autoload
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
 If buffer was not hyperdrive-backed, it becomes so."
@@ -408,6 +409,7 @@ If buffer was not hyperdrive-backed, it becomes so."
            (hyperdrive-read-entry :predicate #'hyperdrive-writablep))))
   (hyperdrive-write-buffer entry 'overwrite))
 
+;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)
   "Write current buffer to new hyperdrive ENTRY.
 If file already exists and OVERWRITEP is nil, prompt the user to

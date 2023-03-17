@@ -390,6 +390,7 @@ If PREDICATE, only offer hyperdrives matching it."
                                      path
                                    (concat "/" path)))))
 
+;;;###autoload
 (defun hyperdrive-new (seed)
   "Open new hyperdrive for SEED."
   (interactive (list (read-string "New hyperdrive seed: ")))
