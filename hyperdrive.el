@@ -263,9 +263,10 @@ hyperdrive."
   ;; TODO: Verify that the latest version is installed.  See: <https://github.com/RangerMauve/hyper-gateway/issues/9>.
   (let ((buffer (get-buffer-create " *hyperdrive-start*")))
     (unwind-protect
-        (unless (zerop (call-process "systemctl" nil buffer nil "--user" "start" "hyper-gateway.service"))
+        (unless (zerop (call-process "systemctl" nil (list buffer t) nil "--user" "start" "hyper-gateway.service"))
           (error "Unable to start hyper-gateway: %S"
-                 (with-current-buffer buffer (string-trim-right (buffer-string)))))
+                 (with-current-buffer buffer
+                   (string-trim-right (buffer-string)))))
       (kill-buffer buffer))))
 
 (defun hyperdrive-stop ()
@@ -273,9 +274,10 @@ hyperdrive."
   (interactive)
   (let ((buffer (get-buffer-create " *hyperdrive-stop*")))
     (unwind-protect
-        (unless (zerop (call-process "systemctl" nil buffer nil "--user" "stop" "hyper-gateway.service"))
+        (unless (zerop (call-process "systemctl" nil (list buffer t) nil "--user" "stop" "hyper-gateway.service"))
           (error "Unable to stop hyper-gateway: %S"
-                 (with-current-buffer buffer (string-trim-right (buffer-string)))))
+                 (with-current-buffer buffer
+                   (string-trim-right (buffer-string)))))
       (kill-buffer buffer))))
 
 (defun hyperdrive--gateway-active-p ()
