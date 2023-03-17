@@ -178,12 +178,6 @@ If then, then call THEN with no arguments."
             url
             (format " (version:%s)" version))))
 
-;; (defun hyperdrive-funcall-preserving-point (fn &rest args)
-;;   "Call FN keeping point."
-;;   (let ((pos (point)))
-;;     (apply fn args)
-;;     (goto-char pos)))
-
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   "Stream ENTRY."
   ;; FIXME: Don't use shell-command in the long run.
