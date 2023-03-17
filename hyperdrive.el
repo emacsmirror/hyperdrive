@@ -439,7 +439,7 @@ overwrite."
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
                   (setf buffer-file-name nil)
-                  (rename-buffer (hyperdrive--format-entry-url entry) 'unique)
+                  (rename-buffer (hyperdrive--entry-buffer-name entry) 'unique)
                   (set-buffer-modified-p nil)))
               (hyperdrive-message "Wrote: %S to \"%s\"" name url))
       :else (lambda (plz-error)
