@@ -282,8 +282,7 @@ hyperdrive."
 
 (defun hyperdrive--gateway-active-p ()
   "Return non-nil if `hyper-gateway' systemd service is active."
-  ;; TODO: Probably can test the exit code with `zerop'.
-  (equal "active" (string-trim-right (shell-command-to-string "systemctl --user is-active hyper-gateway"))))
+  (zerop (call-process-shell-command "systemctl --user is-active hyper-gateway.service")))
 
 (defun hyperdrive-status ()
   "Say whether `hyper-gateway' systemd service is running."
