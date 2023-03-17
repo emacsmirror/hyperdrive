@@ -343,12 +343,12 @@ If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
                 hyperdrive))
     (cl-loop for f in format
              when (pcase f
-                    ('public-key
+                    ((and 'public-key (guard public-key))
                      (propertize public-key 'face 'hyperdrive-public-key))
-                    ('short-key
+                    ((and 'short-key (guard public-key))
                      (propertize (concat (substring public-key 0 6) "…")
                                  'face 'hyperdrive-public-key))
-                    ('public-name name)
+                    ((and 'public-name (guard name)) name)
                     ((and 'domain (guard (car domains)))
                      (propertize (car domains) 'face 'hyperdrive-seed))
                     ((and 'seed (guard seed))
