@@ -80,12 +80,9 @@ domains slot."
     (concat "hyper://" host)))
 
 (defun hyperdrive-entry-url (entry)
-  "Return ENTRY's URL."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (url (hyperdrive-url hyperdrive))
-               (encoded-path (url-hexify-string
-                              path (cons ?/ url-unreserved-chars))))
-    (concat url encoded-path)))
+  "Return ENTRY's canonical URL.
+Returns URL with hyperdrive's full public key."
+  (hyperdrive--format-entry-url entry :host-format '(public-key) :with-protocol t))
 
 ;;;; Variables
 
@@ -304,13 +301,11 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
 
-;; TODO: Consider removing `hyperdrive-entry-url', since it duplicates
-;; the functionality of `hyperdrive--format-entry-url'.
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format hyperdrive-default-host-format)
            (with-protocol t))
-  "Return human-readable version of ENTRY's URL.
-Return URL formatted like:
+  "Return ENTRY's URL.
+Returns URL formatted like:
 
   hyper://SEED/PATH/TO/FILE
   hyper://DOMAIN/PATH/TO/FILE
@@ -331,8 +326,10 @@ If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
                (protocol (when with-protocol
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                              :format host-format)))
-    (propertize (concat protocol host path)
+                                              :format host-format))
+               (encoded-path (url-hexify-string
+                              path (cons ?/ url-unreserved-chars))))
+    (propertize (concat protocol host encoded-path)
                 'help-echo (hyperdrive-entry-url entry))))
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format)
