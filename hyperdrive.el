@@ -421,30 +421,6 @@ overwrite."
     ;; TODO: Remove faces/overlays that might be applied to current buffer.
     ;; I can confirm that overlays are not removed when
     ;; `hyperdrive-write-buffer' is called from a magit log buffer.
-    ;;
-    ;; FIXME(A): Reusing the same buffer does not remove buffer-file-name. If you call
-    ;; `hyperdrive-write-buffer' from a file-visiting buffer, the buffer name as well as
-    ;; `revert-buffer-function' and `write-contents-functions' will be set. Now, any attempt to
-    ;; reopen the file you started with opens the renamed buffer. The only way to open the file
-    ;; in a new buffer is to kill the renamed buffer (or set its `buffer-file-name' to nil).
-    ;;
-    ;; I tried adding (set-visited-file-name nil) inside `hyperdrive-mode-on', but that
-    ;; resets `major-mode', `revert-buffer-function', and `write-contents-functions'.
-    ;;
-    ;; Should we be concerned about other potential permanent-local
-    ;; variables besides `buffer-file-name' messing things up?
-    ;;
-    ;; Possible fix: Just (setf buffer-file-name nil).
-    ;;
-    ;; This problem can't be fixed with (setf buffer-file-name nil)
-    ;; because `buffer-file-name' is not the only buffer-local
-    ;; variable that sticks around and causes unexpected behavior.
-    ;; When you call `hyperdrive-write-buffer' inside the magit status
-    ;; buffer and save the buffer to a hyperdrive file, you can still
-    ;; run magit commands. Worse yet, "M-x magit-status" takes you to
-    ;; the renamed hyperdrive buffer. I tried
-    ;; (kill-all-local-variables t), but that doesn't kill permanent
-    ;; variables like `buffer-file-name'.
     (hyperdrive-mode))
   (setq-local hyperdrive-current-entry entry)
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
@@ -459,6 +435,7 @@ overwrite."
               ;; new etag in mode line).
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
+                  (setf buffer-file-name nil)
                   (rename-buffer (hyperdrive--format-entry-url entry) 'unique)
                   (set-buffer-modified-p nil)))
               (hyperdrive-message "Wrote: %S to %S" name url))
