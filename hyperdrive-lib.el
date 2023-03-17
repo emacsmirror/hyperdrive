@@ -194,13 +194,18 @@ empty public-key slot."
      :hyperdrive hyperdrive
      :path (if (string-empty-p path) "/" path)
      ;; TODO: Verify that this is the right for directories.
-     :name (if (string-suffix-p "/" path)
-               ;; A directory: keep the trailing slash for clarity
-               ;; (I'm sure this makes sense to someone...).
-               (file-name-as-directory
-                (file-name-nondirectory (directory-file-name path)))
-             ;; A file: remove directory part.
-             (file-name-nondirectory path))
+     :name (pcase path
+             (""
+              ;; Root directory: use "/" for clarity.
+              "/")
+             ((pred (string-suffix-p "/"))
+              ;; A subdirectory: keep the trailing slash for clarity
+              ;; (I'm sure this makes sense to someone...).
+              (file-name-as-directory
+               (file-name-nondirectory (directory-file-name path))))
+             (_
+              ;; A file: remove directory part.
+              (file-name-nondirectory path)))
      :etc etc)))
 ;;;; Entries
 
