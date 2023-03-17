@@ -82,7 +82,11 @@ domains slot."
 (defun hyperdrive-entry-url (entry)
   "Return ENTRY's canonical URL.
 Returns URL with hyperdrive's full public key."
-  (hyperdrive--format-entry-url entry :host-format '(public-key) :with-protocol t))
+  (hyperdrive--format-entry-url
+   entry :with-protocol t
+   ;; NOTE: The ENTRY may have only a domain, not a public key yet, so we must
+   ;; also pass `domain' as a fallback.  The public key will be filled in later.
+   :host-format '(public-key domain)))
 
 ;;;; Variables
 
