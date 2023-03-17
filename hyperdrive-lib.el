@@ -332,9 +332,11 @@ If WITH-PROTOCOL, \"hyper://\" is prepended.  Entire string has
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format))
                (encoded-path (url-hexify-string
-                              path (cons ?/ url-unreserved-chars))))
-    (propertize (concat protocol host encoded-path)
-                'help-echo (hyperdrive-entry-url entry))))
+                              path (cons ?/ url-unreserved-chars)))
+               (url (concat protocol host encoded-path)))
+    (propertize url
+                'help-echo (hyperdrive--format-entry-url
+                            entry :with-protocol t :host-format '(public-key domain)))))
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format)
   "Return HYPERDRIVE's hostname formatted according to FORMAT, or nil."
