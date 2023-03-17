@@ -190,11 +190,18 @@ empty public-key slot."
                       (list (cons 'target target)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
-    (make-hyperdrive-entry :hyperdrive hyperdrive
-                           :path (if (string-empty-p path) "/" path)
-                           ;; TODO: Verify that this is the right for directories.
-                           :name (file-name-nondirectory path)
-                           :etc etc)))
+    (make-hyperdrive-entry
+     :hyperdrive hyperdrive
+     :path (if (string-empty-p path) "/" path)
+     ;; TODO: Verify that this is the right for directories.
+     :name (if (string-suffix-p "/" path)
+               ;; A directory: keep the trailing slash for clarity
+               ;; (I'm sure this makes sense to someone...).
+               (file-name-as-directory
+                (file-name-nondirectory (directory-file-name path)))
+             ;; A file: remove directory part.
+             (file-name-nondirectory path))
+     :etc etc)))
 ;;;; Entries
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
