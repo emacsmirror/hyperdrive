@@ -438,14 +438,17 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (with-current-buffer (get-buffer-create (hyperdrive--format-entry-url entry))
-    (when hyperdrive-honor-auto-mode-alist
-      ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-      (let ((buffer-file-name (hyperdrive-entry-url entry)))
-        (set-auto-mode)))
-    (hyperdrive-mode)
-    (setq-local hyperdrive-current-entry entry)
-    (current-buffer)))
+  (let ((buffer-name (format "%s [hyperdrive:%s]"
+                             (hyperdrive-entry-name entry)
+                             (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)))))
+    (with-current-buffer (get-buffer-create buffer-name)
+      (when hyperdrive-honor-auto-mode-alist
+        ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+        (let ((buffer-file-name (hyperdrive-entry-name entry)))
+          (set-auto-mode)))
+      (hyperdrive-mode)
+      (setq-local hyperdrive-current-entry entry)
+      (current-buffer))))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
