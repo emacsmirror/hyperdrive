@@ -369,7 +369,7 @@ in the buffer opened by the handler."
                                   (`t (hyperdrive-open-url (hyperdrive--parent url) :recurse t)))))
                           (prompt-to-go-up
                            () (pcase-exhaustive
-                                  (read-answer (format "URL not found: %S.  Try to load parent directory? " url)
+                                  (read-answer (format "URL not found: \"%s\".  Try to load parent directory? " url)
                                                '(("yes" ?y "go up one level")
                                                  ("no" ?n "exit")
                                                  ("recurse" ?! "go up until directory found")))
@@ -396,7 +396,7 @@ in the buffer opened by the handler."
                               (t
                                ;; Hyperdrive not writable: offer to go up.
                                (go-up))))
-                       (_ (hyperdrive-message "Unable to load URL %S: %S" url plz-error)))))))))))
+                       (_ (hyperdrive-message "Unable to load URL \"%s\": %S" url plz-error)))))))))))
 
 ;;;###autoload
 (defun hyperdrive-save-buffer (entry)
@@ -441,7 +441,7 @@ overwrite."
                   (setf buffer-file-name nil)
                   (rename-buffer (hyperdrive--format-entry-url entry) 'unique)
                   (set-buffer-modified-p nil)))
-              (hyperdrive-message "Wrote: %S to %S" name url))
+              (hyperdrive-message "Wrote: %S to \"%s\"" name url))
       :else (lambda (plz-error)
               (pcase-let* (((cl-struct plz-error response) plz-error)
                            ((cl-struct plz-response status body) response)
@@ -454,7 +454,7 @@ overwrite."
                                 "Hyperdrive not writable"
                               plz-error)))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
-    (hyperdrive-message "Saving to %S..." url)
+    (hyperdrive-message "Saving to \"%s\"..." url)
     ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display etag, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
 
