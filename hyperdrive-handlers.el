@@ -180,12 +180,12 @@ If then, then call THEN with no arguments."
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   "Stream ENTRY."
-  ;; FIXME: Don't use shell-command in the long run.
-  (let ((shell-command-buffer-name-async " *hyperdrive-stream-player*")
-        (display-buffer-alist '((display-buffer-no-window))))
-    (async-shell-command
-     (format hyperdrive-stream-player-command
-             (hyperdrive--httpify-url (hyperdrive-entry-url entry))))))
+  (pcase-let ((`(,command . ,args)
+               (split-string hyperdrive-stream-player-command)))
+    (apply #'start-process "hyperdrive-stream-player"
+           nil command (cl-substitute (hyperdrive--httpify-url
+                                       (hyperdrive-entry-url entry))
+                                      "%s" args :test #'equal))))
 
 (cl-defun hyperdrive-handler-json (entry &key _then)
   "Show ENTRY.

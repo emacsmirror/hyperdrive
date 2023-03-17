@@ -164,9 +164,11 @@ used."
                   (const :tag "Shortened public key" short-key)
                   (const :tag "Full public key" public-key))))
 
-(defcustom hyperdrive-stream-player-command "mpv \"%s\""
+(defcustom hyperdrive-stream-player-command "mpv %s"
   "Command used to play streamable URLs externally.
-In the command, \"%s\" is replaced with the URL."
+In the command, \"%s\" is replaced with the URL (it should not be
+quoted, because the arguments are passed directly rather than
+through a shell)."
   :type 'string)
 
 ;;;;; Faces
