@@ -103,13 +103,14 @@ If then, then call THEN with no arguments."
                (parent-url (hyperdrive--parent url))
                (parent-entry (when parent-url
                                (hyperdrive-url-entry parent-url)))
-               (ewoc) ;; (prev-node-data) (prev-line)
+               (ewoc) (header) ;; (prev-node-data) (prev-line)
                )
     (when parent-entry
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
       (push parent-entry entries))
     (setf directory-entry (hyperdrive--fill directory-entry headers)
-          hyperdrive-entries entries)
+          hyperdrive-entries entries
+          header (hyperdrive--directory-header directory-entry))
     (hyperdrive-fill-public-metadata (hyperdrive-entry-hyperdrive directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
       ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)
@@ -119,9 +120,9 @@ If then, then call THEN with no arguments."
       ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))
       ;;         prev-line (line-number-at-pos)))
       (hyperdrive-dir-mode)
-      (setf header-line-format (hyperdrive--directory-header directory-entry))
       (setf ewoc hyperdrive-dir-ewoc) ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-dir-ewoc #'ignore)
+      (ewoc-set-hf hyperdrive-dir-ewoc header "")
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-dir-ewoc entry))
             entries)
