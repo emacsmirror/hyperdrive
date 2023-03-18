@@ -202,10 +202,10 @@ empty public-key slot."
               ;; A subdirectory: keep the trailing slash for clarity
               ;; (I'm sure this makes sense to someone...).
               (file-name-as-directory
-               (file-name-nondirectory (directory-file-name path))))
+               (file-name-nondirectory (directory-file-name (url-unhex-string path)))))
              (_
               ;; A file: remove directory part.
-              (file-name-nondirectory path)))
+              (file-name-nondirectory (url-unhex-string path))))
      :etc etc)))
 ;;;; Entries
 
