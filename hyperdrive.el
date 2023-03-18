@@ -52,10 +52,6 @@
 
 ;; hyperdrive.el uses [plz.el](https://github.com/alphapapa/plz.el) for sending HTTP requests to hyper-gateway.
 
-;;;;;; mpv.el
-
-;; hyperdrive.el uses [mpv.el](https://github.com/kljohann/mpv.el) for streaming audio and video.
-
 ;;;;;; compat.el
 
 ;; hyperdrive.el relies on [compat.el](https://github.com/emacs-compat/compat) to support Emacs versions prior to Emacs 29.
@@ -89,7 +85,6 @@
 
 (require 'compat)
 (require 'plz)
-(require 'mpv)
 (require 'persist)
 
 (require 'hyperdrive-lib)
