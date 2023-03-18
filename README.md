@@ -123,6 +123,8 @@ for subsequent connections.
 
 ### Upload files from your filesystem
 
+TODO: Uploading files from the filesystem has not been reimplemented since the upgrade to the latest version of hyper-gateway.
+
 `hyperdrive-upload-files` lets you upload files from your filesystem
 to a hyperdrive. It accepts a `seed`, a `relative-dir`, the directory
 on your filesystem which will be the top-level or root directory of
