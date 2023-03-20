@@ -192,22 +192,6 @@ through a shell)."
 ;; TODO(B): Emacs bookmark support.
 ;; TODO(A): Command to rename paths.
 
-(defun hyperdrive--gateway-ready-p ()
-  "Return non-nil if hyper-gateway is ready."
-  (let (readyp)
-    (with-local-quit
-      (hyperdrive-api 'get "hyper://localhost" :noquery t
-        ;; FIXME: Don't use else handler, since plz should not call it after a synchronous request
-        :else (lambda (err)
-                (unless (and (plz-error-curl-error err)
-                             ;; "Failed to connect to host."
-                             (= 7 (car (plz-error-curl-error err))))
-                  ;; Status code 400 is expected when hyper-gateway is running
-                  ;; See https://github.com/RangerMauve/hyper-gateway/issues/3
-                  (when (= 400 (plz-response-status (plz-error-response err)))
-                    (setq readyp t))))))
-    readyp))
-
 (defun hyperdrive--seed-url (seed)
   "Return URL to hyperdrive known as SEED, or nil if it doesn't exist.
 That is, if the SEED has been used to create a local
