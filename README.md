@@ -8,7 +8,9 @@ interface for managing hyperdrives.
 
 ## Installation
 
-`hyperdrive.el` is available on [MELPA](https://melpa.org/#/getting-started).
+`hyperdrive.el` is available on
+[MELPA](https://melpa.org/#/getting-started). Once you've set up
+MELPA, you can run `M-x package-install` then enter `hyperdrive`.
 
 ### `hyper-gateway`
 
