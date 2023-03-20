@@ -6,7 +6,9 @@ for easy peer-to-peer file sharing. `hyperdrive.el` is an independent
 project built by [USHIN](https://ushin.org) which provides an Emacs
 interface for managing hyperdrives.
 
-## Dependencies
+## Installation
+
+`hyperdrive.el` is available on [MELPA](https://melpa.org/#/getting-started).
 
 ### `hyper-gateway`
 
@@ -14,39 +16,7 @@ interface for managing hyperdrives.
 [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for
 talking to the hypercore network.
 [Download](https://github.com/RangerMauve/hyper-gateway/releases) or
-compile the binary then ensure that it is executable and in your
-`$PATH`. Ensure that `hyperdrive-hyper-gateway-command` is set to the
-name you gave to the `hyper-gateway` binary. One way to do this is by
-renaming the binary to `hyper-gateway`, the default value for
-`hyperdrive-hyper-gateway-command`.
-
-## Installation
-
-The recommended way to install `hyperdrive.el` is with
-[quelpa-use-package](https://github.com/quelpa/quelpa-use-package).
-To install it, follow the instructions in its documentation; or you
-may evaluate the following code:
-
-```
-;; Add the MELPA package repository to Emacs's package configuration and refresh the contents.
-(cl-pushnew '("melpa" . "https://melpa.org/packages/") package-archives :test #'equal)
-(package-refresh-contents)
-
-;; Install and load quelpa-use-package.
-(package-install 'quelpa-use-package)
-(require 'quelpa-use-package)
-```
-
-Then add this form to your `init.el` file and evaluate it:
-
-```
-(use-package hyperdrive
-  :quelpa (hyperdrive :fetcher git
-                      :url "https://git.sr.ht/~ushin/hyperdrive.el")
-  :config
-  ;; Assuming that the hyper-gateway executable is in "~/.local/bin"
-  (add-to-list 'exec-path (expand-file-name "~/.local/bin/")))
-```
+compile the binary then either run it manually or [install it as a systemd service](https://todo.sr.ht/~ushin/ushin/13#event-229700).
 
 ## Usage
 
