@@ -41,12 +41,9 @@
 
 ;; Download or compile the hyper-gateway
 ;; (https://github.com/RangerMauve/hyper-gateway/releases) binary and
-;; ensure that it is executable and in your $PATH.
-
-;; Ensure that `hyperdrive-hyper-gateway-command' is set to the name
-;; you gave to the `hyper-gateway` binary.  One way to do this is by
-;; renaming the binary to `hyper-gateway`, the default value for
-;; `hyperdrive-hyper-gateway-command'.
+;; install it as a systemd service
+;; <https://todo.sr.ht/~ushin/ushin/13#event-229700> or run it
+;; manually.
 
 ;;;;;; plz.el
 
