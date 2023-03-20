@@ -104,10 +104,6 @@
   "Location to store Hypercore data."
   :type '(file :must-match t))
 
-(defcustom hyperdrive-hyper-gateway-command "hyper-gateway"
-  "Name of `hyper-gateway' binary on your machine."
-  :type 'string)
-
 (defcustom hyperdrive-hyper-gateway-port 4973
   "Port on which to run the hyper-gateway server."
   :type 'natnum)
@@ -219,13 +215,6 @@ through a shell)."
 
 ;; TODO(B): Emacs bookmark support.
 ;; TODO(A): Command to rename paths.
-
-(defun hyperdrive--gateway-pid ()
-  "Return `hyper-gateway' process id if it's running, otherwise nil."
-  (let ((output
-         (shell-command-to-string (concat "pgrep " hyperdrive-hyper-gateway-command))))
-    (when (> (length output) 0)
-      (string-to-number (string-trim output)))))
 
 (defun hyperdrive--gateway-ready-p ()
   "Return non-nil if hyper-gateway is ready."
