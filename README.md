@@ -51,7 +51,7 @@ Then add this form to your `init.el` file and evaluate it:
 ## Usage
 
 **Be careful what you publish!** Anyone with your public key can
-download those shared files from you, your friend, or anyone else who
+download your published files from you, your friend, or anyone else who
 has them.
 
 ### Start/stop the gateway
