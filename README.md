@@ -28,9 +28,13 @@ has them.
 
 ### Start/stop the gateway
 
-To connect with peers, you'll need to start the `hyper-gateway` with
-`M-x hyperdrive-start`. When you're ready to disconnect from the
-network, run `M-x hyperdrive-stop`.
+To connect with peers, you'll need to start `hyper-gateway`. If you
+[install `hyper-gateway` as a SystemD
+service](https://todo.sr.ht/~ushin/ushin/13#event-229700), you can
+connect and disconnect from the network with `M-x hyperdrive-start`
+and `M-x hyperdrive-stop`. Otherwise, follow [these
+instruction](https://github.com/RangerMauve/hyper-gateway#usage) to
+run `hyper-gateway` manually.
 
 ### Create a hyperdrive
 
