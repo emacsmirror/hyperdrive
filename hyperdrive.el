@@ -192,6 +192,38 @@ through a shell)."
 ;; TODO(B): Emacs bookmark support.
 ;; TODO(A): Command to rename paths.
 
+(defun hyperdrive-describe-hyperdrive (hyperdrive)
+  "Display various information about HYPERDRIVE."
+  (interactive (list (hyperdrive-complete-hyperdrive)))
+  (with-current-buffer (get-buffer-create
+                        (format "*Hyperdrive: %s*"
+                                (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format)))
+    (erase-buffer)
+    (pcase-let (((cl-struct hyperdrive public-key metadata seed domains writablep) hyperdrive))
+      (insert
+       (format "Hyperdrive: %s\n" (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format))
+       (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
+       (format "Writable: %s\n" (if writablep "yes" "no"))
+       (format "Seed: %s\n" (or seed "[none]"))
+       (format "Domains: %s\n" (if domains
+                                   (format "%S" domains)
+                                 "[none]"))
+       (format "Metadata: %s\n"
+               (if metadata
+                   (with-temp-buffer
+                     (require 'org)
+                     (org-mode)
+                     (insert "\n" "| Key | Value |\n"
+                             "|-\n")
+                     (cl-loop for (key . value) in metadata
+                              do (insert (format "| %s | %s |\n" key value)))
+                     (insert "|-\n")
+                     (forward-line -1)
+                     (org-table-align)
+                     (buffer-string))
+                 "[none]"))))
+    (pop-to-buffer (current-buffer))))
+
 (defun hyperdrive--seed-url (seed)
   "Return URL to hyperdrive known as SEED, or nil if it doesn't exist.
 That is, if the SEED has been used to create a local
