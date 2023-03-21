@@ -64,7 +64,6 @@
   (seed nil :documentation "Seed (always and only present for writable hyperdrives).")
   ;; TODO: Where to invalidate old domains?
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
-  (readablep nil :documentation "Whether the drive is readable.")
   (writablep nil :documentation "Whether the drive is writable."))
 
 (defun hyperdrive-url (hyperdrive)
