@@ -222,6 +222,7 @@ through a shell)."
                      (org-table-align)
                      (buffer-string))
                  "[none]"))))
+    (setq buffer-read-only t)
     (pop-to-buffer (current-buffer))))
 
 (defun hyperdrive--seed-url (seed)
