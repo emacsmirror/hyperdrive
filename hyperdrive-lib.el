@@ -338,6 +338,7 @@ processed in order, and the first available type is used.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
 full URL."
+  ;; TODO: Add petname.
   (pcase-let* (((cl-struct hyperdrive-entry path) entry)
                (protocol (when with-protocol
                            "hyper://"))
@@ -356,6 +357,7 @@ full URL."
   (pcase-let* (((cl-struct hyperdrive public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
+    ;; TODO: Add petname.
     (cl-loop for f in format
              when (pcase f
                     ((and 'public-key (guard public-key))

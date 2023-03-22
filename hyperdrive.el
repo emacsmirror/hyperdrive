@@ -305,6 +305,7 @@ hyperdrive."
       (progn
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
         (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
+    ;; FIXME: Use `kill-local-variable' for `revert-buffer-function'.
     (setq-local revert-buffer-function #'revert-buffer--default
                 write-contents-functions
                 (remove #'hyperdrive--write-contents write-contents-functions))))
