@@ -214,8 +214,7 @@ through a shell)."
                    (with-temp-buffer
                      (require 'org)
                      (org-mode)
-                     (insert "\n" "| Key | Value |\n"
-                             "|-\n")
+                     (insert "\n|-\n| Key | Value |\n|-\n")
                      (cl-loop for (key . value) in metadata
                               do (insert (format "| %s | %s |\n" key value)))
                      (insert "|-\n")
