@@ -303,9 +303,11 @@ hyperdrive."
   ;;           map)
   (if hyperdrive-mode
       (progn
-        (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
+        (setq-local revert-buffer-function #'hyperdrive-revert-buffer
+                    bookmark-make-record-function #'hyperdrive-bookmark-make-record)
         (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
     ;; FIXME: Use `kill-local-variable' for `revert-buffer-function'.
+    (kill-local-variable 'bookmark-make-record-function)
     (setq-local revert-buffer-function #'revert-buffer--default
                 write-contents-functions
                 (remove #'hyperdrive--write-contents write-contents-functions))))
@@ -459,6 +461,41 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (hyperdrive-message "%s" url)))
+
+;;;; Bookmark support
+
+(require 'bookmark)
+
+(defun hyperdrive-bookmark-make-record ()
+  "Return a bookmark record for current hyperdrive buffer.
+Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
+  (pcase-let* (((cl-struct hyperdrive-entry path hyperdrive) hyperdrive-current-entry)
+               ((cl-struct hyperdrive public-key) hyperdrive)
+               (hyperdrive-name (hyperdrive--format-host hyperdrive :format '(petname public-name domain)))
+               ;; We use the default function to make a record, then add our fields to it.
+               (bookmark (bookmark-make-record-default 'no-file)))
+    ;; Add our fields.
+    (cl-loop for (key . value) in
+             `((handler . hyperdrive-bookmark-handler)
+               (filename . ,(hyperdrive-entry-url hyperdrive-current-entry))
+               (hyperdrive-entry-path . ,path)
+               (hyperdrive-public-key . ,public-key))
+             do (setf (alist-get key bookmark) value))
+    (cons (format "Hyperdrive: %s%s" hyperdrive-name path) bookmark)))
+
+(defun hyperdrive-bookmark-handler (bookmark)
+  "Handler for Hyperdrive BOOKMARK."
+  (pcase-let* ((`(,_ . ,(map ('hyperdrive-entry-path path) ('hyperdrive-public-key public-key)))
+                bookmark)
+               (hyperdrive (make-hyperdrive :public-key public-key))
+               (entry (make-hyperdrive-entry :hyperdrive hyperdrive
+                                             :path path)))
+    (cond ((null path) nil)
+          (t (hyperdrive-open-url (hyperdrive-entry-url entry)
+               :then (lambda ()
+                       (bookmark-default-handler
+                        ;; Don't mutate the original record.
+                        (append bookmark `((buffer . ,(current-buffer)))))))))))
 
 ;;;; Footer
 

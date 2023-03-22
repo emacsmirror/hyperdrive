@@ -107,6 +107,7 @@ To be used as the pretty-printer for `ewoc-create'."
   "D"   #'hyperdrive-dir-delete)
 
 (declare-function hyperdrive-revert-buffer "hyperdrive")
+(declare-function hyperdrive-bookmark-make-record "hyperdrive")
 
 (define-derived-mode hyperdrive-dir-mode special-mode
   `("Hyperdrive-dir"
@@ -117,7 +118,8 @@ To be used as the pretty-printer for `ewoc-create'."
   (let ((inhibit-read-only t))
     (erase-buffer))
   (hl-line-mode)
-  (setq-local revert-buffer-function #'hyperdrive-revert-buffer)
+  (setq-local revert-buffer-function #'hyperdrive-revert-buffer
+              bookmark-make-record-function #'hyperdrive-bookmark-make-record)
   (setf hyperdrive-dir-ewoc (ewoc-create #'hyperdrive-dir-pp)
         ;; TODO(alphapapa): Imenu support.
         ;; imenu-create-index-function #'ement-room--imenu-create-index-function
