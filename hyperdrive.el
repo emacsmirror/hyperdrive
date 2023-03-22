@@ -198,8 +198,9 @@ through a shell)."
   (with-current-buffer (get-buffer-create
                         (format "*Hyperdrive: %s*"
                                 (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format)))
-    (erase-buffer)
-    (pcase-let (((cl-struct hyperdrive metadata seed domains writablep) hyperdrive))
+    (pcase-let (((cl-struct hyperdrive metadata seed domains writablep) hyperdrive)
+                (inhibit-read-only t))
+      (erase-buffer)
       (insert
        (format "Hyperdrive: %s\n" (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format))
        (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
