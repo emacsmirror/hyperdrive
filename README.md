@@ -32,7 +32,7 @@ To connect with peers, you'll need to start `hyper-gateway`. If you
 service](https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd),
 you can connect and disconnect from the network with `M-x
 hyperdrive-start` and `M-x hyperdrive-stop`. Otherwise, follow [these
-instruction](https://github.com/RangerMauve/hyper-gateway#usage) to
+instructions](https://github.com/RangerMauve/hyper-gateway#usage) to
 run `hyper-gateway` manually.
 
 ### Create a hyperdrive
