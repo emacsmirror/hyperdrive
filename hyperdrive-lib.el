@@ -343,7 +343,9 @@ full URL."
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format))
-               (url (concat protocol host path)))
+               (encoded-path (url-hexify-string
+                              path (cons ?/ url-unreserved-chars)))
+               (url (concat protocol host encoded-path)))
     (if with-help-echo
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
