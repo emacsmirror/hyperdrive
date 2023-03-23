@@ -173,7 +173,7 @@ If then, then call THEN with no arguments."
                              (t (hyperdrive--format-host hyperdrive :host-format '(short-key)))))
                (version etag))
     (propertize (concat (format "[%s] " handle)
-                        path
+                        (url-unhex-string path)
                         (format " (version:%s)" version))
                 'help-echo (hyperdrive-entry-url entry))))
 
