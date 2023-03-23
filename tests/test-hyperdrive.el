@@ -22,6 +22,11 @@
 
 ;;; Commentary:
 
+;; TODO: Consider having a "round-trip" test that makes a new
+;; hyperdrive, writes files of various names, then reads the
+;; hyperdrive back and ensures that the entries names and paths are
+;; correctly encoded/decoded.
+
 ;;; Code:
 
 (require 'cl-lib)
