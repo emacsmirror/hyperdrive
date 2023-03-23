@@ -62,7 +62,8 @@ If then, then call THEN with no arguments.  Default handler."
                 (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
               (erase-buffer)
               (insert-buffer-substring response-buffer)
-              (setf buffer-undo-list nil)
+              (setf buffer-undo-list nil
+                    buffer-read-only (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry))))
               (set-buffer-modified-p nil)
               (goto-char (point-min))
               ;; TODO: Option to defer showing buffer.
