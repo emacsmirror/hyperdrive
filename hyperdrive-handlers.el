@@ -180,6 +180,7 @@ If then, then call THEN with no arguments."
                 'help-echo (hyperdrive-entry-url entry))))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
+  ;; TODO: Is there any reason to not pass THEN through?
   "Stream ENTRY."
   (pcase-let ((`(,command . ,args)
                (split-string hyperdrive-stream-player-command)))
