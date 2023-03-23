@@ -161,6 +161,7 @@ If then, then call THEN with no arguments."
 
 (defun hyperdrive--directory-header (entry)
   "Return header for ENTRY."
+  ;; TODO: Move `hyperdrive--directory-header' into `hyperdrive-dir'.
   ;; TODO(A): Ensure that this is shown correctly on first load for DNSlink URLs.
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive etag path) entry)
                (seed (hyperdrive--format-host hyperdrive :format '(seed)))
