@@ -188,14 +188,15 @@ If then, then call THEN with no arguments."
                                        (hyperdrive-entry-url entry))
                                       "%s" args :test #'equal))))
 
-(cl-defun hyperdrive-handler-json (entry &key _then)
+(cl-defun hyperdrive-handler-json (entry &key then)
   "Show ENTRY.
-If ENTRY is a directory (if its URL ends in \"/\"), pass to
+THEN is passed to other handlers, which see.  If ENTRY is a
+directory (if its URL ends in \"/\"), pass to
 `hyperdrive-handler-directory'.  Otherwise, open with
 `hyperdrive-handler-default'."
   (if (hyperdrive--entry-directory-p entry)
-      (hyperdrive-handler-directory entry)
-    (hyperdrive-handler-default entry)))
+      (hyperdrive-handler-directory entry :then then)
+    (hyperdrive-handler-default entry :then then)))
 
 ;;;; Footer
 
