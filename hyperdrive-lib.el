@@ -343,9 +343,7 @@ full URL."
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format))
-               (encoded-path (url-hexify-string
-                              path (cons ?/ url-unreserved-chars)))
-               (url (concat protocol host encoded-path)))
+               (url (concat protocol host path)))
     (if with-help-echo
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
@@ -404,7 +402,8 @@ If PREDICATE, only offer hyperdrives matching it."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate))
          (default "/")
          (prompt (format "File path (default %S): " default))
-         (path (read-string prompt default nil default)))
+         (path (url-hexify-string (read-string prompt default nil default)
+                                  (cons ?/ url-unreserved-chars))))
     (make-hyperdrive-entry :hyperdrive hyperdrive
                            :name (file-name-nondirectory path)
                            :path (if (string-prefix-p "/" path)

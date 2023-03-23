@@ -97,7 +97,8 @@ If then, then call THEN with no arguments."
                 (mapcar (lambda (entry-name)
                           (make-hyperdrive-entry
                            :hyperdrive (hyperdrive-entry-hyperdrive directory-entry)
-                           :path (concat (hyperdrive-entry-path directory-entry) entry-name)
+                           :path (concat (hyperdrive-entry-path directory-entry)
+                                         (url-hexify-string entry-name (cons ?/ url-unreserved-chars)))
                            :name entry-name))
                         entry-names))
                (parent-url (hyperdrive--parent url))
