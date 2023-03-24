@@ -201,6 +201,22 @@ through a shell)."
 
 ;; TODO(A): Command to rename paths.
 
+(defun hyperdrive-set-petname (petname hyperdrive)
+  "Set HYPERDRIVE's PETNAME.
+Entering an empty or blank string unsets the HYPERDRIVE's
+petname."
+  (interactive
+   (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
+          (petname (read-string
+                    (format "Petname (%s): "
+                            (hyperdrive--format-host hyperdrive :format '(short-key))))))
+     (list petname hyperdrive)))
+  (when (string-blank-p petname)
+    (setf petname nil))
+  (setf (hyperdrive-petname hyperdrive) petname)
+  ;; TODO: Consider refreshing buffer names, directory headers, etc.
+  hyperdrive)
+
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
   "Display various information about HYPERDRIVE."
   (interactive (list (hyperdrive-complete-hyperdrive)))
