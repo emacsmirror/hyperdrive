@@ -475,7 +475,8 @@ both point to the same content."
   (format "%s [%s]"
           (hyperdrive-entry-name entry)
           (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                   :format hyperdrive-default-host-format)))
+                                   :format hyperdrive-default-host-format
+                                   :with-label t)))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."

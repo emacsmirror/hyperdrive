@@ -206,13 +206,16 @@ through a shell)."
   (interactive (list (hyperdrive-complete-hyperdrive)))
   (with-current-buffer (get-buffer-create
                         (format "*Hyperdrive: %s*"
-                                (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format)))
+                                (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
+                                                         :with-label t)))
     (pcase-let (((cl-struct hyperdrive metadata seed domains writablep) hyperdrive)
                 (inhibit-read-only t))
       (erase-buffer)
       (insert
-       (format "Hyperdrive: %s\n" (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format))
-       (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
+       (format "Hyperdrive: %s\n" (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
+                                                           :with-label t))
+       (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)
+                                                           :with-label t))
        (format "Writable: %s\n" (if writablep "yes" "no"))
        (format "Seed: %s\n" (or seed "[none]"))
        (format "Domains: %s\n" (if domains
