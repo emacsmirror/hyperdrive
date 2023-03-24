@@ -99,6 +99,11 @@ somewhat mitigates this issue by remembering which public key the DNS
 record resolved to, so that peers can use the stored public key itself
 for subsequent connections.
 
+### Bookmark a hyperdrive
+
+You can use the built-in `bookmark-set` and `bookmark-jump` functions
+to store and jump to a hyperdrive file or directory.
+
 ### Upload files from your filesystem
 
 TODO: Uploading files from the filesystem has not been reimplemented since the upgrade to the latest version of hyper-gateway.
