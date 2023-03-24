@@ -326,14 +326,7 @@ Returns URL formatted like:
 
   hyper://HOST-FORMAT/PATH/TO/FILE
 
-HOST-FORMAT may be a list of symbols specifying how to format the
-entry's hyperdrive, including: `petname' to use the petname,
-`public-key' to use the full public key, `short-key' to shorten
-the public key, `name' to use the public name, `domain' to use
-the DNSLink domain, or `seed' to use the seed value (for writable
-hyperdrives).  The list is processed in order, and the first
-available type is used.
-
+HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
 full URL."
@@ -352,9 +345,11 @@ full URL."
       url)))
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format with-label)
-  "Return HYPERDRIVE's hostname formatted according to FORMAT, or nil.
-If WITH-LABEL, prepend a label for the kind of format
-used (e.g. \"petname:\")."
+  "Return HYPERDRIVE's formatted hostname, or nil.
+FORMAT should be a list of symbols; see
+`hyperdrive-default-host-format' for choices.  If the specified
+FORMAT is not available, returns nil.  If WITH-LABEL, prepend a
+label for the kind of format used (e.g. \"petname:\")."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
