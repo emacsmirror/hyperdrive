@@ -74,8 +74,8 @@
                (handle (hyperdrive--format-host hyperdrive
                                                 :format hyperdrive-default-host-format
                                                 :with-label t)))
-    (propertize (concat (format "[%s] " handle)
-                        (url-unhex-string path)
+    (propertize (concat (url-unhex-string path)
+                        (format " [%s]" handle)
                         (format " (version:%s)" etag))
                 'help-echo (hyperdrive-entry-url entry))))
 
