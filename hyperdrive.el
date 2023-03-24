@@ -117,14 +117,18 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other")))
 
 (defcustom hyperdrive-default-host-format
-  '(seed domain public-name short-key public-key)
+  '(petname nickname domain seed short-key public-key)
   "Default format for displaying hyperdrive hostnames.
 Each option is checked in order, and the first available type is
 used."
   :type '(repeat
-          (choice (const :tag "Seed" seed)
+          (choice (const :tag "Petname" petname)
+                  (const :tag "Nickname"
+                         :doc "(Nickname specified by hyperdrive author)"
+                         :format "%t %h"
+                         nickname)
                   (const :tag "DNSLink domain" domain)
-                  (const :tag "Public name (well-known)" public-name)
+                  (const :tag "Seed" seed)
                   (const :tag "Shortened public key" short-key)
                   (const :tag "Full public key" public-key))))
 
@@ -139,10 +143,19 @@ through a shell)."
 
 ;;;;; Faces
 
+(defface hyperdrive-petname '((t :inherit font-lock-type-face))
+  "Applied to hyperdrive petnames.")
+
 (defface hyperdrive-seed '((t :inherit font-lock-doc-face))
   "Applied to hyperdrive seeds.")
 
-(defface hyperdrive-public-key '((t :inherit font-lock-constant-face))
+(defface hyperdrive-domain '((t :inherit font-lock-negation-char-face))
+  "Applied to hyperdrive domains.")
+
+(defface hyperdrive-nickname '((t :inherit font-lock-warning-face))
+  "Applied to hyperdrive nicknames.")
+
+(defface hyperdrive-public-key '((t :inherit font-lock-function-name-face))
   "Applied to hyperdrive public keys.")
 
 ;;;; Internal variables
@@ -186,26 +199,48 @@ through a shell)."
 
 ;;;; Commands
 
-;; TODO(B): Emacs bookmark support.
 ;; TODO(A): Command to rename paths.
+
+(defun hyperdrive-set-petname (petname hyperdrive)
+  "Set HYPERDRIVE's PETNAME.
+Entering an empty or blank string unsets the HYPERDRIVE's
+petname."
+  (interactive
+   (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
+          (petname (read-string
+                    (format "Petname (%s): "
+                            (hyperdrive--format-host hyperdrive :format '(short-key))))))
+     (list petname hyperdrive)))
+  (when (string-blank-p petname)
+    (setf petname nil))
+  (setf (hyperdrive-petname hyperdrive) petname)
+  ;; TODO: Consider refreshing buffer names, directory headers, etc.
+  hyperdrive)
 
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
   "Display various information about HYPERDRIVE."
   (interactive (list (hyperdrive-complete-hyperdrive)))
   (with-current-buffer (get-buffer-create
                         (format "*Hyperdrive: %s*"
-                                (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format)))
-    (pcase-let (((cl-struct hyperdrive metadata seed domains writablep) hyperdrive)
+                                (hyperdrive--format-host hyperdrive :format '(short-key)
+                                                         :with-label t)))
+    (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive)
                 (inhibit-read-only t))
       (erase-buffer)
       (insert
-       (format "Hyperdrive: %s\n" (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format))
+       "Hyperdrive: \n"
        (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
-       (format "Writable: %s\n" (if writablep "yes" "no"))
-       (format "Seed: %s\n" (or seed "[none]"))
+       (format "Seed: %s\n" (or (hyperdrive--format-host hyperdrive :format '(seed))
+                                "[none]"))
+       (format "Petname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(petname))
+                                   "[none]"))
+       (format "Nickname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(nickname))
+                                    "[none]"))
        (format "Domains: %s\n" (if domains
-                                   (format "%S" domains)
+                                   (propertize (format "%S" domains)
+                                               'face 'hyperdrive-domain)
                                  "[none]"))
+       (format "Writable: %s\n" (if writablep "yes" "no"))
        (format "Metadata: %s\n"
                (if metadata
                    (with-temp-buffer
@@ -471,7 +506,8 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
 Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   (pcase-let* (((cl-struct hyperdrive-entry path hyperdrive) hyperdrive-current-entry)
                ((cl-struct hyperdrive public-key) hyperdrive)
-               (hyperdrive-name (hyperdrive--format-host hyperdrive :format '(petname public-name domain)))
+               (hyperdrive-name (hyperdrive--format-host hyperdrive :format '(petname nickname domain)
+                                                         :with-label t))
                ;; We use the default function to make a record, then add our fields to it.
                (bookmark (bookmark-make-record-default 'no-file)))
     ;; Add our fields.

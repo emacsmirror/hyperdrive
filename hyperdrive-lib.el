@@ -60,11 +60,13 @@
 (cl-defstruct hyperdrive
   "Represents a hyperdrive."
   (public-key nil :documentation "Hyperdrive's public key.")
-  (metadata nil :documentation "Public metadata alist.")
   (seed nil :documentation "Seed (always and only present for writable hyperdrives).")
+  (writablep nil :documentation "Whether the drive is writable.")
+  (petname nil :documentation "Petname.")
   ;; TODO: Where to invalidate old domains?
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
-  (writablep nil :documentation "Whether the drive is writable."))
+  (metadata nil :documentation "Public metadata alist.")
+  (etc nil :documentation "Alist of extra data."))
 
 (defun hyperdrive-url (hyperdrive)
   "Return a \"hyper://\"-prefixed URL from a HYPERDRIVE struct.
@@ -294,6 +296,8 @@ made synchronously for its contents."
                (metadata (with-local-quit
                            (hyperdrive-api 'get (hyperdrive-entry-url entry)
                              :as #'json-read :else #'ignore :noquery t))))
+    ;; NOTE: RFC6415 specifies that what we use as a "nickname" have
+    ;; the key "name" in the JSON object.
     (when metadata
       (setf (hyperdrive-metadata hyperdrive) metadata)
       (hyperdrive-persist hyperdrive))
@@ -322,19 +326,9 @@ Call ELSE if request fails."
   "Return ENTRY's URL.
 Returns URL formatted like:
 
-  hyper://SEED/PATH/TO/FILE
-  hyper://DOMAIN/PATH/TO/FILE
-  hyper://PUBLIC-NAME/PATH/TO/FILE
-  hyper://SHORT-KEY/PATH/TO/FILE
-  hyper://PUBLIC-KEY/PATH/TO/FILE
+  hyper://HOST-FORMAT/PATH/TO/FILE
 
-HOST-FORMAT may be a list of symbols specifying how to format the
-entry's hyperdrive, including: `public-key' to use the full
-public key, `short-key' to shorten the public key, `name' to use
-the public name, `domain' to use the DNSLink domain, or `seed'
-to use the seed value (for writable hyperdrives).  The list is
-processed in order, and the first available type is used.
-
+HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
 full URL."
@@ -352,24 +346,44 @@ full URL."
                                 :with-help-echo nil))
       url)))
 
-(cl-defun hyperdrive--format-host (hyperdrive &key format)
-  "Return HYPERDRIVE's hostname formatted according to FORMAT, or nil."
-  (pcase-let* (((cl-struct hyperdrive public-key domains seed
+(cl-defun hyperdrive--format-host (hyperdrive &key format with-label)
+  "Return HYPERDRIVE's formatted hostname, or nil.
+FORMAT should be a list of symbols; see
+`hyperdrive-default-host-format' for choices.  If the specified
+FORMAT is not available, returns nil.  If WITH-LABEL, prepend a
+label for the kind of format used (e.g. \"petname:\")."
+  (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
-    ;; TODO: Add petname.
     (cl-loop for f in format
              when (pcase f
-                    ((and 'public-key (guard public-key))
-                     (propertize public-key 'face 'hyperdrive-public-key))
-                    ((and 'short-key (guard public-key))
-                     (propertize (concat (substring public-key 0 6) "…")
-                                 'face 'hyperdrive-public-key))
-                    ((and 'public-name (guard name)) name)
+                    ((and 'petname (guard petname))
+                     (concat (when with-label
+                               "petname:")
+                             (propertize petname 'face 'hyperdrive-petname)))
+                    ((and 'nickname (guard name))
+                     (concat (when with-label
+                               "nickname:")
+                             (propertize name
+                                         'face 'hyperdrive-nickname)))
                     ((and 'domain (guard (car domains)))
-                     (propertize (car domains) 'face 'hyperdrive-seed))
+                     (concat (when with-label
+                               "domain:")
+                             (propertize (car domains) 'face 'hyperdrive-domain)))
                     ((and 'seed (guard seed))
-                     (propertize seed 'face 'hyperdrive-seed)))
+                     (concat (when with-label
+                               "seed:")
+                             (propertize seed 'face 'hyperdrive-seed)))
+                    ((and 'short-key (guard public-key))
+                     ;; TODO: Consider adding a help-echo with the full key.
+                     (concat (when with-label
+                               "public-key:")
+                             (propertize (concat (substring public-key 0 6) "…")
+                                         'face 'hyperdrive-public-key)))
+                    ((and 'public-key (guard public-key))
+                     (concat (when with-label
+                               "public-key:")
+                             (propertize public-key 'face 'hyperdrive-public-key))))
              return it)))
 
 ;;;; Reading from the user
@@ -461,10 +475,11 @@ both point to the same content."
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
-  (format "%s [hyperdrive:%s]"
+  (format "%s [%s]"
           (hyperdrive-entry-name entry)
           (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                   :format hyperdrive-default-host-format)))
+                                   :format hyperdrive-default-host-format
+                                   :with-label t)))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
