@@ -115,6 +115,7 @@ To be used as the pretty-printer for `ewoc-create'."
   "RET" #'hyperdrive-dir-find-file
   "^"   #'hyperdrive-dir-up
   "w"   #'hyperdrive-dir-copy-url-as-kill
+  "d"   #'hyperdrive-dir-download-file
   "n"   #'hyperdrive-dir-next
   "p"   #'hyperdrive-dir-previous
   "D"   #'hyperdrive-dir-delete)
