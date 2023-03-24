@@ -354,24 +354,41 @@ full URL."
                                 :with-help-echo nil))
       url)))
 
-(cl-defun hyperdrive--format-host (hyperdrive &key format)
-  "Return HYPERDRIVE's hostname formatted according to FORMAT, or nil."
-  (pcase-let* (((cl-struct hyperdrive public-key domains seed
+(cl-defun hyperdrive--format-host (hyperdrive &key format with-label)
+  "Return HYPERDRIVE's hostname formatted according to FORMAT, or nil.
+If WITH-LABEL, prepend a label for the kind of format
+used (e.g. \"petname:\")."
+  (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
-    ;; TODO: Add petname.
     (cl-loop for f in format
              when (pcase f
+                    ((and 'petname (guard petname))
+                     (concat (when with-label
+                               "petname:")
+                             (propertize petname 'face 'hyperdrive-petname)))
                     ((and 'public-key (guard public-key))
-                     (propertize public-key 'face 'hyperdrive-public-key))
+                     (concat (when with-label
+                               "public-key:")
+                             (propertize public-key 'face 'hyperdrive-public-key)))
                     ((and 'short-key (guard public-key))
-                     (propertize (concat (substring public-key 0 6) "…")
-                                 'face 'hyperdrive-public-key))
-                    ((and 'public-name (guard name)) name)
+                     ;; TODO: Consider adding a help-echo with the full key.
+                     (concat (when with-label
+                               "public-key:")
+                             (propertize (concat (substring public-key 0 6) "…")
+                                         'face 'hyperdrive-public-key)))
+                    ((and 'public-name (guard name))
+                     (concat (when with-label
+                               "public-name:")
+                             name))
                     ((and 'domain (guard (car domains)))
-                     (propertize (car domains) 'face 'hyperdrive-seed))
+                     (concat (when with-label
+                               "domain:")
+                             (propertize (car domains) 'face 'hyperdrive-seed)))
                     ((and 'seed (guard seed))
-                     (propertize seed 'face 'hyperdrive-seed)))
+                     (concat (when with-label
+                               "seed:")
+                             (propertize seed 'face 'hyperdrive-seed))))
              return it)))
 
 ;;;; Reading from the user
