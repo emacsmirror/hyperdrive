@@ -139,10 +139,19 @@ through a shell)."
 
 ;;;;; Faces
 
+(defface hyperdrive-petname '((t :inherit font-lock-type-face))
+  "Applied to hyperdrive petnames.")
+
 (defface hyperdrive-seed '((t :inherit font-lock-doc-face))
   "Applied to hyperdrive seeds.")
 
-(defface hyperdrive-public-key '((t :inherit font-lock-constant-face))
+(defface hyperdrive-domain '((t :inherit font-lock-negation-char-face))
+  "Applied to hyperdrive domains.")
+
+(defface hyperdrive-public-name '((t :inherit font-lock-warning-face))
+  "Applied to hyperdrive public names.")
+
+(defface hyperdrive-public-key '((t :inherit font-lock-function-name-face))
   "Applied to hyperdrive public keys.")
 
 ;;;; Internal variables
