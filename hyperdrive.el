@@ -499,6 +499,7 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
 
 ;;;; Bookmark support
 
+;;TODO: Add functions to list/jump to hyperdrive bookmarks
 (require 'bookmark)
 
 (defun hyperdrive-bookmark-make-record ()
