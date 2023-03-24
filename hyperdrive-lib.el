@@ -369,9 +369,9 @@ label for the kind of format used (e.g. \"petname:\")."
                                "public-key:")
                              (propertize (concat (substring public-key 0 6) "…")
                                          'face 'hyperdrive-public-key)))
-                    ((and 'public-name (guard name))
+                    ((and 'nickname (guard name))
                      (concat (when with-label
-                               "public-name:")
+                               "nickname:")
                              name))
                     ((and 'domain (guard (car domains)))
                      (concat (when with-label

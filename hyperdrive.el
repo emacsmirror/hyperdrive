@@ -117,7 +117,7 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other")))
 
 (defcustom hyperdrive-default-host-format
-  '(petname seed domain public-name short-key public-key)
+  '(petname seed domain nickname short-key public-key)
   "Default format for displaying hyperdrive hostnames.
 Each option is checked in order, and the first available type is
 used."
@@ -125,7 +125,10 @@ used."
           (choice (const :tag "Petname" petname)
                   (const :tag "Seed" seed)
                   (const :tag "DNSLink domain" domain)
-                  (const :tag "Public name (well-known)" public-name)
+                  (const :tag "Nickname"
+                         :doc "(Nickname specified by hyperdrive author)"
+                         :format "%t %h"
+                         nickname)
                   (const :tag "Shortened public key" short-key)
                   (const :tag "Full public key" public-key))))
 
@@ -149,8 +152,8 @@ through a shell)."
 (defface hyperdrive-domain '((t :inherit font-lock-negation-char-face))
   "Applied to hyperdrive domains.")
 
-(defface hyperdrive-public-name '((t :inherit font-lock-warning-face))
-  "Applied to hyperdrive public names.")
+(defface hyperdrive-nickname '((t :inherit font-lock-warning-face))
+  "Applied to hyperdrive nicknames.")
 
 (defface hyperdrive-public-key '((t :inherit font-lock-function-name-face))
   "Applied to hyperdrive public keys.")
@@ -481,7 +484,8 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
 Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   (pcase-let* (((cl-struct hyperdrive-entry path hyperdrive) hyperdrive-current-entry)
                ((cl-struct hyperdrive public-key) hyperdrive)
-               (hyperdrive-name (hyperdrive--format-host hyperdrive :format '(petname public-name domain)))
+               (hyperdrive-name (hyperdrive--format-host hyperdrive :format '(petname nickname domain)
+                                                         :with-label t))
                ;; We use the default function to make a record, then add our fields to it.
                (bookmark (bookmark-make-record-default 'no-file)))
     ;; Add our fields.
