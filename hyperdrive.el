@@ -199,7 +199,6 @@ through a shell)."
 
 ;;;; Commands
 
-;; TODO(B): Emacs bookmark support.
 ;; TODO(A): Command to rename paths.
 
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
