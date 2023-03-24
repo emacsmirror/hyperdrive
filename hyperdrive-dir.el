@@ -43,6 +43,7 @@
 (defvar hyperdrive-current-entry)
 (defvar hyperdrive-timestamp-format)
 (defvar hyperdrive-default-host-format)
+(defvar hyperdrive-download-directory)
 
 ;;;; Faces
 
@@ -177,6 +178,17 @@ With point on header, return directory entry."
   "Copy URL of ENTRY into the kill ring."
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-copy-url entry))
+
+(declare-function hyperdrive-download-url "hyperdrive")
+
+(defun hyperdrive-dir-download-file (entry filename)
+  "Download ENTRY at point to FILENAME on disk."
+  (interactive
+   (pcase-let* ((entry (hyperdrive-dir--entry-at-point))
+                ((cl-struct hyperdrive-entry name) entry)
+                (read-filename (read-string "Filename: " (expand-file-name name hyperdrive-download-directory))))
+     (list entry read-filename)))
+  (hyperdrive-download-url (hyperdrive-entry-url entry) filename))
 
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
