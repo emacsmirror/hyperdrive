@@ -95,7 +95,7 @@
                  (file :tag "Custom location")))
 
 (defcustom hyperdrive-download-directory (expand-file-name "~/")
-  "Location where `hyperdrive-download-url-as-file' will download files."
+  "Location where `hyperdrive-download-url' will download files."
   :type '(file :must-match t))
 
 (defcustom hyperdrive-timestamp-format "%x %X"
