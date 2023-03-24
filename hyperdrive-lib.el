@@ -324,18 +324,15 @@ Call ELSE if request fails."
   "Return ENTRY's URL.
 Returns URL formatted like:
 
-  hyper://SEED/PATH/TO/FILE
-  hyper://DOMAIN/PATH/TO/FILE
-  hyper://PUBLIC-NAME/PATH/TO/FILE
-  hyper://SHORT-KEY/PATH/TO/FILE
-  hyper://PUBLIC-KEY/PATH/TO/FILE
+  hyper://HOST-FORMAT/PATH/TO/FILE
 
 HOST-FORMAT may be a list of symbols specifying how to format the
-entry's hyperdrive, including: `public-key' to use the full
-public key, `short-key' to shorten the public key, `name' to use
-the public name, `domain' to use the DNSLink domain, or `seed'
-to use the seed value (for writable hyperdrives).  The list is
-processed in order, and the first available type is used.
+entry's hyperdrive, including: `petname' to use the petname,
+`public-key' to use the full public key, `short-key' to shorten
+the public key, `name' to use the public name, `domain' to use
+the DNSLink domain, or `seed' to use the seed value (for writable
+hyperdrives).  The list is processed in order, and the first
+available type is used.
 
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
