@@ -6,6 +6,9 @@ for easy peer-to-peer file sharing. `hyperdrive.el` is an independent
 project built by [USHIN](https://ushin.org) which provides an Emacs
 interface for managing hyperdrives.
 
+hyperdrive.el is in early development. If something breaks, please see
+the [troubleshooting section](#troubleshooting)
+
 ## Installation
 
 `hyperdrive.el` is available on
@@ -171,6 +174,17 @@ prefixes only exist when they prefix an entry, deleting the last
 "file" in a "directory" causes the "directory" to disappear as well.
 When a hyperdrive "file" or "directory" is not found, `hyperdrive.el`
 prompts to go to the parent "directory."
+
+## Troubleshooting
+
+If you run into issues, please first try resetting the value of
+`hyperdrive-hyperdrives`:
+
+```
+(progn
+  (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
+  (persist-save 'hyperdrive-hyperdrives))
+```
 
 ## Bugs and Patches
 
