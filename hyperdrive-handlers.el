@@ -161,25 +161,6 @@ If then, then call THEN with no arguments."
       (when then
         (funcall then)))))
 
-(defun hyperdrive--directory-header (entry)
-  "Return header for ENTRY."
-  ;; TODO: Move `hyperdrive--directory-header' into `hyperdrive-dir'.
-  ;; TODO(A): Ensure that this is shown correctly on first load for DNSlink URLs.
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive etag path) entry)
-               (seed (hyperdrive--format-host hyperdrive :format '(seed)))
-               (public-name (hyperdrive--format-host hyperdrive :format '(public-name)))
-               (handle (cond (seed
-                              (concat "seed:" (propertize seed 'face 'hyperdrive-seed)))
-                             (public-name
-                              ;; TODO: Add public-name face or rename seed face?
-                              (concat "name:" (propertize public-name 'face 'hyperdrive-seed)))
-                             (t (hyperdrive--format-host hyperdrive :host-format '(short-key)))))
-               (version etag))
-    (propertize (concat (format "[%s] " handle)
-                        (url-unhex-string path)
-                        (format " (version:%s)" version))
-                'help-echo (hyperdrive-entry-url entry))))
-
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
   "Stream ENTRY."

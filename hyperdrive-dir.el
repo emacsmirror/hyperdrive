@@ -42,6 +42,7 @@
 
 (defvar hyperdrive-current-entry)
 (defvar hyperdrive-timestamp-format)
+(defvar hyperdrive-default-host-format)
 
 ;;;; Faces
 
@@ -66,6 +67,17 @@
   "Entry timestamp.")
 
 ;;;; Functions
+
+(defun hyperdrive--directory-header (entry)
+  "Return header for ENTRY."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive etag path) entry)
+               (handle (hyperdrive--format-host hyperdrive
+                                                :format hyperdrive-default-host-format
+                                                :with-label t)))
+    (propertize (concat (format "[%s] " handle)
+                        (url-unhex-string path)
+                        (format " (version:%s)" etag))
+                'help-echo (hyperdrive-entry-url entry))))
 
 (defun hyperdrive-dir-pp (thing)
   "Pretty-print THING.
