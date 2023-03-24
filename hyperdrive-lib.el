@@ -331,7 +331,6 @@ HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
 full URL."
-  ;; TODO: Add petname.
   (pcase-let* (((cl-struct hyperdrive-entry path) entry)
                (protocol (when with-protocol
                            "hyper://"))
