@@ -442,7 +442,6 @@ If PREDICATE, only offer hyperdrives matching it."
          (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
     (setf (hyperdrive-seed hyperdrive) seed
           (hyperdrive-writablep hyperdrive) t)
-    (hyperdrive-persist hyperdrive)
     (hyperdrive-open-url url)))
 
 (defun hyperdrive-persist (hyperdrive)
