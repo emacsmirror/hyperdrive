@@ -228,7 +228,7 @@ petname."
                 (inhibit-read-only t))
       (erase-buffer)
       (insert
-       "Hyperdrive: \n"
+       (propertize "Hyperdrive: \n" 'face 'bold)
        (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
        (format "Seed: %s\n" (or (hyperdrive--format-host hyperdrive :format '(seed))
                                 "[none]"))
