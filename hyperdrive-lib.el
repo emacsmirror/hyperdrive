@@ -194,7 +194,6 @@ empty public-key slot."
     (make-hyperdrive-entry
      :hyperdrive hyperdrive
      :path (if (string-empty-p path) "/" path)
-     ;; TODO: Verify that this is the right for directories.
      :name (pcase path
              ((or "" "/")
               ;; Root directory: use "/" for clarity.
