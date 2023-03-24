@@ -62,6 +62,7 @@ default:
 - `n` and `p` move between entries
 - `RET` opens file or directory at point
 - `^` goes up to the parent directory
+- `d` downloads the file at point to disk
 - `D` deletes the file or directory (recursively) at point
 - `w` copies the URL of the file or directory at point
 
@@ -103,6 +104,12 @@ for subsequent connections.
 
 You can use the built-in `bookmark-set` and `bookmark-jump` functions
 to store and jump to a hyperdrive file or directory.
+
+### Download hyperdrive files
+
+You can download a hyperdrive file to your local filesystem. Download
+the current hyperdrive file with `hyperdrive-download-entry` or paste
+in a `hyper://` URL after `hyperdrive-download-url`.
 
 ### Upload files from your filesystem
 
