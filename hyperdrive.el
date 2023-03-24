@@ -117,12 +117,13 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other")))
 
 (defcustom hyperdrive-default-host-format
-  '(seed domain public-name short-key public-key)
+  '(petname seed domain public-name short-key public-key)
   "Default format for displaying hyperdrive hostnames.
 Each option is checked in order, and the first available type is
 used."
   :type '(repeat
-          (choice (const :tag "Seed" seed)
+          (choice (const :tag "Petname" petname)
+                  (const :tag "Seed" seed)
                   (const :tag "DNSLink domain" domain)
                   (const :tag "Public name (well-known)" public-name)
                   (const :tag "Shortened public key" short-key)
