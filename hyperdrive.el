@@ -425,6 +425,16 @@ in the buffer opened by the handler."
                        (_ (hyperdrive-message "Unable to load URL \"%s\": %S" url plz-error)))))))))))
 
 ;;;###autoload
+(defun hyperdrive-download-url (url filename)
+  "Load contents at URL as a file to store on disk at FILENAME."
+  (interactive
+   (let* ((read-url (read-string "Hyperdrive URL: "))
+          (name (hyperdrive-entry-name (hyperdrive-url-entry read-url)))
+          (read-filename (read-string "Filename: " (expand-file-name name hyperdrive-download-directory))))
+     (list read-url read-filename)))
+  (hyperdrive-api 'get url :as `(file ,filename)))
+
+;;;###autoload
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
 If buffer was not hyperdrive-backed, it becomes so."
