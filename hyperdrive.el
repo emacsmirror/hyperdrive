@@ -224,19 +224,23 @@ petname."
                         (format "*Hyperdrive: %s*"
                                 (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
                                                          :with-label t)))
-    (pcase-let (((cl-struct hyperdrive metadata seed domains writablep) hyperdrive)
+    (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive)
                 (inhibit-read-only t))
       (erase-buffer)
       (insert
-       (format "Hyperdrive: %s\n" (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
-                                                           :with-label t))
-       (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)
-                                                           :with-label t))
-       (format "Writable: %s\n" (if writablep "yes" "no"))
-       (format "Seed: %s\n" (or seed "[none]"))
+       "Hyperdrive: \n"
+       (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
+       (format "Seed: %s\n" (or (hyperdrive--format-host hyperdrive :format '(seed))
+                                "[none]"))
+       (format "Petname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(petname))
+                                   "[none]"))
+       (format "Nickname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(nickname))
+                                    "[none]"))
        (format "Domains: %s\n" (if domains
-                                   (format "%S" domains)
+                                   (propertize (format "%S" domains)
+                                               'face 'hyperdrive-domain)
                                  "[none]"))
+       (format "Writable: %s\n" (if writablep "yes" "no"))
        (format "Metadata: %s\n"
                (if metadata
                    (with-temp-buffer
