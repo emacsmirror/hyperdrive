@@ -96,6 +96,7 @@
 
 (defcustom hyperdrive-download-directory (expand-file-name "~/")
   "Location where `hyperdrive-download-url' will download files."
+  ;; TODO: Default to `eww-download-directory'
   :type '(file :must-match t))
 
 (defcustom hyperdrive-timestamp-format "%x %X"
