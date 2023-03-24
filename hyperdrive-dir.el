@@ -180,7 +180,7 @@ With point on header, return directory entry."
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-copy-url entry))
 
-(declare-function hyperdrive-download-url "hyperdrive")
+(declare-function hyperdrive-download-entry "hyperdrive")
 
 (defun hyperdrive-dir-download-file (entry filename)
   "Download ENTRY at point to FILENAME on disk."
@@ -189,7 +189,7 @@ With point on header, return directory entry."
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-string "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
-  (hyperdrive-download-url (hyperdrive-entry-url entry) filename))
+  (hyperdrive-download-entry entry filename))
 
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
