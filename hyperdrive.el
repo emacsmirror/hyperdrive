@@ -222,7 +222,7 @@ petname."
   (interactive (list (hyperdrive-complete-hyperdrive)))
   (with-current-buffer (get-buffer-create
                         (format "*Hyperdrive: %s*"
-                                (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
+                                (hyperdrive--format-host hyperdrive :format '(short-key)
                                                          :with-label t)))
     (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive)
                 (inhibit-read-only t))
