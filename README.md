@@ -7,7 +7,7 @@ project built by [USHIN](https://ushin.org) which provides an Emacs
 interface for managing hyperdrives.
 
 hyperdrive.el is in early development. If something breaks, please see
-the [troubleshooting section](#troubleshooting)
+the [troubleshooting section](#troubleshooting).
 
 ## Installation
 
