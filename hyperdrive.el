@@ -529,6 +529,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
     (cond ((null path) nil)
           (t (hyperdrive-open-url (hyperdrive-entry-url entry)
                :then (lambda ()
+                       ;; TODO: Once plz.el adds a finalizer callback, ensure that point lands at the correct spot
                        (bookmark-default-handler
                         ;; Don't mutate the original record.
                         (append bookmark `((buffer . ,(current-buffer)))))))))))
