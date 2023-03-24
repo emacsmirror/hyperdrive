@@ -242,6 +242,7 @@ petname."
                                                'face 'hyperdrive-domain)
                                  "[none]"))
        (format "Writable: %s\n" (if writablep "yes" "no"))
+       ;; TODO: Consider removing metadata table since we already display nickname above
        (format "Metadata: %s\n"
                (if metadata
                    (with-temp-buffer
