@@ -361,28 +361,29 @@ label for the kind of format used (e.g. \"petname:\")."
                      (concat (when with-label
                                "petname:")
                              (propertize petname 'face 'hyperdrive-petname)))
-                    ((and 'public-key (guard public-key))
+                    ((and 'nickname (guard name))
                      (concat (when with-label
-                               "public-key:")
-                             (propertize public-key 'face 'hyperdrive-public-key)))
+                               "nickname:")
+                             (propertize name
+                                         'face 'hyperdrive-nickname)))
+                    ((and 'domain (guard (car domains)))
+                     (concat (when with-label
+                               "domain:")
+                             (propertize (car domains) 'face 'hyperdrive-domain)))
+                    ((and 'seed (guard seed))
+                     (concat (when with-label
+                               "seed:")
+                             (propertize seed 'face 'hyperdrive-seed)))
                     ((and 'short-key (guard public-key))
                      ;; TODO: Consider adding a help-echo with the full key.
                      (concat (when with-label
                                "public-key:")
                              (propertize (concat (substring public-key 0 6) "…")
                                          'face 'hyperdrive-public-key)))
-                    ((and 'nickname (guard name))
+                    ((and 'public-key (guard public-key))
                      (concat (when with-label
-                               "nickname:")
-                             name))
-                    ((and 'domain (guard (car domains)))
-                     (concat (when with-label
-                               "domain:")
-                             (propertize (car domains) 'face 'hyperdrive-seed)))
-                    ((and 'seed (guard seed))
-                     (concat (when with-label
-                               "seed:")
-                             (propertize seed 'face 'hyperdrive-seed))))
+                               "public-key:")
+                             (propertize public-key 'face 'hyperdrive-public-key))))
              return it)))
 
 ;;;; Reading from the user
