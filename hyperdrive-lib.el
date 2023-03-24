@@ -472,7 +472,7 @@ both point to the same content."
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
-  (format "%s [hyperdrive:%s]"
+  (format "%s [%s]"
           (hyperdrive-entry-name entry)
           (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                    :format hyperdrive-default-host-format)))
