@@ -219,6 +219,7 @@ petname."
 
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
   "Display various information about HYPERDRIVE."
+  ;; TODO: Add hyperdrive-describe-hyperdrive mode with revert and bury buffer functions
   (interactive (list (hyperdrive-complete-hyperdrive)))
   (with-current-buffer (get-buffer-create
                         (format "*Hyperdrive: %s*"
