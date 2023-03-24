@@ -425,6 +425,21 @@ in the buffer opened by the handler."
                        (_ (hyperdrive-message "Unable to load URL \"%s\": %S" url plz-error)))))))))))
 
 ;;;###autoload
+(defun hyperdrive-download-entry (entry filename)
+  "Download ENTRY to FILENAME on disk.
+Interactively, downloads current hyperdrive file.  If current
+buffer is not a hyperdrive file, prompts with
+`hyperdrive-read-entry'."
+  (interactive
+   (pcase-let* ((entry (if hyperdrive-mode
+                           hyperdrive-current-entry
+                         (hyperdrive-read-entry)))
+                ((cl-struct hyperdrive-entry name) entry)
+                (read-filename (read-string "Filename: " (expand-file-name name hyperdrive-download-directory))))
+     (list entry read-filename)))
+  (hyperdrive-download-url (hyperdrive-entry-url entry) filename))
+
+;;;###autoload
 (defun hyperdrive-download-url (url filename)
   "Load contents at URL as a file to store on disk at FILENAME."
   (interactive
