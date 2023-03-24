@@ -60,11 +60,13 @@
 (cl-defstruct hyperdrive
   "Represents a hyperdrive."
   (public-key nil :documentation "Hyperdrive's public key.")
-  (metadata nil :documentation "Public metadata alist.")
   (seed nil :documentation "Seed (always and only present for writable hyperdrives).")
+  (writablep nil :documentation "Whether the drive is writable.")
+  (petname nil :documentation "Petname.")
   ;; TODO: Where to invalidate old domains?
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
-  (writablep nil :documentation "Whether the drive is writable."))
+  (metadata nil :documentation "Public metadata alist.")
+  (etc nil :documentation "Alist of extra data."))
 
 (defun hyperdrive-url (hyperdrive)
   "Return a \"hyper://\"-prefixed URL from a HYPERDRIVE struct.
