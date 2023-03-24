@@ -296,6 +296,8 @@ made synchronously for its contents."
                (metadata (with-local-quit
                            (hyperdrive-api 'get (hyperdrive-entry-url entry)
                              :as #'json-read :else #'ignore :noquery t))))
+    ;; NOTE: RFC6415 specifies that what we use as a "nickname" have
+    ;; the key "name" in the JSON object.
     (when metadata
       (setf (hyperdrive-metadata hyperdrive) metadata)
       (hyperdrive-persist hyperdrive))
