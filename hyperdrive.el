@@ -313,7 +313,6 @@ hyperdrive."
     (hyperdrive-message "Gateway is not running.")))
 
 ;; TODO: Command to upload one or more files.
-;; TODO: Command to download files.
 
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
