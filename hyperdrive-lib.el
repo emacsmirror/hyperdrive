@@ -448,7 +448,7 @@ petname."
     (when-let ((other-hyperdrive
                 (cl-find petname (hash-table-values hyperdrive-hyperdrives)
                          :key #'hyperdrive-petname :test #'equal)))
-      (user-error "Petname %S already assigned to hyperdrive %S"
+      (user-error "Petname %S already assigned to hyperdrive: %s"
                   petname (hyperdrive--format-hyperdrive other-hyperdrive))))
   (setf (hyperdrive-petname hyperdrive) petname)
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
