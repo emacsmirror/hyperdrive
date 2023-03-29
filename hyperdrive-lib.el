@@ -433,6 +433,27 @@ If PREDICATE, only offer hyperdrives matching it."
                                      path
                                    (concat "/" path)))))
 
+(defun hyperdrive-set-petname (petname hyperdrive)
+  "Set HYPERDRIVE's PETNAME.
+Entering an empty or blank string unsets the HYPERDRIVE's
+petname."
+  (interactive
+   (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
+          (petname (read-string
+                    (format "Petname (%s): "
+                            (hyperdrive--format-host hyperdrive :format '(short-key))))))
+     (list petname hyperdrive)))
+  (if (string-blank-p petname)
+      (setf petname nil)
+    (when-let ((other-hyperdrive
+                (cl-find petname (hash-table-values hyperdrive-hyperdrives)
+                         :key #'hyperdrive-petname :test #'equal)))
+      (user-error "Petname %S already assigned to hyperdrive %S"
+                  petname (hyperdrive--format-hyperdrive other-hyperdrive))))
+  (setf (hyperdrive-petname hyperdrive) petname)
+  ;; TODO: Consider refreshing buffer names, directory headers, etc.
+  hyperdrive)
+
 ;;;###autoload
 (defun hyperdrive-new (seed)
   "Open new hyperdrive for SEED."
@@ -449,6 +470,18 @@ If PREDICATE, only offer hyperdrives matching it."
          (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
     (setf (hyperdrive-seed hyperdrive) seed
           (hyperdrive-writablep hyperdrive) t)
+    ;; Persist the hyperdrive before setting the pet name in case a
+    ;; conflict prevents this function from returning naturally.
+    (hyperdrive-persist hyperdrive)
+    (condition-case nil
+        (hyperdrive-set-petname seed hyperdrive)
+      (user-error (hyperdrive-set-petname
+                   (read-string
+                    (format "%S already assigned as petname to hyperdrive: %s.  Enter new petname: "
+                            seed (hyperdrive--format-hyperdrive
+                                  (cl-find seed (hash-table-values hyperdrive-hyperdrives)
+                                           :key #'hyperdrive-petname :test #'equal))))
+                   hyperdrive)))
     (hyperdrive-persist hyperdrive)
     (hyperdrive-open-url url)))
 
