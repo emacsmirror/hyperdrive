@@ -365,6 +365,7 @@ label for the kind of format used (e.g. \"petname:\")."
                              (propertize name
                                          'face 'hyperdrive-nickname)))
                     ((and 'domain (guard (car domains)))
+                     ;; TODO: Handle the unlikely case that a drive has multiple domains.
                      (concat (when with-label
                                "domain:")
                              (propertize (car domains) 'face 'hyperdrive-domain)))
