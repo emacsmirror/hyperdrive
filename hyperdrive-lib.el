@@ -400,7 +400,7 @@ PROMPT."
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
                              hyperdrives))
-         (completion-styles (cons 'flex completion-styles))
+         (completion-styles (cons 'substring completion-styles))
          (selected (completing-read prompt candidates nil 'require-match nil nil default)))
     (or (alist-get selected candidates nil nil #'equal)
         (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
