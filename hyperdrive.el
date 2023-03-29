@@ -238,10 +238,13 @@ petname."
                                    "[none]"))
        (format "Nickname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(nickname))
                                     "[none]"))
-       (format "Domains: %s\n" (if domains
-                                   (propertize (format "%S" domains)
-                                               'face 'hyperdrive-domain)
-                                 "[none]"))
+       (format "Domains: %s\n"
+               (if domains
+                   (string-join (mapcar (lambda (domain)
+                                          (propertize domain 'face 'hyperdrive-domain))
+                                        domains)
+                                ", ")
+                 "[none]"))
        (format "Writable: %s\n" (if writablep "yes" "no"))
        ;; TODO: Consider removing metadata table since we already display nickname above
        (format "Metadata: %s\n"
