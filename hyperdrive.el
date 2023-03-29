@@ -150,7 +150,7 @@ through a shell)."
 (defface hyperdrive-seed '((t :inherit font-lock-doc-face))
   "Applied to hyperdrive seeds.")
 
-(defface hyperdrive-domain '((t :inherit font-lock-negation-char-face))
+(defface hyperdrive-domain '((t :inherit font-lock-keyword-face))
   "Applied to hyperdrive domains.")
 
 (defface hyperdrive-nickname '((t :inherit font-lock-warning-face))
