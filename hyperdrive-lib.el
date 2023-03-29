@@ -454,6 +454,37 @@ petname."
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
+(defun hyperdrive-set-nickname (nickname hyperdrive)
+  "Set HYPERDRIVE's NICKNAME.
+Entering an empty or blank string unsets the HYPERDRIVE's
+nickname."
+  (interactive
+   (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
+          (nickname (read-string
+                     (format "New nickname for hyperdrive (%s): "
+                             (hyperdrive--format-host hyperdrive :format '(short-key)))
+                     (alist-get 'name (hyperdrive-metadata hyperdrive)))))
+     (list nickname hyperdrive)))
+  (when (string-blank-p nickname)
+    (setf nickname nil))
+  (hyperdrive-fill-public-metadata hyperdrive)
+  (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
+  (hyperdrive-put-metadata hyperdrive
+    :then (lambda (&rest _)
+            (hyperdrive-message "Set nickname: %s"
+                                (hyperdrive--format-host hyperdrive :format '(nickname)))))
+  ;; TODO: Consider refreshing buffer names, directory headers, etc.
+  hyperdrive)
+
+(cl-defun hyperdrive-put-metadata (hyperdrive &key then)
+  "Put HYPERDRIVE's metadata into the appropriate file."
+  (declare (indent defun))
+  (let ((entry (make-hyperdrive-entry :hyperdrive hyperdrive
+                                      :path "/.well-known/host-meta.json")))
+    (hyperdrive-write entry :body (json-encode (hyperdrive-metadata hyperdrive))
+      :then then)
+    hyperdrive))
+
 ;;;###autoload
 (defun hyperdrive-new (seed)
   "Open new hyperdrive for SEED."
