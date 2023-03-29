@@ -396,17 +396,25 @@ PROMPT."
                                  ((cl-struct hyperdrive public-key seed domains) hyperdrive))
                       (when (member hyperdrive hyperdrives)
                         (or seed (car domains) public-key)))))
-         candidates)
-    (dolist (hyperdrive hyperdrives)
-      (pcase-let (((cl-struct hyperdrive public-key seed domains) hyperdrive))
-        (push (cons public-key hyperdrive) candidates)
-        (when seed
-          (push (cons seed hyperdrive) candidates))
-        (dolist (domain domains)
-          (push (cons domain hyperdrive) candidates))))
-    (or (alist-get (completing-read prompt (mapcar #'car candidates) nil 'require-match nil nil default)
-                   candidates nil nil #'equal)
+         (candidates (mapcar (lambda (hyperdrive)
+                               (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
+                             hyperdrives))
+         (completion-styles (cons 'flex completion-styles))
+         (selected (completing-read prompt candidates nil 'require-match nil nil default)))
+    (or (alist-get selected candidates nil nil #'equal)
         (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
+
+(cl-defun hyperdrive--format-hyperdrive (hyperdrive)
+  "Return HYPERDRIVE formatted for completion."
+  (let ((petname (hyperdrive--format-host hyperdrive :format '(petname) :with-label t))
+        (nickname (hyperdrive--format-host hyperdrive :format '(nickname) :with-label t))
+        (domain (hyperdrive--format-host hyperdrive :format '(domain) :with-label t))
+        (seed (hyperdrive--format-host hyperdrive :format '(seed) :with-label t))
+        (short-key (hyperdrive--format-host hyperdrive :format '(short-key) :with-label t)))
+    (string-trim
+     (cl-loop for value in (list petname nickname domain seed short-key)
+              when value
+              concat (concat value "  ")))))
 
 (cl-defun hyperdrive-read-entry (&key predicate)
   "Return new hyperdrive entry with path and hyperdrive read from user.
