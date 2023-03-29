@@ -393,10 +393,7 @@ If PREDICATE, only offer hyperdrives matching it.  Prompt with
 PROMPT."
   (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
          (default (when hyperdrive-current-entry
-                    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) hyperdrive-current-entry)
-                                 ((cl-struct hyperdrive public-key seed domains) hyperdrive))
-                      (when (member hyperdrive hyperdrives)
-                        (or seed (car domains) public-key)))))
+                    (hyperdrive--format-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
                              hyperdrives))
