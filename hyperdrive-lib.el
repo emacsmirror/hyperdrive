@@ -456,7 +456,7 @@ petname."
 Entering an empty or blank string unsets the HYPERDRIVE's
 nickname."
   (interactive
-   (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
+   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
           (nickname (read-string
                      (format "New nickname for hyperdrive (%s): "
                              (hyperdrive--format-host hyperdrive :format '(short-key)))
