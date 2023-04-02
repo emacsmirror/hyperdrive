@@ -518,6 +518,23 @@ nickname."
   (puthash (hyperdrive-public-key hyperdrive) hyperdrive hyperdrive-hyperdrives)
   (persist-save 'hyperdrive-hyperdrives))
 
+(defun hyperdrive--seed-url (seed)
+  "Return URL to hyperdrive known as SEED, or nil if it doesn't exist.
+That is, if the SEED has been used to create a local
+hyperdrive."
+  ;; TODO: Should this function go inside hyperdrive-lib.el?
+  (condition-case err
+      (pcase (with-local-quit
+               (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string seed))
+                               :as 'response :noquery t))
+        ((and (pred plz-response-p)
+              response
+              (guard (= 200 (plz-response-status response))))
+         (plz-response-body response)))
+    (plz-http-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
+                        nil
+                      (signal 'plz-http-error err)))))
+
 ;;;; Misc.
 
 (defun hyperdrive--get-buffer-create (entry)
