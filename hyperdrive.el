@@ -496,7 +496,8 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
 
 ;;;; Bookmark support
 
-;;TODO: Add functions to list/jump to hyperdrive bookmarks
+;;TODO: Add function to list hyperdrive bookmarks
+
 (require 'bookmark)
 
 (defun hyperdrive-bookmark-make-record ()
@@ -531,6 +532,18 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
                        (bookmark-default-handler
                         ;; Don't mutate the original record.
                         (append bookmark `((buffer . ,(current-buffer)))))))))))
+
+(defun hyperdrive-bookmark-jump (bookmark)
+  "Jump to a Hyperdrive BOOKMARK."
+  (interactive
+   (progn
+     (bookmark-maybe-load-default-file) ; paranoia
+     (list
+      (completing-read "Open Hyperdrive bookmark: " bookmark-alist
+                       (pcase-lambda (`(,_name . ,(map handler)))
+                         (equal handler #'hyperdrive-bookmark-handler))
+                       t nil 'bookmark-history))))
+  (bookmark-jump bookmark))
 
 ;;;; Footer
 
