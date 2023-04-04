@@ -545,6 +545,15 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
                        t nil 'bookmark-history))))
   (bookmark-jump bookmark))
 
+(defun hyperdrive-bookmark-list ()
+  "List Hyperdrive bookmarks."
+  (interactive)
+  (let ((bookmark-alist
+         (cl-remove-if-not (pcase-lambda (`(,_name . ,(map handler)))
+                             (equal handler #'hyperdrive-bookmark-handler))
+                           bookmark-alist)))
+    (call-interactively #'bookmark-bmenu-list)))
+
 ;;;; Footer
 
 (provide 'hyperdrive)
