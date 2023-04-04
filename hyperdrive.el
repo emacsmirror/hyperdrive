@@ -496,8 +496,6 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
 
 ;;;; Bookmark support
 
-;;TODO: Add function to list hyperdrive bookmarks
-
 (require 'bookmark)
 
 (defun hyperdrive-bookmark-make-record ()
