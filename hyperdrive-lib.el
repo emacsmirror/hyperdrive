@@ -331,6 +331,10 @@ HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
 full URL."
+  ;; TODO: When returning a URL like hyper://HOST-FORMAT/PATH/TO/FILE,
+  ;; only allow HOST-FORMAT to be public-key or domain, since
+  ;; nickname, petname, or seed result in a misleading, invalid URL.
+  ;; For other HOST-FORMATs, use a different format.
   (pcase-let* (((cl-struct hyperdrive-entry path) entry)
                (protocol (when with-protocol
                            "hyper://"))
