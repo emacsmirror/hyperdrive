@@ -66,19 +66,6 @@
     + Removing petnames from hyperdrives ::
       1. Document that setting a petname to the empty string is considered unsetting the petname.
 
-* PROJECT Conference presentation
-
-** PROJECT Screencast
-DEADLINE: <2023-03-09 Thu>
-:LOGBOOK:
-- State "PROJECT"    from              [2023-02-28 Tue 18:13]
-:END:
-
-*** Issues to solve before screencast
-
-+ [ ] [[https://todo.sr.ht/~ushin/ushin/21][~ushin/ushin#21: Store link with search options in `hyperdrive-store-link` — sourcehut todo]]
-+ [ ] [[https://todo.sr.ht/~ushin/ushin/17][~ushin/ushin#17: Handle uri-encoding — sourcehut todo]] (maybe not absolutely necessary for screencast)
-
 * Response matrix
 :PROPERTIES:
 :ID:       3381f0a8-7d75-4e1e-90e4-f4d9adf6015e
@@ -156,4 +143,22 @@ What hyperdrive does:
 |-----------------------+--------------+-----------------------------+-------------------|
 | Already exists        | write-buffer | Prompt to overwrite         |                   |
 | Already exists        | save-buffer  | Overwrite without prompting |                   |
+
+* DONE Conference presentation
+:LOGBOOK:
+- State "DONE"       from "PROJECT"    [2023-04-04 Tue 13:33] \\
+  GREAT SUCCESS!
+:END:
+
+** DONE Screencast
+DEADLINE: <2023-03-09 Thu>
+:LOGBOOK:
+- State "DONE"       from "PROJECT"    [2023-04-04 Tue 13:33]
+- State "PROJECT"    from              [2023-02-28 Tue 18:13]
+:END:
+
+*** Issues to solve before screencast
+
++ [X] [[https://todo.sr.ht/~ushin/ushin/21][~ushin/ushin#21: Store link with search options in `hyperdrive-store-link` — sourcehut todo]]
++ [X] [[https://todo.sr.ht/~ushin/ushin/17][~ushin/ushin#17: Handle uri-encoding — sourcehut todo]] (maybe not absolutely necessary for screencast)
 
