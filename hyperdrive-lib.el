@@ -315,6 +315,24 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
 
+(cl-defun hyperdrive-entry-description (entry &key (with-version t))
+  "Return description for ENTRY.
+If WITH-VERSION, include it.  Returned string looks like:
+
+  PATH [HOST] (version:VERSION)"
+  ;; TODO: When we implement parsing of versions in URLs, update this
+  ;; function to automatically include the version when the URL does,
+  ;; and not otherwise.
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive etag path) entry)
+               (handle (hyperdrive--format-host hyperdrive
+                                                :format hyperdrive-default-host-format
+                                                :with-label t)))
+    (propertize (concat (url-unhex-string path)
+                        (format " [%s]" handle)
+                        (when with-version
+                          (format " (version:%s)" etag)))
+                'help-echo (hyperdrive-entry-url entry))))
+
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
            (with-protocol t) (with-help-echo t))

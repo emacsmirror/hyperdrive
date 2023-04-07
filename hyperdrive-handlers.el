@@ -112,7 +112,7 @@ If then, then call THEN with no arguments."
     (setf directory-entry (hyperdrive--fill directory-entry headers)
           hyperdrive-entries entries)
     (hyperdrive-fill-public-metadata (hyperdrive-entry-hyperdrive directory-entry))
-    (setf header (hyperdrive--directory-header directory-entry))
+    (setf header (hyperdrive-entry-description directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
       ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)
       ;;            (ewoc-nth hyperdrive-dir-ewoc 0))

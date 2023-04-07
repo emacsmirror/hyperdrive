@@ -69,17 +69,6 @@
 
 ;;;; Functions
 
-(defun hyperdrive--directory-header (entry)
-  "Return header for ENTRY."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive etag path) entry)
-               (handle (hyperdrive--format-host hyperdrive
-                                                :format hyperdrive-default-host-format
-                                                :with-label t)))
-    (propertize (concat (url-unhex-string path)
-                        (format " [%s]" handle)
-                        (format " (version:%s)" etag))
-                'help-echo (hyperdrive-entry-url entry))))
-
 (defun hyperdrive-dir-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."
