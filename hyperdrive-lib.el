@@ -327,8 +327,8 @@ If WITH-VERSION, include it.  Returned string looks like:
                (handle (hyperdrive--format-host hyperdrive
                                                 :format hyperdrive-default-host-format
                                                 :with-label t)))
-    (propertize (concat (url-unhex-string path)
-                        (format " [%s]" handle)
+    (propertize (concat (format "[%s] " handle)
+                        (url-unhex-string path)
                         (when with-version
                           (format " (version:%s)" etag)))
                 'help-echo (hyperdrive-entry-url entry))))
