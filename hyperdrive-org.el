@@ -51,10 +51,10 @@ which see."
                     (let ((entry (hyperdrive-dir--entry-at-point)))
                       `((type . "hyper://")
                         (link . ,(hyperdrive-entry-url entry))
-                        (description . ,(hyperdrive--format-entry-url entry)))))
+                        (description . ,(hyperdrive-entry-description entry)))))
                    (_ `((type . "hyper://")
                         (link . ,(hyperdrive-entry-url hyperdrive-current-entry))
-                        (description . ,(hyperdrive--format-entry-url hyperdrive-current-entry)))))))
+                        (description . ,(hyperdrive-entry-description hyperdrive-current-entry)))))))
       (org-link-store-props :type type :link link :description description)
       t)))
 
