@@ -46,7 +46,6 @@ Keys are regexps matched against MIME types.")
 (cl-defun hyperdrive-handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
-  ;; FIXME: Make buffer read-only when hyperdrive isn't writable.
   (with-local-quit
     (hyperdrive-api 'get (hyperdrive-entry-url entry)
       :noquery t
