@@ -580,11 +580,11 @@ both point to the same content."
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
-  (format "%s [%s]"
-          (hyperdrive-entry-name entry)
+  (format "[%s] %s"
           (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                    :format hyperdrive-default-host-format
-                                   :with-label t)))
+                                   :with-label t)
+          (hyperdrive-entry-name entry)))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
