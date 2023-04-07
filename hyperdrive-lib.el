@@ -83,11 +83,7 @@ domains slot."
 (defun hyperdrive-entry-url (entry)
   "Return ENTRY's canonical URL.
 Returns URL with hyperdrive's full public key."
-  (hyperdrive--format-entry-url
-   entry :with-protocol t
-   ;; NOTE: The ENTRY may have only a domain, not a public key yet, so we must
-   ;; also pass `domain' as a fallback.  The public key will be filled in later.
-   :host-format '(public-key domain)))
+  (hyperdrive--format-entry-url entry :with-protocol t))
 
 ;;;; Variables
 
@@ -320,7 +316,7 @@ Call ELSE if request fails."
     :body body :then then :else else))
 
 (cl-defun hyperdrive--format-entry-url
-    (entry &key (host-format hyperdrive-default-host-format)
+    (entry &key (host-format '(public-key domain))
            (with-protocol t) (with-help-echo t))
   "Return ENTRY's URL.
 Returns URL formatted like:
@@ -330,11 +326,14 @@ Returns URL formatted like:
 HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL."
-  ;; TODO: When returning a URL like hyper://HOST-FORMAT/PATH/TO/FILE,
-  ;; only allow HOST-FORMAT to be public-key or domain, since
-  ;; nickname, petname, or seed result in a misleading, invalid URL.
-  ;; For other HOST-FORMATs, use a different format.
+full URL.
+
+Note that, if HOST-FORMAT includes values other than `public-key'
+and `domain', the resulting URL may not be a valid hyperdrive
+URL."
+  ;; NOTE: Entries may have only a domain, not a public key yet, so we
+  ;; include `domain' in HOST-FORMAT's default value.  The public key
+  ;; will be filled in later.
   (pcase-let* (((cl-struct hyperdrive-entry path) entry)
                (protocol (when with-protocol
                            "hyper://"))
