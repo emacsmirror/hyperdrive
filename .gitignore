@@ -3,3 +3,4 @@
 makem.sh
 /.dir-locals-2.el
 *.elc
+/worktrees/
