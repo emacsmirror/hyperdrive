@@ -507,7 +507,7 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
     ;; TODO: Consider using `with-version-p' everywhere instead of `with-version'.
     (setf (alist-get 'with-version (hyperdrive-entry-etc entry)) t)
     (cl-decf (hyperdrive-entry-version entry))
-    (hyperdrive-open-url (hyperdrive-entry-url entry))))
+    (hyperdrive-find-file entry)))
 
 ;;;; Bookmark support
 
