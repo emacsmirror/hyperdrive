@@ -148,7 +148,14 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
   "Return non-nil if ENTRY exists.
 Makes a synchronous HEAD request for ENTRY."
   (with-local-quit
-    (hyperdrive-api 'head (hyperdrive-entry-url entry) :noquery t)))
+    (condition-case err
+        (hyperdrive-api 'head (hyperdrive-entry-url entry) :noquery t)
+      (plz-http-error
+       (if (= 404 (plz-response-status (plz-error-response (cdr err))))
+           ;; 404 means entry doesn't exist: return nil.
+           nil
+         ;; Other error: re-signal.
+         (signal (car err) (cdr err)))))))
 
 (defun hyperdrive-parent (entry)
   "Return parent entry for ENTRY.
