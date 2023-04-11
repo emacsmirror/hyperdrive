@@ -201,7 +201,13 @@ empty public-key slot."
                               (or (gethash host hyperdrive-hyperdrives)
                                   (make-hyperdrive :public-key host)))))
                (etc (when target
-                      (list (cons 'target target)))))
+                      (list (cons 'target target))))
+               (version (when (string-match (rx "/$/version/" (group (1+ digit))
+                                                (group (optional "/" (1+ anything))))
+                                            path)
+                          (prog1 (string-to-number (match-string 1 path))
+                            (setf path (match-string 2 path))
+                            (setf (alist-get 'with-version etc) t)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (make-hyperdrive-entry
@@ -219,6 +225,9 @@ empty public-key slot."
              (_
               ;; A file: remove directory part.
               (file-name-nondirectory (url-unhex-string path))))
+     ;; If version is not in the URL, the slot will be nil, but it
+     ;; will be filled elsewhere.
+     :version version
      :etc etc)))
 ;;;; Entries
 
