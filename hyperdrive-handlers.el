@@ -101,9 +101,7 @@ If then, then call THEN with no arguments."
                                          (url-hexify-string entry-name (cons ?/ url-unreserved-chars)))
                            :name entry-name))
                         entry-names))
-               (parent-url (hyperdrive--parent url))
-               (parent-entry (when parent-url
-                               (hyperdrive-url-entry parent-url)))
+               (parent-entry (hyperdrive-parent directory-entry))
                (ewoc) (header) ;; (prev-node-data) (prev-line)
                )
     (when parent-entry

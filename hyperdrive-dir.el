@@ -132,20 +132,20 @@ To be used as the pretty-printer for `ewoc-create'."
 
 ;; TODO: Implement sorting by size, type, etc.
 
-(declare-function hyperdrive-open-url "hyperdrive")
+(declare-function hyperdrive-open "hyperdrive")
 
 (defun hyperdrive-dir-find-file (entry)
   "Visit hyperdrive ENTRY.
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
-  (hyperdrive-open-url (hyperdrive-entry-url entry)))
+  (hyperdrive-open entry))
 
 (defun hyperdrive-dir-up ()
   "Go up to parent directory."
   (interactive)
-  (if-let ((parent-url (hyperdrive--parent (hyperdrive-entry-url hyperdrive-current-entry))))
-      (hyperdrive-open-url parent-url)
+  (if-let ((parent (hyperdrive-parent hyperdrive-current-entry)))
+      (hyperdrive-open parent)
     (user-error "At root directory")))
 
 (defun hyperdrive-dir--entry-at-point ()

@@ -36,7 +36,7 @@
 ;;;; Declarations
 
 (declare-function hyperdrive-mode "hyperdrive")
-(declare-function hyperdrive-open-url "hyperdrive")
+(declare-function hyperdrive-open "hyperdrive")
 
 ;;;; Structs
 
@@ -144,13 +144,17 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
     :body body
     :then then :else else))
 
-(defun hyperdrive--parent (url)
-  ;; TODO: Maybe rename this?
-  "Return parent URL for URL.
+(defun hyperdrive-parent (entry)
+  "Return parent entry for ENTRY.
 If already at top-level directory, return nil."
-  (let ((parent-url (file-name-directory (directory-file-name url))))
-    (unless (equal parent-url hyperdrive--hyper-prefix)
-      parent-url)))
+  ;; TODO: Handle versioning.
+  (pcase (hyperdrive-entry-path entry)
+    ("/"  ;; Already at root: return nil.
+     nil)
+    (_  ;; Not at root: return parent entry.
+     (make-hyperdrive-entry
+      :hyperdrive (hyperdrive-entry-hyperdrive entry)
+      :path (file-name-directory (directory-file-name (hyperdrive-entry-path entry)))))))
 
 ;; (defun hyperdrive--readable-p (url)
 ;;   "Return non-nil if URL is readable.
@@ -532,7 +536,7 @@ nickname."
                                            :key #'hyperdrive-petname :test #'equal))))
                    hyperdrive)))
     (hyperdrive-persist hyperdrive)
-    (hyperdrive-open-url url)))
+    (hyperdrive-open (hyperdrive-url-entry url))))
 
 (defun hyperdrive-persist (hyperdrive)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'."

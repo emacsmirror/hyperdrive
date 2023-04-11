@@ -287,7 +287,7 @@ through a shell)."
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
   ;; TODO: [#C] Override buffer-modified check when buffer is erased.
-  (hyperdrive-open-url (hyperdrive-entry-url hyperdrive-current-entry)))
+  (hyperdrive-open hyperdrive-current-entry))
 
 ;;;; hyperdrive-mode
 
@@ -324,16 +324,20 @@ through a shell)."
   "Find hyperdrive ENTRY.
 Interactively, prompts for known hyperdrive and path."
   (interactive (list (hyperdrive-read-entry)))
-  (hyperdrive-open-url (hyperdrive-entry-url entry)))
+  (hyperdrive-open entry))
+
+(defun hyperdrive-open-url (url)
+  "Open hyperdrive URL."
+  (interactive (list (read-string "Hyperdrive URL: ")))
+  (hyperdrive-open (hyperdrive-url-entry url)))
 
 ;;;###autoload
-(cl-defun hyperdrive-open-url (url &key then recurse)
-  "Open hyperdrive URL.
+(cl-defun hyperdrive-open (entry &key then recurse)
+  "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
 not found.  THEN may be a function to pass to the handler to call
 in the buffer opened by the handler."
   (declare (indent defun))
-  (interactive (list (read-string "Hyperdrive URL: ")))
   ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
   ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
   ;; struct. If the hyperdrive already exists in hyperdrive-hyperdrives, there's no need to send a HEAD
@@ -344,8 +348,7 @@ in the buffer opened by the handler."
   ;; TODO: What happens if the user tries to open a hyperdrive file that's already open in a buffer?
   ;; FIXME: Some of the synchronous filling functions we've added now cause this to be blocking,
   ;; which is very noticeable when a file can't be loaded from the gateway and eventually times out.
-  (let* ((entry (hyperdrive-url-entry url))
-         (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+  (let ((hyperdrive (hyperdrive-entry-hyperdrive entry)))
     (hyperdrive-fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
@@ -359,13 +362,14 @@ in the buffer opened by the handler."
       :else (lambda (plz-error)
               (cl-labels ((go-up
                            () (if recurse
-                                  (hyperdrive-open-url (hyperdrive--parent url) :recurse t)
+                                  (hyperdrive-open (hyperdrive-parent entry) :recurse t)
                                 (pcase (prompt-to-go-up)
-                                  (1 (hyperdrive-open-url (hyperdrive--parent url)))
-                                  (`t (hyperdrive-open-url (hyperdrive--parent url) :recurse t)))))
+                                  (1 (hyperdrive-open (hyperdrive-parent entry)))
+                                  (`t (hyperdrive-open (hyperdrive-parent entry) :recurse t)))))
                           (prompt-to-go-up
                            () (pcase-exhaustive
-                                  (read-answer (format "URL not found: \"%s\".  Try to load parent directory? " url)
+                                  (read-answer (format "URL not found: \"%s\".  Try to load parent directory? "
+                                                       (hyperdrive-entry-url entry))
                                                '(("yes" ?y "go up one level")
                                                  ("no" ?n "exit")
                                                  ("recurse" ?! "go up until directory found")))
@@ -381,7 +385,7 @@ in the buffer opened by the handler."
                     (_ ;; Any other error is an HTTP error.
                      (pcase (plz-response-status response)
                        (404 ;; Path not found.
-                        (cond ((string-suffix-p "/" url)
+                        (cond ((string-suffix-p "/" (hyperdrive-entry-path entry))
                                ;; Path ends in a slash (and hyperdrive does not
                                ;; support empty directories): offer to go up the tree.
                                (go-up))
@@ -392,7 +396,8 @@ in the buffer opened by the handler."
                               (t
                                ;; Hyperdrive not writable: offer to go up.
                                (go-up))))
-                       (_ (hyperdrive-message "Unable to load URL \"%s\": %S" url plz-error)))))))))))
+                       (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
+                                              (hyperdrive-entry-url entry) plz-error)))))))))))
 
 ;;;###autoload
 (defun hyperdrive-download-entry (entry filename)
@@ -524,7 +529,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
                (entry (make-hyperdrive-entry :hyperdrive hyperdrive
                                              :path path)))
     (cond ((null path) nil)
-          (t (hyperdrive-open-url (hyperdrive-entry-url entry)
+          (t (hyperdrive-open entry
                :then (lambda ()
                        ;; TODO: Once plz.el adds a finalizer callback, ensure that point lands at the correct spot
                        (bookmark-default-handler
