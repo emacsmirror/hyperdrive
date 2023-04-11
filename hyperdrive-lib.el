@@ -271,7 +271,10 @@ The following ENTRY hyperdrive slots are filled:
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
-          (hyperdrive-entry-version entry) etag
+          ;; FIXME: When
+          ;; <https://github.com/RangerMauve/hypercore-fetch/issues/65>
+          ;; is done, remove this `1+`.
+          (hyperdrive-entry-version entry) (1+ etag)
           (hyperdrive-entry-modified entry) last-modified)
     (when domain
       (if persisted-hyperdrive
