@@ -53,7 +53,7 @@
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
-  (etag nil :documentation "Entry's Etag.")
+  (version nil :documentation "Version of hyperdrive for this entry.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
@@ -249,7 +249,7 @@ which see."
 The following ENTRY slots are filled:
 - name
 - type
-- etag
+- version
 - modified
 
 The following ENTRY hyperdrive slots are filled:
@@ -271,7 +271,7 @@ The following ENTRY hyperdrive slots are filled:
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
-          (hyperdrive-entry-etag entry) etag
+          (hyperdrive-entry-version entry) etag
           (hyperdrive-entry-modified entry) last-modified)
     (when domain
       (if persisted-hyperdrive
@@ -327,14 +327,14 @@ If WITH-VERSION, include it.  Returned string looks like:
   ;; TODO: When we implement parsing of versions in URLs, update this
   ;; function to automatically include the version when the URL does,
   ;; and not otherwise.
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive etag path) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path) entry)
                (handle (hyperdrive--format-host hyperdrive
                                                 :format hyperdrive-default-host-format
                                                 :with-label t)))
     (propertize (concat (format "[%s] " handle)
                         (url-unhex-string path)
                         (when with-version
-                          (format " (version:%s)" etag)))
+                          (format " (version:%s)" version)))
                 'help-echo (hyperdrive-entry-url entry))))
 
 (cl-defun hyperdrive--format-entry-url

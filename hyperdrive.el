@@ -461,7 +461,7 @@ overwrite."
               (buffer-substring-no-properties (point-min) (point-max)))
       :then (lambda (_response)
               ;; TODO: Fill entry after writing it (and e.g. display
-              ;; new etag in mode line).
+              ;; new version in mode line).
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
                   (setf buffer-file-name nil)
@@ -481,7 +481,7 @@ overwrite."
                               plz-error)))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
     (hyperdrive-message "Saving to \"%s\"..." url)
-    ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display etag, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
+    ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display version, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
 
 (defun hyperdrive--write-contents ()
