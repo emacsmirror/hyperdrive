@@ -351,7 +351,8 @@ Returns URL formatted like:
 HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL.
+full URL.  If ENTRY's `etc' map has WITH-VERSION set, include
+version number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
 and `domain', the resulting URL may not be a valid hyperdrive
@@ -359,12 +360,15 @@ URL."
   ;; NOTE: Entries may have only a domain, not a public key yet, so we
   ;; include `domain' in HOST-FORMAT's default value.  The public key
   ;; will be filled in later.
-  (pcase-let* (((cl-struct hyperdrive-entry path) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry path version
+                           (etc (map with-version)))
+                entry)
                (protocol (when with-protocol
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format))
-               (url (concat protocol host path)))
+               (version-part (and with-version (format "/$/version/%s" version)))
+               (url (concat protocol host version-part path)))
     (if with-help-echo
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
@@ -587,11 +591,14 @@ both point to the same content."
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
-  (format "[%s] %s"
+  (format "[%s] %s%s"
           (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                    :format hyperdrive-default-host-format
                                    :with-label t)
-          (hyperdrive-entry-name entry)))
+          (hyperdrive-entry-name entry)
+          (if (alist-get 'with-version (hyperdrive-entry-etc entry))
+              (format " (version:%s)" (hyperdrive-entry-version entry))
+            "")))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
