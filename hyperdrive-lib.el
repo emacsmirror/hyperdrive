@@ -274,7 +274,7 @@ The following ENTRY hyperdrive slots are filled:
           ;; FIXME: When
           ;; <https://github.com/RangerMauve/hypercore-fetch/issues/65>
           ;; is done, remove this `1+`.
-          (hyperdrive-entry-version entry) (1+ etag)
+          (hyperdrive-entry-version entry) (1+ (string-to-number etag))
           (hyperdrive-entry-modified entry) last-modified)
     (when domain
       (if persisted-hyperdrive
