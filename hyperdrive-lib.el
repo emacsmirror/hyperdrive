@@ -197,7 +197,7 @@ empty public-key slot."
                (hyperdrive (pcase host
                              ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
                               (make-hyperdrive :domains (list host)))
-                             (_ ; Assume host is a public-key
+                             (_  ;; Assume host is a public-key
                               (or (gethash host hyperdrive-hyperdrives)
                                   (make-hyperdrive :public-key host)))))
                (etc (when target
