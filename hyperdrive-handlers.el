@@ -54,7 +54,7 @@ If then, then call THEN with no arguments.  Default handler."
                   (inhibit-read-only t)
                   (latest-entry (copy-hyperdrive-entry entry))
                   entry-latest-p)
-              (setf (alist-get 'with-version (hyperdrive-entry-etc latest-entry)) nil
+              (setf (alist-get 'with-version-p (hyperdrive-entry-etc latest-entry)) nil
                     latest-entry (hyperdrive-fill latest-entry :then 'sync)
                     entry-latest-p (equal (hyperdrive-entry-version entry)
                                           (hyperdrive-entry-version latest-entry)))

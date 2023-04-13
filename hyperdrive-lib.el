@@ -194,7 +194,7 @@ empty public-key slot."
                                             path)
                           (prog1 (string-to-number (match-string 1 path))
                             (setf path (match-string 2 path))
-                            (setf (alist-get 'with-version etc) t)))))
+                            (setf (alist-get 'with-version-p etc) t)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (make-hyperdrive-entry
@@ -341,9 +341,9 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
 
-(cl-defun hyperdrive-entry-description (entry &key (with-version t))
+(cl-defun hyperdrive-entry-description (entry &key (with-version-p t))
   "Return description for ENTRY.
-If WITH-VERSION, include it.  Returned string looks like:
+If WITH-VERSION-P, include it.  Returned string looks like:
 
   PATH [HOST] (version:VERSION)"
   ;; TODO: When we implement parsing of versions in URLs, update this
@@ -355,7 +355,7 @@ If WITH-VERSION, include it.  Returned string looks like:
                                                 :with-label t)))
     (propertize (concat (format "[%s] " handle)
                         (url-unhex-string path)
-                        (when with-version
+                        (when with-version-p
                           (format " (version:%s)" version)))
                 'help-echo (hyperdrive-entry-url entry))))
 
@@ -370,7 +370,7 @@ Returns URL formatted like:
 HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL.  If ENTRY's `etc' map has WITH-VERSION set, include
+full URL.  If ENTRY's `etc' map has WITH-VERSION-P set, include
 version number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
@@ -380,13 +380,13 @@ URL."
   ;; include `domain' in HOST-FORMAT's default value.  The public key
   ;; will be filled in later.
   (pcase-let* (((cl-struct hyperdrive-entry path version
-                           (etc (map with-version)))
+                           (etc (map with-version-p)))
                 entry)
                (protocol (when with-protocol
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format))
-               (version-part (and with-version (format "/$/version/%s" version)))
+               (version-part (and with-version-p (format "/$/version/%s" version)))
                (url (concat protocol host version-part path)))
     (if with-help-echo
         (propertize url
@@ -615,7 +615,7 @@ both point to the same content."
                                    :format hyperdrive-default-host-format
                                    :with-label t)
           (hyperdrive-entry-name entry)
-          (if (alist-get 'with-version (hyperdrive-entry-etc entry))
+          (if (alist-get 'with-version-p (hyperdrive-entry-etc entry))
               (format " (version:%s)" (hyperdrive-entry-version entry))
             "")))
 
