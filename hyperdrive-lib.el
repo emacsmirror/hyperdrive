@@ -255,15 +255,25 @@ empty public-key slot."
                    ;;                  (format "hyperdrive-fill: error: %S" plz-error))
                    )))
   "Fill ENTRY's metadata and call THEN.
-If request fails, call ELSE (which is passed to `hyperdrive-api',
-which see."
+If THEN is `sync', return the filled entry and ignore ELSE.
+Otherwise, make request asynchronously and call THEN with the
+filled entry; or if request fails, call ELSE (which is passed to
+`hyperdrive-api', which see."
   (declare (indent defun))
-  (hyperdrive-api 'head (hyperdrive-entry-url entry)
-    :as 'response
-    :then (lambda (response)
-            (funcall then (hyperdrive--fill entry (plz-response-headers response))))
-    :else else
-    :noquery t))
+  (pcase then
+    ('sync (hyperdrive--fill entry
+                             (plz-response-headers
+                              (with-local-quit
+                                (hyperdrive-api 'head (hyperdrive-entry-url entry)
+                                  :as 'response
+                                  :then 'sync
+                                  :noquery t)))))
+    (_ (hyperdrive-api 'head (hyperdrive-entry-url entry)
+         :as 'response
+         :then (lambda (response)
+                 (funcall then (hyperdrive--fill entry (plz-response-headers response))))
+         :else else
+         :noquery t))))
 
 (defun hyperdrive--fill (entry headers)
   "Fill ENTRY and its hyperdrive from HEADERS.
