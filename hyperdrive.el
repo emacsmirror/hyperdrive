@@ -461,7 +461,7 @@ overwrite."
               (buffer-substring-no-properties (point-min) (point-max)))
       :then (lambda (_response)
               ;; TODO: Fill entry after writing it (and e.g. display
-              ;; new etag in mode line).
+              ;; new version in mode line).
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
                   (setf buffer-file-name nil)
@@ -481,7 +481,7 @@ overwrite."
                               plz-error)))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
     (hyperdrive-message "Saving to \"%s\"..." url)
-    ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display etag, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
+    ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display version, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
 
 (defun hyperdrive--write-contents ()
@@ -498,6 +498,17 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (hyperdrive-message "%s" url)))
+
+(defun hyperdrive-previous-version (entry)
+  "Show previous version of ENTRY."
+  (interactive (list hyperdrive-current-entry))
+  ;; TODO: Nicely handle when called without an entry.
+  (let ((entry (copy-hyperdrive-entry entry)))
+    (setf (alist-get 'with-version-p (hyperdrive-entry-etc entry)) t)
+    (cl-decf (hyperdrive-entry-version entry))
+    (if (hyperdrive-fill entry :then 'sync)
+        (hyperdrive-find-file entry)
+      (hyperdrive-message "At earliest version of entry"))))
 
 ;;;; Bookmark support
 

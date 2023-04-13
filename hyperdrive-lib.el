@@ -53,7 +53,7 @@
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
-  (etag nil :documentation "Entry's Etag.")
+  (version nil :documentation "Version of hyperdrive for this entry.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
@@ -184,11 +184,17 @@ empty public-key slot."
                (hyperdrive (pcase host
                              ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
                               (make-hyperdrive :domains (list host)))
-                             (_ ; Assume host is a public-key
+                             (_  ;; Assume host is a public-key
                               (or (gethash host hyperdrive-hyperdrives)
                                   (make-hyperdrive :public-key host)))))
                (etc (when target
-                      (list (cons 'target target)))))
+                      (list (cons 'target target))))
+               (version (when (string-match (rx "/$/version/" (group (1+ digit))
+                                                (group (optional "/" (1+ anything))))
+                                            path)
+                          (prog1 (string-to-number (match-string 1 path))
+                            (setf path (match-string 2 path))
+                            (setf (alist-get 'with-version-p etc) t)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (make-hyperdrive-entry
@@ -206,6 +212,9 @@ empty public-key slot."
              (_
               ;; A file: remove directory part.
               (file-name-nondirectory (url-unhex-string path))))
+     ;; If version is not in the URL, the slot will be nil, but it
+     ;; will be filled elsewhere.
+     :version version
      :etc etc)))
 ;;;; Entries
 
@@ -233,15 +242,25 @@ empty public-key slot."
                    ;;                  (format "hyperdrive-fill: error: %S" plz-error))
                    )))
   "Fill ENTRY's metadata and call THEN.
-If request fails, call ELSE (which is passed to `hyperdrive-api',
-which see."
+If THEN is `sync', return the filled entry and ignore ELSE.
+Otherwise, make request asynchronously and call THEN with the
+filled entry; or if request fails, call ELSE (which is passed to
+`hyperdrive-api', which see."
   (declare (indent defun))
-  (hyperdrive-api 'head (hyperdrive-entry-url entry)
-    :as 'response
-    :then (lambda (response)
-            (funcall then (hyperdrive--fill entry (plz-response-headers response))))
-    :else else
-    :noquery t))
+  (pcase then
+    ('sync (hyperdrive--fill entry
+                             (plz-response-headers
+                              (with-local-quit
+                                (hyperdrive-api 'head (hyperdrive-entry-url entry)
+                                  :as 'response
+                                  :then 'sync
+                                  :noquery t)))))
+    (_ (hyperdrive-api 'head (hyperdrive-entry-url entry)
+         :as 'response
+         :then (lambda (response)
+                 (funcall then (hyperdrive--fill entry (plz-response-headers response))))
+         :else else
+         :noquery t))))
 
 (defun hyperdrive--fill (entry headers)
   "Fill ENTRY and its hyperdrive from HEADERS.
@@ -249,7 +268,7 @@ which see."
 The following ENTRY slots are filled:
 - name
 - type
-- etag
+- version
 - modified
 
 The following ENTRY hyperdrive slots are filled:
@@ -271,7 +290,10 @@ The following ENTRY hyperdrive slots are filled:
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
-          (hyperdrive-entry-etag entry) etag
+          ;; FIXME: When
+          ;; <https://github.com/RangerMauve/hypercore-fetch/issues/65>
+          ;; is done, remove this `1+`.
+          (hyperdrive-entry-version entry) (1+ (string-to-number etag))
           (hyperdrive-entry-modified entry) last-modified)
     (when domain
       (if persisted-hyperdrive
@@ -319,22 +341,22 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else))
 
-(cl-defun hyperdrive-entry-description (entry &key (with-version t))
+(cl-defun hyperdrive-entry-description (entry &key (with-version-p t))
   "Return description for ENTRY.
-If WITH-VERSION, include it.  Returned string looks like:
+If WITH-VERSION-P, include it.  Returned string looks like:
 
   PATH [HOST] (version:VERSION)"
   ;; TODO: When we implement parsing of versions in URLs, update this
   ;; function to automatically include the version when the URL does,
   ;; and not otherwise.
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive etag path) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path) entry)
                (handle (hyperdrive--format-host hyperdrive
                                                 :format hyperdrive-default-host-format
                                                 :with-label t)))
     (propertize (concat (format "[%s] " handle)
                         (url-unhex-string path)
-                        (when with-version
-                          (format " (version:%s)" etag)))
+                        (when with-version-p
+                          (format " (version:%s)" version)))
                 'help-echo (hyperdrive-entry-url entry))))
 
 (cl-defun hyperdrive--format-entry-url
@@ -348,7 +370,8 @@ Returns URL formatted like:
 HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL.
+full URL.  If ENTRY's `etc' map has WITH-VERSION-P set, include
+version number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
 and `domain', the resulting URL may not be a valid hyperdrive
@@ -356,12 +379,15 @@ URL."
   ;; NOTE: Entries may have only a domain, not a public key yet, so we
   ;; include `domain' in HOST-FORMAT's default value.  The public key
   ;; will be filled in later.
-  (pcase-let* (((cl-struct hyperdrive-entry path) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry path version
+                           (etc (map with-version-p)))
+                entry)
                (protocol (when with-protocol
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format))
-               (url (concat protocol host path)))
+               (version-part (and with-version-p (format "/$/version/%s" version)))
+               (url (concat protocol host version-part path)))
     (if with-help-echo
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
@@ -499,7 +525,7 @@ nickname."
   hyperdrive)
 
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
-  "Put HYPERDRIVE's metadata into the appropriate file."
+  "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
   (let ((entry (make-hyperdrive-entry :hyperdrive hyperdrive
                                       :path "/.well-known/host-meta.json")))
@@ -584,11 +610,14 @@ both point to the same content."
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
-  (format "[%s] %s"
+  (format "[%s] %s%s"
           (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                    :format hyperdrive-default-host-format
                                    :with-label t)
-          (hyperdrive-entry-name entry)))
+          (hyperdrive-entry-name entry)
+          (if (alist-get 'with-version-p (hyperdrive-entry-etc entry))
+              (format " (version:%s)" (hyperdrive-entry-version entry))
+            "")))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
@@ -597,6 +626,26 @@ both point to the same content."
 (defun hyperdrive-message (message &rest args)
   "Call `message' with MESSAGE and ARGS, prefixing MESSAGE with \"Hyperdrive:\"."
   (apply #'message (concat "Hyperdrive: " message) args))
+
+(defun hyperdrive-copy-tree (tree &optional vecp)
+  "Like `copy-tree', but with VECP, works for records too."
+  ;; TODO: Propose/discuss upstream, in Emacs.
+  (if (consp tree)
+      (let (result)
+	(while (consp tree)
+	  (let ((newcar (car tree)))
+	    (if (or (consp (car tree)) (and vecp (vectorp (car tree))))
+		(setq newcar (copy-tree (car tree) vecp)))
+	    (push newcar result))
+	  (setq tree (cdr tree)))
+	(nconc (nreverse result)
+               (if (and vecp (or (vectorp tree) (recordp tree))) (copy-tree tree vecp) tree)))
+    (if (and vecp (or (vectorp tree) (recordp tree)))
+	(let ((i (length (setq tree (copy-sequence tree)))))
+	  (while (>= (setq i (1- i)) 0)
+	    (aset tree i (copy-tree (aref tree i) vecp)))
+	  tree)
+      tree)))
 
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here

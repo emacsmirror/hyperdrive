@@ -31,6 +31,7 @@
 
 (require 'cl-lib)
 (require 'ert)
+(require 'pcase)
 (require 'url)
 
 (require 'hyperdrive)
@@ -72,6 +73,43 @@
                (hyperdrive-url-entry (make-url "/subdir/with-file"))))
     (should (equal name "with-file"))
     (should (equal path "/subdir/with-file"))))
+
+(hyperdrive-deftest url-entry--with-version-p ()
+  (pcase-let (((cl-struct hyperdrive-entry name path version
+                          (etc (map with-version-p)))
+               (hyperdrive-url-entry (make-url "/$/version/42"))))
+    (should (equal name "/"))
+    (should (equal path "/"))
+    (should (equal 42 version))
+    (should with-version-p))
+  (pcase-let (((cl-struct hyperdrive-entry name path version
+                          (etc (map with-version-p)))
+               (hyperdrive-url-entry (make-url "/$/version/42/"))))
+    (should (equal name "/"))
+    (should (equal path "/"))
+    (should (equal 42 version))
+    (should with-version-p))
+  (pcase-let (((cl-struct hyperdrive-entry name path version
+                          (etc (map with-version-p)))
+               (hyperdrive-url-entry (make-url "/$/version/42/name-without-spaces"))))
+    (should (equal name "name-without-spaces"))
+    (should (equal path "/name-without-spaces"))
+    (should (equal 42 version))
+    (should with-version-p))
+  (pcase-let (((cl-struct hyperdrive-entry name path version
+                          (etc (map with-version-p)))
+               (hyperdrive-url-entry (make-url "/$/version/42/subdir/"))))
+    (should (equal name "subdir/"))
+    (should (equal path "/subdir/"))
+    (should (equal 42 version))
+    (should with-version-p))
+  (pcase-let (((cl-struct hyperdrive-entry name path version
+                          (etc (map with-version-p)))
+               (hyperdrive-url-entry (make-url "/$/version/42/subdir/with-file"))))
+    (should (equal name "with-file"))
+    (should (equal path "/subdir/with-file"))
+    (should (equal 42 version))
+    (should with-version-p)))
 
 (hyperdrive-deftest url-entry--makes-hyperdrive ()
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive)

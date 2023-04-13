@@ -180,6 +180,9 @@ With point on header, return directory entry."
      (list entry read-filename)))
   (hyperdrive-download-entry entry filename))
 
+;; TODO: Use a macro to define commands that operate on entries, and
+;; detect whether buffer is read-only for applicable commands.
+
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))

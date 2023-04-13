@@ -51,7 +51,18 @@ If then, then call THEN with no arguments.  Default handler."
       :noquery t
       :as (lambda ()
             (let ((response-buffer (current-buffer))
-                  (inhibit-read-only t))
+                  (inhibit-read-only t)
+                  ;; Use `hyperdrive-copy-tree', because `copy-tree'
+                  ;; doesn't work on records/structs, and
+                  ;; `copy-hyperdrive-entry' doesn't copy deeply, and
+                  ;; we need to be able to modify the `etc' alist of
+                  ;; the copied entry separately.
+                  (latest-entry (hyperdrive-copy-tree entry t))
+                  entry-latest-p)
+              (setf (alist-get 'with-version-p (hyperdrive-entry-etc latest-entry)) nil
+                    latest-entry (hyperdrive-fill latest-entry :then 'sync)
+                    entry-latest-p (equal (hyperdrive-entry-version entry)
+                                          (hyperdrive-entry-version latest-entry)))
               ;; TODO: Revisit buffer naming/"visiting" (e.g. what
               ;; happens if the user opens a Hyperdrive file and then
               ;; saves another buffer to the same location?).  See
@@ -62,7 +73,8 @@ If then, then call THEN with no arguments.  Default handler."
               (erase-buffer)
               (insert-buffer-substring response-buffer)
               (setf buffer-undo-list nil
-                    buffer-read-only (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry))))
+                    buffer-read-only (or (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry)))
+                                         (not entry-latest-p)))
               (set-buffer-modified-p nil)
               (goto-char (point-min))
               ;; TODO: Option to defer showing buffer.
