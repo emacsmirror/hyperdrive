@@ -504,7 +504,6 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   (interactive (list hyperdrive-current-entry))
   ;; TODO: Nicely handle when called without an entry.
   (let ((entry (copy-hyperdrive-entry entry)))
-    ;; TODO: Consider using `with-version-p' everywhere instead of `with-version'.
     (setf (alist-get 'with-version-p (hyperdrive-entry-etc entry)) t)
     (cl-decf (hyperdrive-entry-version entry))
     (if (hyperdrive-fill entry :then 'sync)
