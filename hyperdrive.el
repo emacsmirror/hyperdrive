@@ -502,6 +502,7 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
 (defun hyperdrive-previous-version (entry)
   "Show previous version of ENTRY."
   (interactive (list hyperdrive-current-entry))
+  ;; TODO: Make old versions read-only
   ;; TODO: Nicely handle when called without an entry.
   (let ((entry (copy-hyperdrive-entry entry)))
     ;; TODO: Consider using `with-version-p' everywhere instead of `with-version'.
