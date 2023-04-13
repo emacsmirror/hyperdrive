@@ -525,7 +525,7 @@ nickname."
   hyperdrive)
 
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
-  "Put HYPERDRIVE's metadata into the appropriate file."
+  "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
   (let ((entry (make-hyperdrive-entry :hyperdrive hyperdrive
                                       :path "/.well-known/host-meta.json")))
