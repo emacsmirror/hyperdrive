@@ -114,7 +114,7 @@ If then, then call THEN with no arguments."
                            :name entry-name))
                         entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
-               (ewoc) (header) ;; (prev-node-data) (prev-line)
+               (queue) (ewoc) (header) ;; (prev-node-data) (prev-line)
                )
     (when parent-entry
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
@@ -150,20 +150,22 @@ If then, then call THEN with no arguments."
       ;;   (goto-char (point-min))
       ;;   (forward-line (1- prev-line)))
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
+      (setf queue (make-plz-queue :limit 8
+                                  :finally (lambda ()
+                                             ;; NOTE: Ensure that the buffer's window is selected,
+                                             ;; if it has one.  (Workaround a possible bug in EWOC.)
+                                             (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                                                 (with-selected-window buffer-window
+                                                   ;; TODO: Use `ewoc-invalidate' on individual entries
+                                                   ;; (maybe later, as performance comes to matter more).
+                                                   (ewoc-refresh hyperdrive-dir-ewoc)
+                                                   (goto-char (point-min)))
+                                               (with-current-buffer (ewoc-buffer ewoc)
+                                                 (ewoc-refresh hyperdrive-dir-ewoc)
+                                                 (goto-char (point-min)))))))
       (mapc (lambda (entry)
-              (hyperdrive-fill entry
-                :then (lambda (_)
-                        ;; NOTE: Ensure that the buffer's window is selected,
-                        ;; if it has one.  (Workaround a possible bug in EWOC.)
-                        (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                            (with-selected-window buffer-window
-                              ;; TODO: Use `ewoc-invalidate' on individual entries
-                              ;; (maybe later, as performance comes to matter more).
-                              (ewoc-refresh hyperdrive-dir-ewoc)
-                              (goto-char (point-min)))
-                          (with-current-buffer (ewoc-buffer ewoc)
-                            (ewoc-refresh hyperdrive-dir-ewoc)
-                            (goto-char (point-min)))))))
+              ;; TODO: Handle failures?
+              (hyperdrive-fill entry :queue queue :then #'ignore))
             entries)
       (set-buffer-modified-p nil)
       (goto-char (point-min))

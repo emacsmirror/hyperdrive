@@ -128,9 +128,17 @@ with `hyperdrive--hyper-prefix' to a URL starting with
 \"http://localhost:4973/hyper/\" (assuming that
 `hyper-gateway-port' is \"4973\").
 
-REST is passed to `plz', which see."
+REST is passed to `plz', which see.
+
+REST may include the argument `:queue', a `plz-queue' in which to
+make the request."
   (declare (indent defun))
-  (apply #'plz method (hyperdrive--httpify-url url) rest))
+  (if-let ((queue (prog1 (plist-get rest :queue)
+                    (setf rest (map-delete rest :queue)))))
+      (plz-run
+       (apply #'plz-queue
+              queue method (hyperdrive--httpify-url url) rest))
+    (apply #'plz method (hyperdrive--httpify-url url) rest)))
 
 (defun hyperdrive--httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
@@ -236,7 +244,7 @@ empty public-key slot."
 ;;          (equal a-key b-key))))
 
 (cl-defun hyperdrive-fill
-    (entry &key then
+    (entry &key queue then
            (else (lambda (plz-error)
                    ;; FIXME: Use a message instead of a warning for
                    ;; now, because the 404 errors for filenames with
@@ -249,7 +257,8 @@ empty public-key slot."
 If THEN is `sync', return the filled entry and ignore ELSE.
 Otherwise, make request asynchronously and call THEN with the
 filled entry; or if request fails, call ELSE (which is passed to
-`hyperdrive-api', which see."
+`hyperdrive-api', which see.  If QUEUE, make the fill request in
+the given `plz-queue'"
   (declare (indent defun))
   (pcase then
     ('sync (hyperdrive--fill entry
@@ -260,6 +269,7 @@ filled entry; or if request fails, call ELSE (which is passed to
                                   :then 'sync
                                   :noquery t)))))
     (_ (hyperdrive-api 'head (hyperdrive-entry-url entry)
+         :queue queue
          :as 'response
          :then (lambda (response)
                  (funcall then (hyperdrive--fill entry (plz-response-headers response))))
