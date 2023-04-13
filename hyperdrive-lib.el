@@ -627,5 +627,25 @@ both point to the same content."
   "Call `message' with MESSAGE and ARGS, prefixing MESSAGE with \"Hyperdrive:\"."
   (apply #'message (concat "Hyperdrive: " message) args))
 
+(defun hyperdrive-copy-tree (tree &optional vecp)
+  "Like `copy-tree', but with VECP, works for records too."
+  ;; TODO: Propose/discuss upstream, in Emacs.
+  (if (consp tree)
+      (let (result)
+	(while (consp tree)
+	  (let ((newcar (car tree)))
+	    (if (or (consp (car tree)) (and vecp (vectorp (car tree))))
+		(setq newcar (copy-tree (car tree) vecp)))
+	    (push newcar result))
+	  (setq tree (cdr tree)))
+	(nconc (nreverse result)
+               (if (and vecp (or (vectorp tree) (recordp tree))) (copy-tree tree vecp) tree)))
+    (if (and vecp (or (vectorp tree) (recordp tree)))
+	(let ((i (length (setq tree (copy-sequence tree)))))
+	  (while (>= (setq i (1- i)) 0)
+	    (aset tree i (copy-tree (aref tree i) vecp)))
+	  tree)
+      tree)))
+
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here
