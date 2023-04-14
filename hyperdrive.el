@@ -177,10 +177,6 @@ through a shell)."
 ;; (defvar hyperdrive-persist-hook nil
 ;;   :type 'hook)
 
-(defvar-local hyperdrive-current-entry nil
-  "Entry for current buffer.")
-(put 'hyperdrive-current-entry 'permanent-local t)
-
 ;;;; Links
 
 (defvar browse-url-handlers)

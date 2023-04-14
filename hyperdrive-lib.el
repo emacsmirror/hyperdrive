@@ -87,6 +87,10 @@ Returns URL with hyperdrive's full public key."
 
 ;;;; Variables
 
+(defvar-local hyperdrive-current-entry nil
+  "Entry for current buffer.")
+(put 'hyperdrive-current-entry 'permanent-local t)
+
 (defvar hyperdrive-timestamp-format-string nil)
 
 (defvar hyperdrive-current-entry)
