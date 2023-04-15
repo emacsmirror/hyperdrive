@@ -287,8 +287,9 @@ Gateway must be running."
       (hyperdrive-message "hyper-gateway version %s" (alist-get 'version (json-read-from-string (plz 'get (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/")))))
     ;; TODO: Consolidate plz error handling
     (plz-curl-error
-     (when (equal 7 (car (plz-error-curl-error (caddr err))))
-       (hyperdrive-message "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")))))
+     (if (equal 7 (car (plz-error-curl-error (caddr err))))
+         (hyperdrive-message "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
+       (signal (car err) (cdr err))))))
 
 ;; TODO: Command to upload one or more files.
 
