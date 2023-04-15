@@ -198,6 +198,11 @@ If you run into issues, please first try resetting the value of
   (persist-save 'hyperdrive-hyperdrives))
 ```
 
+Please ensure that your version of `hyper-gateway` (`M-x
+hyperdrive-hyper-gateway-version`) is the latest version
+([releases](https://github.com/RangerMauve/hyper-gateway/releases/)).
+
+
 ## Bugs and Patches
 
 Bugs can be submitted to the [ushin issue
