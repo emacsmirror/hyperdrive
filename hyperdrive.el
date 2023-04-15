@@ -278,6 +278,18 @@ through a shell)."
       (hyperdrive-message "Gateway is running.")
     (hyperdrive-message "Gateway is not running.")))
 
+;;;###autoload
+(defun hyperdrive-hyper-gateway-version ()
+  "Say version number of `hyper-gateway'.
+Gateway must be running."
+  (interactive)
+  (condition-case err
+      (hyperdrive-message "hyper-gateway version %s" (alist-get 'version (json-read-from-string (plz 'get (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/")))))
+    ;; TODO: Consolidate plz error handling
+    (plz-curl-error
+     (when (equal 7 (car (plz-error-curl-error (caddr err))))
+       (hyperdrive-message "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")))))
+
 ;; TODO: Command to upload one or more files.
 
 (defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
