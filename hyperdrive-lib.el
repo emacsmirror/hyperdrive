@@ -243,6 +243,22 @@ empty public-key slot."
 ;;     (and (equal a-path b-path)
 ;;          (equal a-key b-key))))
 
+(defun hyperdrive-entry-latest (entry)
+  "Return ENTRY at its hyperdrive's latest version.
+Or nil if it's not found."
+  ;; Use `hyperdrive-copy-tree', because `copy-tree' doesn't work on
+  ;; records/structs, and `copy-hyperdrive-entry' doesn't copy deeply,
+  ;; and we need to be able to modify the `etc' alist of the copied
+  ;; entry separately.
+  (let ((entry (hyperdrive-copy-tree entry t)))
+    (setf (alist-get 'with-version-p (hyperdrive-entry-etc entry)) nil)
+    (condition-case err
+        (hyperdrive-fill entry :then 'sync)
+      (plz-http-error
+       (pcase (plz-response-status (plz-response-headers (plz-error-response err)))
+         (404 nil)
+         (_ (signal (car err) (cdr err))))))))
+
 (cl-defun hyperdrive-fill
     (entry &key queue then
            (else (lambda (plz-error)
