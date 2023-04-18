@@ -514,12 +514,9 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   "Show previous version of ENTRY."
   (interactive (list hyperdrive-current-entry))
   ;; TODO: Nicely handle when called without an entry.
-  (let ((entry (copy-hyperdrive-entry entry)))
-    (setf (alist-get 'with-version-p (hyperdrive-entry-etc entry)) t)
-    (cl-decf (hyperdrive-entry-version entry))
-    (if (hyperdrive-fill entry :then 'sync)
-        (hyperdrive-find-file entry)
-      (hyperdrive-message "At earliest version of entry"))))
+  (if-let ((previous-entry (hyperdrive-entry-previous entry)))
+      (hyperdrive-find-file previous-entry)
+    (hyperdrive-message "At earliest version of entry")))
 
 ;;;; Bookmark support
 
