@@ -587,7 +587,7 @@ hyperdrive."
   (condition-case err
       (pcase (with-local-quit
                (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string seed))
-                               :as 'response :noquery t))
+                 :as 'response :noquery t))
         ((and (pred plz-response-p)
               response
               (guard (= 200 (plz-response-status response))))
