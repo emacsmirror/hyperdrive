@@ -284,7 +284,9 @@ through a shell)."
 Gateway must be running."
   (interactive)
   (condition-case err
-      (hyperdrive-message "hyper-gateway version %s" (alist-get 'version (json-read-from-string (plz 'get (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/")))))
+      (let ((url (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/")))
+        (hyperdrive-message "hyper-gateway version %s"
+                            (alist-get 'version (plz 'get url :as #'json-read))))
     ;; TODO: Consolidate plz error handling
     (plz-curl-error
      (if (equal 7 (car (plz-error-curl-error (caddr err))))
