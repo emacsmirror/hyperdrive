@@ -264,7 +264,7 @@ empty public-key slot."
     (condition-case err
         (hyperdrive-fill entry :then 'sync)
       (plz-http-error
-       (pcase (plz-response-status (plz-response-headers (plz-error-response err)))
+       (pcase (plz-response-status (plz-error-response (caddr err)))
          (404 nil)
          (_ (signal (car err) (cdr err))))))))
 
