@@ -133,6 +133,13 @@ REST is passed to `plz', which see.
 REST may include the argument `:queue', a `plz-queue' in which to
 make the request."
   (declare (indent defun))
+  (pcase method
+    ((and (guard (string-suffix-p "/" url))
+          (or 'get 'head))
+     ;; By default, hypercore-fetch resolves directory URLs to the
+     ;; index.html file inside that directory. See
+     ;; <https://github.com/RangerMauve/hypercore-fetch#fetchhypernameexamplenoresolve-method-get>
+     (setf url (concat url "?noResolve"))))
   (if-let ((queue (prog1 (plist-get rest :queue)
                     (setf rest (map-delete rest :queue)))))
       (plz-run
