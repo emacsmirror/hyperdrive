@@ -196,7 +196,14 @@ With point on header, return directory entry."
                     (revert-buffer)))
                 (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
         :else (lambda (plz-error)
-                (hyperdrive-message "Unable to delete %S: %S" name plz-error))))))
+                (pcase-let* (((cl-struct plz-error response) plz-error)
+                             ((cl-struct plz-response status) response)
+                             (message
+                              (pcase status
+                                (403 "Hyperdrive not writable")
+                                (_ plz-error)
+                                )))
+                  (hyperdrive-message "Unable to delete: %S: %S" name message)))))))
 
 (cl-defun hyperdrive-dir-next (&optional (n 1))
   "Move forward N entries."
