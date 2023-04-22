@@ -481,15 +481,12 @@ overwrite."
               (hyperdrive-message "Wrote: %S to \"%s\"" name url))
       :else (lambda (plz-error)
               (pcase-let* (((cl-struct plz-error response) plz-error)
-                           ((cl-struct plz-response status body) response)
-                           ;; TODO: hyper-gateway should return 403
-                           ;; when not writable.  See:
-                           ;; <https://todo.sr.ht/~ushin/ushin/25>.
+                           ((cl-struct plz-response status) response)
                            (message
-                            (if (and (eq 500 status)
-                                     (string-match-p "SESSION_NOT_WRITABLE" body))
-                                "Hyperdrive not writable"
-                              plz-error)))
+                            (pcase status
+                              (403 "Hyperdrive not writable")
+                              (_ plz-error)
+                              )))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
     ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display version, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
