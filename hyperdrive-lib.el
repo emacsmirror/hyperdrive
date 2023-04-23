@@ -560,8 +560,7 @@ Returns HYPERDRIVE."
 
 (defun hyperdrive-set-nickname (nickname hyperdrive)
   "Set HYPERDRIVE's NICKNAME.
-Entering an empty or blank string unsets the HYPERDRIVE's
-nickname."
+Returns HYPERDRIVE."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
           (nickname (read-string
@@ -569,16 +568,16 @@ nickname."
                              (hyperdrive--format-host hyperdrive :format '(short-key)))
                      (alist-get 'name (hyperdrive-metadata hyperdrive)))))
      (list nickname hyperdrive)))
-  (when (string-blank-p nickname)
-    (setf nickname nil))
-  (hyperdrive-fill-public-metadata hyperdrive)
-  (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
-  (hyperdrive-put-metadata hyperdrive
-    :then (lambda (&rest _)
-            (hyperdrive-message "Set nickname: %s"
-                                (hyperdrive--format-host hyperdrive :format '(nickname)))))
-  ;; TODO: Consider refreshing buffer names, directory headers, etc.
-  (hyperdrive-persist hyperdrive)
+  (unless (or (string-blank-p nickname)
+              (equal nickname (alist-get 'name (hyperdrive-metadata hyperdrive))))
+    (hyperdrive-fill-public-metadata hyperdrive)
+    (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
+    (hyperdrive-put-metadata hyperdrive
+      :then (lambda (&rest _)
+              (hyperdrive-message "Set nickname: %s"
+                                  (hyperdrive--format-host hyperdrive :format '(nickname)))))
+    ;; TODO: Consider refreshing buffer names, directory headers, etc.
+    (hyperdrive-persist hyperdrive))
   hyperdrive)
 
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
