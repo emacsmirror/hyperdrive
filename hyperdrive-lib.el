@@ -537,12 +537,15 @@ Returns HYPERDRIVE."
      (list petname hyperdrive)))
   (unless (or (string-blank-p petname)
               (equal petname (hyperdrive-petname hyperdrive)))
-    (when-let ((other-hyperdrive
-                (cl-find petname (hash-table-values hyperdrive-hyperdrives)
-                         :key #'hyperdrive-petname :test #'equal)))
-      (user-error "Petname %S already assigned to hyperdrive: %s"
+    (if-let ((other-hyperdrive
+              (cl-find petname (hash-table-values hyperdrive-hyperdrives)
+                       :key #'hyperdrive-petname :test #'equal)))
+        (hyperdrive-set-petname
+         (read-string
+          (format "%S already assigned as petname to hyperdrive: %s.  Enter new petname: "
                   petname (hyperdrive--format-hyperdrive other-hyperdrive)))
-    (setf (hyperdrive-petname hyperdrive) petname))
+         hyperdrive)
+      (setf (hyperdrive-petname hyperdrive) petname)))
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
