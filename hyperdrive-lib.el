@@ -601,11 +601,9 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
          (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
     (setf (hyperdrive-seed hyperdrive) seed
           (hyperdrive-writablep hyperdrive) t)
-    ;; Persist the hyperdrive before setting the pet name in case a
-    ;; conflict prevents this function from returning naturally.
-    (hyperdrive-persist hyperdrive)
     (unwind-protect
         (hyperdrive-set-petname seed hyperdrive)
+      (hyperdrive-persist hyperdrive)
       (hyperdrive-open (hyperdrive-url-entry url)))))
 
 (defun hyperdrive-persist (hyperdrive)
