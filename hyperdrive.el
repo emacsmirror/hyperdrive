@@ -313,6 +313,11 @@ Gateway must be running."
     (funcall #'hyperdrive-open hyperdrive-current-entry)
     t))
 
+(defun hyperdrive-revert-buffer-quick ()
+  "Like `revert-buffer-quick', but works with `hyperdrive-mode' files."
+  (interactive)
+  (hyperdrive-revert-buffer nil (not (buffer-modified-p))))
+
 ;;;; hyperdrive-mode
 
 ;; TODO: Investigate possibility of not having `hyperdrive-mode', of
