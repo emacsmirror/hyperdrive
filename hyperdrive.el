@@ -485,6 +485,7 @@ overwrite."
                            (message
                             (pcase status
                               (403 "Hyperdrive not writable")
+                              (405 "Cannot write to old version")
                               (_ plz-error)
                               )))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
