@@ -579,7 +579,10 @@ nickname."
 
 ;;;###autoload
 (defun hyperdrive-new (seed)
-  "Open new hyperdrive for SEED."
+  "Open new hyperdrive for SEED.
+
+If SEED is not currently used as the petname for another
+hyperdrive, the new hyperdrive's petname will be set to SEED."
   (interactive (list (read-string "New hyperdrive seed: ")))
   (let* ((response (with-local-quit
                      (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string seed)))))
