@@ -333,10 +333,11 @@ Gateway must be running."
   :interactive nil
   :group 'hyperdrive
   :lighter " hyperdrive"
-  ;; :keymap (let ((map (make-sparse-keymap)))
-  ;;           ;; TODO: [#C] Redo this command.
-  ;;           (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
-  ;;           map)
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map [remap revert-buffer-quick] #'hyperdrive-revert-buffer-quick)
+            ;; TODO: [#C] Redo this command.
+            ;; (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
+            map)
   (if hyperdrive-mode
       (progn
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer
