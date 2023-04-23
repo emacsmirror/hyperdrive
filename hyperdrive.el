@@ -295,10 +295,23 @@ Gateway must be running."
 
 ;; TODO: Command to upload one or more files.
 
-(defun hyperdrive-revert-buffer (&optional _arg _noconfirm)
+(defun hyperdrive-revert-buffer (&optional _ignore-auto noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
-  ;; TODO: [#C] Override buffer-modified check when buffer is erased.
-  (hyperdrive-open hyperdrive-current-entry))
+  (when (or noconfirm
+            ;; TODO: Add option hyperdrive-revert-without-query ?
+            ;; (and (not (buffer-modified-p))
+            ;;      (catch 'found
+            ;;        (dolist (regexp revert-without-query)
+            ;;          (when (string-match regexp file-name)
+            ;;            (throw 'found t)))))
+            (yes-or-no-p
+             (format (if (buffer-modified-p)
+                         "Hyperdrive: Discard edits and reread from %s? "
+                       "Hyperdrive: Revert buffer from %s? ")
+                     (hyperdrive-entry-url hyperdrive-current-entry))))
+    ;; TODO: Support before-revert-hook, after-revert-hook, revert-buffer-internal-hook
+    (funcall #'hyperdrive-open hyperdrive-current-entry)
+    t))
 
 ;;;; hyperdrive-mode
 
