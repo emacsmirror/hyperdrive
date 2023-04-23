@@ -570,6 +570,7 @@ nickname."
             (hyperdrive-message "Set nickname: %s"
                                 (hyperdrive--format-host hyperdrive :format '(nickname)))))
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
+  (hyperdrive-persist hyperdrive)
   hyperdrive)
 
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
