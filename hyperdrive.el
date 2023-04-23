@@ -531,7 +531,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
     ;; Add our fields.
     (cl-loop for (key . value) in
              `((handler . hyperdrive-bookmark-handler)
-               (filename . ,(hyperdrive-entry-url hyperdrive-current-entry))
+               (location . ,(hyperdrive-entry-url hyperdrive-current-entry))
                (hyperdrive-entry-path . ,path)
                (hyperdrive-public-key . ,public-key))
              do (setf (alist-get key bookmark) value))
