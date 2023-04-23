@@ -527,22 +527,22 @@ If PREDICATE, only offer hyperdrives matching it."
 
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
-Entering an empty or blank string unsets the HYPERDRIVE's
-petname."
+Entering an empty or blank string leaves PETNAME as-is.
+Returns HYPERDRIVE."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
           (petname (read-string
                     (format "Petname (%s): "
                             (hyperdrive--format-hyperdrive hyperdrive)))))
      (list petname hyperdrive)))
-  (if (string-blank-p petname)
-      (setf petname nil)
+  (unless (or (string-blank-p petname)
+              (equal petname (hyperdrive-petname hyperdrive)))
     (when-let ((other-hyperdrive
                 (cl-find petname (hash-table-values hyperdrive-hyperdrives)
                          :key #'hyperdrive-petname :test #'equal)))
       (user-error "Petname %S already assigned to hyperdrive: %s"
-                  petname (hyperdrive--format-hyperdrive other-hyperdrive))))
-  (setf (hyperdrive-petname hyperdrive) petname)
+                  petname (hyperdrive--format-hyperdrive other-hyperdrive)))
+    (setf (hyperdrive-petname hyperdrive) petname))
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
