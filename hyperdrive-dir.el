@@ -201,6 +201,11 @@ With point on header, return directory entry."
                              (message
                               (pcase status
                                 (403 "Hyperdrive not writable")
+                                ;; TODO: This 405 catch doesn't do anything since
+                                ;; `hyperdrive-dir-delete' deletes from the current
+                                ;; hyperdrive even when looking at a previous
+                                ;; version. See: <https://todo.sr.ht/~ushin/ushin/64>
+                                (405 "Cannot write to old version")
                                 (_ plz-error)
                                 )))
                   (hyperdrive-message "Unable to delete: %S: %S" name message)))))))
