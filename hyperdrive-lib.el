@@ -550,6 +550,14 @@ Returns HYPERDRIVE."
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
+(defun hyperdrive-unset-petname (hyperdrive)
+  "Unset HYPERDRIVE's PETNAME.
+Returns HYPERDRIVE."
+  (interactive (list (hyperdrive-complete-hyperdrive)))
+  (setf (hyperdrive-petname hyperdrive) nil)
+  ;; TODO: Consider refreshing buffer names, directory headers, etc.
+  hyperdrive)
+
 (defun hyperdrive-set-nickname (nickname hyperdrive)
   "Set HYPERDRIVE's NICKNAME.
 Entering an empty or blank string unsets the HYPERDRIVE's
