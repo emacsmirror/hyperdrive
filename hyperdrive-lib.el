@@ -545,7 +545,8 @@ Returns HYPERDRIVE."
           (format "%S already assigned as petname to hyperdrive: %s.  Enter new petname: "
                   petname (hyperdrive--format-hyperdrive other-hyperdrive)))
          hyperdrive)
-      (setf (hyperdrive-petname hyperdrive) petname)))
+      (setf (hyperdrive-petname hyperdrive) petname)
+      (hyperdrive-persist hyperdrive)))
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
