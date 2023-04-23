@@ -533,7 +533,7 @@ petname."
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
           (petname (read-string
                     (format "Petname (%s): "
-                            (hyperdrive--format-host hyperdrive :format '(short-key))))))
+                            (hyperdrive--format-hyperdrive hyperdrive)))))
      (list petname hyperdrive)))
   (if (string-blank-p petname)
       (setf petname nil)
