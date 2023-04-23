@@ -604,17 +604,9 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
     ;; Persist the hyperdrive before setting the pet name in case a
     ;; conflict prevents this function from returning naturally.
     (hyperdrive-persist hyperdrive)
-    (condition-case nil
+    (unwind-protect
         (hyperdrive-set-petname seed hyperdrive)
-      (user-error (hyperdrive-set-petname
-                   (read-string
-                    (format "%S already assigned as petname to hyperdrive: %s.  Enter new petname: "
-                            seed (hyperdrive--format-hyperdrive
-                                  (cl-find seed (hash-table-values hyperdrive-hyperdrives)
-                                           :key #'hyperdrive-petname :test #'equal))))
-                   hyperdrive)))
-    (hyperdrive-persist hyperdrive)
-    (hyperdrive-open (hyperdrive-url-entry url))))
+      (hyperdrive-open (hyperdrive-url-entry url)))))
 
 (defun hyperdrive-persist (hyperdrive)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'."
