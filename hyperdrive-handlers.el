@@ -151,10 +151,12 @@ If then, then call THEN with no arguments."
                                                    ;; TODO: Use `ewoc-invalidate' on individual entries
                                                    ;; (maybe later, as performance comes to matter more).
                                                    (ewoc-refresh hyperdrive-dir-ewoc)
-                                                   (goto-char (point-min)))
+                                                   (goto-char (point-min))
+                                                   (set-buffer-modified-p nil))
                                                (with-current-buffer (ewoc-buffer ewoc)
                                                  (ewoc-refresh hyperdrive-dir-ewoc)
-                                                 (goto-char (point-min)))))))
+                                                 (goto-char (point-min))
+                                                 (set-buffer-modified-p nil))))))
       (mapc (lambda (entry)
               ;; TODO: Handle failures?
               (hyperdrive-fill entry :queue queue :then #'ignore))
