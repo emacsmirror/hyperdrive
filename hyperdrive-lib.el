@@ -637,7 +637,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
   (puthash (hyperdrive-public-key hyperdrive) hyperdrive hyperdrive-hyperdrives)
   (persist-save 'hyperdrive-hyperdrives))
 
-(defun hyperdrive--seed-url (seed)
+(defun hyperdrive-seed-url (seed)
   "Return URL to hyperdrive known as SEED, or nil if it doesn't exist.
 That is, if the SEED has been used to create a local
 hyperdrive."
