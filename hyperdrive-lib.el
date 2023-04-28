@@ -153,7 +153,7 @@ make the request."
   (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
           (substring url (length hyperdrive--hyper-prefix))))
 
-(cl-defun hyperdrive--write (url &key body then else)
+(cl-defun hyperdrive--write (url &key body then else queue)
   "Save BODY (a string) to hyperdrive URL.
 THEN and ELSE are passed to `hyperdrive-api', which see."
   (declare (indent defun))
@@ -161,8 +161,7 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
     ;; TODO: Investigate whether we should use 'text body type for text buffers.
     :body-type 'binary
     ;; TODO: plz accepts buffer as a body, we should refactor calls to hyperdrive--write to pass in a buffer instead of a buffer-string.
-    :body body
-    :then then :else else))
+    :body body :then then :else else :queue queue))
 
 (defun hyperdrive-parent (entry)
   "Return parent entry for ENTRY.
@@ -388,11 +387,11 @@ Call ELSE if request fails."
   (hyperdrive-api 'delete (hyperdrive-entry-url entry)
     :then then :else else))
 
-(cl-defun hyperdrive-write (entry &key body then else)
+(cl-defun hyperdrive-write (entry &key body then else queue)
   "Write BODY to hyperdrive ENTRY's URL."
   (declare (indent defun))
   (hyperdrive--write (hyperdrive-entry-url entry)
-    :body body :then then :else else))
+    :body body :then then :else else :queue queue))
 
 (cl-defun hyperdrive-entry-description (entry &key (with-version-p t))
   "Return description for ENTRY.
