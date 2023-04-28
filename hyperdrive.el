@@ -144,6 +144,11 @@ through a shell)."
                  (const :tag "VLC" "vlc %s")
                  (string :tag "Other command")))
 
+(defcustom hyperdrive-queue-size 2
+  "Default size of request queues."
+  ;; TODO: Use this elsewhere also.
+  :type 'integer)
+
 ;;;;; Faces
 
 (defface hyperdrive-petname '((t :inherit font-lock-type-face))
@@ -606,6 +611,76 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
                              (equal handler #'hyperdrive-bookmark-handler))
                            bookmark-alist)))
     (call-interactively #'bookmark-bmenu-list)))
+
+;;;; Upload files from disk
+
+(cl-defun hyperdrive-upload-file
+    (filename entry &key queue (then (lambda (&rest _ignore)
+                                       (hyperdrive-open (hyperdrive-parent entry))
+                                       (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry)))))
+  "Upload FILENAME to ENTRY.
+Interactively, read FILENAME and ENTRY from the user.  When
+QUEUE, use it."
+  (interactive (let ((filename (read-file-name "Upload file: ")))
+                 (list filename
+                       (hyperdrive-read-entry :predicate #'hyperdrive-writablep
+                                              :name (file-name-nondirectory filename)))))
+  (let ((url (hyperdrive-entry-url entry)))
+    (hyperdrive-api 'put url :queue queue
+      :body `(file ,filename)
+      :then then)
+    (hyperdrive-message "Uploading to \"%s\"..." url)))
+
+;; TODO: Don't overwrite a hyperdrive file with the same
+;; contents. Should we keep a cache of uploaded files and mtimes?
+
+(cl-defun hyperdrive-upload-files (files hyperdrive &key (target-directory "/"))
+  "Upload FILES to TARGET-DIRECTORY in HYPERDRIVE."
+  (interactive
+   (let ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
+         (files (cl-loop for file = (read-file-name "File (blank to stop): ")
+                         while (not (string-blank-p file))
+                         collect file))
+         ;; TODO: Consider offering target dirs in hyperdrive with completion.
+         (target-dir (pcase (read-string "Target directory: " nil nil "/")
+                       ((pred string-blank-p) "/")
+                       (else else))))
+     (list files hyperdrive :target-directory target-dir)))
+  (cl-assert (cl-notany #'file-directory-p files))
+  (cl-assert (cl-every #'file-readable-p files))
+  (setf files (delete-dups files))
+  (dolist (file files)
+    (unless (= 1 (cl-count (file-name-nondirectory file) files
+                           :test #'equal :key #'file-name-nondirectory))
+      (user-error "Can't upload multiple files with same name: %S" (file-name-nondirectory file))))
+  (unless (string-prefix-p "/" target-directory)
+    (cl-callf2 concat "/" target-directory))
+  (let ((queue (make-plz-queue
+                :limit hyperdrive-queue-size
+                :finally (lambda ()
+                           ;; FIXME: Offer more informative message in case of errors?
+                           (hyperdrive-open (make-hyperdrive-entry :hyperdrive hyperdrive
+                                                                   :path (concat target-directory "/")))
+                           (hyperdrive-message "Uploaded %s files." (length files))))))
+    (dolist (file files)
+      (let* ((path (file-name-concat target-directory (file-name-nondirectory file)))
+             (entry (make-hyperdrive-entry
+                     :hyperdrive hyperdrive
+                     :path path)))
+        ;; TODO: Handle failures? Retry?
+        (hyperdrive-upload-file file entry :queue queue :then #'ignore)))
+    (plz-run queue)))
+
+;; TODO: Calling hyperdrive-upload-files is awkward. Create a wrapper that
+;; accepts a public-key/seed instead of a hyperdrive?
+
+;; (defun my/hyperdrive-upload-files-foo ()
+;;   "Upload all files inside of \"~/public/\" to hyperdrive with seed \"foo\"."
+;;   (interactive)
+;;   (let ((files (directory-files-recursively "~/public/" "")))
+;;     (hyperdrive-upload-files
+;;      (make-hyperdrive :public-key (substring (hyperdrive-seed-url "foo") (length "hyper://")))
+;;      files "~/public/")))
 
 ;;;; Footer
 

@@ -517,13 +517,13 @@ PROMPT."
               when value
               concat (concat value "  ")))))
 
-(cl-defun hyperdrive-read-entry (&key predicate)
+(cl-defun hyperdrive-read-entry (&key predicate name)
   "Return new hyperdrive entry with path and hyperdrive read from user.
-Prompts user for a hyperdrive and signals an error if no
-such hyperdrive is known.
-If PREDICATE, only offer hyperdrives matching it."
+Prompts user for a hyperdrive and signals an error if no such
+hyperdrive is known.  If PREDICATE, only offer hyperdrives
+matching it.  If NAME, offer it as the default entry name."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate))
-         (default "/")
+         (default (concat "/" name))
          (prompt (format "File path (default %S): " default))
          (path (url-hexify-string (read-string prompt default nil default)
                                   (cons ?/ url-unreserved-chars))))
