@@ -555,6 +555,7 @@ Returns HYPERDRIVE."
 Returns HYPERDRIVE."
   (interactive (list (hyperdrive-complete-hyperdrive)))
   (setf (hyperdrive-petname hyperdrive) nil)
+  (hyperdrive-persist hyperdrive)
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
