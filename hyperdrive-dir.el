@@ -209,8 +209,7 @@ With point on header, return directory entry."
                                 ;; hyperdrive even when looking at a previous
                                 ;; version. See: <https://todo.sr.ht/~ushin/ushin/64>
                                 (405 "Cannot write to old version")
-                                (_ plz-error)
-                                )))
+                                (_ plz-error))))
                   (hyperdrive-message "Unable to delete: %S: %S" name message)))))))
 
 (cl-defun hyperdrive-dir-next (&optional (n 1))
