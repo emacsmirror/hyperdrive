@@ -139,7 +139,6 @@ make the request."
      ;; By default, hypercore-fetch resolves directory URLs to the
      ;; index.html file inside that directory. See
      ;; <https://github.com/RangerMauve/hypercore-fetch#fetchhypernameexamplenoresolve-method-get>
-     ;; TODO: Consider using `url-build-query-string' and `url-recreate-url' to set query string.
      (setf url (concat url "?noResolve"))))
   (if-let ((queue (prog1 (plist-get rest :queue)
                     (setf rest (map-delete rest :queue)))))
