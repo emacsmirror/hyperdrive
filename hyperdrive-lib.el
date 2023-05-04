@@ -585,9 +585,7 @@ Returns HYPERDRIVE."
 Returns HYPERDRIVE."
   (interactive (list (hyperdrive-complete-hyperdrive)))
   (hyperdrive-fill-public-metadata hyperdrive)
-  (let ((metadata (hyperdrive-metadata hyperdrive)))
-    (setf (hyperdrive-metadata hyperdrive)
-          (delq (assq 'name metadata) metadata)))
+  (cl-callf map-delete (hyperdrive-metadata hyperdrive) 'name)
   (hyperdrive-put-metadata hyperdrive
     :then (lambda (&rest _) (hyperdrive-message "Unset nickname")))
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
