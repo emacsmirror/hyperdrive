@@ -510,6 +510,7 @@ overwrite."
                               (405 "Cannot write to old version")
                               (_ plz-error))))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
+    (hyperdrive-message "Saving to \"%s\"..." url)
     ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display version, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
 
