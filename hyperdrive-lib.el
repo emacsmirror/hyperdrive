@@ -134,8 +134,8 @@ REST may include the argument `:queue', a `plz-queue' in which to
 make the request."
   (declare (indent defun))
   (pcase method
-    ((and (guard (string-suffix-p "/" url))
-          (or 'get 'head))
+    ((and (or 'get 'head)
+          (guard (string-suffix-p "/" url)))
      ;; By default, hypercore-fetch resolves directory URLs to the
      ;; index.html file inside that directory. See
      ;; <https://github.com/RangerMauve/hypercore-fetch#fetchhypernameexamplenoresolve-method-get>
