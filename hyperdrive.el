@@ -508,8 +508,7 @@ overwrite."
                             (pcase status
                               (403 "Hyperdrive not writable")
                               (405 "Cannot write to old version")
-                              (_ plz-error)
-                              )))
+                              (_ plz-error))))
                 (hyperdrive-message "Unable to write: %S: %S" name message))))
     ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display version, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
