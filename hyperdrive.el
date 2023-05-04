@@ -310,7 +310,10 @@ Gateway must be running."
                        "Hyperdrive: Revert buffer from %s? ")
                      (hyperdrive-entry-url hyperdrive-current-entry))))
     ;; TODO: Support before-revert-hook, after-revert-hook, revert-buffer-internal-hook
-    (funcall #'hyperdrive-open hyperdrive-current-entry)
+    ;; Setting the modified flag to nil prevents `hyperdrive-open'
+    ;; from erroring if it has been modified.
+    (set-buffer-modified-p nil)
+    (hyperdrive-open hyperdrive-current-entry)
     t))
 
 (defun hyperdrive-revert-buffer-quick ()
