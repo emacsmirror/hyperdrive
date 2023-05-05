@@ -499,7 +499,13 @@ overwrite."
                 (with-current-buffer buffer
                   (setf buffer-file-name nil)
                   (rename-buffer (hyperdrive--entry-buffer-name entry) 'unique)
-                  (set-buffer-modified-p nil)))
+                  (set-buffer-modified-p nil)
+                  ;; Update the visited file modtime so undo commands
+                  ;; correctly set the buffer-modified flag.  We just
+                  ;; use `current-time' here since it's good enough
+                  ;; and lets us avoid making another request for
+                  ;; metadata.
+                  (set-visited-file-modtime (current-time))))
               (hyperdrive-message "Wrote: %S to \"%s\"" name url))
       :else (lambda (plz-error)
               (pcase-let* (((cl-struct plz-error response) plz-error)
