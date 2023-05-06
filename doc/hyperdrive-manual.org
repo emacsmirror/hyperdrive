@@ -1,0 +1,264 @@
+#+title: Hyperdrive.el User Manual
+#+subtitle: Release {{{version}}}
+#+author: Joseph Turner and Adam Porter
+#+language: en
+#+setupfile: doc-setup.org
+
+# #+export_file_name: hyperdrive.texi
+
+#+texinfo_dir_category: Communication
+#+texinfo_dir_title: Hyperdrive.el
+#+texinfo_dir_desc: P2P filesystem in Emacs
+
+This manual is for ~hyperdrive.el~ version {{{version}}}.
+
+Copyright \copy 2023 USHIN, Inc.
+
+#+begin_quote
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with the Front-Cover Texts being "A GNU Manual,"
+and with the Back-Cover Texts as in (a) below.  A copy of the license
+is included in the section entitled "GNU Free Documentation License."
+
+(a) The FSF's Back-Cover Text is: "You have the freedom to copy and
+modify this GNU manual."
+#+end_quote
+
+* Introduction
+
+[[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is a secure, P2P, real-time, local-first, versioned
+filesystem designed for easy peer-to-peer file sharing. ~hyperdrive.el~
+is an independent project built by [[https://ushin.org][USHIN]] which provides an Emacs
+interface for managing hyperdrives.
+
+~hyperdrive.el~ is in early development. If something breaks, please see
+the [[*Troubleshooting][troubleshooting section]].
+
+* Installation
+
+~hyperdrive.el~ is available on
+[[https://melpa.org/#/getting-started][MELPA]]. Once you've set up
+MELPA, you can run ~M-x package-install RET hyperdrive RET~.
+
+** ~hyper-gateway~
+
+~hyperdrive.el~ relies on
+[[https://github.com/RangerMauve/hyper-gateway/][hyper-gateway]] for
+talking to the hypercore network
+([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway][installation
+instructions]]).
+
+* Getting Started
+* Usage
+
+*Be careful what you publish!* Anyone with your public key can download
+your published files from you, your friend, or anyone else who has
+them.
+
+** Start/stop the gateway
+
+To connect with peers, you'll need to start ~hyper-gateway~. If you
+[[https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd][install ~hyper-gateway~ as a SystemD
+service]],
+you can connect and disconnect from the network with ~M-x
+hyperdrive-start~ and ~M-x hyperdrive-stop~. Otherwise, follow [[https://github.com/RangerMauve/hyper-gateway#usage][these
+instructions]] to
+run ~hyper-gateway~ manually.
+
+** Create a hyperdrive
+
+You can have multiple hyperdrives, each one containing its own set of
+files. Run ~M-x hyperdrive-new~ then type in a ~seed~ to create a new
+hyperdrive. That seed will be combined with your secret master key,
+which is generated for you by ~hyper-gateway~, to produce a public key
+that uniquely identifies that hyperdrive. ~hyperdrive-new~ is
+idempotent since the same seed will always produce the same public
+key. For this reason, a hyperdrive's seed cannot be changed.
+
+** Open a hyperdrive
+
+You can open a hyperdrive folder or file by pasting in a ~hyper://~
+URL after ~M-x hyperdrive-open-url~. Alternatively, ~M-x
+hyperdrive-find-file~ remembers hyperdrives you have already created
+or visited. It will prompt you to select a known hyperdrive by its
+public key or seed and then enter a path inside that hyperdrive.
+
+The following keybindings are available inside the directory view by
+default:
+
+- ~n~ and ~p~ move between entries
+- ~RET~ opens file or directory at point
+- ~^~ goes up to the parent directory
+- ~d~ downloads the file at point to disk
+- ~D~ deletes the file or directory (recursively) at point
+- ~w~ copies the URL of the file or directory at point
+
+** Write to a hyperdrive
+
+You can write a buffer to a hyperdrive with ~hyperdrive-write-buffer~,
+which will prompt you for one of hyperdrives you have created as well
+as the path in that hyperdrive where you want to store the file. If
+you are editing an existing hyperdrive file, ~hyperdrive-save-buffer~
+will silently update the current hyperdrive entry with the new content.
+
+** Link to a hyperdrive
+
+In addition to copying the URL at point in the directory view, you can
+run ~hyperdrive-copy-url~ to copy the URL of the current hyperdrive
+file or directory. If the current file is an org-mode file,
+~org-store-link~ will store a link to the hyperdrive file, and if
+point is inside a heading, its ~CUSTOM_ID~, ~ID~, or heading text will
+be appended to the stored URL.
+
+** Share a hyperdrive
+
+Only you can load one of your created hyperdrives by its seed. When
+sharing a hyperdrive with someone else, you will need to copy its full
+URL. Peers can load your hyperdrive files directly from your computer
+or from other peers who previously loaded those files.
+
+It is possible to use [[https://dnslink.io/][DNSLink]] to link to a
+hyperdrive with a domain name instead of a public key, like
+~hyper://example.org/path/to/file~. Create a TXT record at
+~_dnslink.example.org~ with the contents ~/hyper/PUBLIC-KEY~ (no
+trailing slash). Note: relying on DNS adds another point of
+centralization, reducing the durability of your link. ~hyperdrive.el~
+somewhat mitigates this issue by remembering which public key the DNS
+record resolved to, so that peers can use the stored public key itself
+for subsequent connections.
+
+** Bookmark a hyperdrive
+
+You can use the built-in ~bookmark-set~ and ~bookmark-jump~ functions
+to store and jump to a hyperdrive file or directory.
+
+** Download hyperdrive files
+
+You can download a hyperdrive file to your local filesystem. Download
+the current hyperdrive file with ~hyperdrive-download-entry~ or paste
+in a ~hyper://~ URL after ~hyperdrive-download-url~.
+
+** TODO Upload files from your filesystem
+
+(Uploading files from the filesystem has not been reimplemented since
+the upgrade to the latest version of hyper-gateway.)
+
+~hyperdrive-upload-files~ lets you upload files from your filesystem
+to a hyperdrive. It accepts a ~seed~, a ~relative-dir~, the directory
+on your filesystem which will be the top-level or root directory of
+the hyperdrive, and the list of ~files~ to be shared in the
+hyperdrive. ~files~ can either be a list of filepaths or a function
+which returns a list of filepaths.
+
+In order to upload files to a hyperdrive, you must first create it
+with ~hyperdrive-create-namespace~.
+
+*** Upload a whole directory
+
+
+~my/hyperdrive-upload-files-foo~ uploads everything inside of ~~/public/~:
+
+#+begin_src elisp
+(defun my/hyperdrive-upload-files-foo ()
+  "Upload all files inside of \"~/public/\" to hyperdrive with seed \"foo\"."
+  (interactive)
+  (hyperdrive-upload-files "foo" "~/public/"
+                           (lambda () (directory-files-recursively "~/public/" ""))))
+#+end_src
+
+*** Upload files by tag
+
+~my/hyperdrive-upload-files-bar~ uploads all files inside ~~/org/~ which
+have been tagged as "public" using Protesilaos Stavrou's
+[[https://protesilaos.com/emacs/denote][Denote]] file-naming scheme.
+
+#+begin_src elisp
+(defun my/hyperdrive-upload-files-bar ()
+  "Upload all files tagged \"public\" inside of \"~/org/\" to hyperdrive \"bar\"."
+  (interactive)
+  (hyperdrive-upload-files "foo" "~/"
+                           (lambda () (directory-files-recursively "~/org/" ".*_public.*"))))
+#+end_src
+
+Alternatively, you could select files by tag with Karl Voit's
+[[https://github.com/novoid/filetags/][filetags]]. Either way allows for
+a "non-splitting" approach where public and private files exist in the
+same directory. You can write any function you like to determine which
+files to share!
+
+* Concepts
+
+** Hyper-gateway
+
+[[https://github.com/RangerMauve/hyper-gateway/][Hyper-gateway]] handles
+interactions with hyperdrive under the hood, and it runs a local HTTP
+server which accepts HTTP requests. In `hyperdrive.el`, P2P
+interactions consist mostly of, e.g., `GET` requests to download files
+and `PUT` requests to write files to a hyperdrive.
+
+** Sparse replication
+
+[[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is
+sparsely replicated, meaning that peers can download particular files
+from a hyperdrive without having to get the whole drive. This reduces
+both load times and disk usage.
+
+** Hyperdrive entries
+
+Instead of files and folders, Hyperdrive has entries and entry
+prefixes. It's possible for a "file" entry and a "folder" entry prefix
+to have the same name, like `hyper://PUBLIC-KEY/path/to/` (a
+"directory") and `hyper://PUBLIC-KEY/path/to` (a "file"). In this
+case, the directory listing for `hyper://PUBLIC-KEY/path/` would
+display the `to` entry but not the `to/` entry prefix. Because entry
+prefixes only exist when they prefix an entry, deleting the last
+"file" in a "directory" causes the "directory" to disappear as well.
+When a hyperdrive "file" or "directory" is not found, `hyperdrive.el`
+prompts to go to the parent "directory."
+
+* Troubleshooting
+
+If you run into issues, please first try resetting the value of
+`hyperdrive-hyperdrives`:
+
+#+begin_src elisp
+(progn
+  (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
+  (persist-save 'hyperdrive-hyperdrives))
+#+end_src
+
+Please ensure that your version of `hyper-gateway` (`M-x
+hyperdrive-hyper-gateway-version`) is the latest version
+([[https://github.com/RangerMauve/hyper-gateway/releases/][releases]]).
+
+* Bugs and Patches
+
+Bugs can be submitted to the [[https://todo.sr.ht/~ushin/ushin][ushin issue
+tracker]]. Patches,
+comments or questions can be submitted to the [[https://lists.sr.ht/~ushin/ushin][ushin public
+inbox]].
+
+* Acknowledgments
+
+[[https://github.com/alphapapa/][Adam Porter]] for rewriting
+`hyperdrive.el` and for his work on `plz.el`.
+
+[[https://mauve.moe/][Mauve Signweaver]] for their guidance into the
+world of p2p as well as the development of `hyper-gateway`.
+
+[[https://karl-voit.at/][Karl Voit]] for his feedback, especially the
+suggestion that we allow for a non-splitting approach for uploading
+files from the filesystem.
+
+* GNU Free Documentation License
+
+#+include: fdl.org
+
+* Main Index
+:PROPERTIES:
+:INDEX:    cp
+:END:
+
+* Export Setup :noexport:
