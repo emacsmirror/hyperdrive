@@ -37,9 +37,6 @@
 (defvar-local hyperdrive-dir-ewoc nil
   "EWOC for current hyperdrive buffer.")
 
-(defvar-local hyperdrive-entries nil
-  "Entries in current hyperdrive buffer.")
-
 (defvar hyperdrive-current-entry)
 (defvar hyperdrive-timestamp-format)
 (defvar hyperdrive-default-host-format)

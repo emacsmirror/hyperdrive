@@ -28,7 +28,6 @@
 (require 'hyperdrive-lib)
 
 (defvar hyperdrive-dir)
-(defvar hyperdrive-entries)
 (defvar hyperdrive-directory-display-buffer-action)
 (defvar hyperdrive-stream-player-command)
 
@@ -113,8 +112,7 @@ If then, then call THEN with no arguments."
     (when parent-entry
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
       (push parent-entry entries))
-    (setf directory-entry (hyperdrive--fill directory-entry headers)
-          hyperdrive-entries entries)
+    (setf directory-entry (hyperdrive--fill directory-entry headers))
     (hyperdrive-fill-public-metadata hyperdrive)
     (setf header (hyperdrive-entry-description directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
