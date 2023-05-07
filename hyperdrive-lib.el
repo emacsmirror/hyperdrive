@@ -210,6 +210,7 @@ empty public-key slot."
                              (_  ;; Assume host is a public-key
                               (or (gethash host hyperdrive-hyperdrives)
                                   (make-hyperdrive :public-key host)))))
+               ;; TODO: Target inside etc is currently unused, consider removing or adding support inside `hyperdrive-handler-default'
                (etc (when target
                       (list (cons 'target target))))
                (version (when (string-match (rx "/$/version/" (group (1+ digit))
@@ -362,6 +363,7 @@ Looks in filenames from `hyperdrive-public-metadata-filenames'.
 When HYPERDRIVE has a public metadata file, another request is
 made synchronously for its contents."
   (declare (indent defun))
+  ;; TODO: Load host-meta.json for current hyperdrive version
   (pcase-let* ((entry (make-hyperdrive-entry :hyperdrive hyperdrive
                                              :path "/.well-known/host-meta.json"))
                (metadata (with-local-quit

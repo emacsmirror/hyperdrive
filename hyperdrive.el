@@ -560,6 +560,10 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
     (cl-loop for (key . value) in
              `((handler . hyperdrive-bookmark-handler)
                (location . ,(hyperdrive-entry-url hyperdrive-current-entry))
+               ;; TODO: Support versioned hyperdrive bookmarks.
+               ;; TODO: Why do we store -entry-path and -public-key
+               ;; here? Location URL alone should be sufficient, and
+               ;; we can destructure URL in -bookmark-handler
                (hyperdrive-entry-path . ,path)
                (hyperdrive-public-key . ,public-key))
              do (setf (alist-get key bookmark) value))
