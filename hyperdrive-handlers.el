@@ -165,6 +165,7 @@ If then, then call THEN with no arguments."
             entries)
       (set-buffer-modified-p nil)
       (goto-char (point-min))
+      ;; TODO: Should then go inside the queue finalizer?
       (when then
         (funcall then)))))
 
