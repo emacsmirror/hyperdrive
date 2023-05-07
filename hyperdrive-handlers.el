@@ -90,7 +90,9 @@ If then, then call THEN with no arguments.  Default handler."
 If then, then call THEN with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
-  (pcase-let* ((url (hyperdrive-entry-url directory-entry))
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path)
+                directory-entry)
+               (url (hyperdrive-entry-url directory-entry))
                (inhibit-read-only t)
                ((cl-struct plz-response headers body)
                 ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
@@ -101,9 +103,8 @@ If then, then call THEN with no arguments."
                (entries
                 (mapcar (lambda (entry-name)
                           (make-hyperdrive-entry
-                           :hyperdrive (hyperdrive-entry-hyperdrive directory-entry)
-                           :path (concat (hyperdrive-entry-path directory-entry)
-                                         (url-hexify-string entry-name (cons ?/ url-unreserved-chars)))
+                           :hyperdrive hyperdrive
+                           :path (concat path (url-hexify-string entry-name (cons ?/ url-unreserved-chars)))
                            :name entry-name))
                         entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
@@ -114,7 +115,7 @@ If then, then call THEN with no arguments."
       (push parent-entry entries))
     (setf directory-entry (hyperdrive--fill directory-entry headers)
           hyperdrive-entries entries)
-    (hyperdrive-fill-public-metadata (hyperdrive-entry-hyperdrive directory-entry))
+    (hyperdrive-fill-public-metadata hyperdrive)
     (setf header (hyperdrive-entry-description directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
       ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)
