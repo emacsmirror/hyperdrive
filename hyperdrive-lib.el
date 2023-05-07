@@ -53,7 +53,8 @@
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
-  (version nil :documentation "Version of hyperdrive for this entry.")
+  (version nil :documentation "Version of hyperdrive.")
+  (version-last-modified nil :documentation "Version of hyperdrive when entry was last modified.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
@@ -167,13 +168,16 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
   "Return parent entry for ENTRY.
 If already at top-level directory, return nil."
   ;; TODO: Handle versioning.
-  (pcase (hyperdrive-entry-path entry)
-    ("/"  ;; Already at root: return nil.
-     nil)
-    (_  ;; Not at root: return parent entry.
-     (make-hyperdrive-entry
-      :hyperdrive (hyperdrive-entry-hyperdrive entry)
-      :path (file-name-directory (directory-file-name (hyperdrive-entry-path entry)))))))
+  (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version (etc (map with-version-p))) entry))
+    (pcase path
+      ("/"  ;; Already at root: return nil.
+       nil)
+      (_  ;; Not at root: return parent entry.
+       (make-hyperdrive-entry
+        :hyperdrive hyperdrive
+        :path (file-name-directory (directory-file-name path))
+        :version version
+        :etc (when with-version-p `((with-version-p . ,with-version-p))))))))
 
 ;; (defun hyperdrive--readable-p (url)
 ;;   "Return non-nil if URL is readable.
@@ -256,7 +260,7 @@ empty public-key slot."
 
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
-  (hyperdrive-entry-at (1- (hyperdrive-entry-version entry)) entry))
+  (hyperdrive-entry-at (1- (hyperdrive-entry-version-last-modified entry)) entry))
 
 (defun hyperdrive-entry-at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found."
@@ -320,7 +324,7 @@ The following ENTRY slots are filled:
 The following ENTRY hyperdrive slots are filled:
 - public-key
 - domains (merged with current persisted value)"
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path version) entry)
                ((map link content-length content-type etag last-modified) headers)
                ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
                (public-key (progn
@@ -336,8 +340,11 @@ The following ENTRY hyperdrive slots are filled:
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
-          (hyperdrive-entry-version entry) (string-to-number etag)
-          (hyperdrive-entry-modified entry) last-modified)
+          (hyperdrive-entry-modified entry) last-modified
+          (hyperdrive-entry-version-last-modified entry) (string-to-number etag))
+    ;; Keeping the existing version value means that child entries
+    ;; will have the same version as their parent directory entry.
+    (unless version (setf (hyperdrive-entry-version entry) (string-to-number etag)))
     (when domain
       (if persisted-hyperdrive
           ;; The previous call to hyperdrive-entry-url did not retrieve the

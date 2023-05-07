@@ -89,7 +89,7 @@ If then, then call THEN with no arguments.  Default handler."
 If then, then call THEN with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version (etc (map with-version-p)))
                 directory-entry)
                (url (hyperdrive-entry-url directory-entry))
                (inhibit-read-only t)
@@ -104,6 +104,8 @@ If then, then call THEN with no arguments."
                           (make-hyperdrive-entry
                            :hyperdrive hyperdrive
                            :path (concat path (url-hexify-string entry-name (cons ?/ url-unreserved-chars)))
+                           :version version
+                           :etc (when with-version-p `((with-version-p . ,with-version-p)))
                            :name entry-name))
                         entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
