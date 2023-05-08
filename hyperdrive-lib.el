@@ -345,7 +345,8 @@ The following ENTRY hyperdrive slots are filled:
           (hyperdrive-entry-version-last-modified entry) (string-to-number etag))
     ;; Keeping the existing version value means that child entries
     ;; will have the same version as their parent directory entry.
-    (unless version (setf (hyperdrive-entry-version entry) (string-to-number etag)))
+    (unless version
+      (setf (hyperdrive-entry-version entry) (string-to-number etag)))
     (when domain
       (if persisted-hyperdrive
           ;; The previous call to hyperdrive-entry-url did not retrieve the
