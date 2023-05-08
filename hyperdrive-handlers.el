@@ -86,7 +86,8 @@ If then, then call THEN with no arguments.  Default handler."
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
-If then, then call THEN with no arguments."
+If THEN, then call THEN in the directory buffer with no
+arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version (etc (map with-version-p)))
@@ -158,16 +159,16 @@ If then, then call THEN with no arguments."
                                                (with-current-buffer (ewoc-buffer ewoc)
                                                  (ewoc-refresh hyperdrive-dir-ewoc)
                                                  (goto-char (point-min))
-                                                 (set-buffer-modified-p nil))))))
+                                                 (set-buffer-modified-p nil)))
+                                             (with-current-buffer (ewoc-buffer ewoc)
+                                               (when then
+                                                 (funcall then))))))
       (mapc (lambda (entry)
               ;; TODO: Handle failures?
               (hyperdrive-fill entry :queue queue :then #'ignore))
             entries)
       (set-buffer-modified-p nil)
-      (goto-char (point-min))
-      ;; TODO: Should then go inside the queue finalizer?
-      (when then
-        (funcall then)))))
+      (goto-char (point-min)))))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
