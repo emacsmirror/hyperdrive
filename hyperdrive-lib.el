@@ -53,7 +53,7 @@
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
-  (version nil :documentation "Version of hyperdrive.")
+  (version nil :documentation "Hyperdrive version specified in entry's URL.")
   (version-last-modified nil :documentation "Version of hyperdrive when entry was last modified.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
