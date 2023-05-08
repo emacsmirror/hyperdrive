@@ -67,7 +67,7 @@ If then, then call THEN with no arguments.  Default handler."
                     buffer-read-only (or (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry)))
                                          (not entry-latest-p)))
               (set-buffer-modified-p nil)
-              (set-visited-file-modtime (hyperdrive-entry-modified entry))
+              (set-visited-file-modtime (current-time))
               (goto-char (point-min))
               ;; TODO: Option to defer showing buffer.
               ;; FIXME: Do this in a wrapper.
