@@ -43,6 +43,8 @@
 ;;; Code:
 
 (require 'cl-lib)
+
+(require 'bookmark)
 (require 'json)
 (require 'rx)
 

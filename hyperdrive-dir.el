@@ -27,6 +27,8 @@
 ;;;; Requirements
 
 (require 'cl-lib)
+
+(require 'bookmark)
 (require 'dired)  ; For faces.
 (require 'ewoc)
 
