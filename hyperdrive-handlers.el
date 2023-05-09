@@ -50,10 +50,7 @@ If then, then call THEN with no arguments.  Default handler."
       :noquery t
       :as (lambda ()
             (let ((response-buffer (current-buffer))
-                  (inhibit-read-only t)
-                  (entry-latest-p (equal (hyperdrive-entry-version entry)
-                                         (hyperdrive-entry-version
-                                          (hyperdrive-entry-latest entry)))))
+                  (inhibit-read-only t))
               ;; TODO: Revisit buffer naming/"visiting" (e.g. what
               ;; happens if the user opens a Hyperdrive file and then
               ;; saves another buffer to the same location?).  See
@@ -65,7 +62,7 @@ If then, then call THEN with no arguments.  Default handler."
               (insert-buffer-substring response-buffer)
               (setf buffer-undo-list nil
                     buffer-read-only (or (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry)))
-                                         (not entry-latest-p)))
+                                         (alist-get 'with-version-p (hyperdrive-entry-etc entry))))
               (set-buffer-modified-p nil)
               (set-visited-file-modtime (current-time))
               (goto-char (point-min))
