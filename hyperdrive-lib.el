@@ -54,7 +54,10 @@
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
   (version nil :documentation "Hyperdrive version specified in entry's URL.")
-  (version-last-modified nil :documentation "Version of hyperdrive when entry was last modified.")
+  (version-last-modified nil :documentation
+                         "Version of hyperdrive when current entry at VERSION was last
+modified. For directory entries, this will always be VERSION, or
+when VERSION is nil, the latest version of the hyperdrive.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
@@ -166,7 +169,7 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
 (defun hyperdrive-parent (entry)
   "Return parent entry for ENTRY.
 If already at top-level directory, return nil."
-  (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version (etc (map with-version-p))) entry))
+  (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version) entry))
     (pcase path
       ("/"  ;; Already at root: return nil.
        nil)
@@ -174,8 +177,7 @@ If already at top-level directory, return nil."
        (make-hyperdrive-entry
         :hyperdrive hyperdrive
         :path (file-name-directory (directory-file-name path))
-        :version version
-        :etc (when with-version-p `((with-version-p . ,with-version-p))))))))
+        :version version)))))
 
 ;; (defun hyperdrive--readable-p (url)
 ;;   "Return non-nil if URL is readable.
@@ -215,8 +217,7 @@ empty public-key slot."
                                                 (group (optional "/" (1+ anything))))
                                             path)
                           (prog1 (string-to-number (match-string 1 path))
-                            (setf path (match-string 2 path))
-                            (setf (alist-get 'with-version-p etc) t)))))
+                            (setf path (match-string 2 path))))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (make-hyperdrive-entry
@@ -234,8 +235,6 @@ empty public-key slot."
              (_
               ;; A file: remove directory part.
               (file-name-nondirectory (url-unhex-string path))))
-     ;; If version is not in the URL, the slot will be nil, but it
-     ;; will be filled elsewhere.
      :version version
      :etc etc)))
 ;;;; Entries
@@ -269,9 +268,7 @@ When VERSION is `nil', return latest version of ENTRY."
   ;; and we need to be able to modify the `etc' alist of the copied
   ;; entry separately.
   (let ((entry (hyperdrive-copy-tree entry t)))
-    (setf (alist-get 'with-version-p (hyperdrive-entry-etc entry)) (and version t))
-    (when version
-      (setf (hyperdrive-entry-version entry) version))
+    (setf (hyperdrive-entry-version entry) version)
     (condition-case err
         (hyperdrive-fill entry :then 'sync)
       (plz-http-error
@@ -318,13 +315,13 @@ the given `plz-queue'"
 The following ENTRY slots are filled:
 - name
 - type
-- version
+- version-last-modified
 - modified
 
 The following ENTRY hyperdrive slots are filled:
 - public-key
 - domains (merged with current persisted value)"
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path version) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path) entry)
                ((map link content-length content-type etag last-modified) headers)
                ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
                (public-key (progn
@@ -342,10 +339,6 @@ The following ENTRY hyperdrive slots are filled:
           (hyperdrive-entry-type entry) content-type
           (hyperdrive-entry-modified entry) last-modified
           (hyperdrive-entry-version-last-modified entry) (string-to-number etag))
-    ;; Keeping the existing version value means that child entries
-    ;; will have the same version as their parent directory entry.
-    (unless version
-      (setf (hyperdrive-entry-version entry) (string-to-number etag)))
     (when domain
       (if persisted-hyperdrive
           ;; The previous call to hyperdrive-entry-url did not retrieve the
@@ -393,21 +386,19 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else :queue queue))
 
-(cl-defun hyperdrive-entry-description (entry &key (with-version-p t))
+(cl-defun hyperdrive-entry-description (entry)
   "Return description for ENTRY.
-If WITH-VERSION-P, include it.  Returned string looks like:
+When ENTRY has a non-`nil' `version' slot, include it. Returned
+string looks like:
 
   PATH [HOST] (version:VERSION)"
-  ;; TODO: When we implement parsing of versions in URLs, update this
-  ;; function to automatically include the version when the URL does,
-  ;; and not otherwise.
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path) entry)
                (handle (hyperdrive--format-host hyperdrive
                                                 :format hyperdrive-default-host-format
                                                 :with-label t)))
     (propertize (concat (format "[%s] " handle)
                         (url-unhex-string path)
-                        (when with-version-p
+                        (when version
                           (format " (version:%s)" version)))
                 'help-echo (hyperdrive-entry-url entry))))
 
@@ -419,10 +410,10 @@ Returns URL formatted like:
 
   hyper://HOST-FORMAT/PATH/TO/FILE
 
-HOST-FORMAT is passed to `hyperdrive--format-host', which see.
-If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
+HOST-FORMAT is passed to `hyperdrive--format-host', which see. If
+WITH-PROTOCOL, \"hyper://\" is prepended. If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL.  If ENTRY's `etc' map has WITH-VERSION-P set, include
+full URL. When ENTRY has non-`nil' `version' slot, include
 version number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
@@ -431,14 +422,13 @@ URL."
   ;; NOTE: Entries may have only a domain, not a public key yet, so we
   ;; include `domain' in HOST-FORMAT's default value.  The public key
   ;; will be filled in later.
-  (pcase-let* (((cl-struct hyperdrive-entry path version
-                           (etc (map with-version-p)))
+  (pcase-let* (((cl-struct hyperdrive-entry path version)
                 entry)
                (protocol (when with-protocol
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format))
-               (version-part (and with-version-p (format "/$/version/%s" version)))
+               (version-part (and version (format "/$/version/%s" version)))
                (url (concat protocol host version-part path)))
     (if with-help-echo
         (propertize url
@@ -700,8 +690,8 @@ both point to the same content."
                                    :format hyperdrive-default-host-format
                                    :with-label t)
           (hyperdrive-entry-name entry)
-          (if (alist-get 'with-version-p (hyperdrive-entry-etc entry))
-              (format " (version:%s)" (hyperdrive-entry-version entry))
+          (if-let ((version (hyperdrive-entry-version entry)))
+              (format " (version:%s)" version)
             "")))
 
 (defun hyperdrive--entry-directory-p (entry)
