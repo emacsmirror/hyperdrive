@@ -167,7 +167,6 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
 (defun hyperdrive-parent (entry)
   "Return parent entry for ENTRY.
 If already at top-level directory, return nil."
-  ;; TODO: Handle versioning.
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version (etc (map with-version-p))) entry))
     (pcase path
       ("/"  ;; Already at root: return nil.
