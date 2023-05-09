@@ -263,7 +263,8 @@ empty public-key slot."
   (hyperdrive-entry-at (1- (hyperdrive-entry-version-last-modified entry)) entry))
 
 (defun hyperdrive-entry-at (version entry)
-  "Return ENTRY at its hyperdrive's VERSION, or nil if not found."
+  "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
+When VERSION is `nil', return latest version of ENTRY."
   ;; Use `hyperdrive-copy-tree', because `copy-tree' doesn't work on
   ;; records/structs, and `copy-hyperdrive-entry' doesn't copy deeply,
   ;; and we need to be able to modify the `etc' alist of the copied
