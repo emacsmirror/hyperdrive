@@ -140,23 +140,18 @@ You can download a hyperdrive file to your local filesystem. Download
 the current hyperdrive file with ~hyperdrive-download-entry~ or paste
 in a ~hyper://~ URL after ~hyperdrive-download-url~.
 
-** TODO Upload files from your filesystem
+** Upload files from your filesystem
 
-(Uploading files from the filesystem has not been reimplemented since
-the upgrade to the latest version of hyper-gateway.)
+To upload a single file from your filesystem, use
+~hyperdrive-upload-file~. By default, the selected file will be placed
+in your hyperdrive's root directory, but you can edit the filepath
+before uploading.
 
-~hyperdrive-upload-files~ lets you upload files from your filesystem
-to a hyperdrive. It accepts a ~seed~, a ~relative-dir~, the directory
-on your filesystem which will be the top-level or root directory of
-the hyperdrive, and the list of ~files~ to be shared in the
-hyperdrive. ~files~ can either be a list of filepaths or a function
-which returns a list of filepaths.
+~hyperdrive-upload-files~ lets you upload multiple files from your
+filesystem to a hyperdrive. As with the ~cp~ command, uploaded files
+will be placed into the same TARGET-DIRECTORY.
 
-In order to upload files to a hyperdrive, you must first create it
-with ~hyperdrive-create-namespace~.
-
-*** Upload a whole directory
-
+*** TODO Upload a whole directory
 
 ~my/hyperdrive-upload-files-foo~ uploads everything inside of ~~/public/~:
 
@@ -168,7 +163,7 @@ with ~hyperdrive-create-namespace~.
                            (lambda () (directory-files-recursively "~/public/" ""))))
 #+end_src
 
-*** Upload files by tag
+*** TODO Upload files by tag
 
 ~my/hyperdrive-upload-files-bar~ uploads all files inside ~~/org/~ which
 have been tagged as "public" using Protesilaos Stavrou's
