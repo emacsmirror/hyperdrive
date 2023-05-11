@@ -653,14 +653,13 @@ QUEUE, use it."
     (unless (= 1 (cl-count (file-name-nondirectory file) files
                            :test #'equal :key #'file-name-nondirectory))
       (user-error "Can't upload multiple files with same name: %S" (file-name-nondirectory file))))
-  (unless (string-prefix-p "/" target-directory)
-    (cl-callf2 concat "/" target-directory))
+  (setf target-directory (file-name-as-directory (expand-file-name target-directory "/")))
   (let ((queue (make-plz-queue
                 :limit hyperdrive-queue-size
                 :finally (lambda ()
                            ;; FIXME: Offer more informative message in case of errors?
                            (hyperdrive-open (make-hyperdrive-entry :hyperdrive hyperdrive
-                                                                   :path (concat target-directory "/")))
+                                                                   :path target-directory))
                            (hyperdrive-message "Uploaded %s files." (length files))))))
     (dolist (file files)
       (let* ((path (file-name-concat target-directory (file-name-nondirectory file)))
