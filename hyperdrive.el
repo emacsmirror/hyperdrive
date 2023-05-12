@@ -623,13 +623,114 @@ QUEUE, use it."
 ;; TODO: Don't overwrite a hyperdrive file with the same
 ;; contents. Should we keep a cache of uploaded files and mtimes?
 
+(cl-defun hyperdrive-mirror (sources &key hyperdrive target-dir (predicate #'always)
+                                     dry-run)
+  "Mirror SOURCES to TARGET-DIR in HYPERDRIVE.
+Only mirror paths within SOURCES for which PREDICATE returns
+non-nil.  PREDICATE may be a function, which receives the
+expanded filename path as its argument, or a regular expression,
+which is tested against each expanded filename path.  SOURCES is
+a list of file or directory names.  Directories are uploaded with
+their contents.
+
+Interactively, with one universal prefix, prompt for predicate,
+otherwise mirror all files.  With two universal prefixes, prompt
+for predicate and show a \"dry run\" of files that would be
+uploaded and their locations."
+  (interactive
+   (let ((sources (hyperdrive-read-files)))
+     (list sources
+           :hyperdrive (hyperdrive-complete-hyperdrive)
+           :target-dir (pcase (read-string "Target directory: " nil nil "/")
+                         ((pred string-blank-p) "/")
+                         (else else))
+           :dry-run (equal '(16) current-prefix-arg)
+           :predicate (if current-prefix-arg
+                          (let* ((collection
+                                  '(("Mirror all files" . (lambda ()
+                                                            #'always))
+                                    ("`rx' form" . (lambda ()
+                                                     (eval (read--expression "`rx' form: " "(rx )"))))
+                                    ("Regexp string" . (lambda ()
+                                                         (read-regexp "Regular expression: ")))
+                                    ("Lambda function" . (lambda ()
+                                                           (read--expression "Lambda: " "(lambda (filename) )")))
+                                    ("Named function" .
+                                     (lambda ()
+                                       (completing-read "Named function: "
+                                                        (let ((functions))
+                                                          (mapatoms (lambda (atom)
+                                                                      (when (functionp atom)
+                                                                        (push atom functions))))
+                                                          functions))))))
+                                 (choice (completing-read "Predicate type: " collection))
+                                 (result (funcall (alist-get choice collection nil nil #'equal))))
+                            (cl-typecase result
+                              (string (lambda (file)
+                                        (string-match-p result file)))
+                              (function result)))
+                        #'always))))
+  ;; TODO: Add tests for this to ensure that the input file paths and
+  ;; output file paths map as we expect.  It might be necessary to put
+  ;; `source-files' in a named function so it can be stubbed.
+  (cl-labels ((source-files
+               (source) (if (file-directory-p source)
+                            (directory-files-recursively source ".")
+                          (list source)))
+              (file-with-target
+               (filename source)
+               (cons filename (expand-file-name
+                               (pcase (file-relative-name filename source)
+                                 ("." filename)
+                                 (else else))
+                               (file-name-as-directory (expand-file-name target-dir "/")))))
+              (source-pairs (source)
+                            (cl-loop for file in (source-files source)
+                                     collect (file-with-target file source))))
+    (let* ((predicate (cl-typecase predicate
+                        (string (lambda (filename)
+                                  (string-match-p predicate filename)))
+                        (otherwise predicate)))
+           (files-and-targets (cl-loop for pair in
+                                       (cl-loop for source in (mapcar #'expand-file-name sources)
+                                                append (source-pairs source))
+                                       when (funcall predicate (car pair))
+                                       collect pair))
+           (queue (make-plz-queue
+                   :limit 2 :finally (lambda ()
+                                       (hyperdrive-open
+                                        (make-hyperdrive-entry
+                                         :hyperdrive hyperdrive
+                                         :path (file-name-as-directory (expand-file-name target-dir "/"))))
+                                       (hyperdrive-message "Uploaded pairs: %S" files-and-targets)))))
+      (if dry-run
+          (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+            (special-mode)
+            (let ((inhibit-read-only t))
+              (erase-buffer)
+              (insert "Would upload: \n")
+              (apply #'insert
+                     (cl-loop for (file . target) in files-and-targets
+                              collect (format "%S to %S\n" file target))))
+            (pop-to-buffer (current-buffer)))
+        (pcase-dolist (`(,file . ,target) files-and-targets)
+          (hyperdrive-upload-file
+           file (make-hyperdrive-entry
+                 :hyperdrive hyperdrive
+                 :path target)
+           :queue queue :then #'ignore))))))
+
+(defun hyperdrive-read-files ()
+  "Return list of files read from the user."
+  (cl-loop for file = (read-file-name "File (blank to stop): ")
+           while (not (string-blank-p file))
+           collect file))
+
 (cl-defun hyperdrive-upload-files (files hyperdrive &key (target-directory "/"))
   "Upload FILES to TARGET-DIRECTORY in HYPERDRIVE."
   (interactive
    (let ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
-         (files (cl-loop for file = (read-file-name "File (blank to stop): ")
-                         while (not (string-blank-p file))
-                         collect file))
+         (files (hyperdrive-read-files))
          ;; TODO: Consider offering target dirs in hyperdrive with completion.
          (target-dir (pcase (read-string "Target directory: " nil nil "/")
                        ((pred string-blank-p) "/")
