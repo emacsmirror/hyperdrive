@@ -665,10 +665,7 @@ uploaded and their locations."
                                                           functions))))))
                                  (choice (completing-read "Predicate type: " collection))
                                  (result (funcall (alist-get choice collection nil nil #'equal))))
-                            (cl-typecase result
-                              (string (lambda (file)
-                                        (string-match-p result file)))
-                              (function result)))
+                            result)
                         #'always))))
   ;; TODO: Add tests for this to ensure that the input file paths and
   ;; output file paths map as we expect.  It might be necessary to put
