@@ -696,13 +696,14 @@ uploaded and their locations."
                                                 append (source-pairs source))
                                        when (funcall predicate (car pair))
                                        collect pair))
-           (queue (make-plz-queue
-                   :limit 2 :finally (lambda ()
-                                       (hyperdrive-open
-                                        (make-hyperdrive-entry
-                                         :hyperdrive hyperdrive
-                                         :path (file-name-as-directory (expand-file-name target-dir "/"))))
-                                       (hyperdrive-message "Uploaded pairs: %S" files-and-targets)))))
+           (queue (unless dry-run
+                    (make-plz-queue
+                     :limit 2 :finally (lambda ()
+                                         (hyperdrive-open
+                                           (make-hyperdrive-entry
+                                            :hyperdrive hyperdrive
+                                            :path (file-name-as-directory (expand-file-name target-dir "/"))))
+                                         (hyperdrive-message "Uploaded pairs: %S" files-and-targets))))))
       (if dry-run
           (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
             (special-mode)
