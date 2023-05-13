@@ -623,23 +623,22 @@ QUEUE, use it."
 ;; TODO: Don't overwrite a hyperdrive file with the same
 ;; contents. Should we keep a cache of uploaded files and mtimes?
 
-(cl-defun hyperdrive-mirror (sources &key hyperdrive target-dir (predicate #'always)
-                                     dry-run)
-  "Mirror SOURCES to TARGET-DIR in HYPERDRIVE.
-Only mirror paths within SOURCES for which PREDICATE returns
-non-nil.  PREDICATE may be a function, which receives the
-expanded filename path as its argument, or a regular expression,
-which is tested against each expanded filename path.  SOURCES is
-a list of file or directory names.  Directories are uploaded with
-their contents.
+(cl-defun hyperdrive-mirror (source &key hyperdrive target-dir (predicate #'always)
+                                    dry-run)
+  "Mirror SOURCE to TARGET-DIR in HYPERDRIVE.
+Only mirror paths within SOURCE for which PREDICATE returns
+non-nil. PREDICATE may be a function, which receives the expanded
+filename path as its argument, or a regular expression, which is
+tested against each expanded filename path. SOURCE is a directory
+name. Directories are uploaded with their contents.
 
 Interactively, with one universal prefix, prompt for predicate,
 otherwise mirror all files.  With two universal prefixes, prompt
 for predicate and show a \"dry run\" of files that would be
 uploaded and their locations."
   (interactive
-   (let ((sources (hyperdrive-read-files)))
-     (list sources
+   (let ((source (read-directory-name "Mirror file or directory: ")))
+     (list source
            :hyperdrive (hyperdrive-complete-hyperdrive)
            :target-dir (pcase (read-string "Target directory: " "/" nil "/")
                          ((pred string-blank-p) "/")
@@ -670,27 +669,21 @@ uploaded and their locations."
   ;; TODO: Add tests for this to ensure that the input file paths and
   ;; output file paths map as we expect.  It might be necessary to put
   ;; `source-files' in a named function so it can be stubbed.
-  (cl-labels ((source-files
-               (source) (if (file-directory-p source)
-                            (directory-files-recursively source ".")
-                          (list source)))
-              (file-with-target
-               (filename source)
-               (cons filename (expand-file-name
-                               (pcase (file-relative-name filename source)
-                                 ("." filename)
-                                 (else else))
-                               (file-name-as-directory (expand-file-name target-dir "/")))))
+  (cl-labels ((file-with-target
+                (filename source)
+                (cons filename (expand-file-name
+                                (pcase (file-relative-name filename source)
+                                  ("." filename)
+                                  (else else))
+                                (file-name-as-directory (expand-file-name target-dir "/")))))
               (source-pairs (source)
-                            (cl-loop for file in (source-files source)
-                                     collect (file-with-target file source))))
+                (cl-loop for file in (directory-files-recursively source ".")
+                         collect (file-with-target file source))))
     (let* ((predicate (pcase-exhaustive predicate
                         ((cl-type string) (lambda (filename)
                                             (string-match-p predicate filename)))
                         ((cl-type function) predicate)))
-           (files-and-targets (cl-loop for pair in
-                                       (cl-loop for source in (mapcar #'expand-file-name sources)
-                                                append (source-pairs source))
+           (files-and-targets (cl-loop for pair in (source-pairs (expand-file-name source))
                                        when (funcall predicate (car pair))
                                        collect pair))
            (queue (unless dry-run
