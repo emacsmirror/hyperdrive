@@ -641,7 +641,7 @@ uploaded and their locations."
    (let ((sources (hyperdrive-read-files)))
      (list sources
            :hyperdrive (hyperdrive-complete-hyperdrive)
-           :target-dir (pcase (read-string "Target directory: " nil nil "/")
+           :target-dir (pcase (read-string "Target directory: " "/" nil "/")
                          ((pred string-blank-p) "/")
                          (else else))
            :dry-run (equal '(16) current-prefix-arg)
