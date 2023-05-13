@@ -684,10 +684,10 @@ uploaded and their locations."
               (source-pairs (source)
                             (cl-loop for file in (source-files source)
                                      collect (file-with-target file source))))
-    (let* ((predicate (cl-typecase predicate
-                        (string (lambda (filename)
-                                  (string-match-p predicate filename)))
-                        (otherwise predicate)))
+    (let* ((predicate (pcase-exhaustive predicate
+                        ((cl-type string) (lambda (filename)
+                                            (string-match-p predicate filename)))
+                        ((cl-type function) predicate)))
            (files-and-targets (cl-loop for pair in
                                        (cl-loop for source in (mapcar #'expand-file-name sources)
                                                 append (source-pairs source))
