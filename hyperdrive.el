@@ -213,6 +213,7 @@ through a shell)."
                         (format "*Hyperdrive: %s*"
                                 (hyperdrive--format-host hyperdrive :format '(short-key)
                                                          :with-label t)))
+    (special-mode)
     (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive)
                 (inhibit-read-only t))
       (erase-buffer)
