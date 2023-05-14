@@ -679,11 +679,12 @@ uploaded and their locations."
                  (make-plz-queue
                   :limit 2
                   :finally (lambda ()
-                             (hyperdrive-open (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir))
-                             (hyperdrive-message "Uploaded %s files to %s. See *hyperdrive-mirror* buffer for details."
-                                                 (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-                                                   (1- (count-lines (point-min) (point-max))))
-                                                 target-dir))))))
+                             (let ((parent-entry (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir)))
+                               (hyperdrive-open parent-entry)
+                               (hyperdrive-message "Uploaded %s files to %s. See *hyperdrive-mirror* buffer for details."
+                                                   (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+                                                     (1- (count-lines (point-min) (point-max))))
+                                                   (hyperdrive-entry-url parent-entry))))))))
     (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
       (special-mode)
       (let ((inhibit-read-only t))
