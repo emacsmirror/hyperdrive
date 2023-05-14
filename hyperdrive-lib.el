@@ -321,7 +321,6 @@ the given `plz-queue'"
   "Fill ENTRY and its hyperdrive from HEADERS.
 
 The following ENTRY slots are filled:
-- name
 - type
 - version-last-modified
 - modified
@@ -329,7 +328,7 @@ The following ENTRY slots are filled:
 The following ENTRY hyperdrive slots are filled:
 - public-key
 - domains (merged with current persisted value)"
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) entry)
                ((map link content-length content-type etag last-modified) headers)
                ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
                (public-key (progn
@@ -337,8 +336,6 @@ The following ENTRY hyperdrive slots are filled:
                              (match-string 1 link)))
                (persisted-hyperdrive (gethash public-key hyperdrive-hyperdrives))
                (domain (car (hyperdrive-domains hyperdrive))))
-    (unless name
-      (setf (hyperdrive-entry-name entry) (string-trim path "/")))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (setf (hyperdrive-entry-size entry) (when content-length
