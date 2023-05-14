@@ -501,8 +501,9 @@ overwrite."
               (widen)
               (buffer-substring-no-properties (point-min) (point-max)))
       :then (lambda (_response)
-              ;; TODO: Fill entry after writing it (and e.g. display
-              ;; new version in mode line).
+              ;; TODO: Fill entry after writing it so that
+              ;; hyperdrive-previous-version works correctly after
+              ;; writing a hyperdrive file.
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
                   (setf buffer-file-name nil)
