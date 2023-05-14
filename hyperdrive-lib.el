@@ -388,7 +388,7 @@ Call ELSE if request fails."
 
 (cl-defun hyperdrive-entry-description (entry)
   "Return description for ENTRY.
-When ENTRY has a non-`nil' `version' slot, include it. Returned
+When ENTRY has a non-`nil' VERSION slot, include it. Returned
 string looks like:
 
   PATH [HOST] (version:VERSION)"
