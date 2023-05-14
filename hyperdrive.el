@@ -624,7 +624,7 @@ QUEUE, use it."
 ;; contents. Should we keep a cache of uploaded files and mtimes?
 
 (cl-defun hyperdrive-mirror
-    (source &key hyperdrive target-dir (predicate #'always) dry-run)
+    (source hyperdrive &key target-dir (predicate #'always) dry-run)
   "Mirror SOURCE to TARGET-DIR in HYPERDRIVE.
 
 Only mirror paths within SOURCE for which PREDICATE returns
@@ -647,8 +647,7 @@ otherwise mirror all files.  With two universal prefixes, prompt
 for predicate and set DRY-RUN to t."
   (interactive
    (let ((source (read-directory-name "Mirror file or directory: ")))
-     (list source
-           :hyperdrive (hyperdrive-complete-hyperdrive)
+     (list source (hyperdrive-complete-hyperdrive)
            :target-dir (pcase (read-string "Target directory: " "/" nil "/")
                          ((pred string-blank-p) "/")
                          (else else))
