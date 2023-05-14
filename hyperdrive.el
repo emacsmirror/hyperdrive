@@ -666,50 +666,40 @@ uploaded and their locations."
                                  (result (funcall (alist-get choice collection nil nil #'equal))))
                             result)
                         #'always))))
-  ;; TODO: Add tests for this to ensure that the input file paths and
-  ;; output file paths map as we expect.  It might be necessary to put
-  ;; `source-files' in a named function so it can be stubbed.
-  (cl-labels ((file-with-target
-                (filename source)
-                (cons filename (expand-file-name
-                                (pcase (file-relative-name filename source)
-                                  ("." filename)
-                                  (else else))
-                                (file-name-as-directory (expand-file-name target-dir "/")))))
-              (source-pairs (source)
-                (cl-loop for file in (directory-files-recursively source ".")
-                         collect (file-with-target file source))))
-    (let* ((predicate (pcase-exhaustive predicate
-                        ((cl-type string) (lambda (filename)
-                                            (string-match-p predicate filename)))
-                        ((cl-type function) predicate)))
-           (files-and-targets (cl-loop for pair in (source-pairs (expand-file-name source))
-                                       when (funcall predicate (car pair))
-                                       collect pair))
-           (queue (unless dry-run
-                    (make-plz-queue
-                     :limit 2 :finally (lambda ()
-                                         (hyperdrive-open
-                                           (make-hyperdrive-entry
-                                            :hyperdrive hyperdrive
-                                            :path (file-name-as-directory (expand-file-name target-dir "/"))))
-                                         (hyperdrive-message "Uploaded pairs: %S" files-and-targets))))))
-      (if dry-run
-          (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-            (special-mode)
-            (let ((inhibit-read-only t))
-              (erase-buffer)
-              (insert "Would upload: \n")
-              (apply #'insert
-                     (cl-loop for (file . target) in files-and-targets
-                              collect (format "%S to %S\n" file target))))
-            (pop-to-buffer (current-buffer)))
-        (pcase-dolist (`(,file . ,target) files-and-targets)
-          (hyperdrive-upload-file
-           file (make-hyperdrive-entry
-                 :hyperdrive hyperdrive
-                 :path target)
-           :queue queue :then #'ignore))))))
+  (cl-callf expand-file-name source)
+  (setf target-dir (file-name-as-directory (expand-file-name target-dir "/")))
+  (when-let ((regexp (and (eq 'string (type-of predicate)) predicate)))
+    (setf predicate (lambda (filename)
+                      (string-match-p regexp filename))))
+  ;; TODO: Use cl-remove-if-not instead of cl-loop (predicate is a variable, not a function)
+  (let ((files (cl-loop for file in (directory-files-recursively source ".")
+                        when (funcall predicate file)
+                        collect file))
+        (queue (unless dry-run
+                 (make-plz-queue
+                  :limit 2
+                  :finally (lambda ()
+                             (hyperdrive-open (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir))
+                             (hyperdrive-message "Uploaded %s files to %s. See *hyperdrive-mirror* buffer for details."
+                                                 (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+                                                   (1- (count-lines (point-min) (point-max))))
+                                                 target-dir))))))
+    (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+      (special-mode)
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (if dry-run "Would upload: \n" "Uploaded: \n"))))
+    (dolist (file files)
+      (let ((entry (make-hyperdrive-entry
+                    :hyperdrive hyperdrive
+                    :path (expand-file-name (file-relative-name file source) target-dir))))
+        (unless dry-run
+          (hyperdrive-upload-file file entry :queue queue :then #'ignore))
+        (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+          (let ((inhibit-read-only t))
+            (insert file " to " (hyperdrive-entry-url entry) "\n"))))))
+  (when dry-run
+    (pop-to-buffer (get-buffer-create "*hyperdrive-mirror*"))))
 
 (defun hyperdrive-read-files ()
   "Return list of files read from the user."
