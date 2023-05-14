@@ -652,6 +652,24 @@ hyperdrive."
                         nil
                       (signal 'plz-http-error err)))))
 
+(defun hyperdrive-by-slot (slot value)
+  "Return persisted hyperdrive struct whose SLOT matches VALUE.
+Otherwise, return `nil'.  SLOT may be one of
+
+- seed
+- petname
+- public-key"
+  (let ((accessor-function (pcase-exhaustive slot
+                             ('seed #'hyperdrive-seed)
+                             ('petname #'hyperdrive-petname)
+                             ('public-key #'hyperdrive-public-key))))
+    (catch 'get-first-hash
+      (maphash (lambda (_key val)
+                 (when (equal (funcall accessor-function val) value)
+                   (throw 'get-first-hash val)))
+               hyperdrive-hyperdrives)
+      nil)))
+
 ;;;; Misc.
 
 (defun hyperdrive--get-buffer-create (entry)
