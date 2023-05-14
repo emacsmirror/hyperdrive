@@ -229,9 +229,7 @@ empty public-key slot."
               "/")
              ((pred (string-suffix-p "/"))
               ;; A subdirectory: keep the trailing slash for clarity
-              ;; (I'm sure this makes sense to someone...).
-              (file-name-as-directory
-               (file-name-nondirectory (directory-file-name (url-unhex-string path)))))
+              (file-relative-name name (file-name-parent-directory (url-unhex-string path))))
              (_
               ;; A file: remove directory part.
               (file-name-nondirectory (url-unhex-string path))))
