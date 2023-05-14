@@ -170,14 +170,8 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
   "Return parent entry for ENTRY.
 If already at top-level directory, return nil."
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version) entry))
-    (pcase path
-      ("/"  ;; Already at root: return nil.
-       nil)
-      (_  ;; Not at root: return parent entry.
-       (make-hyperdrive-entry
-        :hyperdrive hyperdrive
-        :path (file-name-directory (directory-file-name path))
-        :version version)))))
+    (when-let ((parent-path (file-name-parent-directory path)))
+      (make-hyperdrive-entry :hyperdrive hyperdrive :path parent-path :version version))))
 
 ;; (defun hyperdrive--readable-p (url)
 ;;   "Return non-nil if URL is readable.
