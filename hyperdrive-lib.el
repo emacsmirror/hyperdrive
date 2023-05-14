@@ -48,8 +48,8 @@
   ;; the name, we store the name as-is because, for one thing, the name
   ;; could theoretically contain a slash, and `file-name-nondirectory'
   ;; would return the wrong value in that case.
-  (name nil :documentation "Filename of entry (excluding leading slash).")
-  (path nil :documentation "Path (including leading slash).")
+  (name nil :documentation "Decoded filename of entry (excluding leading slash).")
+  (path nil :documentation "Encoded path (including leading slash).")
   (headers nil :documentation "HTTP headers from request.")
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
