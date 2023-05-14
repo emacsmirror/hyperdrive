@@ -632,6 +632,9 @@ filename path as its argument, or a regular expression, which is
 tested against each expanded filename path. SOURCE is a directory
 name. Directories are uploaded with their contents.
 
+When TARGET-DIR is `nil', SOURCE is mirrored into the
+hyperdrive's root directory \"/\".
+
 Interactively, with one universal prefix, prompt for predicate,
 otherwise mirror all files.  With two universal prefixes, prompt
 for predicate and show a \"dry run\" of files that would be
@@ -667,7 +670,7 @@ uploaded and their locations."
                             result)
                         #'always))))
   (cl-callf expand-file-name source)
-  (setf target-dir (file-name-as-directory (expand-file-name target-dir "/")))
+  (setf target-dir (file-name-as-directory (expand-file-name (or target-dir "/") "/")))
   (when-let ((regexp (and (eq 'string (type-of predicate)) predicate)))
     (setf predicate (lambda (filename)
                       (string-match-p regexp filename))))
