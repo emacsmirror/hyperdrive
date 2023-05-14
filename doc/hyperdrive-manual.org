@@ -237,6 +237,47 @@ prefixes only exist when they prefix an entry, deleting the last
 When a hyperdrive "file" or "directory" is not found, `hyperdrive.el`
 prompts to go to the parent "directory."
 
+** Versioning
+
+Hyperdrives are versioned, meaning that it is possible to explore a
+hyperdrive as it was in the past. Version numbers indicate the
+hyperdrive's version. For example, ~hyper://PUBLIC-KEY/$/version/50/~
+refers to the fiftieth version of the hyperdrive identified by
+~PUBLIC-KEY~. Loading a hyperdrive entry without specifying a version
+number always loads the most recent version of that hyperdrive. If you
+pass ~hyper://PUBLIC-KEY/foo.org~ to ~hyperdrive-open-url~, ~hyperdrive.el~
+will always attempt to find ~/foo.org~ inside the latest version of that
+hyperdrive.
+
+Whenever you update an entry, the hyperdrive's version number gets
+incremented by 1. This is because the version number tells you how
+many times the hyperdrive has been modified, not how many times a
+particular entry has been modified. For example, let's say that the
+current version of your hyperdrive at ~hyper://PUBLIC-KEY/~ is 50. If
+you add a new entry at ~hyper://PUBLIC-KEY/bar.org~, the latest version
+of your hyperdrive will become 51.
+
+Since ~/bar.org~ did not exist before version 51, ~hyperdrive.el~ should
+warn you that nothing exists at
+~hyper://PUBLIC-KEY/$/version/50/bar.org~. If you add another file
+~hyper://PUBLIC-KEY/quux.org~, your hyperdrive's latest version will
+become 52. For the moment, ~hyper://PUBLIC-KEY/bar.org~,
+~hyper://PUBLIC-KEY/$/version/51/bar.org~, and
+~hyper://PUBLIC-KEY/$/version/52/bar.org~, all point to the same
+version of ~/bar.org~. If you then make a change to ~/bar.org~, your
+hyperdrive's latest version will become 53. Now
+~hyper://PUBLIC-KEY/bar.org~ and
+~hyper://PUBLIC-KEY/$/version/53/bar.org~ will point to the latest
+version of ~/bar.org~, while the 51- and 52-versioned URLs will continue
+to point to the original version.
+
+If you delete ~/bar.org~, ~hyper://PUBLIC-KEY/bar.org~ will not point to
+anything, but the versioned URLs will still work.
+
+Since only the current version of a hyperdrive entry can be updated,
+~hyperdrive.el~ sets the buffer to read-only whenever a version number
+is specified in a hyper URL.
+
 * Troubleshooting
 
 If you run into issues, please first try resetting the value of
