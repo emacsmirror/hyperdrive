@@ -626,19 +626,25 @@ QUEUE, use it."
 (cl-defun hyperdrive-mirror
     (source &key hyperdrive target-dir (predicate #'always) dry-run)
   "Mirror SOURCE to TARGET-DIR in HYPERDRIVE.
+
 Only mirror paths within SOURCE for which PREDICATE returns
 non-nil. PREDICATE may be a function, which receives the expanded
 filename path as its argument, or a regular expression, which is
 tested against each expanded filename path. SOURCE is a directory
-name. Directories are uploaded with their contents.
+name.
 
 When TARGET-DIR is `nil', SOURCE is mirrored into the
 hyperdrive's root directory \"/\".
 
+When DRY-RUN is non-`nil', don't upload anything.
+
+Regardless of DRY-RUN, the \"*hyperdrive-mirror*\" buffer will
+display the list of files to be uploaded and the URL at which
+each file will be accessible.
+
 Interactively, with one universal prefix, prompt for predicate,
 otherwise mirror all files.  With two universal prefixes, prompt
-for predicate and show a \"dry run\" of files that would be
-uploaded and their locations."
+for predicate and set DRY-RUN to t."
   (interactive
    (let ((source (read-directory-name "Mirror file or directory: ")))
      (list source
