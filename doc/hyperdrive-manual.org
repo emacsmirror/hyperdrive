@@ -151,37 +151,61 @@ before uploading.
 filesystem to a hyperdrive. As with the ~cp~ command, uploaded files
 will be placed into the same TARGET-DIRECTORY.
 
-*** TODO Upload a whole directory
+*** Mirror a whole directory
 
-~my/hyperdrive-upload-files-foo~ uploads everything inside of ~~/public/~:
+~hyperdrive-mirror~ uploads a directory, mirroring its subdirectory
+structure in your hyperdrive.
+
+Let's say you have some files on your filesystem in the ~~/blog/~
+directory, and you want to upload them all into a hyperdrive you
+already created with the petname "foo". The following snippet will
+show you the list of files which will be uploaded as well as the ~hyper~
+URL at which they will be available after upload. To perform the
+upload, remove ~:dry-run t~.
 
 #+begin_src elisp
-(defun my/hyperdrive-upload-files-foo ()
-  "Upload all files inside of \"~/public/\" to hyperdrive with seed \"foo\"."
-  (interactive)
-  (hyperdrive-upload-files "foo" "~/public/"
-                           (lambda () (directory-files-recursively "~/public/" ""))))
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
+                   :target-dir "/blog/" :dry-run t)
 #+end_src
 
-*** TODO Upload files by tag
+*** Mirror files by tag or other attributes
 
-~my/hyperdrive-upload-files-bar~ uploads all files inside ~~/org/~ which
-have been tagged as "public" using Protesilaos Stavrou's
-[[https://protesilaos.com/emacs/denote][Denote]] file-naming scheme.
+~hyperdrive-mirror~ can accept a ~PREDICATE~ argument, which you can use
+to upload only certain files.
+
+Let's say that you have some files on your filesystem in the ~~/blog/~
+directory, but you only want to upload those files which have been
+tagged as "public" using Protesilaos Stavrou's [[https://protesilaos.com/emacs/denote][Denote]] file-naming
+scheme.
+
+The following snippet includes a ~PREDICATE~ key whose value is a
+regular expression against which every expanded filename inside will
+be tested.
+
+Remove ~:dry-run t~ to perform the upload.
 
 #+begin_src elisp
-(defun my/hyperdrive-upload-files-bar ()
-  "Upload all files tagged \"public\" inside of \"~/org/\" to hyperdrive \"bar\"."
-  (interactive)
-  (hyperdrive-upload-files "foo" "~/"
-                           (lambda () (directory-files-recursively "~/org/" ".*_public.*"))))
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
+                   :target-dir "/blog/"
+                   :predicate ".*_public.*"
+                   :dry-run t)
 #+end_src
 
 Alternatively, you could select files by tag with Karl Voit's
-[[https://github.com/novoid/filetags/][filetags]]. Either way allows for
-a "non-splitting" approach where public and private files exist in the
-same directory. You can write any function you like to determine which
-files to share!
+[[https://github.com/novoid/filetags/][filetags]]. Either way allows for a "non-splitting" approach where
+public and private files exist in the same directory.
+
+~PREDICATE~ may also be a function, which receives the expanded filename
+as its only argument. The following snippet will mirror only those
+files in ~~/blog/~ which are smaller than 5MB:
+
+#+begin_src elisp
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
+                   :target-dir "/blog/"
+                   :predicate (lambda (file) (> (* 5 1024 1024)
+                                              (file-attribute-size (file-attributes file))))
+                   :dry-run t)
+#+end_src
 
 * Concepts
 
