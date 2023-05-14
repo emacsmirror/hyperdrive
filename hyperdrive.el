@@ -582,8 +582,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   (pcase-let* ((`(,_ . ,(map ('hyperdrive-entry-path path) ('hyperdrive-public-key public-key)))
                 bookmark)
                (hyperdrive (make-hyperdrive :public-key public-key))
-               (entry (make-hyperdrive-entry :hyperdrive hyperdrive
-                                             :path path)))
+               (entry (hyperdrive-make-entry :hyperdrive hyperdrive :path path)))
     (cond ((null path) nil)
           (t (hyperdrive-open entry
                :then (lambda ()
@@ -659,14 +658,12 @@ QUEUE, use it."
                 :limit hyperdrive-queue-size
                 :finally (lambda ()
                            ;; FIXME: Offer more informative message in case of errors?
-                           (hyperdrive-open (make-hyperdrive-entry :hyperdrive hyperdrive
+                           (hyperdrive-open (hyperdrive-make-entry :hyperdrive hyperdrive
                                                                    :path target-directory))
                            (hyperdrive-message "Uploaded %s files." (length files))))))
     (dolist (file files)
       (let* ((path (file-name-concat target-directory (file-name-nondirectory file)))
-             (entry (make-hyperdrive-entry
-                     :hyperdrive hyperdrive
-                     :path path)))
+             (entry (hyperdrive-make-entry :hyperdrive hyperdrive :path path)))
         ;; TODO: Handle failures? Retry?
         (hyperdrive-upload-file file entry :queue queue :then #'ignore)))
     (plz-run queue)))

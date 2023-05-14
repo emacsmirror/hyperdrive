@@ -89,6 +89,34 @@ domains slot."
 Returns URL with hyperdrive's full public key."
   (hyperdrive--format-entry-url entry :with-protocol t))
 
+(cl-defun hyperdrive-make-entry (&key hyperdrive path version etc)
+  "Return hyperdrive entry struct from args.
+HYPERDRIVE, VERSION, and ETC are used as-is.
+
+PATH should already be URI-encoded.
+
+When `nil' or blank, PATH is set to \"/\". Hyperdrive entry path
+is guaranteed to start with \"/\". NAME is generated from PATH."
+  (setf path (if (or (not path) (string-blank-p path))
+                 "/"
+               (expand-file-name path "/")))
+  (make-hyperdrive-entry
+   :hyperdrive hyperdrive
+   :path path
+   :name (url-unhex-string
+          (pcase path
+           ("/"
+            ;; Root directory: use "/" for clarity.
+            "/")
+           ((pred (string-suffix-p "/"))
+            ;; A subdirectory: keep the trailing slash for clarity
+            (file-relative-name path (file-name-parent-directory path)))
+           (_
+            ;; A file: remove directory part.
+            (file-name-nondirectory path))))
+   :version version
+   :etc etc))
+
 ;;;; Variables
 
 (defvar-local hyperdrive-current-entry nil
@@ -171,7 +199,7 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
 If already at top-level directory, return nil."
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version) entry))
     (when-let ((parent-path (file-name-parent-directory path)))
-      (make-hyperdrive-entry :hyperdrive hyperdrive :path parent-path :version version))))
+      (hyperdrive-make-entry :hyperdrive hyperdrive :path parent-path :version version))))
 
 ;; (defun hyperdrive--readable-p (url)
 ;;   "Return non-nil if URL is readable.
@@ -214,21 +242,8 @@ empty public-key slot."
                             (setf path (match-string 2 path))))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
-    (make-hyperdrive-entry
-     :hyperdrive hyperdrive
-     :path (if (string-empty-p path) "/" path)
-     :name (pcase path
-             ((or "" "/")
-              ;; Root directory: use "/" for clarity.
-              "/")
-             ((pred (string-suffix-p "/"))
-              ;; A subdirectory: keep the trailing slash for clarity
-              (file-relative-name name (file-name-parent-directory (url-unhex-string path))))
-             (_
-              ;; A file: remove directory part.
-              (file-name-nondirectory (url-unhex-string path))))
-     :version version
-     :etc etc)))
+    (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :etc etc)))
+
 ;;;; Entries
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
@@ -349,7 +364,7 @@ When HYPERDRIVE has a public metadata file, another request is
 made synchronously for its contents."
   (declare (indent defun))
   ;; TODO: Load host-meta.json for current hyperdrive version
-  (pcase-let* ((entry (make-hyperdrive-entry :hyperdrive hyperdrive
+  (pcase-let* ((entry (hyperdrive-make-entry :hyperdrive hyperdrive
                                              :path "/.well-known/host-meta.json"))
                (metadata (with-local-quit
                            (hyperdrive-api 'get (hyperdrive-entry-url entry)
@@ -515,11 +530,7 @@ matching it.  If NAME, offer it as the default entry name."
          (prompt (format "File path (default %S): " default))
          (path (url-hexify-string (read-string prompt default nil default)
                                   (cons ?/ url-unreserved-chars))))
-    (make-hyperdrive-entry :hyperdrive hyperdrive
-                           :name (file-name-nondirectory path)
-                           :path (if (string-prefix-p "/" path)
-                                     path
-                                   (concat "/" path)))))
+    (hyperdrive-make-entry :hyperdrive hyperdrive :path path)))
 
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
@@ -589,7 +600,7 @@ Returns HYPERDRIVE."
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
-  (let ((entry (make-hyperdrive-entry :hyperdrive hyperdrive
+  (let ((entry (hyperdrive-make-entry :hyperdrive hyperdrive
                                       :path "/.well-known/host-meta.json")))
     (hyperdrive-write entry :body (json-encode (hyperdrive-metadata hyperdrive))
       :then then)

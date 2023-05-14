@@ -99,11 +99,10 @@ arguments."
                (entry-names (json-read-from-string body))
                (entries
                 (mapcar (lambda (entry-name)
-                          (make-hyperdrive-entry
+                          (hyperdrive-make-entry
                            :hyperdrive hyperdrive
                            :path (concat path (url-hexify-string entry-name (cons ?/ url-unreserved-chars)))
-                           :version version
-                           :name entry-name))
+                           :version version))
                         entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
                (queue) (ewoc) (header) ;; (prev-node-data) (prev-line)
