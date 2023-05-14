@@ -324,6 +324,8 @@ The following ENTRY slots are filled:
 - type
 - version-last-modified
 - modified
+- size
+- hyperdrive (from persisted value if it exists)
 
 The following ENTRY hyperdrive slots are filled:
 - public-key
