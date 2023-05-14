@@ -237,11 +237,10 @@ empty public-key slot."
                ;; TODO: Target inside etc is currently unused, consider removing or adding support inside `hyperdrive-handler-default'
                (etc (when target
                       (list (cons 'target target))))
-               (version (when (string-match (rx "/$/version/" (group (1+ digit))
-                                                (group (optional "/" (1+ anything))))
-                                            path)
-                          (prog1 (string-to-number (match-string 1 path))
-                            (setf path (match-string 2 path))))))
+               (version (pcase path
+                          ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
+                           (setf path p)
+                           v))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :etc etc)))
