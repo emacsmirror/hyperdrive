@@ -431,8 +431,11 @@ in the buffer opened by the handler."
                                ;; support empty directories): offer to go up the tree.
                                (go-up))
                               ;; Path does not end in a slash.
-                              ((hyperdrive-writablep hyperdrive)
-                               ;; Hyperdrive is writable: create a new buffer that will be saved to that path.
+                              ((and (hyperdrive-writablep hyperdrive)
+                                    (not (hyperdrive-entry-version entry)))
+                               ;; Hyperdrive is writable and not
+                               ;; versioned: create a new buffer that
+                               ;; will be saved to that path.
                                (switch-to-buffer (hyperdrive--get-buffer-create entry)))
                               (t
                                ;; Hyperdrive not writable: offer to go up.
