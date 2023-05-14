@@ -89,17 +89,19 @@ domains slot."
 Returns URL with hyperdrive's full public key."
   (hyperdrive--format-entry-url entry :with-protocol t))
 
-(cl-defun hyperdrive-make-entry (&key hyperdrive path version etc)
+(cl-defun hyperdrive-make-entry (&key hyperdrive path version etc encode)
   "Return hyperdrive entry struct from args.
 HYPERDRIVE, VERSION, and ETC are used as-is.
 
-PATH should already be URI-encoded.
-
 When `nil' or blank, PATH is set to \"/\". Hyperdrive entry path
-is guaranteed to start with \"/\". NAME is generated from PATH."
+is guaranteed to start with \"/\". NAME is generated from PATH.
+
+When ENCODE is non-`nil', encode PATH."
   (setf path (if (or (not path) (string-blank-p path))
                  "/"
                (expand-file-name path "/")))
+  (when encode
+    (cl-callf url-hexify-string path (cons ?/ url-unreserved-chars)))
   (make-hyperdrive-entry
    :hyperdrive hyperdrive
    :path path
@@ -528,9 +530,8 @@ matching it.  If NAME, offer it as the default entry name."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate))
          (default (concat "/" name))
          (prompt (format "File path (default %S): " default))
-         (path (url-hexify-string (read-string prompt default nil default)
-                                  (cons ?/ url-unreserved-chars))))
-    (hyperdrive-make-entry :hyperdrive hyperdrive :path path)))
+         (path (read-string prompt default nil default)))
+    (hyperdrive-make-entry :hyperdrive hyperdrive :path path :encode t)))
 
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.

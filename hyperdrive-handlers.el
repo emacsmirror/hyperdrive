@@ -101,8 +101,9 @@ arguments."
                 (mapcar (lambda (entry-name)
                           (hyperdrive-make-entry
                            :hyperdrive hyperdrive
-                           :path (concat path (url-hexify-string entry-name (cons ?/ url-unreserved-chars)))
-                           :version version))
+                           :path (concat (url-unhex-string path) entry-name)
+                           :version version
+                           :encode t))
                         entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
                (queue) (ewoc) (header) ;; (prev-node-data) (prev-line)
