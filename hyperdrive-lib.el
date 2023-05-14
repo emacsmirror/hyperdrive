@@ -378,18 +378,24 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else :queue queue))
 
-(cl-defun hyperdrive-entry-description (entry)
+(cl-defun hyperdrive-entry-description (entry &key (format-path 'path))
   "Return description for ENTRY.
 When ENTRY has a non-`nil' VERSION slot, include it. Returned
 string looks like:
 
-  PATH [HOST] (version:VERSION)"
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path) entry)
+  FORMAT-PATH [HOST] (version:VERSION)
+
+When FORMAT-PATH is `path', use full path to entry. When
+FORMAT-PATH is `name', use only last part of path, as in
+`file-name-non-directory'."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path name) entry)
                (handle (hyperdrive--format-host hyperdrive
                                                 :format hyperdrive-default-host-format
                                                 :with-label t)))
     (propertize (concat (format "[%s] " handle)
-                        (url-unhex-string path)
+                        (pcase format-path
+                          ('path (url-unhex-string path))
+                          ('name name))
                         (when version
                           (format " (version:%s)" version)))
                 'help-echo (hyperdrive-entry-url entry))))
@@ -677,14 +683,7 @@ both point to the same content."
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
-  (format "[%s] %s%s"
-          (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                   :format hyperdrive-default-host-format
-                                   :with-label t)
-          (hyperdrive-entry-name entry)
-          (if-let ((version (hyperdrive-entry-version entry)))
-              (format " (version:%s)" version)
-            "")))
+  (hyperdrive-entry-description entry :format-path 'name))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
