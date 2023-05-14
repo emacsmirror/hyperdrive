@@ -623,8 +623,8 @@ QUEUE, use it."
 ;; TODO: Don't overwrite a hyperdrive file with the same
 ;; contents. Should we keep a cache of uploaded files and mtimes?
 
-(cl-defun hyperdrive-mirror (source &key hyperdrive target-dir (predicate #'always)
-                                    dry-run)
+(cl-defun hyperdrive-mirror
+    (source &key hyperdrive target-dir (predicate #'always) dry-run)
   "Mirror SOURCE to TARGET-DIR in HYPERDRIVE.
 Only mirror paths within SOURCE for which PREDICATE returns
 non-nil. PREDICATE may be a function, which receives the expanded
