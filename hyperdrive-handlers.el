@@ -168,6 +168,8 @@ arguments."
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
+  ;; FIXME: Opening a streamable entry from a hyperdrive-dir buffer
+  ;; buries the -dir buffer.
   "Stream ENTRY."
   (pcase-let ((`(,command . ,args)
                (split-string hyperdrive-stream-player-command)))
