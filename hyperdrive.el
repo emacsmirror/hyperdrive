@@ -562,38 +562,18 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
 (defun hyperdrive-bookmark-make-record ()
   "Return a bookmark record for current hyperdrive buffer.
 Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
-  (pcase-let* (((cl-struct hyperdrive-entry path hyperdrive) hyperdrive-current-entry)
-               ((cl-struct hyperdrive public-key) hyperdrive)
-               (hyperdrive-name (hyperdrive--format-host hyperdrive :format '(petname nickname domain)
-                                                         :with-label t))
-               ;; We use the default function to make a record, then add our fields to it.
-               (bookmark (bookmark-make-record-default 'no-file)))
-    ;; Add our fields.
-    (cl-loop for (key . value) in
-             `((handler . hyperdrive-bookmark-handler)
-               (location . ,(hyperdrive-entry-url hyperdrive-current-entry))
-               ;; TODO: Support versioned hyperdrive bookmarks.
-               ;; TODO: Why do we store -entry-path and -public-key
-               ;; here? Location URL alone should be sufficient, and
-               ;; we can destructure URL in -bookmark-handler
-               (hyperdrive-entry-path . ,path)
-               (hyperdrive-public-key . ,public-key))
-             do (setf (alist-get key bookmark) value))
-    (cons (format "Hyperdrive: %s%s" hyperdrive-name path) bookmark)))
+  (let ((bookmark (bookmark-make-record-default 'no-file)))
+    (setf (alist-get 'handler bookmark) #'hyperdrive-bookmark-handler
+          (alist-get 'location bookmark) (hyperdrive-entry-url hyperdrive-current-entry))
+    (cons (format "Hyperdrive: %s" (hyperdrive-entry-description hyperdrive-current-entry)) bookmark)))
 
 (defun hyperdrive-bookmark-handler (bookmark)
   "Handler for Hyperdrive BOOKMARK."
-  (pcase-let* ((`(,_ . ,(map ('hyperdrive-entry-path path) ('hyperdrive-public-key public-key)))
-                bookmark)
-               (hyperdrive (make-hyperdrive :public-key public-key))
-               (entry (hyperdrive-make-entry :hyperdrive hyperdrive :path path)))
-    (cond ((null path) nil)
-          (t (hyperdrive-open entry
-               :then (lambda ()
-                       ;; TODO: Once plz.el adds a finalizer callback, ensure that point lands at the correct spot
-                       (bookmark-default-handler
-                        ;; Don't mutate the original record.
-                        (append bookmark `((buffer . ,(current-buffer)))))))))))
+  (hyperdrive-open (hyperdrive-url-entry (alist-get 'location (cdr bookmark)))
+    :then (lambda ()
+            (bookmark-default-handler
+             ;; Don't mutate the original record.
+             (append bookmark `((buffer . ,(current-buffer))))))))
 
 (defun hyperdrive-bookmark-jump (bookmark)
   "Jump to a Hyperdrive BOOKMARK."
