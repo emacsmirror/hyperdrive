@@ -367,6 +367,7 @@ Interactively, prompts for known hyperdrive and path."
   (interactive (list (hyperdrive-read-entry)))
   (hyperdrive-open entry))
 
+;;;###autoload
 (defun hyperdrive-open-url (url)
   "Open hyperdrive URL."
   (interactive (list (read-string "Hyperdrive URL: ")))
