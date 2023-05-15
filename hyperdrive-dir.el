@@ -190,7 +190,9 @@ With point on header, return directory entry."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
               (buffer (current-buffer)))
-    (when (yes-or-no-p (format "Delete %S? " name))
+    (when (and (yes-or-no-p (format "Delete %S? " name))
+               (or (not (hyperdrive--entry-directory-p entry))
+                   (yes-or-no-p (format "Recursively delete %S? " name))))
       (hyperdrive-delete entry
         :then (lambda (_)
                 (when (buffer-live-p buffer)
