@@ -701,7 +701,8 @@ for predicate and set DRY-RUN to t."
                                 :then (when hyperdrive-mirror-log-to-buffer
                                         (lambda ()
                                           (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))))))
-         (progress-reporter (make-progress-reporter (format "Uploading %s files: " (length files)) 0 (length files))))
+         (progress-reporter (unless dry-run
+                              (make-progress-reporter (format "Uploading %s files: " (length files)) 0 (length files)))))
     (unless files
       (user-error "No files selected for mirroring (double-check predicate)"))
     (when (or dry-run hyperdrive-mirror-log-to-buffer)
