@@ -698,7 +698,8 @@ for predicate and set DRY-RUN to t."
                               (hyperdrive-open parent-entry
                                 :then (when hyperdrive-mirror-log-to-buffer
                                         (lambda ()
-                                          (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window))))))))))
+                                          (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))))))
+         (progress-reporter (make-progress-reporter "Uploading files " 0 (length files))))
     ;; TODO: Add a `progress-reporter'?
     (unless files
       (user-error "No files selected for mirroring (double-check predicate)"))
@@ -720,7 +721,7 @@ for predicate and set DRY-RUN to t."
           (hyperdrive-upload-file file entry :queue queue
             ;; TODO: Probably want to add an ELSE handler.
             :then (lambda (_)
-                    (cl-incf count)
+                    (progress-reporter-update progress-reporter (cl-incf count))
                     (when hyperdrive-mirror-log-to-buffer
                       (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
                         (let ((inhibit-read-only t))
