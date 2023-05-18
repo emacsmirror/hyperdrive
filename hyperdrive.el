@@ -573,7 +573,11 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   (hyperdrive-open (hyperdrive-url-entry (alist-get 'location (cdr bookmark)))
     :then (lambda ()
             (bookmark-default-handler
-             ;; Don't mutate the original record.
+             ;; We add the buffer property, because we don't want to
+             ;; store that in the bookmark record, because the buffer
+             ;; name could change in the future, and that would make
+             ;; the record invalid, which would cause
+             ;; `bookmark-default-handler' to signal an error.
              (append bookmark `((buffer . ,(current-buffer))))))))
 
 (defun hyperdrive-bookmark-jump (bookmark)
