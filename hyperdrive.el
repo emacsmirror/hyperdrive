@@ -676,9 +676,10 @@ for predicate and set DRY-RUN to t."
                         #'always))))
   (cl-callf expand-file-name source)
   (setf target-dir (file-name-as-directory (expand-file-name (or target-dir "/") "/")))
-  (when-let ((regexp (and (eq 'string (type-of predicate)) predicate)))
-    (setf predicate (lambda (filename)
-                      (string-match-p regexp filename))))
+  (when (stringp predicate)
+    (let ((regexp predicate))
+      (setf predicate (lambda (filename)
+                        (string-match-p regexp filename)))))
   (let ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
         (queue (unless dry-run
                  (make-plz-queue
