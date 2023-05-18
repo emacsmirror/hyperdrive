@@ -610,9 +610,11 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
 ;;;; Upload files from disk
 
 (cl-defun hyperdrive-upload-file
-    (filename entry &key queue (then (lambda (&rest _ignore)
-                                       (hyperdrive-open (hyperdrive-parent entry))
-                                       (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry)))))
+    (filename entry &key queue
+              (then (lambda (&rest _ignore)
+                      (hyperdrive-open (hyperdrive-parent entry))
+                      (unless queue
+                        (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry))))))
   "Upload FILENAME to ENTRY.
 Interactively, read FILENAME and ENTRY from the user.  When
 QUEUE, use it."
@@ -625,7 +627,8 @@ QUEUE, use it."
     (hyperdrive-api 'put url :queue queue
       :body `(file ,filename)
       :then then)
-    (hyperdrive-message "Uploading to \"%s\"..." url)))
+    (unless queue
+      (hyperdrive-message "Uploading to \"%s\"..." url))))
 
 ;; TODO: Don't overwrite a hyperdrive file with the same
 ;; contents. Should we keep a cache of uploaded files and mtimes?
@@ -699,7 +702,7 @@ for predicate and set DRY-RUN to t."
                                 :then (when hyperdrive-mirror-log-to-buffer
                                         (lambda ()
                                           (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))))))
-         (progress-reporter (make-progress-reporter "Uploading files " 0 (length files))))
+         (progress-reporter (make-progress-reporter (format "Uploading %s files: " (length files)) 0 (length files))))
     ;; TODO: Add a `progress-reporter'?
     (unless files
       (user-error "No files selected for mirroring (double-check predicate)"))
