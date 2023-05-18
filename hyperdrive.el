@@ -613,8 +613,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
     (filename entry &key queue
               (then (lambda (&rest _ignore)
                       (hyperdrive-open (hyperdrive-parent entry))
-                      (unless queue
-                        (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry))))))
+                      (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry)))))
   "Upload FILENAME to ENTRY.
 Interactively, read FILENAME and ENTRY from the user.  When
 QUEUE, use it."
