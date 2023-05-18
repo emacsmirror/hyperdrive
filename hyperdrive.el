@@ -691,7 +691,7 @@ for predicate and set DRY-RUN to t."
                         (string-match-p regexp filename)))))
   (let* ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
          (count 0)
-         (parent-entry (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir))
+         (parent-entry (hyperdrive-make-entry :hyperdrive hyperdrive :path target-dir :encode t))
          ;; TODO: Error handling (e.g. in case one or more files fails to upload).
          (queue (unless dry-run
                   (make-plz-queue
@@ -712,9 +712,10 @@ for predicate and set DRY-RUN to t."
           (erase-buffer)
           (insert (if dry-run "Would upload: \n" "Uploaded: \n")))))
     (dolist (file files)
-      (let ((entry (make-hyperdrive-entry
+      (let ((entry (hyperdrive-make-entry
                     :hyperdrive hyperdrive
-                    :path (expand-file-name (file-relative-name file source) target-dir))))
+                    :path (expand-file-name (file-relative-name file source) target-dir)
+                    :encode t)))
         (if dry-run
             (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
               (cl-incf count)
