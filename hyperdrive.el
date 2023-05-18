@@ -679,10 +679,7 @@ for predicate and set DRY-RUN to t."
   (when-let ((regexp (and (eq 'string (type-of predicate)) predicate)))
     (setf predicate (lambda (filename)
                       (string-match-p regexp filename))))
-  ;; TODO: Use cl-remove-if-not instead of cl-loop (predicate is a variable, not a function)
-  (let ((files (cl-loop for file in (directory-files-recursively source ".")
-                        when (funcall predicate file)
-                        collect file))
+  (let ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
         (queue (unless dry-run
                  (make-plz-queue
                   :limit 2
