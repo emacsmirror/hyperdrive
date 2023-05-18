@@ -693,16 +693,17 @@ for predicate and set DRY-RUN to t."
          (count 0)
          (parent-entry (hyperdrive-make-entry :hyperdrive hyperdrive :path target-dir :encode t))
          ;; TODO: Error handling (e.g. in case one or more files fails to upload).
+         (progress-reporter (unless dry-run
+                              (make-progress-reporter (format "Uploading %s files: " (length files)) 0 (length files))))
          (queue (unless dry-run
                   (make-plz-queue
                    :limit 2
                    :finally (lambda ()
+                              (progress-reporter-done progress-reporter)
                               (hyperdrive-open parent-entry
                                 :then (when hyperdrive-mirror-log-to-buffer
                                         (lambda ()
-                                          (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))))))
-         (progress-reporter (unless dry-run
-                              (make-progress-reporter (format "Uploading %s files: " (length files)) 0 (length files)))))
+                                          (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window))))))))))
     (unless files
       (user-error "No files selected for mirroring (double-check predicate)"))
     (when (or dry-run hyperdrive-mirror-log-to-buffer)
