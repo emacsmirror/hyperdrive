@@ -693,13 +693,15 @@ for predicate and set DRY-RUN to t."
                   (make-plz-queue
                    :limit 2
                    :finally (lambda ()
-                              (let ((parent-entry (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir)))
-                                (hyperdrive-open parent-entry
-                                  :then (when hyperdrive-mirror-log-to-buffer
-                                          (lambda ()
-                                            (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))
-                                (hyperdrive-message "Uploaded %s files to <%s>."
-                                                    count (hyperdrive-entry-url parent-entry))))))))
+                              (if (zerop count)
+                                  (display-warning 'hyperdrive-mirror "Nothing was uploaded.")
+                                (let ((parent-entry (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir)))
+                                  (hyperdrive-open parent-entry
+                                    :then (when hyperdrive-mirror-log-to-buffer
+                                            (lambda ()
+                                              (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))
+                                  (hyperdrive-message "Uploaded %s files to <%s>."
+                                                      count (hyperdrive-entry-url parent-entry)))))))))
     (when (or dry-run hyperdrive-mirror-log-to-buffer)
       (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
         (special-mode)
@@ -717,7 +719,12 @@ for predicate and set DRY-RUN to t."
                     (when hyperdrive-mirror-log-to-buffer
                       (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
                         (let ((inhibit-read-only t))
-                          (insert file " to " (hyperdrive-entry-url entry) "\n"))))))))))
+                          (insert file " to " (hyperdrive-entry-url entry) "\n")))))))))
+    (when (and (or dry-run hyperdrive-mirror-log-to-buffer)
+               (zerop count))
+      (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+        (let ((inhibit-read-only t))
+          (insert "Nothing.  (Consider double-checking the predicate.)")))))
   (when dry-run
     (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window))))
 
