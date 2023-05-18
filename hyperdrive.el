@@ -701,6 +701,7 @@ for predicate and set DRY-RUN to t."
                                             (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))
                                 (hyperdrive-message "Uploaded %s files to <%s>."
                                                     count (hyperdrive-entry-url parent-entry))))))))
+    ;; TODO: Add a `progress-reporter'?
     (unless files
       (user-error "No files selected for mirroring (double-check predicate)"))
     (when (or dry-run hyperdrive-mirror-log-to-buffer)
