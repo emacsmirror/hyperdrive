@@ -214,6 +214,8 @@ it to the user after mirroring."
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
   "Display various information about HYPERDRIVE."
   ;; TODO: Add hyperdrive-describe-hyperdrive mode with revert and bury buffer functions
+  ;; TODO: Display latest known version of hyperdrive? Should we
+  ;; store/persist that info in the hyperdrive struct?
   (interactive (list (hyperdrive-complete-hyperdrive)))
   (with-current-buffer (get-buffer-create
                         (format "*Hyperdrive: %s*"
