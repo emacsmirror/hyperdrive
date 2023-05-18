@@ -50,7 +50,6 @@ talking to the hypercore network
 ([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway][installation
 instructions]]).
 
-* Getting Started
 * Usage
 
 *Be careful what you publish!* Anyone with your public key can download
