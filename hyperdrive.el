@@ -149,6 +149,12 @@ through a shell)."
   ;; TODO: Use this elsewhere also.
   :type 'integer)
 
+(defcustom hyperdrive-mirror-log-to-buffer nil
+  "Whether to log `hyperdrive-mirror' actions to a buffer.
+If non-nil, log to the \"*hyperdrive-mirror*\" buffer and display
+it to the user after mirroring."
+  :type 'boolean)
+
 ;;;;; Faces
 
 (defface hyperdrive-petname '((t :inherit font-lock-type-face))
@@ -610,6 +616,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   "Upload FILENAME to ENTRY.
 Interactively, read FILENAME and ENTRY from the user.  When
 QUEUE, use it."
+  (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: ")))
                  (list filename
                        (hyperdrive-read-entry :predicate #'hyperdrive-writablep
@@ -680,33 +687,39 @@ for predicate and set DRY-RUN to t."
     (let ((regexp predicate))
       (setf predicate (lambda (filename)
                         (string-match-p regexp filename)))))
-  (let ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
-        (queue (unless dry-run
-                 (make-plz-queue
-                  :limit 2
-                  :finally (lambda ()
-                             (let ((parent-entry (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir)))
-                               (hyperdrive-open parent-entry)
-                               (hyperdrive-message "Uploaded %s files to %s. See *hyperdrive-mirror* buffer for details."
-                                                   (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-                                                     (1- (count-lines (point-min) (point-max))))
-                                                   (hyperdrive-entry-url parent-entry))))))))
-    (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-      (special-mode)
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert (if dry-run "Would upload: \n" "Uploaded: \n"))))
+  (let* ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
+         (count 0)
+         (queue (unless dry-run
+                  (make-plz-queue
+                   :limit 2
+                   :finally (lambda ()
+                              (let ((parent-entry (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir)))
+                                (hyperdrive-open parent-entry
+                                  :then (when hyperdrive-mirror-log-to-buffer
+                                          (lambda ()
+                                            (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))
+                                (hyperdrive-message "Uploaded %s files to <%s>."
+                                                    count (hyperdrive-entry-url parent-entry))))))))
+    (when (or dry-run hyperdrive-mirror-log-to-buffer)
+      (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+        (special-mode)
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (insert (if dry-run "Would upload: \n" "Uploaded: \n")))))
     (dolist (file files)
       (let ((entry (make-hyperdrive-entry
                     :hyperdrive hyperdrive
                     :path (expand-file-name (file-relative-name file source) target-dir))))
         (unless dry-run
-          (hyperdrive-upload-file file entry :queue queue :then #'ignore))
-        (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-          (let ((inhibit-read-only t))
-            (insert file " to " (hyperdrive-entry-url entry) "\n"))))))
+          (hyperdrive-upload-file file entry :queue queue
+            :then (lambda (_)
+                    (cl-incf count)
+                    (when hyperdrive-mirror-log-to-buffer
+                      (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+                        (let ((inhibit-read-only t))
+                          (insert file " to " (hyperdrive-entry-url entry) "\n"))))))))))
   (when dry-run
-    (pop-to-buffer (get-buffer-create "*hyperdrive-mirror*"))))
+    (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window))))
 
 (defun hyperdrive-read-files ()
   "Return list of files read from the user."
