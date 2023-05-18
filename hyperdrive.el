@@ -689,18 +689,16 @@ for predicate and set DRY-RUN to t."
                         (string-match-p regexp filename)))))
   (let* ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
          (count 0)
+         (parent-entry (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir))
          ;; TODO: Error handling (e.g. in case one or more files fails to upload).
          (queue (unless dry-run
                   (make-plz-queue
                    :limit 2
                    :finally (lambda ()
-                              (let ((parent-entry (make-hyperdrive-entry :hyperdrive hyperdrive :path target-dir)))
-                                (hyperdrive-open parent-entry
-                                  :then (when hyperdrive-mirror-log-to-buffer
-                                          (lambda ()
-                                            (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))
-                                (hyperdrive-message "Uploaded %s files to <%s>."
-                                                    count (hyperdrive-entry-url parent-entry))))))))
+                              (hyperdrive-open parent-entry
+                                :then (when hyperdrive-mirror-log-to-buffer
+                                        (lambda ()
+                                          (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window))))))))))
     ;; TODO: Add a `progress-reporter'?
     (unless files
       (user-error "No files selected for mirroring (double-check predicate)"))
@@ -714,7 +712,11 @@ for predicate and set DRY-RUN to t."
       (let ((entry (make-hyperdrive-entry
                     :hyperdrive hyperdrive
                     :path (expand-file-name (file-relative-name file source) target-dir))))
-        (unless dry-run
+        (if dry-run
+            (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+              (cl-incf count)
+              (let ((inhibit-read-only t))
+                (insert file " to " (hyperdrive-entry-url entry) "\n")))
           (hyperdrive-upload-file file entry :queue queue
             ;; TODO: Probably want to add an ELSE handler.
             :then (lambda (_)
@@ -722,9 +724,11 @@ for predicate and set DRY-RUN to t."
                     (when hyperdrive-mirror-log-to-buffer
                       (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
                         (let ((inhibit-read-only t))
-                          (insert file " to " (hyperdrive-entry-url entry) "\n"))))))))))
-  (when dry-run
-    (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window))))
+                          (insert file " to " (hyperdrive-entry-url entry) "\n")))))))))
+    (when dry-run
+      (hyperdrive-message "Would upload %s files to <%s>."
+                          count (hyperdrive-entry-url parent-entry))
+      (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))
 
 (defun hyperdrive-read-files ()
   "Return list of files read from the user."
