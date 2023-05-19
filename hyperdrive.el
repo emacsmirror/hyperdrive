@@ -574,7 +574,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   (let ((bookmark (bookmark-make-record-default 'no-file)))
     (setf (alist-get 'handler bookmark) #'hyperdrive-bookmark-handler
           (alist-get 'location bookmark) (hyperdrive-entry-url hyperdrive-current-entry))
-    (cons (format "Hyperdrive: %s" (hyperdrive-entry-description hyperdrive-current-entry)) bookmark)))
+    (cons (format "hyperdrive: %s" (hyperdrive-entry-description hyperdrive-current-entry)) bookmark)))
 
 (defun hyperdrive-bookmark-handler (bookmark)
   "Handler for Hyperdrive BOOKMARK."
