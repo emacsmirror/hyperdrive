@@ -311,6 +311,30 @@ Gateway must be running."
 
 ;; TODO: Command to upload one or more files.
 
+;;;###autoload
+(defun hyperdrive-new (seed)
+  "Open new hyperdrive for SEED.
+
+If SEED is not currently used as the petname for another
+hyperdrive, the new hyperdrive's petname will be set to SEED."
+  (interactive (list (read-string "New hyperdrive seed: ")))
+  (let* ((response (with-local-quit
+                     (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string seed)))))
+         (url (progn
+                ;; NOTE: Working around issue in plz whereby the
+                ;; stderr process sentinel sometimes leaves "stderr
+                ;; finished" garbage in the response body in older
+                ;; Emacs versions.  See: <https://github.com/alphapapa/plz.el/issues/23>.
+                (string-match (rx bos (group "hyper://" (1+ nonl))) response)
+                (match-string 1 response)))
+         (hyperdrive (hyperdrive-entry-hyperdrive (hyperdrive-url-entry url))))
+    (setf (hyperdrive-seed hyperdrive) seed
+          (hyperdrive-writablep hyperdrive) t)
+    (unwind-protect
+        (hyperdrive-set-petname seed hyperdrive)
+      (hyperdrive-persist hyperdrive)
+      (hyperdrive-open (hyperdrive-url-entry url)))))
+
 (defun hyperdrive-revert-buffer (&optional _ignore-auto noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
   (when (or noconfirm
