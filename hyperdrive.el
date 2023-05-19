@@ -463,7 +463,7 @@ buffer is not a hyperdrive file, prompts with
                            hyperdrive-current-entry
                          (hyperdrive-read-entry)))
                 ((cl-struct hyperdrive-entry name) entry)
-                (read-filename (read-string "Filename: " (expand-file-name name hyperdrive-download-directory))))
+                (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
   (hyperdrive-download-url (hyperdrive-entry-url entry) filename))
 

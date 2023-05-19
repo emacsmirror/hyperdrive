@@ -178,7 +178,7 @@ With point on header, return directory entry."
   (interactive
    (pcase-let* ((entry (hyperdrive-dir--entry-at-point))
                 ((cl-struct hyperdrive-entry name) entry)
-                (read-filename (read-string "Filename: " (expand-file-name name hyperdrive-download-directory))))
+                (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
   (hyperdrive-download-entry entry filename))
 
