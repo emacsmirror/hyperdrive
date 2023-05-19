@@ -657,7 +657,7 @@ Interactively, with one universal prefix, prompt for predicate,
 otherwise mirror all files.  With two universal prefixes, prompt
 for predicate and set DRY-RUN to t."
   (interactive
-   (let ((source (read-directory-name "Mirror file or directory: " nil nil t)))
+   (let ((source (read-directory-name "Mirror directory: " nil nil t)))
      (list source (hyperdrive-complete-hyperdrive)
            :target-dir (pcase (read-string "Target directory: " "/" nil "/")
                          ((pred string-blank-p) "/")
