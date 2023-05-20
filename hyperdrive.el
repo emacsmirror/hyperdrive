@@ -337,7 +337,8 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
 
 (defun hyperdrive-revert-buffer (&optional _ignore-auto noconfirm)
   "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
-  (when (or noconfirm
+  (when (or (hyperdrive--entry-directory-p hyperdrive-current-entry)
+            noconfirm
             ;; TODO: Add option hyperdrive-revert-without-query ?
             ;; (and (not (buffer-modified-p))
             ;;      (catch 'found
