@@ -493,13 +493,15 @@ label for the kind of format used (e.g. \"petname:\")."
 
 ;;;; Reading from the user
 
-(cl-defun hyperdrive-complete-hyperdrive (&key predicate (prompt "Hyperdrive: "))
+(cl-defun hyperdrive-complete-hyperdrive (&key predicate)
   "Return a hyperdrive selected with completion.
-If PREDICATE, only offer hyperdrives matching it.  Prompt with
-PROMPT."
+When PREDICATE, only offer hyperdrives matching it."
   (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
          (default (when hyperdrive-current-entry
                     (hyperdrive--format-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
+         (prompt (if default
+                     (format "Hyperdrive (default %s): " default)
+                   "Hyperdrive: "))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
                              hyperdrives))
