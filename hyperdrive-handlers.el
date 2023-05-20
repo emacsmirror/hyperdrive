@@ -166,6 +166,7 @@ arguments."
   ;; FIXME: Opening a streamable entry from a hyperdrive-dir buffer
   ;; buries the -dir buffer.
   "Stream ENTRY."
+  (hyperdrive-message (format "Streaming %s..." (hyperdrive--format-entry-url entry)))
   (pcase-let ((`(,command . ,args)
                (split-string hyperdrive-stream-player-command)))
     (apply #'start-process "hyperdrive-stream-player"
