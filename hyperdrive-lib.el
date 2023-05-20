@@ -363,7 +363,6 @@ Looks in filenames from `hyperdrive-public-metadata-filenames'.
 When HYPERDRIVE has a public metadata file, another request is
 made synchronously for its contents."
   (declare (indent defun))
-  ;; TODO: Load host-meta.json for current hyperdrive version
   (pcase-let* ((entry (hyperdrive-make-entry :hyperdrive hyperdrive
                                              :path "/.well-known/host-meta.json"))
                (metadata (with-local-quit
