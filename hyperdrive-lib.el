@@ -359,9 +359,8 @@ The following ENTRY hyperdrive slots are filled:
 ;; TODO: Call `hyperdrive-fill-public-metadata' in other appropriate places.
 (defun hyperdrive-fill-public-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
-Looks in filenames from `hyperdrive-public-metadata-filenames'.
-When HYPERDRIVE has a public metadata file, another request is
-made synchronously for its contents."
+Sends a synchronous request to get the latest contents of
+HYPERDRIVE's public metadata file."
   (declare (indent defun))
   (pcase-let* ((entry (hyperdrive-make-entry :hyperdrive hyperdrive
                                              :path "/.well-known/host-meta.json"))
