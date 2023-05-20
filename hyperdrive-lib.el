@@ -533,6 +533,11 @@ matching it.  If NAME, offer it as the default entry name."
          (path (read-string prompt default nil default)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :encode t)))
 
+(cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL: "))
+  "Return URL trimmed of whitespace.
+Prompts with PROMPT."
+  (string-trim (read-string prompt)))
+
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
 Entering an empty or blank string unsets PETNAME.
