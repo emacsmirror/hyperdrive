@@ -583,7 +583,7 @@ Returns HYPERDRIVE."
         :then (lambda (&rest _)
                 (hyperdrive-message "Set nickname: %s"
                                     (hyperdrive--format-host hyperdrive :format '(nickname))))))
-    ;; TODO: Consider refreshing buffer names, directory headers, etc.
+    ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
     (hyperdrive-persist hyperdrive))
   hyperdrive)
 
