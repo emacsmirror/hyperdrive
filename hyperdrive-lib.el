@@ -368,7 +368,7 @@ made synchronously for its contents."
                                              :path "/.well-known/host-meta.json"))
                (metadata (with-local-quit
                            (hyperdrive-api 'get (hyperdrive-entry-url entry)
-                             :as #'json-read :else #'ignore :noquery t))))
+                             :as #'json-read :noquery t))))
     ;; NOTE: RFC6415 specifies that what we use as a "nickname" have
     ;; the key "name" in the JSON object.
     (when metadata
