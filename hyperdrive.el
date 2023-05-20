@@ -378,8 +378,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
   :lighter " hyperdrive"
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map [remap revert-buffer-quick] #'hyperdrive-revert-buffer-quick)
-            ;; TODO: [#C] Redo this command.
-            ;; (define-key map [remap dired-jump]  #'hyperdrive-up-directory)
+            (define-key map [remap dired-jump]  #'hyperdrive-up)
             map)
   (if hyperdrive-mode
       (progn
