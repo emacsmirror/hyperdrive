@@ -801,17 +801,6 @@ for predicate and set DRY-RUN to t."
         (hyperdrive-upload-file file entry :queue queue :then #'ignore)))
     (plz-run queue)))
 
-;; TODO: Calling hyperdrive-upload-files is awkward. Create a wrapper that
-;; accepts a public-key/seed instead of a hyperdrive?
-
-;; (defun my/hyperdrive-upload-files-foo ()
-;;   "Upload all files inside of \"~/public/\" to hyperdrive with seed \"foo\"."
-;;   (interactive)
-;;   (let ((files (directory-files-recursively "~/public/" "")))
-;;     (hyperdrive-upload-files
-;;      (make-hyperdrive :public-key (substring (hyperdrive-seed-url "foo") (length "hyper://")))
-;;      files "~/public/")))
-
 ;;;; Footer
 
 (provide 'hyperdrive)
