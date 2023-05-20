@@ -356,7 +356,6 @@ The following ENTRY hyperdrive slots are filled:
         (setf (hyperdrive-public-key hyperdrive) public-key)))
     entry))
 
-;; TODO: Call `hyperdrive-fill-public-metadata' in other appropriate places.
 (defun hyperdrive-fill-public-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
 Sends a synchronous request to get the latest contents of
