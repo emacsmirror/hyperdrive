@@ -380,10 +380,6 @@ HYPERDRIVE's public metadata file."
     (hyperdrive-persist hyperdrive)
     hyperdrive))
 
-;; TODO: This.
-;; (defun hyperdrive-set-public-metadata (hyperdrive)
-;;   )
-
 (cl-defun hyperdrive-delete (entry &key then else)
   "Delete ENTRY, then call THEN.
 Call ELSE if request fails."
