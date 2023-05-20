@@ -563,13 +563,16 @@ Returns HYPERDRIVE."
 Returns HYPERDRIVE."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
-          (nickname (read-string
-                     (format "New nickname for hyperdrive (%s): "
-                             (hyperdrive--format-host hyperdrive :format '(short-key)))
-                     (alist-get 'name (hyperdrive-metadata hyperdrive)))))
+          (nickname
+           ;; NOTE: Fill metadata first in case the JSON file has been updated manually
+           (progn
+             (hyperdrive-fill-metadata hyperdrive)
+             (read-string
+              (format "New nickname for hyperdrive (%s): "
+                      (hyperdrive--format-host hyperdrive :format '(short-key)))
+              (alist-get 'name (hyperdrive-metadata hyperdrive))))))
      (list nickname hyperdrive)))
   (unless (equal nickname (alist-get 'name (hyperdrive-metadata hyperdrive)))
-    (hyperdrive-fill-metadata hyperdrive)
     (if (string-blank-p nickname)
         (progn
           (cl-callf map-delete (hyperdrive-metadata hyperdrive) 'name)
