@@ -375,9 +375,8 @@ HYPERDRIVE's public metadata file."
                               (pcase (plz-response-status (plz-error-response (caddr err)))
                                 (404 nil)
                                 (_ (signal (car err) (cdr err)))))))))
-    (when metadata
-      (setf (hyperdrive-metadata hyperdrive) metadata)
-      (hyperdrive-persist hyperdrive))
+    (setf (hyperdrive-metadata hyperdrive) metadata)
+    (hyperdrive-persist hyperdrive)
     hyperdrive))
 
 ;; TODO: This.
