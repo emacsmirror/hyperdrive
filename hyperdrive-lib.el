@@ -362,8 +362,11 @@ The following ENTRY hyperdrive slots are filled:
 Sends a synchronous request to get the latest contents of
 HYPERDRIVE's public metadata file."
   (declare (indent defun))
-  (pcase-let* ((entry (hyperdrive-make-entry :hyperdrive hyperdrive
-                                             :path "/.well-known/host-meta.json"))
+  (pcase-let* ((entry (hyperdrive-make-entry
+                       :hyperdrive hyperdrive
+                       :path "/.well-known/host-meta.json"
+                       ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
+                       :version nil))
                (metadata (with-local-quit
                            (condition-case err
                                (hyperdrive-api 'get (hyperdrive-entry-url entry)
