@@ -584,18 +584,6 @@ Returns HYPERDRIVE."
     (hyperdrive-persist hyperdrive))
   hyperdrive)
 
-(defun hyperdrive-unset-nickname (hyperdrive)
-  "Set HYPERDRIVE's NICKNAME.
-Returns HYPERDRIVE."
-  (interactive (list (hyperdrive-complete-hyperdrive)))
-  (hyperdrive-fill-metadata hyperdrive)
-  (cl-callf map-delete (hyperdrive-metadata hyperdrive) 'name)
-  (hyperdrive-put-metadata hyperdrive
-    :then (lambda (&rest _) (hyperdrive-message "Unset nickname")))
-  ;; TODO: Consider refreshing buffer names, directory headers, etc.
-  (hyperdrive-persist hyperdrive)
-  hyperdrive)
-
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
