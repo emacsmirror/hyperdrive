@@ -494,6 +494,7 @@ buffer is not a hyperdrive file, prompts with
 ;;;###autoload
 (defun hyperdrive-download-url (url filename)
   "Load contents at URL as a file to store on disk at FILENAME."
+  ;; TODO: Handle directory URLs (recursively download contents?)
   (interactive
    (let* ((read-url (hyperdrive-read-url :prompt "Download hyperdrive URL: "))
           (name (hyperdrive-entry-name (hyperdrive-url-entry read-url)))
