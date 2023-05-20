@@ -112,7 +112,7 @@ arguments."
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
       (push parent-entry entries))
     (setf directory-entry (hyperdrive--fill directory-entry headers))
-    (hyperdrive-fill-public-metadata hyperdrive)
+    (hyperdrive-fill-metadata hyperdrive)
     (setf header (hyperdrive-entry-description directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
       ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)

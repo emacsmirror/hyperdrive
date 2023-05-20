@@ -356,7 +356,7 @@ The following ENTRY hyperdrive slots are filled:
         (setf (hyperdrive-public-key hyperdrive) public-key)))
     entry))
 
-(defun hyperdrive-fill-public-metadata (hyperdrive)
+(defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
 Sends a synchronous request to get the latest contents of
 HYPERDRIVE's public metadata file."
@@ -570,7 +570,7 @@ Returns HYPERDRIVE."
      (list nickname hyperdrive)))
   (unless (or (string-blank-p nickname)
               (equal nickname (alist-get 'name (hyperdrive-metadata hyperdrive))))
-    (hyperdrive-fill-public-metadata hyperdrive)
+    (hyperdrive-fill-metadata hyperdrive)
     (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
     (hyperdrive-put-metadata hyperdrive
       :then (lambda (&rest _)
@@ -584,7 +584,7 @@ Returns HYPERDRIVE."
   "Set HYPERDRIVE's NICKNAME.
 Returns HYPERDRIVE."
   (interactive (list (hyperdrive-complete-hyperdrive)))
-  (hyperdrive-fill-public-metadata hyperdrive)
+  (hyperdrive-fill-metadata hyperdrive)
   (cl-callf map-delete (hyperdrive-metadata hyperdrive) 'name)
   (hyperdrive-put-metadata hyperdrive
     :then (lambda (&rest _) (hyperdrive-message "Unset nickname")))
