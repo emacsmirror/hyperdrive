@@ -77,8 +77,6 @@ If then, then call THEN with no arguments.  Default handler."
               (when then
                 (funcall then)))))))
 
-(declare-function hyperdrive-dir-mode "hyperdrive-dir")
-
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
 If THEN, then call THEN in the directory buffer with no
@@ -119,7 +117,6 @@ arguments."
       ;;   ;; we can try to keep point.
       ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))
       ;;         prev-line (line-number-at-pos)))
-      (hyperdrive-dir-mode)
       (setf ewoc hyperdrive-dir-ewoc) ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-dir-ewoc #'ignore)
       (ewoc-set-hf hyperdrive-dir-ewoc header "")

@@ -36,6 +36,7 @@
 ;;;; Declarations
 
 (declare-function hyperdrive-mode "hyperdrive")
+(declare-function hyperdrive-dir-mode "hyperdrive")
 
 ;;;; Structs
 
@@ -658,6 +659,8 @@ both point to the same content."
       ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
       (let ((buffer-file-name (hyperdrive-entry-name entry)))
         (set-auto-mode)))
+    (when (hyperdrive--entry-directory-p entry)
+      (hyperdrive-dir-mode))
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))
