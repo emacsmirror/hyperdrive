@@ -365,8 +365,13 @@ HYPERDRIVE's public metadata file."
   (pcase-let* ((entry (hyperdrive-make-entry :hyperdrive hyperdrive
                                              :path "/.well-known/host-meta.json"))
                (metadata (with-local-quit
-                           (hyperdrive-api 'get (hyperdrive-entry-url entry)
-                             :as #'json-read :noquery t))))
+                           (condition-case err
+                               (hyperdrive-api 'get (hyperdrive-entry-url entry)
+                                 :as #'json-read :noquery t)
+                             (plz-http-error
+                              (pcase (plz-response-status (plz-error-response (caddr err)))
+                                (404 nil)
+                                (_ (signal (car err) (cdr err)))))))))
     (when metadata
       (setf (hyperdrive-metadata hyperdrive) metadata)
       (hyperdrive-persist hyperdrive))
