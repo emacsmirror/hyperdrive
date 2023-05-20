@@ -535,7 +535,7 @@ matching it.  If NAME, offer it as the default entry name."
 
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
-Entering an empty or blank string leaves PETNAME as-is.
+Entering an empty or blank string unsets PETNAME.
 Returns HYPERDRIVE."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
@@ -543,14 +543,17 @@ Returns HYPERDRIVE."
                     (format "Petname (%s): "
                             (hyperdrive--format-hyperdrive hyperdrive)))))
      (list petname hyperdrive)))
-  (while-let (((not (string-blank-p petname)))
-              ((not (equal petname (hyperdrive-petname hyperdrive))))
+  (while-let (((not (equal petname (hyperdrive-petname hyperdrive))))
               (other-hyperdrive (cl-find petname (hash-table-values hyperdrive-hyperdrives)
                                          :key #'hyperdrive-petname :test #'equal)))
     (setf petname (read-string
                    (format "%S already assigned as petname to hyperdrive: «%s».  Enter new petname: "
                            petname (hyperdrive--format-hyperdrive other-hyperdrive)))))
-  (setf (hyperdrive-petname hyperdrive) petname)
+  (if (string-blank-p petname)
+      (when (yes-or-no-p (format "Unset petname for «%s»? "
+                                 (hyperdrive--format-hyperdrive hyperdrive)))
+        (setf (hyperdrive-petname hyperdrive) nil))
+    (setf (hyperdrive-petname hyperdrive) petname))
   (hyperdrive-persist hyperdrive)
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
