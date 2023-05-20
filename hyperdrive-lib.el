@@ -568,14 +568,18 @@ Returns HYPERDRIVE."
                              (hyperdrive--format-host hyperdrive :format '(short-key)))
                      (alist-get 'name (hyperdrive-metadata hyperdrive)))))
      (list nickname hyperdrive)))
-  (unless (or (string-blank-p nickname)
-              (equal nickname (alist-get 'name (hyperdrive-metadata hyperdrive))))
+  (unless (equal nickname (alist-get 'name (hyperdrive-metadata hyperdrive)))
     (hyperdrive-fill-metadata hyperdrive)
-    (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
-    (hyperdrive-put-metadata hyperdrive
-      :then (lambda (&rest _)
-              (hyperdrive-message "Set nickname: %s"
-                                  (hyperdrive--format-host hyperdrive :format '(nickname)))))
+    (if (string-blank-p nickname)
+        (progn
+          (cl-callf map-delete (hyperdrive-metadata hyperdrive) 'name)
+          (hyperdrive-put-metadata hyperdrive
+            :then (lambda (&rest _) (hyperdrive-message "Unset nickname"))))
+      (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
+      (hyperdrive-put-metadata hyperdrive
+        :then (lambda (&rest _)
+                (hyperdrive-message "Set nickname: %s"
+                                    (hyperdrive--format-host hyperdrive :format '(nickname))))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc.
     (hyperdrive-persist hyperdrive))
   hyperdrive)
