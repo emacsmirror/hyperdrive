@@ -370,6 +370,8 @@ HYPERDRIVE's public metadata file."
                (metadata (with-local-quit
                            (condition-case err
                                (hyperdrive-api 'get (hyperdrive-entry-url entry)
+                                 ;; TODO: How to handle invalid JSON? Currently, we get this error:
+                                 ;; error in process sentinel: JSON readtable error: 105
                                  :as #'json-read :noquery t)
                              (plz-http-error
                               (pcase (plz-response-status (plz-error-response (caddr err)))
