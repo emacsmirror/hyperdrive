@@ -98,6 +98,7 @@ To be used as the pretty-printer for `ewoc-create'."
 ;;;; Mode
 
 (declare-function hyperdrive-up "hyperdrive")
+(declare-function hyperdrive-describe-hyperdrive "hyperdrive")
 
 (defvar-keymap hyperdrive-dir-mode-map
   :parent  special-mode-map
@@ -108,7 +109,8 @@ To be used as the pretty-printer for `ewoc-create'."
   "d"   #'hyperdrive-dir-download-file
   "n"   #'hyperdrive-dir-next
   "p"   #'hyperdrive-dir-previous
-  "D"   #'hyperdrive-dir-delete)
+  "D"   #'hyperdrive-dir-delete
+  "?"   #'hyperdrive-describe-hyperdrive)
 
 (declare-function hyperdrive-bookmark-make-record "hyperdrive")
 
