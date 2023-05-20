@@ -122,6 +122,7 @@ arguments."
       ;;         prev-line (line-number-at-pos)))
       (setf ewoc hyperdrive-dir-ewoc) ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-dir-ewoc #'ignore)
+      (erase-buffer)
       (ewoc-set-hf hyperdrive-dir-ewoc header "")
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-dir-ewoc entry))

@@ -120,8 +120,6 @@ To be used as the pretty-printer for `ewoc-create'."
     )
   "Major mode for Hyperdrive directory buffers."
   :interactive nil
-  (let ((inhibit-read-only t))
-    (erase-buffer))
   (hl-line-mode)
   (setf hyperdrive-dir-ewoc (ewoc-create #'hyperdrive-dir-pp)
         ;; TODO(alphapapa): Imenu support.
