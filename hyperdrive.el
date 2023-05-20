@@ -581,6 +581,13 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
     (kill-new url)
     (hyperdrive-message "%s" url)))
 
+(defun hyperdrive-up ()
+  "Go up to parent directory."
+  (interactive)
+  (if-let ((parent (hyperdrive-parent hyperdrive-current-entry)))
+      (hyperdrive-open parent)
+    (user-error "At root directory")))
+
 (defun hyperdrive-previous-version (entry)
   "Show previous version of ENTRY."
   (interactive (list hyperdrive-current-entry))

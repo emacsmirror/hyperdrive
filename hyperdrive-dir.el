@@ -97,11 +97,13 @@ To be used as the pretty-printer for `ewoc-create'."
 
 ;;;; Mode
 
+(declare-function hyperdrive-up "hyperdrive")
+
 (defvar-keymap hyperdrive-dir-mode-map
   :parent  special-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
-  "^"   #'hyperdrive-dir-up
+  "^"   #'hyperdrive-up
   "w"   #'hyperdrive-dir-copy-url-as-kill
   "d"   #'hyperdrive-dir-download-file
   "n"   #'hyperdrive-dir-next
@@ -142,13 +144,6 @@ Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
   (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
   (hyperdrive-open entry))
-
-(defun hyperdrive-dir-up ()
-  "Go up to parent directory."
-  (interactive)
-  (if-let ((parent (hyperdrive-parent hyperdrive-current-entry)))
-      (hyperdrive-open parent)
-    (user-error "At root directory")))
 
 (defun hyperdrive-dir--entry-at-point ()
   "Return entry at point.
