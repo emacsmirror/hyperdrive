@@ -36,7 +36,6 @@
 ;;;; Declarations
 
 (declare-function hyperdrive-mode "hyperdrive")
-(declare-function hyperdrive-open "hyperdrive")
 
 ;;;; Structs
 

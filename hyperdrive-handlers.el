@@ -40,8 +40,6 @@
   "Alist mapping MIME types to handler functions.
 Keys are regexps matched against MIME types.")
 
-(declare-function hyperdrive-mode "hyperdrive")
-
 (cl-defun hyperdrive-handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
