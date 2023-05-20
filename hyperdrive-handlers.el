@@ -83,6 +83,8 @@ If THEN, then call THEN in the directory buffer with no
 arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
+  ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
+  ;; in a couple of seconds (same in hyperdrive-handler-default)
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version)
                 directory-entry)
                (url (hyperdrive-entry-url directory-entry))
