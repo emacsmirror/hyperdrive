@@ -402,7 +402,7 @@ Interactively, prompts for known hyperdrive and path."
 ;;;###autoload
 (defun hyperdrive-open-url (url)
   "Open hyperdrive URL."
-  (interactive (list (read-string "Hyperdrive URL: ")))
+  (interactive (list (hyperdrive-read-url :prompt "Open hyperdrive URL: ")))
   (hyperdrive-open (hyperdrive-url-entry url)))
 
 ;;;###autoload
