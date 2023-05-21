@@ -93,6 +93,7 @@ default:
 - ~d~ downloads the file at point to disk
 - ~D~ deletes the file or directory (recursively) at point
 - ~w~ copies the URL of the file or directory at point
+- ~?~ opens a buffer describing the current hyperdrive
 
 ** Write to a hyperdrive
 
@@ -127,6 +128,14 @@ centralization, reducing the durability of your link. ~hyperdrive.el~
 somewhat mitigates this issue by remembering which public key the DNS
 record resolved to, so that peers can use the stored public key itself
 for subsequent connections.
+
+** Describe a hyperdrive
+
+To see information about a hyperdrive, such as its public key, seed,
+petname, nickname, domains, writable, or other metadata, run
+~hyperdrive-describe-hyperdrive~.
+
+# TODO: xref to naming section when done
 
 ** Bookmark a hyperdrive
 
