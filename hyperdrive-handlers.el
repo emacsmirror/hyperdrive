@@ -85,6 +85,7 @@ arguments."
   ;; TODO: Refactor some of this code to -ewoc, or something like that, depending...
   ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
   ;; in a couple of seconds (same in hyperdrive-handler-default)
+  ;; (like new with-delayed-message ?)
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version)
                 directory-entry)
                (url (hyperdrive-entry-url directory-entry))
