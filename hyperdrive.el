@@ -211,9 +211,24 @@ it to the user after mirroring."
 
 ;; TODO(A): Command to rename paths.
 
+(defvar hyperdrive-describe-current-hyperdrive)
+
+(defun hyperdrive-describe-revert-buffer (&optional _ignore-auto _noconfirm)
+  "Revert `hyperdrive-describe-mode' buffer.
+Gets latest metadata from hyperdrive."
+  (hyperdrive-fill-metadata hyperdrive-describe-current-hyperdrive)
+  (hyperdrive-describe-hyperdrive hyperdrive-describe-current-hyperdrive))
+
+(define-derived-mode hyperdrive-describe-mode special-mode
+  `("Hyperdrive-describe"
+    ;; TODO: Add more to lighter, e.g. URL.
+    )
+  "Major mode for buffers for describing hyperdrives."
+  :interactive nil
+  (setq-local revert-buffer-function #'hyperdrive-describe-revert-buffer))
+
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
   "Display various information about HYPERDRIVE."
-  ;; TODO: Add hyperdrive-describe-hyperdrive mode with revert and bury buffer functions
   ;; TODO: Display latest known version of hyperdrive? Should we
   ;; store/persist that info in the hyperdrive struct?
   (interactive (list (hyperdrive-complete-hyperdrive)))
@@ -221,7 +236,8 @@ it to the user after mirroring."
                         (format "*Hyperdrive: %s*"
                                 (hyperdrive--format-host hyperdrive :format '(short-key)
                                                          :with-label t)))
-    (special-mode)
+    (hyperdrive-describe-mode)
+    (setq-local hyperdrive-describe-current-hyperdrive hyperdrive)
     (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive)
                 (inhibit-read-only t))
       (erase-buffer)

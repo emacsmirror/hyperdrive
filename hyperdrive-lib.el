@@ -125,6 +125,10 @@ When ENCODE is non-`nil', encode PATH."
   "Entry for current buffer.")
 (put 'hyperdrive-current-entry 'permanent-local t)
 
+(defvar-local hyperdrive-describe-current-hyperdrive nil
+  "Hyperdrive for current `hyperdrive-describe-mode' buffer.")
+(put 'hyperdrive-describe-current-hyperdrive 'permanent-local t)
+
 (defvar hyperdrive-timestamp-format-string nil)
 
 (defvar hyperdrive-current-entry)
