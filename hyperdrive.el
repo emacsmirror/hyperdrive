@@ -284,6 +284,7 @@ it to the user after mirroring."
                    (string-trim-right (buffer-string)))))
       (kill-buffer buffer))))
 
+;;;###autoload
 (defun hyperdrive-status ()
   "Say whether `hyper-gateway' systemd service is running."
   (interactive)
