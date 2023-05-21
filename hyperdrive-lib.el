@@ -679,7 +679,8 @@ both point to the same content."
 
 (defun hyperdrive-copy-tree (tree &optional vecp)
   "Like `copy-tree', but with VECP, works for records too."
-  ;; TODO: Propose/discuss upstream, in Emacs.
+  ;; TODO: Now that the new copy-tree behavior has been merged into Emacs,
+  ;; remove this function once compat.el supports the new behavior.
   (if (consp tree)
       (let (result)
 	(while (consp tree)
