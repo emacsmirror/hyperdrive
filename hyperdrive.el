@@ -307,8 +307,6 @@ Gateway must be running."
          (hyperdrive-message "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
        (signal (car err) (cdr err))))))
 
-;; TODO: Command to upload one or more files.
-
 ;;;###autoload
 (defun hyperdrive-new (seed)
   "Open new hyperdrive for SEED.
