@@ -272,6 +272,7 @@ it to the user after mirroring."
                    (string-trim-right (buffer-string)))))
       (kill-buffer buffer))))
 
+;;;###autoload
 (defun hyperdrive-stop ()
   "Stop `hyper-gateway' systemd service."
   (interactive)
