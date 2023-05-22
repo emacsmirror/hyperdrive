@@ -471,20 +471,15 @@ in the buffer opened by the handler."
                     (_ ;; Any other error is an HTTP error.
                      (pcase (plz-response-status response)
                        (404 ;; Path not found.
-                        (cond ((string-suffix-p "/" (hyperdrive-entry-path entry))
-                               ;; Path ends in a slash (and hyperdrive does not
-                               ;; support empty directories): offer to go up the tree.
-                               (go-up))
-                              ;; Path does not end in a slash.
-                              ((and (hyperdrive-writablep hyperdrive)
-                                    (not (hyperdrive-entry-version entry)))
-                               ;; Hyperdrive is writable and not
-                               ;; versioned: create a new buffer that
-                               ;; will be saved to that path.
-                               (switch-to-buffer (hyperdrive--get-buffer-create entry)))
-                              (t
-                               ;; Hyperdrive not writable: offer to go up.
-                               (go-up))))
+                        (if (and (not (hyperdrive--entry-directory-p entry))
+                                 (hyperdrive-writablep hyperdrive)
+                                 (not (hyperdrive-entry-version entry)))
+                            ;; Hyperdrive is not a directory, is writable
+                            ;; and is not versioned: create a new buffer
+                            ;; that will be saved to that path.
+                            (switch-to-buffer (hyperdrive--get-buffer-create entry))
+                          ;; Hyperdrive entry is not writable: offer to go up.
+                          (go-up)))
                        (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
                                               (hyperdrive-entry-url entry) plz-error)))))))))))
 
