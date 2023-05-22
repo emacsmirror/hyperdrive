@@ -703,7 +703,7 @@ for predicate and set DRY-RUN to t."
   (interactive
    (let ((source (read-directory-name "Mirror directory: " nil nil t)))
      (list source (hyperdrive-complete-hyperdrive)
-           :target-dir (pcase (read-string "Target directory: " "/" nil "/")
+           :target-dir (pcase (read-string (format-prompt "Target directory" "/") "/" nil "/")
                          ((pred string-blank-p) "/")
                          (else else))
            :dry-run (equal '(16) current-prefix-arg)
