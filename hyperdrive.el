@@ -793,7 +793,7 @@ for predicate and set DRY-RUN to t."
    (let ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
          (files (hyperdrive-read-files))
          ;; TODO: Consider offering target dirs in hyperdrive with completion.
-         (target-dir (pcase (read-string "Target directory: " nil nil "/")
+         (target-dir (pcase (read-string (format-prompt "Target directory" "/") "/" nil "/")
                        ((pred string-blank-p) "/")
                        (else else))))
      (list files hyperdrive :target-directory target-dir)))
