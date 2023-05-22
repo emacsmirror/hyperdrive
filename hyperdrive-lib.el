@@ -541,7 +541,9 @@ PREDICATE and FORCE-PROMPT are passed to
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate
                                                      :force-prompt force-prompt))
          (default (hyperdrive--format-path name))
-         (path (read-string (format-prompt "File path" default) default nil default)))
+         (path (read-string (format-prompt "Path in «%s»" default
+                                           (hyperdrive--format-hyperdrive hyperdrive))
+                            default nil default)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :encode t)))
 
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
