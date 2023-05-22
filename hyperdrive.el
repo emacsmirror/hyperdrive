@@ -414,7 +414,7 @@ Interactively, prompts for known hyperdrive and path."
 ;;;###autoload
 (defun hyperdrive-open-url (url)
   "Open hyperdrive URL."
-  (interactive (list (hyperdrive-read-url :prompt "Open hyperdrive URL: ")))
+  (interactive (list (hyperdrive-read-url :prompt "Open hyperdrive URL")))
   (hyperdrive-open (hyperdrive-url-entry url)))
 
 ;;;###autoload
@@ -508,7 +508,7 @@ buffer is not a hyperdrive file, prompts with
   "Load contents at URL as a file to store on disk at FILENAME."
   ;; TODO: Handle directory URLs (recursively download contents?)
   (interactive
-   (let* ((read-url (hyperdrive-read-url :prompt "Download hyperdrive URL: "))
+   (let* ((read-url (hyperdrive-read-url :prompt "Download hyperdrive URL"))
           (name (hyperdrive-entry-name (hyperdrive-url-entry read-url)))
           (read-filename (read-string "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list read-url read-filename)))
