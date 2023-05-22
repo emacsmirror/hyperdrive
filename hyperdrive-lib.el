@@ -578,8 +578,8 @@ Returns HYPERDRIVE."
            (progn
              (hyperdrive-fill-metadata hyperdrive)
              (read-string
-              (format "New nickname for hyperdrive (%s): "
-                      (hyperdrive--format-host hyperdrive :format '(short-key)))
+              (format "Nickname for «%s»: "
+                      (hyperdrive--format-hyperdrive hyperdrive))
               (alist-get 'name (hyperdrive-metadata hyperdrive))))))
      (list nickname hyperdrive)))
   (unless (equal nickname (alist-get 'name (hyperdrive-metadata hyperdrive)))
@@ -591,7 +591,8 @@ Returns HYPERDRIVE."
       (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
       (hyperdrive-put-metadata hyperdrive
         :then (lambda (&rest _)
-                (hyperdrive-message "Set nickname: %s"
+                (hyperdrive-message "Set nickname for «%s» to %s"
+                                    (hyperdrive--format-hyperdrive hyperdrive)
                                     (hyperdrive--format-host hyperdrive :format '(nickname))))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
     (hyperdrive-persist hyperdrive))
