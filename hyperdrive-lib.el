@@ -533,8 +533,7 @@ hyperdrive is known.  If PREDICATE, only offer hyperdrives
 matching it.  If NAME, offer it as the default entry name."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate))
          (default (concat "/" name))
-         (prompt (format "File path (default %S): " default))
-         (path (read-string prompt default nil default)))
+         (path (read-string (format-prompt "File path" default) default nil default)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :encode t)))
 
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
