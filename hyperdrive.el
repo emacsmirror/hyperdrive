@@ -697,7 +697,7 @@ otherwise mirror all files.  With two universal prefixes, prompt
 for predicate and set DRY-RUN to t."
   (interactive
    (let ((source (read-directory-name "Mirror directory: " nil nil t)))
-     (list source (hyperdrive-complete-hyperdrive)
+     (list source (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep)
            :target-dir (read-string (format-prompt "Target directory" "/") "/" nil "/")
            :dry-run (equal '(16) current-prefix-arg)
            :predicate (if current-prefix-arg
