@@ -550,14 +550,14 @@ Returns HYPERDRIVE."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
           (petname (read-string
-                    (format "Petname (%s): "
+                    (format "Petname for «%s» (leave blank to unset): "
                             (hyperdrive--format-hyperdrive hyperdrive)))))
      (list petname hyperdrive)))
   (while-let (((not (equal petname (hyperdrive-petname hyperdrive))))
               (other-hyperdrive (cl-find petname (hash-table-values hyperdrive-hyperdrives)
                                          :key #'hyperdrive-petname :test #'equal)))
     (setf petname (read-string
-                   (format "%S already assigned as petname to hyperdrive: «%s».  Enter new petname: "
+                   (format "%S already assigned as petname to hyperdrive «%s».  Enter new petname: "
                            petname (hyperdrive--format-hyperdrive other-hyperdrive)))))
   (if (string-blank-p petname)
       (when (yes-or-no-p (format "Unset petname for «%s»? "
