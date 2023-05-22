@@ -698,9 +698,7 @@ for predicate and set DRY-RUN to t."
   (interactive
    (let ((source (read-directory-name "Mirror directory: " nil nil t)))
      (list source (hyperdrive-complete-hyperdrive)
-           :target-dir (pcase (read-string (format-prompt "Target directory" "/") "/" nil "/")
-                         ((pred string-blank-p) "/")
-                         (else else))
+           :target-dir (read-string (format-prompt "Target directory" "/") "/" nil "/")
            :dry-run (equal '(16) current-prefix-arg)
            :predicate (if current-prefix-arg
                           (let* ((collection
@@ -725,7 +723,7 @@ for predicate and set DRY-RUN to t."
                             result)
                         #'always))))
   (cl-callf expand-file-name source)
-  (setf target-dir (file-name-as-directory (expand-file-name (or target-dir "/") "/")))
+  (setf target-dir (hyperdrive--format-path target-dir :directoryp t))
   (when (stringp predicate)
     (let ((regexp predicate))
       (setf predicate (lambda (filename)
@@ -788,9 +786,7 @@ for predicate and set DRY-RUN to t."
    (let ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
          (files (hyperdrive-read-files))
          ;; TODO: Consider offering target dirs in hyperdrive with completion.
-         (target-dir (pcase (read-string (format-prompt "Target directory" "/") "/" nil "/")
-                       ((pred string-blank-p) "/")
-                       (else else))))
+         (target-dir (read-string (format-prompt "Target directory" "/") "/" nil "/")))
      (list files hyperdrive :target-directory target-dir)))
   (cl-assert (cl-notany #'file-directory-p files))
   (cl-assert (cl-every #'file-readable-p files))
@@ -799,7 +795,7 @@ for predicate and set DRY-RUN to t."
     (unless (= 1 (cl-count (file-name-nondirectory file) files
                            :test #'equal :key #'file-name-nondirectory))
       (user-error "Can't upload multiple files with same name: %S" (file-name-nondirectory file))))
-  (setf target-directory (file-name-as-directory (expand-file-name target-directory "/")))
+  (setf target-directory (hyperdrive--format-path target-directory :directoryp t))
   (let ((queue (make-plz-queue
                 :limit hyperdrive-queue-size
                 :finally (lambda ()

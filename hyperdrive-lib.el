@@ -91,15 +91,9 @@ Returns URL with hyperdrive's full public key."
 
 (cl-defun hyperdrive-make-entry (&key hyperdrive path version etc encode)
   "Return hyperdrive entry struct from args.
-HYPERDRIVE, VERSION, and ETC are used as-is.
-
-When `nil' or blank, PATH is set to \"/\". Hyperdrive entry path
-is guaranteed to start with \"/\". NAME is generated from PATH.
-
-When ENCODE is non-`nil', encode PATH."
-  (setf path (if (or (not path) (string-blank-p path))
-                 "/"
-               (expand-file-name path "/")))
+HYPERDRIVE, VERSION, and ETC are used as-is. Entry NAME is
+generated from PATH. When ENCODE is non-`nil', encode PATH."
+  (setf path (hyperdrive--format-path path))
   (when encode
     (cl-callf url-hexify-string path (cons ?/ url-unreserved-chars)))
   (make-hyperdrive-entry
@@ -532,7 +526,7 @@ Prompts user for a hyperdrive and signals an error if no such
 hyperdrive is known.  If PREDICATE, only offer hyperdrives
 matching it.  If NAME, offer it as the default entry name."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate))
-         (default (concat "/" name))
+         (default (hyperdrive--format-path name))
          (path (read-string (format-prompt "File path" default) default nil default)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :encode t)))
 
@@ -703,6 +697,17 @@ both point to the same content."
 	    (aset tree i (copy-tree (aref tree i) vecp)))
 	  tree)
       tree)))
+
+(cl-defun hyperdrive--format-path (path &key directoryp)
+  "Return PATH with a leading slash if it lacks one.
+When DIRECTORYP, also add a trailing slash to PATH if it lacks one.
+When PATH is nil or blank, return \"/\"."
+  (if (or (not path) (string-blank-p path))
+      "/"
+    (expand-file-name (if directoryp
+                          (file-name-as-directory path)
+                        path)
+                      "/")))
 
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here
