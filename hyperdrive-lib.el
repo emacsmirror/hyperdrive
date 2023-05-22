@@ -539,8 +539,10 @@ matching it.  If NAME, offer it as the default entry name."
 
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
-Prompts with PROMPT."
-  (string-trim (read-string (format-prompt prompt nil))))
+Prompts with PROMPT. Defaults to current entry if it exists."
+  (let ((default (when hyperdrive-current-entry
+                   (hyperdrive-entry-url hyperdrive-current-entry))))
+    (string-trim (read-string (format-prompt prompt default) nil nil default))))
 
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
