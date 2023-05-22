@@ -491,22 +491,33 @@ label for the kind of format used (e.g. \"petname:\")."
 
 ;;;; Reading from the user
 
-(cl-defun hyperdrive-complete-hyperdrive (&key predicate)
-  "Return a hyperdrive selected with completion.
-When PREDICATE, only offer hyperdrives matching it."
-  (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
-         (default (when hyperdrive-current-entry
-                    (hyperdrive--format-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
-         (prompt (if default
-                     (format "Hyperdrive (default %s): " default)
-                   "Hyperdrive: "))
-         (candidates (mapcar (lambda (hyperdrive)
-                               (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
-                             hyperdrives))
-         (completion-styles (cons 'substring completion-styles))
-         (selected (completing-read prompt candidates nil 'require-match nil nil default)))
-    (or (alist-get selected candidates nil nil #'equal)
-        (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
+(cl-defun hyperdrive-complete-hyperdrive (&key predicate force-prompt)
+  "Return hyperdrive for current entry when it matches PREDICATE.
+
+With FORCE-PROMPT or when current hyperdrive does not match
+PREDICATE, return a hyperdrive selected with completion. In this
+case, when PREDICATE, only offer hyperdrives matching it."
+  (unless predicate
+    ;; cl-defun default value doesn't work when nil predicate value is passed in.
+    (setf predicate #'always))
+  (if-let* (((not force-prompt))
+            (hyperdrive-current-entry)
+            (current-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+            ((funcall predicate current-hyperdrive)))
+      current-hyperdrive
+    (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
+           (default (when hyperdrive-current-entry
+                      (hyperdrive--format-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
+           (prompt (if default
+                       (format "Hyperdrive (default %s): " default)
+                     "Hyperdrive: "))
+           (candidates (mapcar (lambda (hyperdrive)
+                                 (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
+                               hyperdrives))
+           (completion-styles (cons 'substring completion-styles))
+           (selected (completing-read prompt candidates nil 'require-match nil nil default)))
+      (or (alist-get selected candidates nil nil #'equal)
+          (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one")))))
 
 (cl-defun hyperdrive--format-hyperdrive (hyperdrive)
   "Return HYPERDRIVE formatted for completion."
@@ -520,12 +531,15 @@ When PREDICATE, only offer hyperdrives matching it."
               when value
               concat (concat value "  ")))))
 
-(cl-defun hyperdrive-read-entry (&key predicate name)
+(cl-defun hyperdrive-read-entry (&key predicate name force-prompt)
   "Return new hyperdrive entry with path and hyperdrive read from user.
 Prompts user for a hyperdrive and signals an error if no such
-hyperdrive is known.  If PREDICATE, only offer hyperdrives
-matching it.  If NAME, offer it as the default entry name."
-  (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate))
+hyperdrive is known.  If NAME, offer it as the default entry name.
+
+PREDICATE and FORCE-PROMPT are passed to
+`hyperdrive-complete-hyperdrive', which see."
+  (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate
+                                                     :force-prompt force-prompt))
          (default (hyperdrive--format-path name))
          (path (read-string (format-prompt "File path" default) default nil default)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :encode t)))
@@ -540,9 +554,12 @@ Prompts with PROMPT. Defaults to current entry if it exists."
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
 Entering an empty or blank string unsets PETNAME.
-Returns HYPERDRIVE."
+Returns HYPERDRIVE.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
   (interactive
-   (let* ((hyperdrive (hyperdrive-complete-hyperdrive))
+   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg))
           (petname (read-string
                     (format "Petname for «%s» (leave blank to unset): "
                             (hyperdrive--format-hyperdrive hyperdrive)))))
@@ -564,9 +581,13 @@ Returns HYPERDRIVE."
 
 (defun hyperdrive-set-nickname (nickname hyperdrive)
   "Set HYPERDRIVE's NICKNAME.
-Returns HYPERDRIVE."
+Returns HYPERDRIVE.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
   (interactive
-   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
+   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
+                                                      :force-prompt current-prefix-arg))
           (nickname
            ;; NOTE: Fill metadata first in case the JSON file has been updated manually
            (progn

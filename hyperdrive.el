@@ -233,10 +233,13 @@ Gets latest metadata from hyperdrive."
   (setq-local revert-buffer-function #'hyperdrive-describe-revert-buffer))
 
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
-  "Display various information about HYPERDRIVE."
+  "Display various information about HYPERDRIVE.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
   ;; TODO: Display latest known version of hyperdrive? Should we
   ;; store/persist that info in the hyperdrive struct?
-  (interactive (list (hyperdrive-complete-hyperdrive)))
+  (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (with-current-buffer (get-buffer-create
                         (format "*Hyperdrive: %s*"
                                 (hyperdrive--format-host hyperdrive :format '(short-key)
@@ -412,8 +415,11 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
 ;;;###autoload
 (defun hyperdrive-find-file (entry)
   "Find hyperdrive ENTRY.
-Interactively, prompts for known hyperdrive and path."
-  (interactive (list (hyperdrive-read-entry)))
+Interactively, prompts for known hyperdrive and path.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
+  (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry))
 
 ;;;###autoload
@@ -493,11 +499,14 @@ in the buffer opened by the handler."
   "Download ENTRY to FILENAME on disk.
 Interactively, downloads current hyperdrive file.  If current
 buffer is not a hyperdrive file, prompts with
-`hyperdrive-read-entry'."
+`hyperdrive-read-entry'.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
   (interactive
    (pcase-let* ((entry (if hyperdrive-mode
                            hyperdrive-current-entry
-                         (hyperdrive-read-entry)))
+                         (hyperdrive-read-entry :force-prompt current-prefix-arg)))
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
@@ -517,21 +526,29 @@ buffer is not a hyperdrive file, prompts with
 ;;;###autoload
 (defun hyperdrive-save-buffer (entry)
   "Save ENTRY to hyperdrive (interactively, the current buffer).
-If buffer was not hyperdrive-backed, it becomes so."
+If buffer was not hyperdrive-backed, it becomes so.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
   ;; TODO: Improve docstrings of `hyperdrive-save-buffer' and
   ;; `hyperdrive-write-buffer' after we've sorted out their behavior.
   (interactive
    (list (if hyperdrive-mode
              hyperdrive-current-entry
-           (hyperdrive-read-entry :predicate #'hyperdrive-writablep))))
+           (hyperdrive-read-entry :predicate #'hyperdrive-writablep
+                                  :force-prompt current-prefix-arg))))
   (hyperdrive-write-buffer entry 'overwrite))
 
 ;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)
   "Write current buffer to new hyperdrive ENTRY.
 If file already exists and OVERWRITEP is nil, prompt the user to
-overwrite."
-  (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep)))
+overwrite.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
+  (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
+                                            :force-prompt current-prefix-arg)))
   ;; FIXME: Overwrites without prompting if file exists.
   (ignore overwritep)
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
@@ -665,12 +682,16 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
                       (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry)))))
   "Upload FILENAME to ENTRY.
 Interactively, read FILENAME and ENTRY from the user.  When
-QUEUE, use it."
+QUEUE, use it.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: ")))
                  (list filename
                        (hyperdrive-read-entry :predicate #'hyperdrive-writablep
-                                              :name (file-name-nondirectory filename)))))
+                                              :name (file-name-nondirectory filename)
+                                              :force-prompt current-prefix-arg))))
   (let ((url (hyperdrive-entry-url entry)))
     (hyperdrive-api 'put url :queue queue
       :body `(file ,filename)
@@ -702,10 +723,14 @@ each file will be accessible.
 
 Interactively, with one universal prefix, prompt for predicate,
 otherwise mirror all files.  With two universal prefixes, prompt
-for predicate and set DRY-RUN to t."
+for predicate and set DRY-RUN to t.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
   (interactive
    (let ((source (read-directory-name "Mirror directory: " nil nil t)))
-     (list source (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep)
+     (list source (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
+                                                  :force-prompt current-prefix-arg)
            :target-dir (read-string (format-prompt "Target directory" "/") "/" nil "/")
            :dry-run (equal '(16) current-prefix-arg)
            :predicate (if current-prefix-arg
@@ -789,9 +814,13 @@ for predicate and set DRY-RUN to t."
            collect file))
 
 (cl-defun hyperdrive-upload-files (files hyperdrive &key (target-directory "/"))
-  "Upload FILES to TARGET-DIRECTORY in HYPERDRIVE."
+  "Upload FILES to TARGET-DIRECTORY in HYPERDRIVE.
+
+Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
+for a hyperdrive."
   (interactive
-   (let ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep))
+   (let ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
+                                                     :force-prompt current-prefix-arg))
          (files (hyperdrive-read-files))
          ;; TODO: Consider offering target dirs in hyperdrive with completion.
          (target-dir (read-string (format-prompt "Target directory" "/") "/" nil "/")))
