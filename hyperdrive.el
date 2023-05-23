@@ -529,12 +529,6 @@ overwrite."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep)))
   ;; FIXME: Overwrites without prompting if file exists.
   (ignore overwritep)
-  (unless hyperdrive-mode
-    ;; TODO: Remove faces/overlays that might be applied to current buffer.
-    ;; I can confirm that overlays are not removed when
-    ;; `hyperdrive-write-buffer' is called from a magit log buffer.
-    (hyperdrive-mode))
-  (setq-local hyperdrive-current-entry entry)
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
               (url (hyperdrive-entry-url entry))
               (buffer (current-buffer)))
@@ -548,6 +542,12 @@ overwrite."
               ;; writing a hyperdrive file.
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
+                  (unless hyperdrive-mode
+                    ;; TODO: Remove faces/overlays that might be applied to current buffer.
+                    ;; I can confirm that overlays are not removed when
+                    ;; `hyperdrive-write-buffer' is called from a magit log buffer.
+                    (hyperdrive-mode))
+                  (setq-local hyperdrive-current-entry entry)
                   (setf buffer-file-name nil)
                   (rename-buffer (hyperdrive--entry-buffer-name entry) 'unique)
                   (set-buffer-modified-p nil)
