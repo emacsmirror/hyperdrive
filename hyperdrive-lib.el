@@ -192,7 +192,7 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
     ;; TODO: Investigate whether we should use 'text body type for text buffers.
     :body-type 'binary
     ;; TODO: plz accepts buffer as a body, we should refactor calls to hyperdrive--write to pass in a buffer instead of a buffer-string.
-    :body body :then then :else else :queue queue))
+    :body body :as 'response :then then :else else :queue queue))
 
 (defun hyperdrive-parent (entry)
   "Return parent entry for ENTRY.
