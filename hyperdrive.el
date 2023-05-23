@@ -527,9 +527,7 @@ If buffer was not hyperdrive-backed, it becomes so."
 If file already exists and OVERWRITEP is nil, prompt the user to
 overwrite."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep)))
-  ;; FIXME: Overwrites without prompting if file exists.  Make new
-  ;; --writable-p based on
-  ;; <https://github.com/RangerMauve/hypercore-fetch/issues/60>.
+  ;; FIXME: Overwrites without prompting if file exists.
   (ignore overwritep)
   (unless hyperdrive-mode
     ;; TODO: Remove faces/overlays that might be applied to current buffer.
