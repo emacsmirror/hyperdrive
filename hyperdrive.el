@@ -536,10 +536,7 @@ overwrite."
       :body (save-restriction
               (widen)
               (buffer-substring-no-properties (point-min) (point-max)))
-      :then (lambda (_response)
-              ;; TODO: Fill entry after writing it so that
-              ;; hyperdrive-previous-version works correctly after
-              ;; writing a hyperdrive file.
+      :then (lambda (response)
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
                   (unless hyperdrive-mode
@@ -547,6 +544,7 @@ overwrite."
                     ;; I can confirm that overlays are not removed when
                     ;; `hyperdrive-write-buffer' is called from a magit log buffer.
                     (hyperdrive-mode))
+                  (hyperdrive--fill entry (plz-response-headers response))
                   (setq-local hyperdrive-current-entry entry)
                   (setf buffer-file-name nil)
                   (rename-buffer (hyperdrive--entry-buffer-name entry) 'unique)
