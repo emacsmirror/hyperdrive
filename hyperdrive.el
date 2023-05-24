@@ -184,7 +184,7 @@ it to the user after mirroring."
 ;; them equal at save time and so deletes the persisted variable file.
 ;; To work around this, we set the default value to nil and initialize
 ;; it to a hash table "manually".
-;; TODO: File a bug report against persist.el.
+;; TODO: See persist.el patch: <https://debbugs.gnu.org/cgi/bugreport.cgi?bug=63513>
 (persist-defvar hyperdrive-hyperdrives nil
                 "List of known hyperdrives."
                 hyperdrive-persist-location)
