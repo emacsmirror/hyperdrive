@@ -96,9 +96,14 @@
   :type '(choice (const :tag "Use default persist location" nil)
                  (file :tag "Custom location")))
 
-(defcustom hyperdrive-download-directory (expand-file-name "~/")
-  "Location where `hyperdrive-download-url' will download files."
-  ;; TODO: Default to `eww-download-directory'
+(defcustom hyperdrive-download-directory (expand-file-name
+                                          (if (bound-and-true-p eww-download-directory)
+                                              (if (stringp eww-download-directory)
+                                                  eww-download-directory
+                                                (funcall eww-download-directory))
+                                            "~/"))
+  "Location where `hyperdrive-download-url' will download files.
+Defaults to `eww-download-directory'."
   :type '(file :must-match t))
 
 (defcustom hyperdrive-timestamp-format "%x %X"
