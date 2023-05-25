@@ -51,14 +51,13 @@ modify this GNU manual.''
 @menu
 * Introduction::
 * Installation::
-* Getting Started::
 * Usage::
 * Concepts::
 * Troubleshooting::
 * Bugs and Patches::
 * Acknowledgments::
 * GNU Free Documentation License::
-* Main Index::
+* Indices::
 
 @detailmenu
 --- The Detailed Node Listing ---
@@ -75,20 +74,37 @@ Usage
 * Write to a hyperdrive::
 * Link to a hyperdrive::
 * Share a hyperdrive::
+* Describe a hyperdrive::
 * Bookmark a hyperdrive::
 * Download hyperdrive files::
 * Upload files from your filesystem::
 
 Upload files from your filesystem
 
-* Upload a whole directory::
-* Upload files by tag::
+* Mirror a whole directory::
+* Mirror files by tag or other attributes::
 
 Concepts
 
 * Hyper-gateway::
 * Sparse replication::
 * Hyperdrive entries::
+* Versioning::
+* Naming::
+
+Naming
+
+* Public keys::
+* Petnames::
+* Nicknames::
+* Seeds::
+* DNS domains::
+
+Indices
+
+* Function index::
+* Variable index::
+* Concept index::
 
 @end detailmenu
 @end menu
@@ -124,9 +140,6 @@ talking to the hypercore network
 (@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation
 instructions}).
 
-@node Getting Started
-@chapter Getting Started
-
 @node Usage
 @chapter Usage
 
@@ -141,6 +154,7 @@ them.
 * Write to a hyperdrive::
 * Link to a hyperdrive::
 * Share a hyperdrive::
+* Describe a hyperdrive::
 * Bookmark a hyperdrive::
 * Download hyperdrive files::
 * Upload files from your filesystem::
@@ -193,6 +207,8 @@ default:
 @code{D} deletes the file or directory (recursively) at point
 @item
 @code{w} copies the URL of the file or directory at point
+@item
+@code{?} opens a buffer describing the current hyperdrive
 @end itemize
 
 @node Write to a hyperdrive
@@ -232,6 +248,13 @@ somewhat mitigates this issue by remembering which public key the DNS
 record resolved to, so that peers can use the stored public key itself
 for subsequent connections.
 
+@node Describe a hyperdrive
+@section Describe a hyperdrive
+
+To see information about a hyperdrive, such as its public key, seed,
+petname, nickname, domains, writable, or other metadata, run
+@code{hyperdrive-describe-hyperdrive}.
+
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
 
@@ -248,56 +271,77 @@ in a @code{hyper://} URL after @code{hyperdrive-download-url}.
 @node Upload files from your filesystem
 @section Upload files from your filesystem
 
-TODO: Uploading files from the filesystem has not been reimplemented since the upgrade to the latest version of hyper-gateway.
+To upload a single file from your filesystem, use
+@code{hyperdrive-upload-file}. By default, the selected file will be placed
+in your hyperdrive's root directory, but you can edit the filepath
+before uploading.
 
-@code{hyperdrive-upload-files} lets you upload files from your filesystem
-to a hyperdrive. It accepts a @code{seed}, a @code{relative-dir}, the directory
-on your filesystem which will be the top-level or root directory of
-the hyperdrive, and the list of @code{files} to be shared in the
-hyperdrive. @code{files} can either be a list of filepaths or a function
-which returns a list of filepaths.
-
-In order to upload files to a hyperdrive, you must first create it
-with @code{hyperdrive-create-namespace}.
+@code{hyperdrive-upload-files} lets you upload multiple files from your
+filesystem to a hyperdrive. As with the @code{cp} command, uploaded files
+will be placed into the same TARGET-DIRECTORY@.
 
 @menu
-* Upload a whole directory::
-* Upload files by tag::
+* Mirror a whole directory::
+* Mirror files by tag or other attributes::
 @end menu
 
-@node Upload a whole directory
-@subsection Upload a whole directory
+@node Mirror a whole directory
+@subsection Mirror a whole directory
 
-@code{my/hyperdrive-upload-files-foo} uploads everything inside of @code{~/public/}:
+@code{hyperdrive-mirror} uploads a directory, mirroring its subdirectory
+structure in your hyperdrive.
+
+Let's say you have some files on your filesystem in the @code{~/blog/}
+directory, and you want to upload them all into a hyperdrive you
+already created with the petname ``foo''. The following snippet will
+show you the list of files which will be uploaded as well as the @code{hyper}
+URL at which they will be available after upload. To perform the
+upload, remove @code{:dry-run t}.
 
 @lisp
-(defun my/hyperdrive-upload-files-foo ()
-  "Upload all files inside of \"~/public/\" to hyperdrive with seed \"foo\"."
-  (interactive)
-  (hyperdrive-upload-files "foo" "~/public/"
-                           (lambda () (directory-files-recursively "~/public/" ""))))
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
+                   :target-dir "/blog/" :dry-run t)
 @end lisp
 
-@node Upload files by tag
-@subsection Upload files by tag
+@node Mirror files by tag or other attributes
+@subsection Mirror files by tag or other attributes
 
-@code{my/hyperdrive-upload-files-bar} uploads all files inside @code{~/org/} which
-have been tagged as ``public'' using Protesilaos Stavrou's
-@uref{https://protesilaos.com/emacs/denote, Denote} file-naming scheme.
+@code{hyperdrive-mirror} can accept a @code{PREDICATE} argument, which you can use
+to upload only certain files.
+
+Let's say that you have some files on your filesystem in the @code{~/blog/}
+directory, but you only want to upload those files which have been
+tagged as ``public'' using Protesilaos Stavrou's @uref{https://protesilaos.com/emacs/denote, Denote} file-naming
+scheme.
+
+The following snippet includes a @code{PREDICATE} key whose value is a
+regular expression against which every expanded filename inside will
+be tested.
+
+Remove @code{:dry-run t} to perform the upload.
 
 @lisp
-(defun my/hyperdrive-upload-files-bar ()
-  "Upload all files tagged \"public\" inside of \"~/org/\" to hyperdrive \"bar\"."
-  (interactive)
-  (hyperdrive-upload-files "foo" "~/"
-                           (lambda () (directory-files-recursively "~/org/" ".*_public.*"))))
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
+                   :target-dir "/blog/"
+                   :predicate ".*_public.*"
+                   :dry-run t)
 @end lisp
 
 Alternatively, you could select files by tag with Karl Voit's
-@uref{https://github.com/novoid/filetags/, filetags}. Either way allows for
-a ``non-splitting'' approach where public and private files exist in the
-same directory. You can write any function you like to determine which
-files to share!
+@uref{https://github.com/novoid/filetags/, filetags}. Either way allows for a ``non-splitting'' approach where
+public and private files exist in the same directory.
+
+@code{PREDICATE} may also be a function, which receives the expanded filename
+as its only argument. The following snippet will mirror only those
+files in @code{~/blog/} which are smaller than 5MB:
+
+@lisp
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
+                   :target-dir "/blog/"
+                   :predicate (lambda (file) (> (* 5 1024 1024)
+                                              (file-attribute-size (file-attributes file))))
+                   :dry-run t)
+@end lisp
 
 @node Concepts
 @chapter Concepts
@@ -306,6 +350,8 @@ files to share!
 * Hyper-gateway::
 * Sparse replication::
 * Hyperdrive entries::
+* Versioning::
+* Naming::
 @end menu
 
 @node Hyper-gateway
@@ -330,14 +376,109 @@ both load times and disk usage.
 
 Instead of files and folders, Hyperdrive has entries and entry
 prefixes. It's possible for a ``file'' entry and a ``folder'' entry prefix
-to have the same name, like `hyper://PUBLIC-KEY/path/to/` (a
-``directory'') and `hyper://PUBLIC-KEY/path/to` (a ``file''). In this
-case, the directory listing for `hyper://PUBLIC-KEY/path/` would
+to have the same name, like `@uref{//PUBLIC-KEY/path/to/}` (a
+``directory'') and `@uref{//PUBLIC-KEY/path/to}` (a ``file''). In this
+case, the directory listing for `@uref{//PUBLIC-KEY/path/}` would
 display the `to` entry but not the `to/` entry prefix. Because entry
 prefixes only exist when they prefix an entry, deleting the last
 ``file'' in a ``directory'' causes the ``directory'' to disappear as well.
 When a hyperdrive ``file'' or ``directory'' is not found, `hyperdrive.el`
 prompts to go to the parent ``directory.''
+
+@node Versioning
+@section Versioning
+
+Hyperdrives are versioned, meaning that it is possible to explore a
+hyperdrive as it was in the past. Version numbers indicate the
+hyperdrive's version. For example, @code{hyper://PUBLIC-KEY/$/version/50/}
+refers to the fiftieth version of the hyperdrive identified by
+@code{PUBLIC-KEY}. Loading a hyperdrive entry without specifying a version
+number always loads the most recent version of that hyperdrive. If you
+pass @code{hyper://PUBLIC-KEY/foo.org} to @code{hyperdrive-open-url}, @code{hyperdrive.el}
+will always attempt to find @code{/foo.org} inside the latest version of that
+hyperdrive.
+
+Whenever you update an entry, the hyperdrive's version number gets
+incremented by 1. This is because the version number tells you how
+many times the hyperdrive has been modified, not how many times a
+particular entry has been modified. For example, let's say that the
+current version of your hyperdrive at @code{hyper://PUBLIC-KEY/} is 50. If
+you add a new entry at @code{hyper://PUBLIC-KEY/bar.org}, the latest version
+of your hyperdrive will become 51.
+
+Since @code{/bar.org} did not exist before version 51, @code{hyperdrive.el} should
+warn you that nothing exists at
+@code{hyper://PUBLIC-KEY/$/version/50/bar.org}. If you add another file
+@code{hyper://PUBLIC-KEY/quux.org}, your hyperdrive's latest version will
+become 52. For the moment, @code{hyper://PUBLIC-KEY/bar.org},
+@code{hyper://PUBLIC-KEY/$/version/51/bar.org}, and
+@code{hyper://PUBLIC-KEY/$/version/52/bar.org}, all point to the same
+version of @code{/bar.org}. If you then make a change to @code{/bar.org}, your
+hyperdrive's latest version will become 53. Now
+@code{hyper://PUBLIC-KEY/bar.org} and
+@code{hyper://PUBLIC-KEY/$/version/53/bar.org} will point to the latest
+version of @code{/bar.org}, while the 51- and 52-versioned URLs will continue
+to point to the original version.
+
+If you delete @code{/bar.org}, @code{hyper://PUBLIC-KEY/bar.org} will not point to
+anything, but the versioned URLs will still work.
+
+Since only the current version of a hyperdrive entry can be updated,
+@code{hyperdrive.el} sets the buffer to read-only whenever a version number
+is specified in a hyper URL@.
+
+@node Naming
+@section Naming
+
+Inspired by Marc Stiegler's @uref{http://www.skyhunter.com/marcs/petnames/IntroPetNames.html, An Introduction to Petname Systems},
+@code{hyperdrive.el} names drives in a three different ways:
+
+@table @asis
+@item Public key
+public, globally unique, not human-readable
+@item Petname   
+private, locally unique, human-readable
+@item Nickname  
+public, not necessarily unique, human-readable
+@end table
+
+Each drive can also have the following two attributes:
+
+@table @asis
+@item Seed      
+string used to generate public key
+@item DNS domain
+public, globally unique, human-readable
+@end table
+
+@menu
+* Public keys::
+* Petnames::
+* Nicknames::
+* Seeds::
+* DNS domains::
+@end menu
+
+@node Public keys
+@subsection Public keys
+
+Public keys are 52-character-long @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated from your secret
+master key and a seed string. To Public keys
+
+@node Petnames
+@subsection Petnames
+
+@node Nicknames
+@subsection Nicknames
+
+Nicknames are stored in @code{/.well-known/host-meta.json} under the @code{name}
+key, as specified in RFC6415.
+
+@node Seeds
+@subsection Seeds
+
+@node DNS domains
+@subsection DNS domains
 
 @node Troubleshooting
 @chapter Troubleshooting
@@ -892,8 +1033,27 @@ recommend releasing these examples in parallel under your choice of
 free software license, such as the GNU General Public License, to
 permit their use in free software.
 
-@node Main Index
-@chapter Main Index
+@node Indices
+@chapter Indices
+
+@menu
+* Function index::
+* Variable index::
+* Concept index::
+@end menu
+
+@node Function index
+@section Function index
+
+@printindex fn
+
+@node Variable index
+@section Variable index
+
+@printindex vr
+
+@node Concept index
+@section Concept index
 
 @printindex cp
 
