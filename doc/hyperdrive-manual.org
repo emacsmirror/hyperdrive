@@ -57,6 +57,8 @@ your published files from you, your friend, or anyone else who has
 them.
 
 ** Start/stop the gateway
+#+findex: hyperdrive-start
+#+findex: hyperdrive-stop
 
 To connect with peers, you'll need to start ~hyper-gateway~. If you
 [[https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd][install ~hyper-gateway~ as a SystemD
@@ -67,6 +69,7 @@ instructions]] to
 run ~hyper-gateway~ manually.
 
 ** Create a hyperdrive
+#+findex: hyperdrive-new
 
 You can have multiple hyperdrives, each one containing its own set of
 files. Run ~M-x hyperdrive-new~ then type in a ~seed~ to create a new
@@ -77,6 +80,8 @@ idempotent since the same seed will always produce the same public
 key. For this reason, a hyperdrive's seed cannot be changed.
 
 ** Open a hyperdrive
+#+findex: hyperdrive-open-url
+#+findex: hyperdrive-find-file
 
 You can open a hyperdrive folder or file by pasting in a ~hyper://~
 URL after ~M-x hyperdrive-open-url~. Alternatively, ~M-x
@@ -87,15 +92,25 @@ public key or seed and then enter a path inside that hyperdrive.
 The following keybindings are available inside the directory view by
 default:
 
+#+kindex: hyperdrive-dir-previous
+#+kindex: hyperdrive-dir-next
 - ~n~ and ~p~ move between entries
+#+kindex: hyperdrive-dir-find-file
 - ~RET~ opens file or directory at point
+#+kindex: hyperdrive-up
 - ~^~ goes up to the parent directory
+#+kindex: hyperdrive-dir-download-file
 - ~d~ downloads the file at point to disk
+#+kindex: hyperdrive-dir-delete
 - ~D~ deletes the file or directory (recursively) at point
+#+kindex: hyperdrive-dir-copy-url-as-kill
 - ~w~ copies the URL of the file or directory at point
+#+kindex: hyperdrive-describe-hyperdrive
 - ~?~ opens a buffer describing the current hyperdrive
 
 ** Write to a hyperdrive
+#+findex: hyperdrive-write-buffer
+#+findex: hyperdrive-save-buffer
 
 You can write a buffer to a hyperdrive with ~hyperdrive-write-buffer~,
 which will prompt you for one of hyperdrives you have created as well
@@ -104,6 +119,7 @@ you are editing an existing hyperdrive file, ~hyperdrive-save-buffer~
 will silently update the current hyperdrive entry with the new content.
 
 ** Link to a hyperdrive
+#+findex: hyperdrive-copy-url
 
 In addition to copying the URL at point in the directory view, you can
 run ~hyperdrive-copy-url~ to copy the URL of the current hyperdrive
@@ -130,6 +146,7 @@ record resolved to, so that peers can use the stored public key itself
 for subsequent connections.
 
 ** Describe a hyperdrive
+#+findex: hyperdrive-describe-hyperdrive
 
 To see information about a hyperdrive, such as its public key, seed,
 petname, nickname, domains, writable, or other metadata, run
@@ -143,12 +160,16 @@ You can use the built-in ~bookmark-set~ and ~bookmark-jump~ functions
 to store and jump to a hyperdrive file or directory.
 
 ** Download hyperdrive files
+#+findex: hyperdrive-download-entry
+#+findex: hyperdrive-download-url
 
 You can download a hyperdrive file to your local filesystem. Download
 the current hyperdrive file with ~hyperdrive-download-entry~ or paste
 in a ~hyper://~ URL after ~hyperdrive-download-url~.
 
 ** Upload files from your filesystem
+#+findex: hyperdrive-upload-file
+#+findex: hyperdrive-upload-files
 
 To upload a single file from your filesystem, use
 ~hyperdrive-upload-file~. By default, the selected file will be placed
@@ -160,6 +181,7 @@ filesystem to a hyperdrive. As with the ~cp~ command, uploaded files
 will be placed into the same TARGET-DIRECTORY.
 
 *** Mirror a whole directory
+#+findex: hyperdrive-mirror
 
 ~hyperdrive-mirror~ uploads a directory, mirroring its subdirectory
 structure in your hyperdrive.
@@ -218,6 +240,7 @@ files in ~~/blog/~ which are smaller than 5MB:
 * Concepts
 
 ** Hyper-gateway
+#+cindex: Hyper-gateway
 
 [[https://github.com/RangerMauve/hyper-gateway/][Hyper-gateway]] handles
 interactions with hyperdrive under the hood, and it runs a local HTTP
@@ -226,6 +249,7 @@ interactions consist mostly of, e.g., `GET` requests to download files
 and `PUT` requests to write files to a hyperdrive.
 
 ** Sparse replication
+#+cindex: Sparse replication
 
 [[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is
 sparsely replicated, meaning that peers can download particular files
@@ -233,6 +257,7 @@ from a hyperdrive without having to get the whole drive. This reduces
 both load times and disk usage.
 
 ** Hyperdrive entries
+#+cindex: Entries
 
 Instead of files and folders, Hyperdrive has entries and entry
 prefixes. It's possible for a "file" entry and a "folder" entry prefix
@@ -246,6 +271,7 @@ When a hyperdrive "file" or "directory" is not found, `hyperdrive.el`
 prompts to go to the parent "directory."
 
 ** Versioning
+#+cindex: Versioning
 
 Hyperdrives are versioned, meaning that it is possible to explore a
 hyperdrive as it was in the past. Version numbers indicate the
