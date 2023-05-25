@@ -324,9 +324,19 @@ files from the filesystem.
 
 #+include: fdl.org
 
-* Main Index
+* Indices
+
+** Function index
 :PROPERTIES:
-:INDEX:    cp
+:INDEX: fn
 :END:
 
-* Export Setup :noexport:
+** Variable index
+:PROPERTIES:
+:INDEX: vr
+:END:
+
+** Concept index
+:PROPERTIES:
+:INDEX: cp
+:END:
