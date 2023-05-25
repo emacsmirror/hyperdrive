@@ -550,6 +550,13 @@ overwrite."
                     ;; `hyperdrive-write-buffer' is called from a magit log buffer.
                     (hyperdrive-mode))
                   (hyperdrive--fill entry (plz-response-headers response))
+                  ;; PUT responses only include ETag and Last-Modified
+                  ;; headers, so we need to set other entry metadata manually.
+                  ;; FIXME: For large buffers, `buffer-size' returns a different
+                  ;; value than hyper-gateway's Content-Length header.
+                  (setf (hyperdrive-entry-size entry) (buffer-size))
+                  ;; FIXME: Will entry type ever be anything besides text/plain?
+                  (setf (hyperdrive-entry-type entry) "text/plain; charset=utf-8")
                   (setq-local hyperdrive-current-entry entry)
                   (setf buffer-file-name nil)
                   (rename-buffer (hyperdrive--entry-buffer-name entry) 'unique)
