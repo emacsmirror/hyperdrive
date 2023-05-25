@@ -326,6 +326,11 @@ files from the filesystem.
 
 * Indices
 
+** Keystroke index
+:PROPERTIES:
+:INDEX: ky
+:END:
+
 ** Function index
 :PROPERTIES:
 :INDEX: fn

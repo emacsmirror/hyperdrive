@@ -102,6 +102,7 @@ Naming
 
 Indices
 
+* Keystroke index::
 * Function index::
 * Variable index::
 * Concept index::
@@ -1037,10 +1038,16 @@ permit their use in free software.
 @chapter Indices
 
 @menu
+* Keystroke index::
 * Function index::
 * Variable index::
 * Concept index::
 @end menu
+
+@node Keystroke index
+@section Keystroke index
+
+@printindex ky
 
 @node Function index
 @section Function index
