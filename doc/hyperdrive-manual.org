@@ -128,23 +128,6 @@ file or directory. If the current file is an org-mode file,
 point is inside a heading, its ~CUSTOM_ID~, ~ID~, or heading text will
 be appended to the stored URL.
 
-** Share a hyperdrive
-
-Only you can load one of your created hyperdrives by its seed. When
-sharing a hyperdrive with someone else, you will need to copy its full
-URL. Peers can load your hyperdrive files directly from your computer
-or from other peers who previously loaded those files.
-
-It is possible to use [[https://dnslink.io/][DNSLink]] to link to a
-hyperdrive with a domain name instead of a public key, like
-~hyper://example.org/path/to/file~. Create a TXT record at
-~_dnslink.example.org~ with the contents ~/hyper/PUBLIC-KEY~ (no
-trailing slash). Note: relying on DNS adds another point of
-centralization, reducing the durability of your link. ~hyperdrive.el~
-somewhat mitigates this issue by remembering which public key the DNS
-record resolved to, so that peers can use the stored public key itself
-for subsequent connections.
-
 ** Describe a hyperdrive
 #+findex: hyperdrive-describe-hyperdrive
 
@@ -311,6 +294,84 @@ anything, but the versioned URLs will still work.
 Since only the current version of a hyperdrive entry can be updated,
 ~hyperdrive.el~ sets the buffer to read-only whenever a version number
 is specified in a hyper URL.
+
+** Naming
+#+cindex: Naming
+#+vindex: hyperdrive-default-host-format
+
+Inspired by Marc Stiegler's [[http://www.skyhunter.com/marcs/petnames/IntroPetNames.html][An Introduction to Petname Systems]],
+~hyperdrive.el~ names drives in a three different ways:
+
+- Public key :: public, globally unique, not human-readable
+- Petname    :: private, locally unique, human-readable
+- Nickname   :: public, not necessarily unique, human-readable
+
+Each drive may also have the following two attributes:
+
+- Seed       :: string used to generate public key
+- DNS domain :: public, globally unique, human-readable
+
+You can customize the default format for displaying hyperdrives with
+~hyperdrive-default-host-format~.
+
+*** Public keys
+#+cindex: Public keys
+#+findex: hyperdrive-new
+
+Public keys are 52-character-long [[https://en.wikipedia.org/wiki/Base32#z-base-32][z-base-32]] encoded keys generated
+from your secret master key and a seed string. The secret key is
+generated for you by ~hyper-gateway~, and you provide a seed ([[*Seeds]])
+when generating a new drive with ~hyperdrive-new~.
+
+Public keys allow for permanent links to hyperdrive content. When
+sharing a hyperdrive with someone else, you will need to copy its full
+URL. Peers can load your hyperdrive files directly from your computer
+or from other peers who previously loaded those files.
+
+*** Petnames
+#+cindex: Petnames
+#+findex: hyperdrive-set-petname
+
+Petnames are locally unique hyperdrive identifiers. You can give a
+petname to any hyperdrive you load, whether you created it or not.
+
+When creating a new drive, your chosen seed ([[*Seeds]]) is used as its
+petname by default. Petnames can be changed with
+~hyperdrive-set-petname~, but drives cannot share a petname.
+
+*** Nicknames
+#+cindex: Nicknames
+#+findex: hyperdrive-set-nickname
+
+Nicknames are public, memorable names which users can give to their
+own hyperdrives. Other users can see the nicknames you give to your
+hyperdrives.
+
+Nicknames are stored in each hyperdrive inside
+~/.well-known/host-meta.json~ under the ~name~ key, as specified in
+RFC6415. You can only assign a nickname to hyperdrives which you have
+created. Nicknames can be changed with ~hyperdrive-set-nickname~.
+
+*** Seeds
+#+cindex: Seeds
+
+Along with your secret master key, seeds are used to generate public
+keys ([[*Public keys]]). A seed has a one-to-one relationship with a
+drive. Seeds are local but not secret. To share a drive, you must use
+a public key or DNS domain ([[*DNS domains]]).
+
+*** DNS domains
+#+cindex: DNS domains
+
+It is possible to use [[https://dnslink.io/][DNSLink]] to link to a hyperdrive with a domain
+name instead of a public key ([[*Public keys]]), like
+~hyper://example.org/path/to/file~. Create a TXT record at
+~_dnslink.example.org~ with the contents ~/hyper/PUBLIC-KEY~ (no trailing
+slash). Note: relying on DNS adds another point of centralization,
+reducing the durability of your link. ~hyperdrive.el~ somewhat mitigates
+this issue by remembering which public key the DNS record resolved to,
+so that peers can use the stored public key itself for subsequent
+connections.
 
 * Troubleshooting
 
