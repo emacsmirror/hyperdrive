@@ -308,6 +308,10 @@ for a hyperdrive."
                    (string-trim-right (buffer-string)))))
       (kill-buffer buffer))))
 
+(defun hyperdrive--gateway-active-p ()
+  "Return non-nil if `hyper-gateway' systemd service is active."
+  (zerop (call-process-shell-command "systemctl --user is-active hyper-gateway.service")))
+
 ;;;###autoload
 (defun hyperdrive-status ()
   "Say whether `hyper-gateway' systemd service is running."
