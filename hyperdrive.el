@@ -762,15 +762,16 @@ for predicate and set DRY-RUN to t."
                               (hyperdrive-open parent-entry
                                 :then (when hyperdrive-mirror-log-to-buffer
                                         (lambda ()
-                                          (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window))))))))))
+                                          (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+
+                                            (display-buffer (current-buffer) '(display-buffer-pop-up-window))
+                                            (tabulated-list-print))))))))))
     (unless files
       (user-error "No files selected for mirroring (double-check predicate)"))
     (when (or dry-run hyperdrive-mirror-log-to-buffer)
       (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-        (special-mode)
-        (let ((inhibit-read-only t))
-          (erase-buffer)
-          (insert (if dry-run "Would upload: \n" "Uploaded: \n")))))
+        (hyperdrive-mirror-mode)
+        (setf tabulated-list-entries nil)))
     (dolist (file files)
       (let ((entry (hyperdrive-make-entry
                     :hyperdrive hyperdrive
@@ -779,20 +780,30 @@ for predicate and set DRY-RUN to t."
         (if dry-run
             (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
               (cl-incf count)
-              (let ((inhibit-read-only t))
-                (insert file " to " (hyperdrive-entry-url entry) "\n")))
+              (let ((url (hyperdrive-entry-url entry)))
+                (push (list url (vector file url)) tabulated-list-entries)))
           (hyperdrive-upload-file file entry :queue queue
             ;; TODO: Probably want to add an ELSE handler.
             :then (lambda (_)
                     (progress-reporter-update progress-reporter (cl-incf count))
                     (when hyperdrive-mirror-log-to-buffer
                       (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-                        (let ((inhibit-read-only t))
-                          (insert file " to " (hyperdrive-entry-url entry) "\n")))))))))
+                        (let ((url (hyperdrive-entry-url entry)))
+                          (push (list url (vector file url)) tabulated-list-entries)))))))))
     (when dry-run
       (hyperdrive-message "Would upload %s files to <%s>."
                           count (hyperdrive-entry-url parent-entry))
-      (display-buffer "*hyperdrive-mirror*" '(display-buffer-pop-up-window)))))
+      (pop-to-buffer "*hyperdrive-mirror*")
+      (tabulated-list-print))))
+
+(define-derived-mode hyperdrive-mirror-mode tabulated-list-mode
+  "Hyperdrive-mirror"
+  "Major mode for buffers for describing hyperdrives."
+  :group 'hyperdrive
+  :interactive nil
+  (setq tabulated-list-format [("From file" 60 t)
+                               ("To URL" 60 t)])
+  (tabulated-list-init-header))
 
 (defun hyperdrive-read-files ()
   "Return list of files read from the user."
