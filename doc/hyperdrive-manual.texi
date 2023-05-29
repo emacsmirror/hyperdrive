@@ -117,8 +117,7 @@ filesystem designed for easy peer-to-peer file sharing. @code{hyperdrive.el}
 is an independent project built by @uref{https://ushin.org, USHIN} which provides an Emacs
 interface for managing hyperdrives.
 
-@code{hyperdrive.el} is in early development. If something breaks, please see
-the @ref{Troubleshooting, , troubleshooting section}.
+@code{hyperdrive.el} is in early development. If something breaks, please @ref{Troubleshooting}.
 
 @node Installation
 @chapter Installation
@@ -179,12 +178,13 @@ run @code{hyper-gateway} manually.
 @findex hyperdrive-new
 
 You can have multiple hyperdrives, each one containing its own set of
-files. Run @code{M-x hyperdrive-new} then type in a @code{seed} to create a new
-hyperdrive. That seed will be combined with your secret master key,
-which is generated for you by @code{hyper-gateway}, to produce a public key
-that uniquely identifies that hyperdrive. @code{hyperdrive-new} is
-idempotent since the same seed will always produce the same public
-key. For this reason, a hyperdrive's seed cannot be changed.
+files. Run @code{M-x hyperdrive-new} then type in a @code{seed} (@ref{Seeds}) to
+create a new hyperdrive. That seed will be combined with your secret
+master key, which is generated for you by @code{hyper-gateway}, to produce a
+public key (@ref{Public keys}) that uniquely identifies that
+hyperdrive. @code{hyperdrive-new} is idempotent since the same seed will
+always produce the same public key. For this reason, a hyperdrive's
+seed cannot be changed.
 
 @node Open a hyperdrive
 @section Open a hyperdrive
