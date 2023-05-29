@@ -73,7 +73,6 @@ Usage
 * Open a hyperdrive::
 * Write to a hyperdrive::
 * Link to a hyperdrive::
-* Share a hyperdrive::
 * Describe a hyperdrive::
 * Bookmark a hyperdrive::
 * Download hyperdrive files::
@@ -154,7 +153,6 @@ them.
 * Open a hyperdrive::
 * Write to a hyperdrive::
 * Link to a hyperdrive::
-* Share a hyperdrive::
 * Describe a hyperdrive::
 * Bookmark a hyperdrive::
 * Download hyperdrive files::
@@ -163,6 +161,9 @@ them.
 
 @node Start/stop the gateway
 @section Start/stop the gateway
+
+@findex hyperdrive-start
+@findex hyperdrive-stop
 
 To connect with peers, you'll need to start @code{hyper-gateway}. If you
 @uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd, install @code{hyper-gateway} as a SystemD
@@ -175,6 +176,8 @@ run @code{hyper-gateway} manually.
 @node Create a hyperdrive
 @section Create a hyperdrive
 
+@findex hyperdrive-new
+
 You can have multiple hyperdrives, each one containing its own set of
 files. Run @code{M-x hyperdrive-new} then type in a @code{seed} to create a new
 hyperdrive. That seed will be combined with your secret master key,
@@ -186,6 +189,9 @@ key. For this reason, a hyperdrive's seed cannot be changed.
 @node Open a hyperdrive
 @section Open a hyperdrive
 
+@findex hyperdrive-open-url
+@findex hyperdrive-find-file
+
 You can open a hyperdrive folder or file by pasting in a @code{hyper://}
 URL after @code{M-x hyperdrive-open-url}. Alternatively, @code{M-x
 hyperdrive-find-file} remembers hyperdrives you have already created
@@ -195,25 +201,48 @@ public key or seed and then enter a path inside that hyperdrive.
 The following keybindings are available inside the directory view by
 default:
 
+@kindex hyperdrive-dir-previous
+@kindex hyperdrive-dir-next
 @itemize
 @item
 @code{n} and @code{p} move between entries
+@end itemize
+@kindex hyperdrive-dir-find-file
+@itemize
 @item
 @code{RET} opens file or directory at point
+@end itemize
+@kindex hyperdrive-up
+@itemize
 @item
 @code{^} goes up to the parent directory
+@end itemize
+@kindex hyperdrive-dir-download-file
+@itemize
 @item
 @code{d} downloads the file at point to disk
+@end itemize
+@kindex hyperdrive-dir-delete
+@itemize
 @item
 @code{D} deletes the file or directory (recursively) at point
+@end itemize
+@kindex hyperdrive-dir-copy-url-as-kill
+@itemize
 @item
 @code{w} copies the URL of the file or directory at point
+@end itemize
+@kindex hyperdrive-describe-hyperdrive
+@itemize
 @item
 @code{?} opens a buffer describing the current hyperdrive
 @end itemize
 
 @node Write to a hyperdrive
 @section Write to a hyperdrive
+
+@findex hyperdrive-write-buffer
+@findex hyperdrive-save-buffer
 
 You can write a buffer to a hyperdrive with @code{hyperdrive-write-buffer},
 which will prompt you for one of hyperdrives you have created as well
@@ -224,6 +253,8 @@ will silently update the current hyperdrive entry with the new content.
 @node Link to a hyperdrive
 @section Link to a hyperdrive
 
+@findex hyperdrive-copy-url
+
 In addition to copying the URL at point in the directory view, you can
 run @code{hyperdrive-copy-url} to copy the URL of the current hyperdrive
 file or directory. If the current file is an org-mode file,
@@ -231,30 +262,15 @@ file or directory. If the current file is an org-mode file,
 point is inside a heading, its @code{CUSTOM_ID}, @code{ID}, or heading text will
 be appended to the stored URL@.
 
-@node Share a hyperdrive
-@section Share a hyperdrive
-
-Only you can load one of your created hyperdrives by its seed. When
-sharing a hyperdrive with someone else, you will need to copy its full
-URL@. Peers can load your hyperdrive files directly from your computer
-or from other peers who previously loaded those files.
-
-It is possible to use @uref{https://dnslink.io/, DNSLink} to link to a
-hyperdrive with a domain name instead of a public key, like
-@code{hyper://example.org/path/to/file}. Create a TXT record at
-@code{_dnslink.example.org} with the contents @code{/hyper/PUBLIC-KEY} (no
-trailing slash). Note: relying on DNS adds another point of
-centralization, reducing the durability of your link. @code{hyperdrive.el}
-somewhat mitigates this issue by remembering which public key the DNS
-record resolved to, so that peers can use the stored public key itself
-for subsequent connections.
-
 @node Describe a hyperdrive
 @section Describe a hyperdrive
 
+@findex hyperdrive-describe-hyperdrive
+
 To see information about a hyperdrive, such as its public key, seed,
 petname, nickname, domains, writable, or other metadata, run
-@code{hyperdrive-describe-hyperdrive}.
+@code{hyperdrive-describe-hyperdrive}. For more on what this information
+means, @ref{Naming}.
 
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
@@ -265,12 +281,18 @@ to store and jump to a hyperdrive file or directory.
 @node Download hyperdrive files
 @section Download hyperdrive files
 
+@findex hyperdrive-download-entry
+@findex hyperdrive-download-url
+
 You can download a hyperdrive file to your local filesystem. Download
 the current hyperdrive file with @code{hyperdrive-download-entry} or paste
 in a @code{hyper://} URL after @code{hyperdrive-download-url}.
 
 @node Upload files from your filesystem
 @section Upload files from your filesystem
+
+@findex hyperdrive-upload-file
+@findex hyperdrive-upload-files
 
 To upload a single file from your filesystem, use
 @code{hyperdrive-upload-file}. By default, the selected file will be placed
@@ -288,6 +310,8 @@ will be placed into the same TARGET-DIRECTORY@.
 
 @node Mirror a whole directory
 @subsection Mirror a whole directory
+
+@findex hyperdrive-mirror
 
 @code{hyperdrive-mirror} uploads a directory, mirroring its subdirectory
 structure in your hyperdrive.
@@ -358,6 +382,8 @@ files in @code{~/blog/} which are smaller than 5MB:
 @node Hyper-gateway
 @section Hyper-gateway
 
+@cindex Hyper-gateway
+
 @uref{https://github.com/RangerMauve/hyper-gateway/, Hyper-gateway} handles
 interactions with hyperdrive under the hood, and it runs a local HTTP
 server which accepts HTTP requests. In `hyperdrive.el`, P2P
@@ -367,6 +393,8 @@ and `PUT` requests to write files to a hyperdrive.
 @node Sparse replication
 @section Sparse replication
 
+@cindex Sparse replication
+
 @uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is
 sparsely replicated, meaning that peers can download particular files
 from a hyperdrive without having to get the whole drive. This reduces
@@ -374,6 +402,8 @@ both load times and disk usage.
 
 @node Hyperdrive entries
 @section Hyperdrive entries
+
+@cindex Entries
 
 Instead of files and folders, Hyperdrive has entries and entry
 prefixes. It's possible for a ``file'' entry and a ``folder'' entry prefix
@@ -388,6 +418,8 @@ prompts to go to the parent ``directory.''
 
 @node Versioning
 @section Versioning
+
+@cindex Versioning
 
 Hyperdrives are versioned, meaning that it is possible to explore a
 hyperdrive as it was in the past. Version numbers indicate the
@@ -431,6 +463,9 @@ is specified in a hyper URL@.
 @node Naming
 @section Naming
 
+@cindex Naming
+@vindex hyperdrive-default-host-format
+
 Inspired by Marc Stiegler's @uref{http://www.skyhunter.com/marcs/petnames/IntroPetNames.html, An Introduction to Petname Systems},
 @code{hyperdrive.el} names drives in a three different ways:
 
@@ -443,7 +478,7 @@ private, locally unique, human-readable
 public, not necessarily unique, human-readable
 @end table
 
-Each drive can also have the following two attributes:
+Each drive may also have the following two attributes:
 
 @table @asis
 @item Seed      
@@ -451,6 +486,9 @@ string used to generate public key
 @item DNS domain
 public, globally unique, human-readable
 @end table
+
+You can customize the default format for displaying hyperdrives with
+@code{hyperdrive-default-host-format}.
 
 @menu
 * Public keys::
@@ -463,23 +501,71 @@ public, globally unique, human-readable
 @node Public keys
 @subsection Public keys
 
-Public keys are 52-character-long @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated from your secret
-master key and a seed string. To Public keys
+@cindex Public keys
+@findex hyperdrive-new
+
+Public keys are 52-character-long @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated
+from your secret master key and a seed string. The secret key is
+generated for you by @code{hyper-gateway}, and you provide a seed (@ref{Seeds})
+when generating a new drive with @code{hyperdrive-new}.
+
+Public keys allow for permanent links to hyperdrive content. When
+sharing a hyperdrive with someone else, you will need to copy its full
+URL@. Peers can load your hyperdrive files directly from your computer
+or from other peers who previously loaded those files.
 
 @node Petnames
 @subsection Petnames
 
+@cindex Petnames
+@findex hyperdrive-set-petname
+
+Petnames are locally unique hyperdrive identifiers. You can give a
+petname to any hyperdrive you load, whether you created it or not.
+
+When creating a new drive, your chosen seed (@ref{Seeds}) is used as its
+petname by default. Petnames can be changed with
+@code{hyperdrive-set-petname}, but drives cannot share a petname.
+
 @node Nicknames
 @subsection Nicknames
 
-Nicknames are stored in @code{/.well-known/host-meta.json} under the @code{name}
-key, as specified in RFC6415.
+@cindex Nicknames
+@findex hyperdrive-set-nickname
+
+Nicknames are public, memorable names which users can give to their
+own hyperdrives. Other users can see the nicknames you give to your
+hyperdrives.
+
+Nicknames are stored in each hyperdrive inside
+@code{/.well-known/host-meta.json} under the @code{name} key, as specified in
+RFC6415. You can only assign a nickname to hyperdrives which you have
+created. Nicknames can be changed with @code{hyperdrive-set-nickname}.
 
 @node Seeds
 @subsection Seeds
 
+@cindex Seeds
+
+Along with your secret master key, seeds are used to generate public
+keys (@ref{Public keys}). A seed has a one-to-one relationship with a
+drive. Seeds are local but not secret. To share a drive, you must use
+a public key or DNS domain (@ref{DNS domains}).
+
 @node DNS domains
 @subsection DNS domains
+
+@cindex DNS domains
+
+It is possible to use @uref{https://dnslink.io/, DNSLink} to link to a hyperdrive with a domain
+name instead of a public key (@ref{Public keys}), like
+@code{hyper://example.org/path/to/file}. Create a TXT record at
+@code{_dnslink.example.org} with the contents @code{/hyper/PUBLIC-KEY} (no trailing
+slash). Note: relying on DNS adds another point of centralization,
+reducing the durability of your link. @code{hyperdrive.el} somewhat mitigates
+this issue by remembering which public key the DNS record resolved to,
+so that peers can use the stored public key itself for subsequent
+connections.
 
 @node Troubleshooting
 @chapter Troubleshooting
@@ -513,6 +599,8 @@ inbox}.
 
 @uref{https://mauve.moe/, Mauve Signweaver} for their guidance into the
 world of p2p as well as the development of `hyper-gateway`.
+
+@uref{https://protesilaos.com, Protesilaos Stavrou} for design input and user-testing @code{hyperdrive.el}.
 
 @uref{https://karl-voit.at/, Karl Voit} for his feedback, especially the
 suggestion that we allow for a non-splitting approach for uploading
