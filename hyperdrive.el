@@ -154,12 +154,6 @@ through a shell)."
   ;; TODO: Use this elsewhere also.
   :type 'integer)
 
-(defcustom hyperdrive-mirror-log-to-buffer nil
-  "Whether to log `hyperdrive-mirror' actions to a buffer.
-If non-nil, log to the \"*hyperdrive-mirror*\" buffer and display
-it to the user after mirroring."
-  :type 'boolean)
-
 ;;;;; Faces
 
 (defface hyperdrive-petname '((t :inherit font-lock-type-face))
