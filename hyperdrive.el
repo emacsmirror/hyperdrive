@@ -761,6 +761,7 @@ for predicate and set NO-CONFIRM to t."
         (hyperdrive--mirror files-and-urls parent-entry)
       (pop-to-buffer (get-buffer-create "*hyperdrive-mirror*"))
       (hyperdrive-mirror-mode)
+      (setq-local hyperdrive-mirror-already-uploaded nil)
       (setq-local hyperdrive-mirror-parent-entry parent-entry)
       (setf tabulated-list-entries files-and-urls)
       (tabulated-list-print))))
@@ -776,7 +777,9 @@ uploading files, open PARENT-ENTRY."
                  :limit 2
                  :finally (lambda ()
                             (progress-reporter-done progress-reporter)
-                            (hyperdrive-open parent-entry)))))
+                            (hyperdrive-open parent-entry)
+                            (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
+                              (setq-local hyperdrive-mirror-already-uploaded t))))))
     (pcase-dolist (`(,_id [,file ,url]) files-and-urls)
       (hyperdrive-upload-file file (hyperdrive-url-entry url)
         :queue queue
@@ -788,7 +791,8 @@ uploading files, open PARENT-ENTRY."
   "Upload files in current \"*hyperdrive-mirror*\" buffer."
   (interactive)
   (if (and tabulated-list-entries hyperdrive-mirror-parent-entry)
-      (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry)
+      (when (or (not hyperdrive-mirror-already-uploaded) (yes-or-no-p "Already uploaded files. Upload again?"))
+        (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry))
     (user-error "Hyperdrive: Missing information about files to upload. Are you in a \"*hyperdrive-mirror*\" buffer?")))
 
 (defvar-keymap hyperdrive-mirror-mode-map

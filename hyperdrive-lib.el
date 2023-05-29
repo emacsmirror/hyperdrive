@@ -127,6 +127,9 @@ generated from PATH. When ENCODE is non-`nil', encode PATH."
   "Parent entry for `hyperdrive-mirror-mode' buffer.")
 (put 'hyperdrive-mirror-parent-entry 'permanent-local t)
 
+(defvar-local hyperdrive-mirror-already-uploaded nil
+  "Non-nil if files in `hyperdrive-mirror-mode' buffer have already been uploaded.")
+
 (defvar hyperdrive-timestamp-format-string nil)
 
 (defvar hyperdrive-current-entry)
