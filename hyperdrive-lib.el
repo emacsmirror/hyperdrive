@@ -123,6 +123,10 @@ generated from PATH. When ENCODE is non-`nil', encode PATH."
   "Hyperdrive for current `hyperdrive-describe-mode' buffer.")
 (put 'hyperdrive-describe-current-hyperdrive 'permanent-local t)
 
+(defvar-local hyperdrive-mirror-parent-entry nil
+  "Parent entry for `hyperdrive-mirror-mode' buffer.")
+(put 'hyperdrive-mirror-parent-entry 'permanent-local t)
+
 (defvar hyperdrive-timestamp-format-string nil)
 
 (defvar hyperdrive-current-entry)

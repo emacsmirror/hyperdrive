@@ -693,33 +693,33 @@ With prefix argument, prompts for more information. See
 ;; contents. Should we keep a cache of uploaded files and mtimes?
 
 (cl-defun hyperdrive-mirror
-    (source hyperdrive &key target-dir (predicate #'always) dry-run)
+    (source hyperdrive &key target-dir (predicate #'always) no-confirm)
   "Mirror SOURCE to TARGET-DIR in HYPERDRIVE.
 
 Only mirror paths within SOURCE for which PREDICATE returns
-non-nil. PREDICATE may be a function, which receives the expanded
+non-nil.  PREDICATE may be a function, which receives the expanded
 filename path as its argument, or a regular expression, which is
 tested against each expanded filename path. SOURCE is a directory
 name.
 
-When TARGET-DIR is `nil', SOURCE is mirrored into the
+When TARGET-DIR is nil, SOURCE is mirrored into the
 hyperdrive's root directory \"/\".
 
-When DRY-RUN is non-`nil', don't upload anything.
+Opens the \"*hyperdrive-mirror*\" buffer with the list of files to
+be uploaded and the URL at which each file will be published.  See
+`hyperdrive-mirror-mode'.
 
-Regardless of DRY-RUN, the \"*hyperdrive-mirror*\" buffer will
-display the list of files to be uploaded and the URL at which
-each file will be accessible.
+When NO-CONFIRM is non-nil, upload without prompting.
 
 Interactively, with one universal prefix, prompt for predicate,
 otherwise mirror all files.  With two universal prefixes, prompt
-for predicate and set DRY-RUN to t."
+for predicate and set NO-CONFIRM to t."
   (interactive
    (let ((source (read-directory-name "Mirror directory: " nil nil t)))
      (list source (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
                                                   :force-prompt t)
            :target-dir (read-string (format-prompt "Target directory" "/") "/" nil "/")
-           :dry-run (equal '(16) current-prefix-arg)
+           :no-confirm (equal '(16) current-prefix-arg)
            :predicate (if current-prefix-arg
                           (let* ((collection
                                   '(("Mirror all files" . (lambda ()
@@ -749,52 +749,58 @@ for predicate and set DRY-RUN to t."
       (setf predicate (lambda (filename)
                         (string-match-p regexp filename)))))
   (let* ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
-         (count 0)
          (parent-entry (hyperdrive-make-entry :hyperdrive hyperdrive :path target-dir :encode t))
-         ;; TODO: Error handling (e.g. in case one or more files fails to upload).
-         (progress-reporter (unless dry-run
-                              (make-progress-reporter (format "Uploading %s files: " (length files)) 0 (length files))))
-         (queue (unless dry-run
-                  (make-plz-queue
-                   :limit 2
-                   :finally (lambda ()
-                              (progress-reporter-done progress-reporter)
-                              (hyperdrive-open parent-entry
-                                :then (when hyperdrive-mirror-log-to-buffer
-                                        (lambda ()
-                                          (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-
-                                            (display-buffer (current-buffer) '(display-buffer-pop-up-window))
-                                            (tabulated-list-print))))))))))
+         (files-and-urls
+          ;; Structured according to `tabulated-list-entries'
+          (mapcar (lambda (file)
+                    (let ((url (hyperdrive-entry-url
+                                (hyperdrive-make-entry
+                                 :hyperdrive hyperdrive
+                                 :path (expand-file-name (file-relative-name file source) target-dir)
+                                 :encode t))))
+                      ;; TODO: Wrap the first url in `substring-no-properties' to reduce memory usage?
+                      (list url (vector file url))))
+                  files)))
     (unless files
       (user-error "No files selected for mirroring (double-check predicate)"))
-    (when (or dry-run hyperdrive-mirror-log-to-buffer)
-      (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-        (hyperdrive-mirror-mode)
-        (setf tabulated-list-entries nil)))
-    (dolist (file files)
-      (let ((entry (hyperdrive-make-entry
-                    :hyperdrive hyperdrive
-                    :path (expand-file-name (file-relative-name file source) target-dir)
-                    :encode t)))
-        (if dry-run
-            (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-              (cl-incf count)
-              (let ((url (hyperdrive-entry-url entry)))
-                (push (list url (vector file url)) tabulated-list-entries)))
-          (hyperdrive-upload-file file entry :queue queue
-            ;; TODO: Probably want to add an ELSE handler.
-            :then (lambda (_)
-                    (progress-reporter-update progress-reporter (cl-incf count))
-                    (when hyperdrive-mirror-log-to-buffer
-                      (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-                        (let ((url (hyperdrive-entry-url entry)))
-                          (push (list url (vector file url)) tabulated-list-entries)))))))))
-    (when dry-run
-      (hyperdrive-message "Would upload %s files to <%s>."
-                          count (hyperdrive-entry-url parent-entry))
-      (pop-to-buffer "*hyperdrive-mirror*")
+    (if no-confirm
+        (hyperdrive--mirror files-and-urls parent-entry)
+      (pop-to-buffer (get-buffer-create "*hyperdrive-mirror*"))
+      (hyperdrive-mirror-mode)
+      (setq-local hyperdrive-mirror-parent-entry parent-entry)
+      (setf tabulated-list-entries files-and-urls)
       (tabulated-list-print))))
+
+(defun hyperdrive--mirror (files-and-urls parent-entry)
+  "Upload each file to its corresponding URL in FILES-AND-URLs.
+FILES-AND-URLS is structured like `tabulated-list-entries'.  After
+uploading files, open PARENT-ENTRY."
+  (let* ((count 0)
+         (progress-reporter
+          (make-progress-reporter (format "Uploading %s files: " (length files-and-urls)) 0 (length files-and-urls)))
+         (queue (make-plz-queue
+                 :limit 2
+                 :finally (lambda ()
+                            (progress-reporter-done progress-reporter)
+                            (hyperdrive-open parent-entry)))))
+    (pcase-dolist (`(,_id [,file ,url]) files-and-urls)
+      (hyperdrive-upload-file file (hyperdrive-url-entry url)
+        :queue queue
+        ;; TODO: Error handling (e.g. in case one or more files fails to upload).
+        :then (lambda (_)
+                (progress-reporter-update progress-reporter (cl-incf count)))))))
+
+(defun hyperdrive-mirror-do-upload ()
+  "Upload files in current \"*hyperdrive-mirror*\" buffer."
+  (interactive)
+  (if (and tabulated-list-entries hyperdrive-mirror-parent-entry)
+      (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry)
+    (user-error "Hyperdrive: Missing information about files to upload. Are you in a \"*hyperdrive-mirror*\" buffer?")))
+
+(defvar-keymap hyperdrive-mirror-mode-map
+  :parent  tabulated-list-mode-map
+  :doc "Local keymap for `hyperdrive-mirror-mode' buffers."
+  "C-c C-c"   #'hyperdrive-mirror-do-upload)
 
 (define-derived-mode hyperdrive-mirror-mode tabulated-list-mode
   "Hyperdrive-mirror"
