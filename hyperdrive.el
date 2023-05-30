@@ -421,8 +421,8 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
   "Find hyperdrive ENTRY.
 Interactively, prompts for known hyperdrive and path.
 
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
+With prefix argument, prompts for more information. See
+`hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry))
 
@@ -505,8 +505,8 @@ Interactively, downloads current hyperdrive file.  If current
 buffer is not a hyperdrive file, prompts with
 `hyperdrive-read-entry'.
 
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
+With prefix argument, prompts for more information. See
+`hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
   (interactive
    (pcase-let* ((entry (if hyperdrive-mode
                            hyperdrive-current-entry
@@ -533,8 +533,8 @@ for a hyperdrive."
 If file already exists and OVERWRITEP is nil, prompt the user to
 overwrite.
 
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
+With prefix argument, prompts for more information. See
+`hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                             :force-prompt current-prefix-arg)))
   ;; FIXME: Overwrites without prompting if file exists.
@@ -672,8 +672,8 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
 Interactively, read FILENAME and ENTRY from the user.  When
 QUEUE, use it.
 
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
+With prefix argument, prompts for more information. See
+`hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: ")))
                  (list filename
