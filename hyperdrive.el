@@ -528,22 +528,6 @@ for a hyperdrive."
   (hyperdrive-api 'get url :as `(file ,filename)))
 
 ;;;###autoload
-(defun hyperdrive-save-buffer (entry)
-  "Save ENTRY to hyperdrive (interactively, the current buffer).
-If buffer was not hyperdrive-backed, it becomes so.
-
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
-  ;; TODO: Improve docstrings of `hyperdrive-save-buffer' and
-  ;; `hyperdrive-write-buffer' after we've sorted out their behavior.
-  (interactive
-   (list (if hyperdrive-mode
-             hyperdrive-current-entry
-           (hyperdrive-read-entry :predicate #'hyperdrive-writablep
-                                  :force-prompt current-prefix-arg))))
-  (hyperdrive-write-buffer entry 'overwrite))
-
-;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)
   "Write current buffer to new hyperdrive ENTRY.
 If file already exists and OVERWRITEP is nil, prompt the user to
@@ -603,10 +587,10 @@ for a hyperdrive."
     ))
 
 (defun hyperdrive--write-contents ()
-  "Call `hyperdrive-save-buffer' for the current buffer.
+  "Call `hyperdrive-write-buffer' for the current buffer.
 To be used in `write-contents-functions'."
   (cl-assert hyperdrive-mode)
-  (hyperdrive-save-buffer hyperdrive-current-entry))
+  (hyperdrive-write-buffer hyperdrive-current-entry))
 
 (defun hyperdrive-copy-url (entry)
   "Save hyperdrive ENTRY's URL to the kill ring.
