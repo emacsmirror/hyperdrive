@@ -286,7 +286,6 @@ is specified in a hyper URL.
 
 ** Naming
 #+cindex: Naming
-#+vindex: hyperdrive-default-host-format
 
 Inspired by Marc Stiegler's [[http://www.skyhunter.com/marcs/petnames/IntroPetNames.html][An Introduction to Petname Systems]],
 ~hyperdrive.el~ names drives in a three different ways:
@@ -300,6 +299,7 @@ Each drive may also have one or both of the following attributes:
 - Seed       :: string used to generate public key
 - DNS domain :: public, globally unique, human-readable
 
+#+vindex: hyperdrive-default-host-format
 You can customize the default format for displaying hyperdrives with
 ~hyperdrive-default-host-format~.
 
