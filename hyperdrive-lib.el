@@ -556,6 +556,22 @@ When FORCE-PROMPT is nil and entry is for the same hyperdrive as
                             default nil default)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :encode t)))
 
+(cl-defun hyperdrive-read-version (&key hyperdrive
+                                        (prompt "Version number in «%s» (leave blank for latest version)")
+                                        initial-input-number)
+  "Return version number.
+Blank input returns nil.
+
+HYPERDRIVE is used to fill in PROMPT format %s sequence.
+INITIAL-INPUT is converted to a string and passed to
+`read-string', which see."
+  ;; Don't use read-number since it cannot return nil.
+  (let ((version (read-string (format-prompt "Version number in «%s» (leave blank for latest version)" nil
+                                             (hyperdrive--format-hyperdrive hyperdrive))
+                              (when initial-input-number (number-to-string initial-input-number)))))
+    (unless (string-blank-p version)
+      (string-to-number version))))
+
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
 Prompts with PROMPT. Defaults to current entry if it exists."
