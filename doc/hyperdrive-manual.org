@@ -137,9 +137,13 @@ petname, nickname, domains, writable, or other metadata, run
 means, [[*Naming]].
 
 ** Bookmark a hyperdrive
+#+findex: hyperdrive-bookmark-jump
+#+findex: hyperdrive-bookmark-list
 
-You can use the built-in ~bookmark-set~ and ~bookmark-jump~ functions
-to store and jump to a hyperdrive file or directory.
+You can use the built-in ~bookmark-set~, ~bookmark-jump~, and
+~bookmark-list~ functions to store and jump to a hyperdrive file or
+directory. To jump to or view only hyperdrive bookmarks, use
+~hyperdrive-bookmark-jump~ and ~hyperdrive-bookmark-list~.
 
 ** Download hyperdrive files
 #+findex: hyperdrive-download-entry
