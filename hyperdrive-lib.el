@@ -531,7 +531,7 @@ case, when PREDICATE, only offer hyperdrives matching it."
               when value
               concat (concat value "  ")))))
 
-(cl-defun hyperdrive-read-entry (&key predicate name force-prompt)
+(cl-defun hyperdrive-read-entry (&key predicate name (allow-version-p t) force-prompt)
   "Return new hyperdrive entry with path and hyperdrive read from user.
 Prompts user for a hyperdrive and signals an error if no such
 hyperdrive is known.  If NAME, offer it as the default entry name.
@@ -539,14 +539,21 @@ hyperdrive is known.  If NAME, offer it as the default entry name.
 PREDICATE and FORCE-PROMPT are passed to
 `hyperdrive-complete-hyperdrive', which see.
 
-When FORCE-PROMPT is nil and entry is for the same hyperdrive as
-`hyperdrive-current-entry', returned entry uses its version slot."
+When ALLOW-VERSION-P is nil, returned entry's version slot will be
+nil.  When ALLOW-VERSION-P is non-nil, FORCE-PROMPT is nil and
+entry is for the same hyperdrive as `hyperdrive-current-entry',
+returned entry uses its version slot.  Otherwise, prompt for a
+version number."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate
                                                      :force-prompt force-prompt))
-         (version (when (and (not force-prompt)
-                             hyperdrive-current-entry
-                             (equal hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                    (hyperdrive-entry-version hyperdrive-current-entry)))
+         (current-version (when (and allow-version-p
+                                     hyperdrive-current-entry
+                                     (equal hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                            (hyperdrive-entry-version hyperdrive-current-entry)))
+         (version (when allow-version-p
+                    (if force-prompt
+                        (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number current-version)
+                      current-version)))
          (default (hyperdrive--format-path name))
          (prompt (if version
                      "Path in «%s» (version:%s)"
