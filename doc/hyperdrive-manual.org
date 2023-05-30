@@ -304,6 +304,10 @@ Inspired by Marc Stiegler's [[http://www.skyhunter.com/marcs/petnames/IntroPetNa
 - Nickname   :: public, not necessarily unique, human-readable
 - Petname    :: private, locally unique, human-readable
 
+If ~hyperdrive.el~ is like a phonebook, then public keys are phone
+numbers, nicknames are how your contacts introduce themselves, and
+petnames are the names you actually write down.
+
 Each drive may also have one or both of the following attributes:
 
 - Seed       :: string used to generate public key
