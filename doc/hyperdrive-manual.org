@@ -103,7 +103,7 @@ default:
 - ~d~ downloads the file at point to disk
 #+kindex: hyperdrive-dir-delete
 - ~D~ deletes the file or directory (recursively) at point
-#+kindex: hyperdrive-dir-copy-url-as-kill
+#+kindex: hyperdrive-dir-copy-url
 - ~w~ copies the URL of the file or directory at point
 #+kindex: hyperdrive-describe-hyperdrive
 - ~?~ opens a buffer describing the current hyperdrive
