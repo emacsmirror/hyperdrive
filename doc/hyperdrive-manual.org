@@ -301,8 +301,8 @@ Inspired by Marc Stiegler's [[http://www.skyhunter.com/marcs/petnames/IntroPetNa
 ~hyperdrive.el~ names drives in a three different ways:
 
 - Public key :: public, globally unique, not human-readable
-- Petname    :: private, locally unique, human-readable
 - Nickname   :: public, not necessarily unique, human-readable
+- Petname    :: private, locally unique, human-readable
 
 Each drive may also have one or both of the following attributes:
 
@@ -327,17 +327,6 @@ sharing a hyperdrive with someone else, you will need to copy its full
 URL. Peers can load your hyperdrive files directly from your computer
 or from other peers who previously loaded those files.
 
-*** Petnames
-#+cindex: Petnames
-#+findex: hyperdrive-set-petname
-
-Petnames are locally unique hyperdrive identifiers. You can give a
-petname to any hyperdrive you load, whether you created it or not.
-
-When creating a new drive, your chosen seed ([[*Seeds]]) is used as its
-petname by default. Petnames can be changed with
-~hyperdrive-set-petname~, but drives cannot share a petname.
-
 *** Nicknames
 #+cindex: Nicknames
 #+findex: hyperdrive-set-nickname
@@ -350,6 +339,17 @@ Nicknames are stored in each hyperdrive inside
 ~/.well-known/host-meta.json~ under the ~name~ key, as specified in
 RFC6415. You can only assign a nickname to hyperdrives which you have
 created. Nicknames can be changed with ~hyperdrive-set-nickname~.
+
+*** Petnames
+#+cindex: Petnames
+#+findex: hyperdrive-set-petname
+
+Petnames are locally unique hyperdrive identifiers. You can give a
+petname to any hyperdrive you load, whether you created it or not.
+
+When creating a new drive, your chosen seed ([[*Seeds]]) is used as its
+petname by default. Petnames can be changed with
+~hyperdrive-set-petname~, but drives cannot share a petname.
 
 *** Seeds
 #+cindex: Seeds
