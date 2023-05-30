@@ -83,11 +83,11 @@ seed cannot be changed.
 #+findex: hyperdrive-open-url
 #+findex: hyperdrive-find-file
 
-You can open a hyperdrive folder or file by pasting in a ~hyper://~
-URL after ~M-x hyperdrive-open-url~. Alternatively, ~M-x
-hyperdrive-find-file~ remembers hyperdrives you have already created
-or visited. It will prompt you to select a known hyperdrive by its
-public key or seed and then enter a path inside that hyperdrive.
+You can open a hyperdrive folder or file by pasting in a ~hyper://~ URL
+after ~M-x hyperdrive-open-url~. Alternatively, ~M-x hyperdrive-find-file~
+remembers hyperdrives you have already created or visited. It will
+prompt you to select a known hyperdrive by its public key or seed and
+then enter a path inside that hyperdrive.
 
 The following keybindings are available inside the directory view by
 default:
@@ -280,10 +280,9 @@ to write files to a hyperdrive.
 ** Sparse replication
 #+cindex: Sparse replication
 
-[[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is
-sparsely replicated, meaning that peers can download particular files
-from a hyperdrive without having to get the whole drive. This reduces
-both load times and disk usage.
+[[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is sparsely replicated, meaning that peers can download
+particular files from a hyperdrive without having to get the whole
+drive. This reduces both load times and disk usage.
 
 ** Versioning
 #+cindex: Versioning
