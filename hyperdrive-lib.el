@@ -537,14 +537,24 @@ Prompts user for a hyperdrive and signals an error if no such
 hyperdrive is known.  If NAME, offer it as the default entry name.
 
 PREDICATE and FORCE-PROMPT are passed to
-`hyperdrive-complete-hyperdrive', which see."
+`hyperdrive-complete-hyperdrive', which see.
+
+When FORCE-PROMPT is nil and entry is for the same hyperdrive as
+`hyperdrive-current-entry', returned entry uses its version slot."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate
                                                      :force-prompt force-prompt))
+         (version (when (and (not force-prompt)
+                             hyperdrive-current-entry
+                             (equal hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                    (hyperdrive-entry-version hyperdrive-current-entry)))
          (default (hyperdrive--format-path name))
-         (path (read-string (format-prompt "Path in «%s»" default
-                                           (hyperdrive--format-hyperdrive hyperdrive))
+         (prompt (if version
+                     "Path in «%s» (version:%s)"
+                   "Path in «%s»"))
+         (path (read-string (format-prompt prompt default
+                                           (hyperdrive--format-hyperdrive hyperdrive) version)
                             default nil default)))
-    (hyperdrive-make-entry :hyperdrive hyperdrive :path path :encode t)))
+    (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :encode t)))
 
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
