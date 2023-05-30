@@ -168,6 +168,7 @@ will be placed into the same TARGET-DIRECTORY.
 
 *** Mirror a whole directory
 #+findex: hyperdrive-mirror
+#+findex: hyperdrive-mirror-do-upload
 
 ~hyperdrive-mirror~ uploads a directory, mirroring its subdirectory
 structure in your hyperdrive.
@@ -176,13 +177,16 @@ Let's say you have some files on your filesystem in the ~~/blog/~
 directory, and you want to upload them all into a hyperdrive you
 already created with the petname "foo". The following snippet will
 show you the list of files which will be uploaded as well as the ~hyper~
-URL at which they will be available after upload. To perform the
-upload, remove ~:dry-run t~.
+URL at which they will be available after upload. To upload the files,
+run ~hyperdrive-mirror-do-upload~ (bound to ~C-c C-c~ by default) in the
+~*hyperdrive-mirror*~ buffer which opens.
 
 #+begin_src elisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
-                   :target-dir "/blog/" :dry-run t)
+                   :target-dir "/blog/")
 #+end_src
+
+To upload the same files without confirming, add ~:no-confirm t~.
 
 *** Mirror files by tag or other attributes
 
@@ -198,13 +202,10 @@ The following snippet includes a ~PREDICATE~ key whose value is a
 regular expression against which every expanded filename inside will
 be tested.
 
-Remove ~:dry-run t~ to perform the upload.
-
 #+begin_src elisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
-                   :predicate ".*_public.*"
-                   :dry-run t)
+                   :predicate ".*_public.*")
 #+end_src
 
 Alternatively, you could select files by tag with Karl Voit's
@@ -219,8 +220,7 @@ only those files in ~~/blog/~ which are smaller than 5MB:
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
                    :predicate (lambda (file) (> (* 5 1024 1024)
-                                              (file-attribute-size (file-attributes file))))
-                   :dry-run t)
+                                              (file-attribute-size (file-attributes file)))))
 #+end_src
 
 *** Non-interactive use
