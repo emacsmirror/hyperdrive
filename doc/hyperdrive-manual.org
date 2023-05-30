@@ -211,8 +211,8 @@ Alternatively, you could select files by tag with Karl Voit's
 public and private files exist in the same directory.
 
 ~PREDICATE~ may also be a function, which receives the expanded filename
-as its only argument. The following snippet will mirror only those
-files in ~~/blog/~ which are smaller than 5MB:
+as its only argument. For example, the following snippet will mirror
+only those files in ~~/blog/~ which are smaller than 5MB:
 
 #+begin_src elisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
@@ -227,11 +227,11 @@ files in ~~/blog/~ which are smaller than 5MB:
 ** Hyper-gateway
 #+cindex: Hyper-gateway
 
-[[https://github.com/RangerMauve/hyper-gateway/][Hyper-gateway]] handles
-interactions with hyperdrive under the hood, and it runs a local HTTP
-server which accepts HTTP requests. In `hyperdrive.el`, P2P
-interactions consist mostly of, e.g., `GET` requests to download files
-and `PUT` requests to write files to a hyperdrive.
+[[https://github.com/RangerMauve/hyper-gateway/][Hyper-gateway]] handles interactions with hyperdrive under the hood, and
+it runs a local HTTP server which offers a Fetch API to access the
+Hyperdrive network. In `hyperdrive.el`, P2P interactions consist
+mostly of, e.g., `GET` requests to download files and `PUT` requests
+to write files to a hyperdrive.
 
 ** Sparse replication
 #+cindex: Sparse replication
@@ -255,12 +255,12 @@ will always attempt to find ~/foo.org~ inside the latest version of that
 hyperdrive.
 
 Whenever you update an entry, the hyperdrive's version number gets
-incremented by 1. This is because the version number tells you how
-many times the hyperdrive has been modified, not how many times a
-particular entry has been modified. For example, let's say that the
-current version of your hyperdrive at ~hyper://PUBLIC-KEY/~ is 50. If
-you add a new entry at ~hyper://PUBLIC-KEY/bar.org~, the latest version
-of your hyperdrive will become 51.
+incremented by 1. The version number tells you how many times the
+hyperdrive has been modified, not how many times a particular entry
+has been modified. For example, let's say that the current version of
+your hyperdrive at ~hyper://PUBLIC-KEY/~ is 50. If you add a new entry
+at ~hyper://PUBLIC-KEY/bar.org~, the latest version of your hyperdrive
+will become 51.
 
 Since ~/bar.org~ did not exist before version 51, ~hyperdrive.el~ should
 warn you that nothing exists at
@@ -276,8 +276,8 @@ hyperdrive's latest version will become 53. Now
 version of ~/bar.org~, while the 51- and 52-versioned URLs will continue
 to point to the original version.
 
-If you delete ~/bar.org~, ~hyper://PUBLIC-KEY/bar.org~ will not point to
-anything, but the versioned URLs will still work.
+If you delete ~/bar.org~, ~hyper://PUBLIC-KEY/bar.org~ will no longer
+point to anything, but the versioned URLs will still work.
 
 Since only the current version of a hyperdrive entry can be updated,
 ~hyperdrive.el~ sets the buffer to read-only whenever a version number
@@ -294,7 +294,7 @@ Inspired by Marc Stiegler's [[http://www.skyhunter.com/marcs/petnames/IntroPetNa
 - Petname    :: private, locally unique, human-readable
 - Nickname   :: public, not necessarily unique, human-readable
 
-Each drive may also have the following two attributes:
+Each drive may also have one or both of the following attributes:
 
 - Seed       :: string used to generate public key
 - DNS domain :: public, globally unique, human-readable
@@ -306,10 +306,10 @@ You can customize the default format for displaying hyperdrives with
 #+cindex: Public keys
 #+findex: hyperdrive-new
 
-Public keys are 52-character-long [[https://en.wikipedia.org/wiki/Base32#z-base-32][z-base-32]] encoded keys generated
-from your secret master key and a seed string. The secret key is
-generated for you by ~hyper-gateway~, and you provide a seed ([[*Seeds]])
-when generating a new drive with ~hyperdrive-new~.
+Public keys are 52-character-long, [[https://en.wikipedia.org/wiki/Base32#z-base-32][z-base-32]] encoded keys generated
+from your secret master key and a seed string. ~hyper-gateway~ generates
+the secret key for you, and you provide a seed ([[*Seeds]]) when
+generating a new drive with ~hyperdrive-new~.
 
 Public keys allow for permanent links to hyperdrive content. When
 sharing a hyperdrive with someone else, you will need to copy its full
