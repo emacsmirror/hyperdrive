@@ -105,7 +105,7 @@ To be used as the pretty-printer for `ewoc-create'."
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
   "^"   #'hyperdrive-up
-  "w"   #'hyperdrive-dir-copy-url-as-kill
+  "w"   #'hyperdrive-dir-copy-url
   "d"   #'hyperdrive-dir-download-file
   "n"   #'hyperdrive-dir-next
   "p"   #'hyperdrive-dir-previous
@@ -155,7 +155,7 @@ With point on header, return directory entry."
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 
-(defun hyperdrive-dir-copy-url-as-kill (entry)
+(defun hyperdrive-dir-copy-url (entry)
   "Copy URL of ENTRY into the kill ring."
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-copy-url entry))
