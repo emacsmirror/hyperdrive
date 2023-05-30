@@ -235,6 +235,39 @@ other attributes]].
 
 * Concepts
 
+** Hyperdrive
+
+Hyperdrive is a virtual filesystem which you can use to share files on
+the peer-to-peer (P2P) ~hyper~ network.  It's a special folder with a
+long, unique link starting with ~hyper://~ that you can put files into
+and other peers can pull files out of (if they have the link).
+
+Anyone with that link can download its contents directly from your
+computer.  There's no need to make an account or rely on a third party
+to pass the data along.  What's more, anyone who has a copy of the
+content in your hyperdrive can serve it to others.  This means that
+your hyperdrive can circulate on the ~hyper~ network even when you're
+offline.
+
+Hyperdrive is single-writer, since only one peer (one machine) can
+make changes to a hyperdrive.  No one can pretend to be you, since
+files in a hyperdrive are cryptographically signed to ensure their
+integrity and authenticity
+
+You can make as many hyperdrives as you like; the only limitation is
+your own disk space.
+
+Hyperdrive is offline-first, since you can view files which
+were previously downloaded even when disconnected from the rest of the
+network.  It's also local-first, since you can connect with peers on a
+LAN even without an internet connection.
+
+Unlike BitTorrent, another protocol for sharing files, hyperdrives are
+mutable.  You can add, update, or delete files inside a hyperdrive,
+and peers will be able to access the latest version of the hyperdrive
+at the same link.  However, old versions of your hyperdrive are never
+lost. [[*Versioning]] for more information.
+
 ** Hyper-gateway
 #+cindex: Hyper-gateway
 
