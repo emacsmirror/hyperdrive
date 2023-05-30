@@ -110,13 +110,12 @@ default:
 
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
-#+findex: hyperdrive-save-buffer
 
 You can write a buffer to a hyperdrive with ~hyperdrive-write-buffer~,
 which will prompt you for one of hyperdrives you have created as well
 as the path in that hyperdrive where you want to store the file. If
-you are editing an existing hyperdrive file, ~hyperdrive-save-buffer~
-will silently update the current hyperdrive entry with the new content.
+you are editing an existing hyperdrive file, ~save-buffer~ will
+silently update the current hyperdrive entry with the new content.
 
 ** Link to a hyperdrive
 #+findex: hyperdrive-copy-url
