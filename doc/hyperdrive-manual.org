@@ -223,6 +223,16 @@ only those files in ~~/blog/~ which are smaller than 5MB:
                    :dry-run t)
 #+end_src
 
+*** Non-interactive use
+#+findex: hyperdrive-by-slot
+
+In writing your own functions to extend ~hyperdrive.el~, you can use
+~hyperdrive-by-slot~ to access a hyperdrive entry by its seed, petname,
+or public key.
+
+For examples, [[*Mirror a whole directory]] and [[*Mirror files by tag or
+other attributes]].
+
 * Concepts
 
 ** Hyper-gateway
