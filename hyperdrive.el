@@ -536,7 +536,8 @@ overwrite.
 With prefix argument, prompts for more information. See
 `hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
-                                            :force-prompt current-prefix-arg)))
+                                            :force-prompt current-prefix-arg
+                                            :allow-version-p nil)))
   ;; FIXME: Overwrites without prompting if file exists.
   (ignore overwritep)
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
@@ -679,7 +680,8 @@ With prefix argument, prompts for more information. See
                  (list filename
                        (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                               :name (file-name-nondirectory filename)
-                                              :force-prompt current-prefix-arg))))
+                                              :force-prompt current-prefix-arg
+                                              :allow-version-p nil))))
   (let ((url (hyperdrive-entry-url entry)))
     (hyperdrive-api 'put url :queue queue
       :body `(file ,filename)
