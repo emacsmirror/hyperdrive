@@ -451,3 +451,7 @@ files from the filesystem.
 :PROPERTIES:
 :INDEX: cp
 :END:
+
+# Local Variables:
+# sentence-end-double-space: t
+# End:
