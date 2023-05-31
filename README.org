@@ -20,7 +20,7 @@ network ([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-g
 ** Manual
 
 # TODO: Add link to manual once uploaded to static site.
-For more information, please the manual.
+For more information, please see the manual.
 
 ** Bugs and Patches
 
