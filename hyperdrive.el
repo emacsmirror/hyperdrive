@@ -467,7 +467,7 @@ in the buffer opened by the handler."
                                                        (hyperdrive-entry-url entry))
                                                '(("yes" ?y "go up one level")
                                                  ("no" ?n "exit")
-                                                 ("recurse" ?! "go up until directory found")))
+                                                 ("recurse" ?! "go up until a directory is found")))
                                 ("yes" 1)
                                 ("recurse" t)
                                 ("no" nil))))
