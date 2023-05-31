@@ -538,10 +538,10 @@ case, when PREDICATE, only offer hyperdrives matching it."
               when value
               concat (concat value "  ")))))
 
-(cl-defun hyperdrive-read-entry (&key predicate name (allow-version-p t) force-prompt)
+(cl-defun hyperdrive-read-entry (&key predicate default-path (allow-version-p t) force-prompt)
   "Return new hyperdrive entry with path and hyperdrive read from user.
 Prompts user for a hyperdrive and signals an error if no such
-hyperdrive is known.  If NAME, offer it as the default entry name.
+hyperdrive is known.  If DEFAULT-PATH, offer it as the default entry path.
 
 PREDICATE and FORCE-PROMPT are passed to
 `hyperdrive-complete-hyperdrive', which see.
@@ -551,6 +551,7 @@ nil.  When ALLOW-VERSION-P is non-nil, FORCE-PROMPT is nil and
 entry is for the same hyperdrive as `hyperdrive-current-entry',
 returned entry uses its version slot.  Otherwise, prompt for a
 version number."
+  (cl-callf hyperdrive--format-path default-path)
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate
                                                      :force-prompt force-prompt))
          (current-version (when (and allow-version-p
@@ -561,13 +562,12 @@ version number."
                     (if force-prompt
                         (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number current-version)
                       current-version)))
-         (default (hyperdrive--format-path name))
          (prompt (if version
                      "Path in «%s» (version:%s)"
                    "Path in «%s»"))
-         (path (read-string (format-prompt prompt default
+         (path (read-string (format-prompt prompt default-path
                                            (hyperdrive--format-hyperdrive hyperdrive) version)
-                            default nil default)))
+                            default-path nil default-path)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :encode t)))
 
 (cl-defun hyperdrive-read-version (&key hyperdrive

@@ -673,7 +673,7 @@ With prefix argument, prompts for more information. See
   (interactive (let ((filename (read-file-name "Upload file: ")))
                  (list filename
                        (hyperdrive-read-entry :predicate #'hyperdrive-writablep
-                                              :name (file-name-nondirectory filename)
+                                              :default-path (file-name-nondirectory filename)
                                               :force-prompt current-prefix-arg
                                               :allow-version-p nil))))
   (let ((url (hyperdrive-entry-url entry)))
