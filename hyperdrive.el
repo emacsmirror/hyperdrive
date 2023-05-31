@@ -531,6 +531,9 @@ With prefix argument, prompts for more information. See
 `hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                             :force-prompt current-prefix-arg
+                                            :default-path (when (and hyperdrive-current-entry
+                                                                     (not current-prefix-arg))
+                                                            (hyperdrive-entry-path hyperdrive-current-entry))
                                             :allow-version-p nil)))
   ;; FIXME: Overwrites without prompting if file exists.
   (ignore overwritep)
