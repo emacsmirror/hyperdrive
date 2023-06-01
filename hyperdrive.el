@@ -825,11 +825,11 @@ uploading files, open PARENT-ENTRY."
 Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
 for a hyperdrive."
   (interactive
-   (let ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
-                                                     :force-prompt current-prefix-arg))
-         (files (hyperdrive-read-files))
-         ;; TODO: Consider offering target dirs in hyperdrive with completion.
-         (target-dir (read-string (format-prompt "Target directory" "/") "/" nil "/")))
+   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
+                                                      :force-prompt current-prefix-arg))
+          (files (hyperdrive-read-files))
+          ;; TODO: Consider offering target dirs in hyperdrive with completion.
+          (target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in «%s»" :default "/")))
      (list files hyperdrive :target-directory target-dir)))
   (cl-assert (cl-notany #'file-directory-p files))
   (cl-assert (cl-every #'file-readable-p files))
