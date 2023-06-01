@@ -565,6 +565,9 @@ version number."
          (path (hyperdrive-read-path :hyperdrive hyperdrive :version version :default default-path)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :encode t)))
 
+(defvar hyperdrive--version-history nil
+  "Minibuffer history of `hyperdrive-read-version'.")
+
 (cl-defun hyperdrive-read-version (&key hyperdrive prompt initial-input-number)
   "Return version number.
 Blank input returns nil.
@@ -576,7 +579,8 @@ INITIAL-INPUT is converted to a string and passed to
          ;; Don't use read-number since it cannot return nil.
          (version (read-string
                    (format-prompt prompt nil (hyperdrive--format-hyperdrive hyperdrive))
-                   (when initial-input-number (number-to-string initial-input-number)))))
+                   (when initial-input-number (number-to-string initial-input-number))
+                   'hyperdrive-read-version)))
     (unless (string-blank-p version)
       (string-to-number version))))
 
