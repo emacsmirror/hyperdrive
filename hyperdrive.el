@@ -441,7 +441,7 @@ for a hyperdrive."
 
 (defun hyperdrive-revert-buffer-quick ()
   "Like `revert-buffer-quick', but works with `hyperdrive-mode' files."
-  (interactive)
+  (interactive nil hyperdrive-mode)
   (hyperdrive-revert-buffer nil (not (buffer-modified-p))))
 
 ;;;; hyperdrive-mode
@@ -658,22 +658,21 @@ To be used in `write-contents-functions'."
   "Save hyperdrive ENTRY's URL to the kill ring.
 Interactively, uses `hyperdrive-current-entry', from either a
 hyperdrive directory listing or a `hyperdrive-mode' file buffer."
-  (interactive (list hyperdrive-current-entry))
+  (interactive (list hyperdrive-current-entry) hyperdrive-mode)
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (hyperdrive-message "%s" url)))
 
 (defun hyperdrive-up ()
   "Go up to parent directory."
-  (interactive)
+  (interactive nil hyperdrive-mode)
   (if-let ((parent (hyperdrive-parent hyperdrive-current-entry)))
       (hyperdrive-open parent)
     (user-error "At root directory")))
 
 (defun hyperdrive-previous-version (entry)
   "Show previous version of ENTRY."
-  (interactive (list hyperdrive-current-entry))
-  ;; TODO: Nicely handle when called without an entry.
+  (interactive (list hyperdrive-current-entry) hyperdrive-mode)
   (if-let ((previous-entry (hyperdrive-entry-previous entry)))
       (hyperdrive-find-file previous-entry)
     (hyperdrive-message "At earliest version of entry")))
@@ -857,7 +856,7 @@ uploading files, open PARENT-ENTRY."
 
 (defun hyperdrive-mirror-do-upload ()
   "Upload files in current \"*hyperdrive-mirror*\" buffer."
-  (interactive)
+  (interactive nil hyperdrive-describe-mode)
   (if (and tabulated-list-entries hyperdrive-mirror-parent-entry)
       (when (or (not hyperdrive-mirror-already-uploaded) (yes-or-no-p "Already uploaded files. Upload again?"))
         (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry))
