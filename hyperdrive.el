@@ -517,7 +517,7 @@ With prefix argument, prompts for more information. See
   (interactive
    (let* ((read-url (hyperdrive-read-url :prompt "Download hyperdrive URL"))
           (name (hyperdrive-entry-name (hyperdrive-url-entry read-url)))
-          (read-filename (read-string "Filename: " (expand-file-name name hyperdrive-download-directory))))
+          (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list read-url read-filename)))
   (hyperdrive-api 'get url :as `(file ,filename)))
 
