@@ -580,9 +580,9 @@ HYPERDRIVE is used to fill in PROMPT format %s sequence.
 INITIAL-INPUT is converted to a string and passed to
 `read-string', which see."
   ;; Don't use read-number since it cannot return nil.
-  (let ((version (read-string (format-prompt "Version number in «%s» (leave blank for latest version)" nil
-                                             (hyperdrive--format-hyperdrive hyperdrive))
-                              (when initial-input-number (number-to-string initial-input-number)))))
+  (let ((version (read-string
+                  (format-prompt prompt nil (hyperdrive--format-hyperdrive hyperdrive))
+                  (when initial-input-number (number-to-string initial-input-number)))))
     (unless (string-blank-p version)
       (string-to-number version))))
 
