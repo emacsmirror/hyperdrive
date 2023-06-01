@@ -562,12 +562,7 @@ version number."
                     (if force-prompt
                         (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number current-version)
                       current-version)))
-         (prompt (if version
-                     "Path in «%s» (version:%s)"
-                   "Path in «%s»"))
-         (path (read-string (format-prompt prompt default-path
-                                           (hyperdrive--format-hyperdrive hyperdrive) version)
-                            default-path nil default-path)))
+         (path (hyperdrive-read-path :hyperdrive hyperdrive :version version :default default-path)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :encode t)))
 
 (cl-defun hyperdrive-read-version (&key hyperdrive
