@@ -612,6 +612,14 @@ Prompts with PROMPT. Defaults to current entry if it exists."
                    (hyperdrive-entry-url hyperdrive-current-entry))))
     (string-trim (read-string (format-prompt prompt default) nil 'hyperdrive--url-history default))))
 
+(defvar hyperdrive--name-history nil
+  "Minibuffer history of `hyperdrive-read-name'.")
+
+(cl-defun hyperdrive-read-name (&key prompt initial-input default)
+  "Wrapper for `read-string' with common history.
+Prompts with PROMPT."
+  (read-string (format-prompt prompt default) initial-input 'hyperdrive--name-history default))
+
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
 Entering an empty or blank string unsets PETNAME.
