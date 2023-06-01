@@ -586,6 +586,21 @@ INITIAL-INPUT is converted to a string and passed to
     (unless (string-blank-p version)
       (string-to-number version))))
 
+(cl-defun hyperdrive-read-path (&key hyperdrive version prompt default)
+  "Return path read from user.
+HYPERDRIVE and VERSION are used to fill in the prompt's format %s
+sequence.  PROMPT is passed to `format-prompt', which see.  DEFAULT
+is passed to `read-string' as both its INITIAL-INPUT and
+DEFAULT-VALUE arguments."
+  (let ((prompt (or prompt
+                    (if version
+                        "Path in «%s» (version:%s)"
+                      "Path in «%s»"))))
+    ;; TODO: Provide a `find-file'-like auto-completing UI
+    (read-string (format-prompt prompt default
+                                (hyperdrive--format-hyperdrive hyperdrive) version)
+                 default nil default)))
+
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
 Prompts with PROMPT. Defaults to current entry if it exists."
