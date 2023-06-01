@@ -335,7 +335,7 @@ Gateway must be running."
 
 If SEED is not currently used as the petname for another
 hyperdrive, the new hyperdrive's petname will be set to SEED."
-  (interactive (list (read-string "New hyperdrive seed: ")))
+  (interactive (list (hyperdrive-read-name :prompt "New hyperdrive seed")))
   (let* ((response (with-local-quit
                      (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string seed)))))
          (url (progn

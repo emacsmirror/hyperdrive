@@ -629,16 +629,16 @@ Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
 for a hyperdrive."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg))
-          (petname (read-string
-                    (format "Petname for «%s» (leave blank to unset): "
-                            (hyperdrive--format-hyperdrive hyperdrive)))))
+          (petname (hyperdrive-read-name
+                    :prompt (format "Petname for «%s» (leave blank to unset)"
+                                    (hyperdrive--format-hyperdrive hyperdrive)))))
      (list petname hyperdrive)))
   (while-let (((not (equal petname (hyperdrive-petname hyperdrive))))
               (other-hyperdrive (cl-find petname (hash-table-values hyperdrive-hyperdrives)
                                          :key #'hyperdrive-petname :test #'equal)))
-    (setf petname (read-string
-                   (format "%S already assigned as petname to hyperdrive «%s».  Enter new petname: "
-                           petname (hyperdrive--format-hyperdrive other-hyperdrive)))))
+    (setf petname (hyperdrive-read-name
+                   :prompt (format "%S already assigned as petname to hyperdrive «%s».  Enter new petname"
+                                   petname (hyperdrive--format-hyperdrive other-hyperdrive)))))
   (if (string-blank-p petname)
       (when (yes-or-no-p (format "Unset petname for «%s»? "
                                  (hyperdrive--format-hyperdrive hyperdrive)))
@@ -661,10 +661,10 @@ for a hyperdrive."
            ;; NOTE: Fill metadata first in case the JSON file has been updated manually
            (progn
              (hyperdrive-fill-metadata hyperdrive)
-             (read-string
-              (format "Nickname for «%s»: "
-                      (hyperdrive--format-hyperdrive hyperdrive))
-              (alist-get 'name (hyperdrive-metadata hyperdrive))))))
+             (hyperdrive-read-name
+              :prompt (format "Nickname for «%s»"
+                              (hyperdrive--format-hyperdrive hyperdrive))
+              :initial-input (alist-get 'name (hyperdrive-metadata hyperdrive))))))
      (list nickname hyperdrive)))
   (unless (equal nickname (alist-get 'name (hyperdrive-metadata hyperdrive)))
     (if (string-blank-p nickname)
