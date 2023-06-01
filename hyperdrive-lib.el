@@ -584,6 +584,9 @@ INITIAL-INPUT is converted to a string and passed to
     (unless (string-blank-p version)
       (string-to-number version))))
 
+(defvar hyperdrive--path-history nil
+  "Minibuffer history of `hyperdrive-read-path'.")
+
 (cl-defun hyperdrive-read-path (&key hyperdrive version prompt default)
   "Return path read from user.
 HYPERDRIVE and VERSION are used to fill in the prompt's format %s
@@ -597,7 +600,7 @@ DEFAULT-VALUE arguments."
     ;; TODO: Provide a `find-file'-like auto-completing UI
     (read-string (format-prompt prompt default
                                 (hyperdrive--format-hyperdrive hyperdrive) version)
-                 default nil default)))
+                 default 'hyperdrive--path-history default)))
 
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
