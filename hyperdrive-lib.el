@@ -602,12 +602,15 @@ DEFAULT-VALUE arguments."
                                 (hyperdrive--format-hyperdrive hyperdrive) version)
                  default 'hyperdrive--path-history default)))
 
+(defvar hyperdrive--url-history nil
+  "Minibuffer history of `hyperdrive-read-url'.")
+
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
 Prompts with PROMPT. Defaults to current entry if it exists."
   (let ((default (when hyperdrive-current-entry
                    (hyperdrive-entry-url hyperdrive-current-entry))))
-    (string-trim (read-string (format-prompt prompt default) nil nil default))))
+    (string-trim (read-string (format-prompt prompt default) nil 'hyperdrive--url-history default))))
 
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
