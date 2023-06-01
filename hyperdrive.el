@@ -712,10 +712,11 @@ Interactively, with one universal prefix, prompt for predicate,
 otherwise mirror all files.  With two universal prefixes, prompt
 for predicate and set NO-CONFIRM to t."
   (interactive
-   (let ((source (read-directory-name "Mirror directory: " nil nil t)))
-     (list source (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
-                                                  :force-prompt t)
-           :target-dir (read-string (format-prompt "Target directory" "/") "/" nil "/")
+   (let ((source (read-directory-name "Mirror directory: " nil nil t))
+         (hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
+                                                     :force-prompt t)))
+     (list source hyperdrive
+           :target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in «%s»" :default "/")
            :no-confirm (equal '(16) current-prefix-arg)
            :predicate (if current-prefix-arg
                           (let* ((collection
