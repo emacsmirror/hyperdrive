@@ -565,19 +565,18 @@ version number."
          (path (hyperdrive-read-path :hyperdrive hyperdrive :version version :default default-path)))
     (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :encode t)))
 
-(cl-defun hyperdrive-read-version (&key hyperdrive
-                                        (prompt "Version number in «%s» (leave blank for latest version)")
-                                        initial-input-number)
+(cl-defun hyperdrive-read-version (&key hyperdrive prompt initial-input-number)
   "Return version number.
 Blank input returns nil.
 
 HYPERDRIVE is used to fill in PROMPT format %s sequence.
 INITIAL-INPUT is converted to a string and passed to
 `read-string', which see."
-  ;; Don't use read-number since it cannot return nil.
-  (let ((version (read-string
-                  (format-prompt prompt nil (hyperdrive--format-hyperdrive hyperdrive))
-                  (when initial-input-number (number-to-string initial-input-number)))))
+  (let* ((prompt (or prompt "Version number in «%s» (leave blank for latest version)"))
+         ;; Don't use read-number since it cannot return nil.
+         (version (read-string
+                   (format-prompt prompt nil (hyperdrive--format-hyperdrive hyperdrive))
+                   (when initial-input-number (number-to-string initial-input-number)))))
     (unless (string-blank-p version)
       (string-to-number version))))
 
