@@ -650,6 +650,7 @@ hyperdrive."
                         nil
                       (signal 'plz-http-error err)))))
 
+;;;###autoload
 (defun hyperdrive-by-slot (slot value)
   "Return persisted hyperdrive struct whose SLOT matches VALUE.
 Otherwise, return `nil'.  SLOT may be one of
