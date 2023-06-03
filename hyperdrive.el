@@ -550,7 +550,15 @@ in the buffer opened by the handler."
                             ;; Hyperdrive is not a directory, is writable
                             ;; and is not versioned: create a new buffer
                             ;; that will be saved to that path.
-                            (switch-to-buffer (hyperdrive--get-buffer-create entry))
+                            (if-let ((buffer (get-buffer (hyperdrive--entry-buffer-name entry))))
+                                ;; Buffer already exists: likely the user deleted the entry
+                                ;; without killing the buffer.  Switch to the buffer and
+                                ;; alert the user that the entry no longer exists.
+                                (progn
+                                  (switch-to-buffer buffer)
+                                  (message "Entry no longer exists!  %S" (hyperdrive-entry-description entry)))
+                              ;; Make and switch to new buffer.
+                              (switch-to-buffer (hyperdrive--get-buffer-create entry)))
                           ;; Hyperdrive entry is not writable: offer to go up.
                           (go-up)))
                        (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
