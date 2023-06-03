@@ -490,7 +490,6 @@ With prefix argument, prompts for more information. See
   (interactive (list (hyperdrive-read-url :prompt "Open hyperdrive URL")))
   (hyperdrive-open (hyperdrive-url-entry url)))
 
-;;;###autoload
 (cl-defun hyperdrive-open (entry &key then recurse)
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
