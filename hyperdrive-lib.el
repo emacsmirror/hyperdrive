@@ -27,6 +27,7 @@
 (require 'cl-lib)
 (require 'map)
 (require 'pcase)
+(require 'seq)
 (require 'url-util)
 
 (require 'compat)
@@ -137,6 +138,7 @@ generated from PATH. When ENCODE is non-`nil', encode PATH."
 (defvar hyperdrive-hyperdrives)
 (defvar hyperdrive-default-host-format)
 (defvar hyperdrive-honor-auto-mode-alist)
+(defvar hyperdrive-entries-metadata)
 
 (eval-and-compile
   (defconst hyperdrive--hyper-prefix "hyper://"
@@ -360,7 +362,43 @@ The following ENTRY hyperdrive slots are filled:
             (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
             (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
         (setf (hyperdrive-public-key hyperdrive) public-key)))
+    (hyperdrive-cache-entry-metadata entry)
     entry))
+
+(defun hyperdrive-cache-entry-metadata (entry)
+  "Add ENTRY's metadata to `hyperdrive-entries-metadata'."
+  (cl-labels
+      ((merge-metadata
+        (a b) (map-merge-with
+               'plist (lambda (a b)
+                        (sort (seq-uniq (seq-union a b)) #'<))
+               a b))
+       ;; TODO: Consider whether having the :created versions also in
+       ;; the :modified list makes sense.
+       (entry-metadata
+        (entry) (pcase-let (((cl-struct hyperdrive-entry version-last-modified version) entry))
+                  (list :created (unless
+                                     ;; FIXME: This recursively tries to fetch all versions of the hyperdrive and exhausts the call stack.  Oops.
+                                     (hyperdrive-entry-previous entry)
+
+                                   ;; If entry has no previous version,
+                                   ;; it was created at this one.
+                                   (list version-last-modified))
+                        :modified (list version-last-modified))))
+       (add-entry-metadata
+        (entry path-cache)
+        (setf (gethash (hyperdrive-entry-path entry) path-cache)
+              (if-let ((cached-entry (gethash (hyperdrive-entry-path entry) path-cache)))
+                  (merge-metadata cached-entry (entry-metadata entry))
+                (entry-metadata entry)))))
+    (if-let* ((hyperdrive (hyperdrive-entry-hyperdrive entry))
+              (hyperdrive-metadata-entry (gethash (hyperdrive-public-key hyperdrive)
+                                                  hyperdrive-entries-metadata)))
+        ;; Hyperdrive entry present: add to it.
+        (add-entry-metadata entry hyperdrive-metadata-entry)
+      (add-entry-metadata
+       entry (setf (gethash (hyperdrive-public-key hyperdrive) hyperdrive-entries-metadata)
+                   (make-hash-table :test #'equal))))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.

@@ -7,7 +7,7 @@
 ;; Maintainer: Joseph Turner <joseph@ushin.org>
 ;; Created: 2022
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.3.2") (plz "0.6-pre") (persist "0.5"))
+;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.4.0") (plz "0.6-pre") (persist "0.5"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
@@ -184,6 +184,11 @@ through a shell)."
                 hyperdrive-persist-location)
 (unless hyperdrive-hyperdrives
   (setf hyperdrive-hyperdrives (make-hash-table :test #'equal)))
+
+(defvar hyperdrive-entries-metadata (make-hash-table :test #'equal)
+  "Hash table mapping hyperdrive public keys to hash tables.
+The hash tables map paths within a hyperdrive to plists of
+metadata.")
 
 ;; TODO: Flesh out the persist hook.
 ;; (defvar hyperdrive-persist-hook nil
