@@ -82,20 +82,25 @@ Upload files from your filesystem
 
 * Mirror a whole directory::
 * Mirror files by tag or other attributes::
+* Non-interactive use::
 
 Concepts
 
+* Hyperdrive::
 * Hyper-gateway::
-* Sparse replication::
-* Hyperdrive entries::
-* Versioning::
 * Naming::
+* Hyperdrive entries::
+
+Hyperdrive
+
+* Sparse replication::
+* Versioning::
 
 Naming
 
 * Public keys::
-* Petnames::
 * Nicknames::
+* Petnames::
 * Seeds::
 * DNS domains::
 
@@ -112,10 +117,10 @@ Indices
 @node Introduction
 @chapter Introduction
 
-@uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is a secure, P2P, real-time, local-first, versioned
-filesystem designed for easy peer-to-peer file sharing. @code{hyperdrive.el}
-is an independent project built by @uref{https://ushin.org, USHIN} which provides an Emacs
-interface for managing hyperdrives.
+@uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is a P2P, real-time, local-first, versioned filesystem
+designed for easy peer-to-peer file sharing.  @code{hyperdrive.el} is an
+independent project built by @uref{https://ushin.org, USHIN} which provides an Emacs interface
+for managing hyperdrives.
 
 @code{hyperdrive.el} is in early development. If something breaks, please @ref{Troubleshooting}.
 
@@ -192,11 +197,11 @@ seed cannot be changed.
 @findex hyperdrive-open-url
 @findex hyperdrive-find-file
 
-You can open a hyperdrive folder or file by pasting in a @code{hyper://}
-URL after @code{M-x hyperdrive-open-url}. Alternatively, @code{M-x
-hyperdrive-find-file} remembers hyperdrives you have already created
-or visited. It will prompt you to select a known hyperdrive by its
-public key or seed and then enter a path inside that hyperdrive.
+You can open a hyperdrive folder or file by pasting in a @code{hyper://} URL
+after @code{M-x hyperdrive-open-url}. Alternatively, @code{M-x hyperdrive-find-file}
+remembers hyperdrives you have already created or visited. It will
+prompt you to select a known hyperdrive by its public key or seed and
+then enter a path inside that hyperdrive.
 
 The following keybindings are available inside the directory view by
 default:
@@ -212,10 +217,13 @@ default:
 @item
 @code{RET} opens file or directory at point
 @end itemize
+
 @kindex hyperdrive-up
 @itemize
 @item
-@code{^} goes up to the parent directory
+@code{^} goes up to the parent directory @footnote{If you have bound @code{dired-jump} in the global keymap (people often
+choose @code{C-x C-j}), you can use the same binding to jump to the parent
+hyperdrive directory from any hyperdrive file or directory buffer.}
 @end itemize
 @kindex hyperdrive-dir-download-file
 @itemize
@@ -227,7 +235,7 @@ default:
 @item
 @code{D} deletes the file or directory (recursively) at point
 @end itemize
-@kindex hyperdrive-dir-copy-url-as-kill
+@kindex hyperdrive-dir-copy-url
 @itemize
 @item
 @code{w} copies the URL of the file or directory at point
@@ -242,25 +250,25 @@ default:
 @section Write to a hyperdrive
 
 @findex hyperdrive-write-buffer
-@findex hyperdrive-save-buffer
 
 You can write a buffer to a hyperdrive with @code{hyperdrive-write-buffer},
 which will prompt you for one of hyperdrives you have created as well
 as the path in that hyperdrive where you want to store the file. If
-you are editing an existing hyperdrive file, @code{hyperdrive-save-buffer}
-will silently update the current hyperdrive entry with the new content.
+you are editing an existing hyperdrive file, @code{save-buffer} will
+silently update the current hyperdrive entry with the new content.
 
 @node Link to a hyperdrive
 @section Link to a hyperdrive
 
 @findex hyperdrive-copy-url
+@findex hyperdrive-dir-copy-url
 
-In addition to copying the URL at point in the directory view, you can
-run @code{hyperdrive-copy-url} to copy the URL of the current hyperdrive
-file or directory. If the current file is an org-mode file,
-@code{org-store-link} will store a link to the hyperdrive file, and if
-point is inside a heading, its @code{CUSTOM_ID}, @code{ID}, or heading text will
-be appended to the stored URL@.
+In the directory view, you can copy the URL at point with
+@code{hyperdrive-dir-copy-url}. Additionally, you can run @code{hyperdrive-copy-url}
+to copy the URL of the current hyperdrive file or directory. If the
+current file is an org-mode file, @code{org-store-link} will store a link to
+the hyperdrive file, and if point is inside a heading, its @code{CUSTOM_ID},
+@code{ID}, or heading text will be appended to the stored URL@.
 
 @node Describe a hyperdrive
 @section Describe a hyperdrive
@@ -275,8 +283,13 @@ means, @ref{Naming}.
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
 
-You can use the built-in @code{bookmark-set} and @code{bookmark-jump} functions
-to store and jump to a hyperdrive file or directory.
+@findex hyperdrive-bookmark-jump
+@findex hyperdrive-bookmark-list
+
+You can use the built-in @code{bookmark-set}, @code{bookmark-jump}, and
+@code{bookmark-list} functions to store and jump to a hyperdrive file or
+directory. To jump to or view only hyperdrive bookmarks, use
+@code{hyperdrive-bookmark-jump} and @code{hyperdrive-bookmark-list}.
 
 @node Download hyperdrive files
 @section Download hyperdrive files
@@ -306,12 +319,14 @@ will be placed into the same TARGET-DIRECTORY@.
 @menu
 * Mirror a whole directory::
 * Mirror files by tag or other attributes::
+* Non-interactive use::
 @end menu
 
 @node Mirror a whole directory
 @subsection Mirror a whole directory
 
 @findex hyperdrive-mirror
+@findex hyperdrive-mirror-do-upload
 
 @code{hyperdrive-mirror} uploads a directory, mirroring its subdirectory
 structure in your hyperdrive.
@@ -320,13 +335,16 @@ Let's say you have some files on your filesystem in the @code{~/blog/}
 directory, and you want to upload them all into a hyperdrive you
 already created with the petname ``foo''. The following snippet will
 show you the list of files which will be uploaded as well as the @code{hyper}
-URL at which they will be available after upload. To perform the
-upload, remove @code{:dry-run t}.
+URL at which they will be available after upload. To upload the files,
+run @code{hyperdrive-mirror-do-upload} (bound to @code{C-c C-c} by default) in the
+@code{*hyperdrive-mirror*} buffer which opens.
 
 @lisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
-                   :target-dir "/blog/" :dry-run t)
+                   :target-dir "/blog/")
 @end lisp
+
+To upload the same files without confirming, add @code{:no-confirm t}.
 
 @node Mirror files by tag or other attributes
 @subsection Mirror files by tag or other attributes
@@ -343,13 +361,10 @@ The following snippet includes a @code{PREDICATE} key whose value is a
 regular expression against which every expanded filename inside will
 be tested.
 
-Remove @code{:dry-run t} to perform the upload.
-
 @lisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
-                   :predicate ".*_public.*"
-                   :dry-run t)
+                   :predicate ".*_public.*")
 @end lisp
 
 Alternatively, you could select files by tag with Karl Voit's
@@ -357,67 +372,87 @@ Alternatively, you could select files by tag with Karl Voit's
 public and private files exist in the same directory.
 
 @code{PREDICATE} may also be a function, which receives the expanded filename
-as its only argument. The following snippet will mirror only those
-files in @code{~/blog/} which are smaller than 5MB:
+as its only argument. For example, the following snippet will mirror
+only those files in @code{~/blog/} which are smaller than 5MB:
 
 @lisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
                    :predicate (lambda (file) (> (* 5 1024 1024)
-                                              (file-attribute-size (file-attributes file))))
-                   :dry-run t)
+                                              (file-attribute-size (file-attributes file)))))
 @end lisp
+
+@node Non-interactive use
+@subsection Non-interactive use
+
+@findex hyperdrive-by-slot
+
+In writing your own functions to extend @code{hyperdrive.el}, you can use
+@code{hyperdrive-by-slot} to access a hyperdrive entry by its seed, petname,
+or public key.
+
+For examples, @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
 
 @node Concepts
 @chapter Concepts
 
 @menu
+* Hyperdrive::
 * Hyper-gateway::
-* Sparse replication::
-* Hyperdrive entries::
-* Versioning::
 * Naming::
+* Hyperdrive entries::
 @end menu
 
-@node Hyper-gateway
-@section Hyper-gateway
+@node Hyperdrive
+@section Hyperdrive
 
-@cindex Hyper-gateway
+Hyperdrive is a virtual filesystem which you can use to share files on
+the peer-to-peer (P2P) @code{hyper} network.  It's a special folder with a
+long, unique link starting with @code{hyper://} that you can put files into
+and other peers can pull files out of (if they have the link).
 
-@uref{https://github.com/RangerMauve/hyper-gateway/, Hyper-gateway} handles
-interactions with hyperdrive under the hood, and it runs a local HTTP
-server which accepts HTTP requests. In `hyperdrive.el`, P2P
-interactions consist mostly of, e.g., `GET` requests to download files
-and `PUT` requests to write files to a hyperdrive.
+Anyone with that link can download its contents directly from your
+computer.  There's no need to make an account or rely on a third party
+to pass the data along.  What's more, anyone who has a copy of the
+content in your hyperdrive can serve it to others.  This means that
+your hyperdrive can circulate on the @code{hyper} network even when you're
+offline.
+
+Hyperdrive is single-writer, since only one peer (one machine) can
+make changes to a hyperdrive.  No one can pretend to be you, since
+files in a hyperdrive are cryptographically signed to ensure their
+integrity and authenticity
+
+You can make as many hyperdrives as you like; the only limitation is
+your own disk space.
+
+Hyperdrive is offline-first, since you can view files which
+were previously downloaded even when disconnected from the rest of the
+network.  It's also local-first, since you can connect with peers on a
+LAN even without an internet connection.
+
+Unlike BitTorrent, another protocol for sharing files, hyperdrives are
+mutable.  You can add, update, or delete files inside a hyperdrive,
+and peers will be able to access the latest version of the hyperdrive
+at the same link.  However, old versions of your hyperdrive are never
+lost. @ref{Versioning} for more information.
+
+@menu
+* Sparse replication::
+* Versioning::
+@end menu
 
 @node Sparse replication
-@section Sparse replication
+@subsection Sparse replication
 
 @cindex Sparse replication
 
-@uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is
-sparsely replicated, meaning that peers can download particular files
-from a hyperdrive without having to get the whole drive. This reduces
-both load times and disk usage.
-
-@node Hyperdrive entries
-@section Hyperdrive entries
-
-@cindex Entries
-
-Instead of files and folders, Hyperdrive has entries and entry
-prefixes. It's possible for a ``file'' entry and a ``folder'' entry prefix
-to have the same name, like `@uref{//PUBLIC-KEY/path/to/}` (a
-``directory'') and `@uref{//PUBLIC-KEY/path/to}` (a ``file''). In this
-case, the directory listing for `@uref{//PUBLIC-KEY/path/}` would
-display the `to` entry but not the `to/` entry prefix. Because entry
-prefixes only exist when they prefix an entry, deleting the last
-``file'' in a ``directory'' causes the ``directory'' to disappear as well.
-When a hyperdrive ``file'' or ``directory'' is not found, `hyperdrive.el`
-prompts to go to the parent ``directory.''
+@uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is sparsely replicated, meaning that peers can download
+particular files from a hyperdrive without having to get the whole
+drive. This reduces both load times and disk usage.
 
 @node Versioning
-@section Versioning
+@subsection Versioning
 
 @cindex Versioning
 
@@ -432,12 +467,12 @@ will always attempt to find @code{/foo.org} inside the latest version of that
 hyperdrive.
 
 Whenever you update an entry, the hyperdrive's version number gets
-incremented by 1. This is because the version number tells you how
-many times the hyperdrive has been modified, not how many times a
-particular entry has been modified. For example, let's say that the
-current version of your hyperdrive at @code{hyper://PUBLIC-KEY/} is 50. If
-you add a new entry at @code{hyper://PUBLIC-KEY/bar.org}, the latest version
-of your hyperdrive will become 51.
+incremented by 1. The version number tells you how many times the
+hyperdrive has been modified, not how many times a particular entry
+has been modified. For example, let's say that the current version of
+your hyperdrive at @code{hyper://PUBLIC-KEY/} is 50. If you add a new entry
+at @code{hyper://PUBLIC-KEY/bar.org}, the latest version of your hyperdrive
+will become 51.
 
 Since @code{/bar.org} did not exist before version 51, @code{hyperdrive.el} should
 warn you that nothing exists at
@@ -453,47 +488,62 @@ hyperdrive's latest version will become 53. Now
 version of @code{/bar.org}, while the 51- and 52-versioned URLs will continue
 to point to the original version.
 
-If you delete @code{/bar.org}, @code{hyper://PUBLIC-KEY/bar.org} will not point to
-anything, but the versioned URLs will still work.
+If you delete @code{/bar.org}, @code{hyper://PUBLIC-KEY/bar.org} will no longer
+point to anything, but the versioned URLs will still work.
 
 Since only the current version of a hyperdrive entry can be updated,
 @code{hyperdrive.el} sets the buffer to read-only whenever a version number
 is specified in a hyper URL@.
 
+@node Hyper-gateway
+@section Hyper-gateway
+
+@cindex Hyper-gateway
+
+@uref{https://github.com/RangerMauve/hyper-gateway/, Hyper-gateway} handles interactions with hyperdrive under the hood, and
+it runs a local HTTP server which offers a Fetch API to access the
+Hyperdrive network. In `hyperdrive.el`, P2P interactions consist
+mostly of, e.g., `GET` requests to download files and `PUT` requests
+to write files to a hyperdrive.
+
 @node Naming
 @section Naming
 
 @cindex Naming
-@vindex hyperdrive-default-host-format
 
 Inspired by Marc Stiegler's @uref{http://www.skyhunter.com/marcs/petnames/IntroPetNames.html, An Introduction to Petname Systems},
 @code{hyperdrive.el} names drives in a three different ways:
 
 @table @asis
 @item Public key
-public, globally unique, not human-readable
-@item Petname   
-private, locally unique, human-readable
+public, globally unique, not human-memorable
 @item Nickname  
-public, not necessarily unique, human-readable
+public, not necessarily unique, human-memorable
+@item Petname   
+private, locally unique, human-memorable
 @end table
 
-Each drive may also have the following two attributes:
+If @code{hyperdrive.el} is like a phonebook, then public keys are phone
+numbers, nicknames are how your contacts introduce themselves, and
+petnames are the names you actually write down.
+
+Each drive may also have one or both of the following attributes:
 
 @table @asis
 @item Seed      
 string used to generate public key
 @item DNS domain
-public, globally unique, human-readable
+public, globally unique, human-memorable
 @end table
 
+@vindex hyperdrive-default-host-format
 You can customize the default format for displaying hyperdrives with
 @code{hyperdrive-default-host-format}.
 
 @menu
 * Public keys::
-* Petnames::
 * Nicknames::
+* Petnames::
 * Seeds::
 * DNS domains::
 @end menu
@@ -504,28 +554,15 @@ You can customize the default format for displaying hyperdrives with
 @cindex Public keys
 @findex hyperdrive-new
 
-Public keys are 52-character-long @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated
-from your secret master key and a seed string. The secret key is
-generated for you by @code{hyper-gateway}, and you provide a seed (@ref{Seeds})
-when generating a new drive with @code{hyperdrive-new}.
+Public keys are 52-character-long, @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated
+from your secret master key and a seed string. @code{hyper-gateway} generates
+the secret key for you, and you provide a seed (@ref{Seeds}) when
+generating a new drive with @code{hyperdrive-new}.
 
 Public keys allow for permanent links to hyperdrive content. When
 sharing a hyperdrive with someone else, you will need to copy its full
 URL@. Peers can load your hyperdrive files directly from your computer
 or from other peers who previously loaded those files.
-
-@node Petnames
-@subsection Petnames
-
-@cindex Petnames
-@findex hyperdrive-set-petname
-
-Petnames are locally unique hyperdrive identifiers. You can give a
-petname to any hyperdrive you load, whether you created it or not.
-
-When creating a new drive, your chosen seed (@ref{Seeds}) is used as its
-petname by default. Petnames can be changed with
-@code{hyperdrive-set-petname}, but drives cannot share a petname.
 
 @node Nicknames
 @subsection Nicknames
@@ -541,6 +578,19 @@ Nicknames are stored in each hyperdrive inside
 @code{/.well-known/host-meta.json} under the @code{name} key, as specified in
 RFC6415. You can only assign a nickname to hyperdrives which you have
 created. Nicknames can be changed with @code{hyperdrive-set-nickname}.
+
+@node Petnames
+@subsection Petnames
+
+@cindex Petnames
+@findex hyperdrive-set-petname
+
+Petnames are locally unique hyperdrive identifiers. You can give a
+petname to any hyperdrive you load, whether you created it or not.
+
+When creating a new drive, your chosen seed (@ref{Seeds}) is used as its
+petname by default. Petnames can be changed with
+@code{hyperdrive-set-petname}, but drives cannot share a petname.
 
 @node Seeds
 @subsection Seeds
@@ -566,6 +616,22 @@ reducing the durability of your link. @code{hyperdrive.el} somewhat mitigates
 this issue by remembering which public key the DNS record resolved to,
 so that peers can use the stored public key itself for subsequent
 connections.
+
+@node Hyperdrive entries
+@section Hyperdrive entries
+
+@cindex Entries
+
+Instead of files and folders, Hyperdrive technically has entries and
+entry prefixes. It's possible for a ``file'' entry and a ``folder'' entry
+prefix to have the same name, like `@uref{//PUBLIC-KEY/path/to/}` (a
+``directory'') and `@uref{//PUBLIC-KEY/path/to}` (a ``file''). In this
+case, the directory listing for `@uref{//PUBLIC-KEY/path/}` would
+display the `to` entry but not the `to/` entry prefix. Because entry
+prefixes only exist when they prefix an entry, deleting the last
+``file'' in a ``directory'' causes the ``directory'' to disappear as well.
+When a hyperdrive ``file'' or ``directory'' is not found, `hyperdrive.el`
+prompts to go to the parent ``directory.''
 
 @node Troubleshooting
 @chapter Troubleshooting
