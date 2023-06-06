@@ -414,9 +414,9 @@ The following ENTRY hyperdrive slots are filled:
                  ((map (:exists-until exists-until)) version-entry))
       (when (and exists-until (< exists-until (hyperdrive-entry-version entry)))
         (setf (plist-get version-entry :exists-until) (hyperdrive-entry-version entry)))
-      (let ((previous-entry (hyperdrive-copy-tree entry))
-            (hypothetical-previous-version-number (1- version-last-modified)))
-        (setf (hyperdrive-entry-version previous-entry) hypothetical-previous-version-number)
+      (let* ((hypothetical-previous-version-number (1- version-last-modified))
+             (previous-entry (hyperdrive-make-entry :path (hyperdrive-entry-path entry)
+                                                    :version hypothetical-previous-version-number)))
         (if-let ((previous-version-response
                   (ignore-errors
                     ;; FIXME: Revisit this.
