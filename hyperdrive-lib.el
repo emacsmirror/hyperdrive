@@ -413,6 +413,10 @@ The following ENTRY hyperdrive slots are filled:
 (defun hyperdrive-cache-version-metadata (entry)
   ;; FIXME: Docstring.
   (unless (hyperdrive--entry-directory-p entry)
+    (unless (hyperdrive-entry-version entry)
+      (setf entry (hyperdrive-copy-tree entry t)
+            (hyperdrive-entry-version entry)
+            (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
     ;; TODO: Revisit whether we really want to not do anything for directories.
     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version-last-modified) entry)
                  (metadata-key (cons hyperdrive (hyperdrive-entry-path entry)))
