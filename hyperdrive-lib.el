@@ -430,7 +430,8 @@ The following ENTRY hyperdrive slots are filled:
                     (plist-get version-entry :previous-version)
                     actual-previous-version))
           ;; Requested version doesn't exist.
-          (setf (plist-get (map-elt path-history hypothetical-previous-version-number) :non-existent) t))))))
+          (setf (plist-get (map-elt path-history hypothetical-previous-version-number) :non-existent) t))
+        (setf (gethash (hyperdrive-entry-path entry) metadata-cache) path-history)))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
