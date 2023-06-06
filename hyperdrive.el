@@ -185,7 +185,13 @@ through a shell)."
 (unless hyperdrive-hyperdrives
   (setf hyperdrive-hyperdrives (make-hash-table :test #'equal)))
 
-(defvar hyperdrive-entries-metadata (make-hash-table :test #'equal)
+(define-hash-table-test 'hyperdrive-metadata-equal
+  (lambda (a b)
+    (and (eq (car a) (car b))
+         (equal (cdr a) (cdr b))))
+  #'sxhash-equal)
+
+(defvar hyperdrive-entries-metadata (make-hash-table :test 'hyperdrive-metadata-equal)
   "Hash table mapping hyperdrive public keys to hash tables.
 The hash tables map paths within a hyperdrive to plists of
 metadata.")

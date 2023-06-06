@@ -402,29 +402,35 @@ The following ENTRY hyperdrive slots are filled:
 
 (defun hyperdrive-cache-version-metadata (entry)
   ;; FIXME: Docstring.
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version-last-modified) entry)
-               (metadata-cache (gethash (hyperdrive-public-key hyperdrive) hyperdrive-entries-metadata))
-               (path-history (gethash (hyperdrive-entry-path entry) metadata-cache))
-               (version-entry (map-elt path-history version-last-modified))
-               ((map :exists-until) version-entry))
-    (when (and exists-until (< exists-until (hyperdrive-entry-version entry)))
-      (setf (plist-get version-entry :exists-until) (hyperdrive-entry-version entry)))
-    (let ((previous-entry (hyperdrive-copy-tree entry))
-          (hypothetical-previous-version-number (1- version-last-modified)))
-      (setf (hyperdrive-entry-version previous-entry) hypothetical-previous-version-number)
-      (if-let ((previous-version-response
-                (ignore-errors
-                  ;; FIXME: Revisit this.
-                  (hyperdrive-api 'head (hyperdrive-entry-url previous-entry)
-                    :as 'response :then 'sync))))
-          (pcase-let (((cl-struct plz-response (headers (map ('etag actual-previous-version))))
-                       previous-version-response))
-            (setf (plist-get (map-elt path-history actual-previous-version) :exists-until)
-                  hypothetical-previous-version-number
-                  (plist-get version-entry :previous-version)
-                  actual-previous-version))
-        ;; Requested version doesn't exist.
-        (setf (plist-get (map-elt path-history hypothetical-previous-version-number) :non-existent) t)))))
+  (unless (hyperdrive--entry-directory-p entry)
+    ;; TODO: Revisit whether we really want to not do anything for directories.
+    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version-last-modified) entry)
+                 (metadata-key (cons hyperdrive (hyperdrive-entry-path entry)))
+                 (metadata-cache (or (gethash metadata-key hyperdrive-entries-metadata)
+                                     (setf (gethash metadata-key hyperdrive-entries-metadata)
+                                           (make-hash-table :test 'equal))))
+                 (path-history (gethash (hyperdrive-entry-path entry) metadata-cache))
+                 (version-entry (map-elt path-history version-last-modified))
+                 ((map (:exists-until exists-until)) version-entry))
+      (when (and exists-until (< exists-until (hyperdrive-entry-version entry)))
+        (setf (plist-get version-entry :exists-until) (hyperdrive-entry-version entry)))
+      (let ((previous-entry (hyperdrive-copy-tree entry))
+            (hypothetical-previous-version-number (1- version-last-modified)))
+        (setf (hyperdrive-entry-version previous-entry) hypothetical-previous-version-number)
+        (if-let ((previous-version-response
+                  (ignore-errors
+                    ;; FIXME: Revisit this.
+                    (with-local-quit
+                      (hyperdrive-api 'head (hyperdrive-entry-url previous-entry)
+                        :as 'response :then 'sync)))))
+            (pcase-let (((cl-struct plz-response (headers (map ('etag actual-previous-version))))
+                         previous-version-response))
+              (setf (plist-get (map-elt path-history actual-previous-version) :exists-until)
+                    hypothetical-previous-version-number
+                    (plist-get version-entry :previous-version)
+                    actual-previous-version))
+          ;; Requested version doesn't exist.
+          (setf (plist-get (map-elt path-history hypothetical-previous-version-number) :non-existent) t))))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
