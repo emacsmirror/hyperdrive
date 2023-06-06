@@ -362,43 +362,69 @@ The following ENTRY hyperdrive slots are filled:
             (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
             (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
         (setf (hyperdrive-public-key hyperdrive) public-key)))
-    (hyperdrive-cache-entry-metadata entry)
+    (hyperdrive-cache-version-metadata entry)
     entry))
 
-(defun hyperdrive-cache-entry-metadata (entry)
-  "Add ENTRY's metadata to `hyperdrive-entries-metadata'."
-  (cl-labels
-      ((merge-metadata
-        (a b) (map-merge-with
-               'plist (lambda (a b)
-                        (sort (seq-uniq (seq-union a b)) #'<))
-               a b))
-       ;; TODO: Consider whether having the :created versions also in
-       ;; the :modified list makes sense.
-       (entry-metadata
-        (entry) (pcase-let (((cl-struct hyperdrive-entry version-last-modified version) entry))
-                  (list :created (unless
-                                     ;; FIXME: This recursively tries to fetch all versions of the hyperdrive and exhausts the call stack.  Oops.
-                                     (hyperdrive-entry-previous entry)
+;; (defun hyperdrive-cache-entry-metadata (entry)
+;;   "Add ENTRY's metadata to `hyperdrive-entries-metadata'."
+;;   (cl-labels
+;;       ((merge-metadata
+;;         (a b) (map-merge-with
+;;                'plist (lambda (a b)
+;;                         (sort (seq-uniq (seq-union a b)) #'<))
+;;                a b))
+;;        ;; TODO: Consider whether having the :created versions also in
+;;        ;; the :modified list makes sense.
+;;        (entry-metadata
+;;         (entry) (pcase-let (((cl-struct hyperdrive-entry version-last-modified version) entry))
+;;                   (list :created (unless
+;;                                      ;; FIXME: This recursively tries to fetch all versions of the hyperdrive and exhausts the call stack.  Oops.
+;;                                      (hyperdrive-entry-previous entry)
 
-                                   ;; If entry has no previous version,
-                                   ;; it was created at this one.
-                                   (list version-last-modified))
-                        :modified (list version-last-modified))))
-       (add-entry-metadata
-        (entry path-cache)
-        (setf (gethash (hyperdrive-entry-path entry) path-cache)
-              (if-let ((cached-entry (gethash (hyperdrive-entry-path entry) path-cache)))
-                  (merge-metadata cached-entry (entry-metadata entry))
-                (entry-metadata entry)))))
-    (if-let* ((hyperdrive (hyperdrive-entry-hyperdrive entry))
-              (hyperdrive-metadata-entry (gethash (hyperdrive-public-key hyperdrive)
-                                                  hyperdrive-entries-metadata)))
-        ;; Hyperdrive entry present: add to it.
-        (add-entry-metadata entry hyperdrive-metadata-entry)
-      (add-entry-metadata
-       entry (setf (gethash (hyperdrive-public-key hyperdrive) hyperdrive-entries-metadata)
-                   (make-hash-table :test #'equal))))))
+;;                                    ;; If entry has no previous version,
+;;                                    ;; it was created at this one.
+;;                                    (list version-last-modified))
+;;                         :modified (list version-last-modified))))
+;;        (add-entry-metadata
+;;         (entry path-cache)
+;;         (setf (gethash (hyperdrive-entry-path entry) path-cache)
+;;               (if-let ((cached-entry (gethash (hyperdrive-entry-path entry) path-cache)))
+;;                   (merge-metadata cached-entry (entry-metadata entry))
+;;                 (entry-metadata entry)))))
+;;     (if-let* ((hyperdrive (hyperdrive-entry-hyperdrive entry))
+;;               (hyperdrive-metadata-entry (gethash (hyperdrive-public-key hyperdrive)
+;;                                                   hyperdrive-entries-metadata)))
+;;         ;; Hyperdrive entry present: add to it.
+;;         (add-entry-metadata entry hyperdrive-metadata-entry)
+;;       (add-entry-metadata
+;;        entry (setf (gethash (hyperdrive-public-key hyperdrive) hyperdrive-entries-metadata)
+;;                    (make-hash-table :test #'equal))))))
+
+(defun hyperdrive-cache-version-metadata (entry)
+  ;; FIXME: Docstring.
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version-last-modified) entry)
+               (metadata-cache (gethash (hyperdrive-public-key hyperdrive) hyperdrive-entries-metadata))
+               (path-history (gethash (hyperdrive-entry-path entry) metadata-cache))
+               (version-entry (map-elt path-history version-last-modified))
+               ((map :exists-until) version-entry))
+    (when (and exists-until (< exists-until (hyperdrive-entry-version entry)))
+      (setf (plist-get version-entry :exists-until) (hyperdrive-entry-version entry)))
+    (let ((previous-entry (hyperdrive-copy-tree entry))
+          (hypothetical-previous-version-number (1- version-last-modified)))
+      (setf (hyperdrive-entry-version previous-entry) hypothetical-previous-version-number)
+      (if-let ((previous-version-response
+                (ignore-errors
+                  ;; FIXME: Revisit this.
+                  (hyperdrive-api 'head (hyperdrive-entry-url previous-entry)
+                    :as 'response :then 'sync))))
+          (pcase-let (((cl-struct plz-response (headers (map ('etag actual-previous-version))))
+                       previous-version-response))
+            (setf (plist-get (map-elt path-history actual-previous-version) :exists-until)
+                  hypothetical-previous-version-number
+                  (plist-get version-entry :previous-version)
+                  actual-previous-version))
+        ;; Requested version doesn't exist.
+        (setf (plist-get (map-elt path-history hypothetical-previous-version-number) :non-existent) t)))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
