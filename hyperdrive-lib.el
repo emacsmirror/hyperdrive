@@ -71,6 +71,7 @@ when VERSION is nil, the latest version of the hyperdrive.")
   ;; TODO: Where to invalidate old domains?
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
   (metadata nil :documentation "Public metadata alist.")
+  (latest-version nil :documentation "Latest known version of hyperdrive.")
   (etc nil :documentation "Alist of extra data."))
 
 (defun hyperdrive-url (hyperdrive)
@@ -362,6 +363,15 @@ The following ENTRY hyperdrive slots are filled:
             (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
             (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
         (setf (hyperdrive-public-key hyperdrive) public-key)))
+    (setf (hyperdrive-latest-version hyperdrive)
+          ;; FIXME: This is temporary; we don't want to make this extra request every time.
+          (alist-get 'etag (plz-response-headers
+                            (with-local-quit
+                              (hyperdrive-api
+                                'head (hyperdrive-entry-url
+                                       (hyperdrive-make-entry
+                                        :hyperdrive hyperdrive :path "/"))
+                                :as 'response :else #'ignore)))))
     (hyperdrive-cache-version-metadata entry)
     entry))
 
