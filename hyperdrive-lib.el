@@ -54,8 +54,8 @@
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
   (version nil :documentation "Hyperdrive version specified in entry's URL.")
-  (version-last-modified nil :documentation
-                         "Version of hyperdrive when current entry at VERSION was last
+  (version-range-start nil :documentation
+                       "Version of hyperdrive when current entry at VERSION was last
 modified. For directory entries, this will always be VERSION, or
 when VERSION is nil, the latest version of the hyperdrive.")
   (type nil :documentation "MIME type of the entry.")
@@ -271,7 +271,7 @@ empty public-key slot."
 
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
-  (hyperdrive-entry-at (1- (hyperdrive-entry-version-last-modified entry)) entry))
+  (hyperdrive-entry-at (1- (hyperdrive-entry-version-range-start entry)) entry))
 
 (defun hyperdrive-entry-at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
@@ -327,7 +327,7 @@ the given `plz-queue'"
 
 The following ENTRY slots are filled:
 - type
-- version-last-modified
+- version-range-start
 - modified
 - size
 - hyperdrive (from persisted value if it exists)
@@ -350,7 +350,7 @@ The following ENTRY hyperdrive slots are filled:
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
           (hyperdrive-entry-modified entry) last-modified
-          (hyperdrive-entry-version-last-modified entry) (string-to-number etag))
+          (hyperdrive-entry-version-range-start entry) (string-to-number etag))
     (when domain
       (if persisted-hyperdrive
           ;; The previous call to hyperdrive-entry-url did not retrieve the
