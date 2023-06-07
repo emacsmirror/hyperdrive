@@ -139,7 +139,7 @@ generated from PATH. When ENCODE is non-`nil', encode PATH."
 (defvar hyperdrive-hyperdrives)
 (defvar hyperdrive-default-host-format)
 (defvar hyperdrive-honor-auto-mode-alist)
-(defvar hyperdrive-entries-metadata)
+(defvar hyperdrive-version-ranges)
 
 (eval-and-compile
   (defconst hyperdrive--hyper-prefix "hyper://"
@@ -373,7 +373,7 @@ The following ENTRY hyperdrive slots are filled:
                                         (hyperdrive-make-entry
                                          :hyperdrive hyperdrive :path "/"))
                                  :as 'response :else #'ignore))))))
-    (hyperdrive-cache-version-metadata entry)
+    (hyperdrive-update-version-ranges entry)
     entry))
 
 ;; (defun hyperdrive-cache-entry-metadata (entry)
@@ -411,43 +411,43 @@ The following ENTRY hyperdrive slots are filled:
 ;;        entry (setf (gethash (hyperdrive-public-key hyperdrive) hyperdrive-entries-metadata)
 ;;                    (make-hash-table :test #'equal))))))
 
-(defun hyperdrive-cache-version-metadata (entry)
+(defun hyperdrive-update-version-ranges (entry)
   ;; FIXME: Docstring.
   (unless (hyperdrive--entry-directory-p entry)
     (unless (hyperdrive-entry-version entry)
       (setf entry (hyperdrive-copy-tree entry t)
             (hyperdrive-entry-version entry) (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
     ;; TODO: Revisit whether we really want to not do anything for directories.
-    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version-last-modified) entry)
-                 (metadata-key (cons hyperdrive (hyperdrive-entry-path entry)))
-                 (metadata-cache (or (gethash metadata-key hyperdrive-entries-metadata)
-                                     (setf (gethash metadata-key hyperdrive-entries-metadata)
-                                           (make-hash-table :test 'equal))))
-                 (path-history (gethash (hyperdrive-entry-path entry) metadata-cache))
-                 (version-entry (map-elt path-history version-last-modified))
-                 ((map (:exists-until exists-until)) version-entry))
-      (when (or (not exists-until)
-                (< exists-until (hyperdrive-entry-version entry)))
-        (setf (plist-get version-entry :exists-until) (hyperdrive-entry-version entry)
-              (map-elt path-history version-last-modified) version-entry))
-      (let* ((hypothetical-previous-version-number (1- version-last-modified))
-             (previous-entry (hyperdrive-make-entry :path (hyperdrive-entry-path entry)
-                                                    :version hypothetical-previous-version-number)))
+    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version-range-start range-start) path) entry)
+                 (ranges-key (cons hyperdrive path))
+                 (entry-ranges (gethash ranges-key hyperdrive-version-ranges))
+                 (current-range (map-elt entry-ranges range-start))
+                 ((map (:exists-p exists-p) (:range-end range-end)) current-range))
+      (when (or (not range-end)
+                (< range-end (hyperdrive-entry-version entry)))
+        (setf (plist-get current-range :range-end) (hyperdrive-entry-version entry)
+              (map-elt entry-ranges range-start) current-range))
+      (unless exists-p
+        (setf (plist-get current-range :exists-p) t
+              (map-elt entry-ranges range-start) current-range))
+      (let* ((previous-range-end (1- range-start))
+             (previous-entry (hyperdrive-make-entry :path path :version previous-range-end)))
         (if-let ((previous-version-response
                   (ignore-errors
                     ;; FIXME: Revisit this.
                     (with-local-quit
                       (hyperdrive-api 'head (hyperdrive-entry-url previous-entry)
                         :as 'response :then 'sync)))))
-            (pcase-let (((cl-struct plz-response (headers (map ('etag actual-previous-version))))
+            (pcase-let (((cl-struct plz-response (headers (map ('etag previous-range-start))))
                          previous-version-response))
-              (setf (plist-get (map-elt path-history actual-previous-version) :exists-until)
-                    hypothetical-previous-version-number
-                    (plist-get (map-elt path-history version-last-modified) :previous-version)
-                    actual-previous-version))
+              (setf
+               (plist-get (map-elt entry-ranges previous-range-start) :range-end) previous-range-end
+               (plist-get (map-elt entry-ranges previous-range-start) :exists-p) t))
           ;; Requested version doesn't exist.
-          (setf (plist-get (map-elt path-history hypothetical-previous-version-number) :non-existent) t))
-        (setf (gethash (hyperdrive-entry-path entry) metadata-cache) path-history)))))
+          ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
+          (setf (plist-get (map-elt entry-ranges previous-range-end) :range-end) previous-range-end)
+          (setf (plist-get (map-elt entry-ranges previous-range-end) :exists-p) nil))
+        (setf (gethash ranges-key hyperdrive-version-ranges) entry-ranges)))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
