@@ -415,8 +415,7 @@ The following ENTRY hyperdrive slots are filled:
   (unless (hyperdrive--entry-directory-p entry)
     (unless (hyperdrive-entry-version entry)
       (setf entry (hyperdrive-copy-tree entry t)
-            (hyperdrive-entry-version entry)
-            (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
+            (hyperdrive-entry-version entry) (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
     ;; TODO: Revisit whether we really want to not do anything for directories.
     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version-last-modified) entry)
                  (metadata-key (cons hyperdrive (hyperdrive-entry-path entry)))
@@ -426,7 +425,8 @@ The following ENTRY hyperdrive slots are filled:
                  (path-history (gethash (hyperdrive-entry-path entry) metadata-cache))
                  (version-entry (map-elt path-history version-last-modified))
                  ((map (:exists-until exists-until)) version-entry))
-      (when (and exists-until (< exists-until (hyperdrive-entry-version entry)))
+      (when (or (not exists-until)
+                (< exists-until (hyperdrive-entry-version entry)))
         (setf (plist-get version-entry :exists-until) (hyperdrive-entry-version entry)))
       (let* ((hypothetical-previous-version-number (1- version-last-modified))
              (previous-entry (hyperdrive-make-entry :path (hyperdrive-entry-path entry)
@@ -441,7 +441,7 @@ The following ENTRY hyperdrive slots are filled:
                          previous-version-response))
               (setf (plist-get (map-elt path-history actual-previous-version) :exists-until)
                     hypothetical-previous-version-number
-                    (plist-get version-entry :previous-version)
+                    (plist-get (map-elt path-history version-last-modified) :previous-version)
                     actual-previous-version))
           ;; Requested version doesn't exist.
           (setf (plist-get (map-elt path-history hypothetical-previous-version-number) :non-existent) t))
