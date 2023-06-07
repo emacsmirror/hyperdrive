@@ -365,13 +365,14 @@ The following ENTRY hyperdrive slots are filled:
         (setf (hyperdrive-public-key hyperdrive) public-key)))
     (setf (hyperdrive-latest-version hyperdrive)
           ;; FIXME: This is temporary; we don't want to make this extra request every time.
-          (alist-get 'etag (plz-response-headers
-                            (with-local-quit
-                              (hyperdrive-api
-                                'head (hyperdrive-entry-url
-                                       (hyperdrive-make-entry
-                                        :hyperdrive hyperdrive :path "/"))
-                                :as 'response :else #'ignore)))))
+          (string-to-number
+           (alist-get 'etag (plz-response-headers
+                             (with-local-quit
+                               (hyperdrive-api
+                                 'head (hyperdrive-entry-url
+                                        (hyperdrive-make-entry
+                                         :hyperdrive hyperdrive :path "/"))
+                                 :as 'response :else #'ignore))))))
     (hyperdrive-cache-version-metadata entry)
     entry))
 
