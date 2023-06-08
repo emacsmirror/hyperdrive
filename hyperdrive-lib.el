@@ -434,15 +434,17 @@ The following ENTRY hyperdrive slots are filled:
         (setf (plist-get current-range :exists-p) t
               (map-elt entry-ranges range-start) current-range))
       (let* ((previous-range-end (1- range-start))
-             (previous-entry (hyperdrive-make-entry :path path :version previous-range-end)))
+             (previous-entry (hyperdrive-make-entry :hyperdrive hyperdrive
+                                                    :path path
+                                                    :version previous-range-end)))
         (if-let ((previous-version-response
                   (ignore-errors
                     ;; FIXME: Revisit this.
                     (with-local-quit
                       (hyperdrive-api 'head (hyperdrive-entry-url previous-entry)
                         :as 'response :then 'sync)))))
-            (pcase-let (((cl-struct plz-response (headers (map ('etag previous-range-start))))
-                         previous-version-response))
+            (pcase-let* (((cl-struct plz-response headers) previous-version-response)
+                         (previous-range-start (string-to-number (map-elt headers 'etag))))
               (setf
                (plist-get (map-elt entry-ranges previous-range-start) :range-end) previous-range-end
                (plist-get (map-elt entry-ranges previous-range-start) :exists-p) t))
