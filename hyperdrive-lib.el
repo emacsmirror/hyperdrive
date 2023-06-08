@@ -274,7 +274,10 @@ empty public-key slot."
 
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
-  (hyperdrive-entry-at (1- (hyperdrive-entry-version-range-start entry)) entry))
+  (when-let ((previous-entry (hyperdrive-entry-at (1- (hyperdrive-entry-version-range-start entry)) entry)))
+    ;; Entry version is currently its range end, but it should be its version range start.
+    (setf (hyperdrive-entry-version previous-entry) (hyperdrive-entry-version-range-start previous-entry))
+    previous-entry))
 
 (defun hyperdrive-entry-at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
