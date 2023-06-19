@@ -270,6 +270,9 @@ empty public-key slot."
 
 (defun hyperdrive-entry-version-range-start (entry)
   "Return the range start of ENTRY's version, or nil."
+  (unless (hyperdrive-entry-version entry)
+    (setf entry (hyperdrive-copy-tree entry t)
+          (hyperdrive-entry-version entry) (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
                (entry-key (cons hyperdrive path))
                (ranges (gethash entry-key hyperdrive-version-ranges))
