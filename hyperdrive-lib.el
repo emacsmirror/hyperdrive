@@ -326,7 +326,9 @@ the given `plz-queue'"
          :as 'response
          :then (lambda (response)
                  (funcall then (hyperdrive--fill entry (plz-response-headers response))))
-         :else else
+         :else (lambda (&rest args)
+                 (hyperdrive-update-version-ranges entry :existsp nil)
+                 (apply else args))
          :noquery t))))
 
 (defun hyperdrive--fill (entry headers)
@@ -417,7 +419,7 @@ The following ENTRY hyperdrive slots are filled:
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
-(defun hyperdrive-update-version-ranges (entry)
+(cl-defun hyperdrive-update-version-ranges (entry &key (existsp t))
   ;; FIXME: Docstring.
   (unless (hyperdrive--entry-directory-p entry)
     (unless (hyperdrive-entry-version entry)
@@ -428,14 +430,13 @@ The following ENTRY hyperdrive slots are filled:
                  (ranges-key (cons hyperdrive path))
                  (entry-ranges (gethash ranges-key hyperdrive-version-ranges))
                  (current-range (map-elt entry-ranges range-start))
-                 ((map (:exists-p exists-p) (:range-end range-end)) current-range))
+                 ((map (:range-end range-end)) current-range))
       (when (or (not range-end)
                 (< range-end (hyperdrive-entry-version entry)))
         (setf (plist-get current-range :range-end) (hyperdrive-entry-version entry)
               (map-elt entry-ranges range-start) current-range))
-      (unless exists-p
-        (setf (plist-get current-range :exists-p) t
-              (map-elt entry-ranges range-start) current-range))
+      (setf (plist-get current-range :exists-p) existsp
+            (map-elt entry-ranges range-start) current-range)
       ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
       (setf (gethash ranges-key hyperdrive-version-ranges) entry-ranges))))
 
