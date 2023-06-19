@@ -313,14 +313,20 @@ filled entry; or if request fails, call ELSE (which is passed to
 the given `plz-queue'"
   (declare (indent defun))
   (pcase then
-    ;; TODO: Handle 404s for sync requests?
-    ('sync (hyperdrive--fill entry
-                             (plz-response-headers
-                              (with-local-quit
-                                (hyperdrive-api 'head (hyperdrive-entry-url entry)
-                                  :as 'response
-                                  :then 'sync
-                                  :noquery t)))))
+    ('sync (condition-case err
+               (hyperdrive--fill entry
+                                 (plz-response-headers
+                                  (with-local-quit
+                                    (hyperdrive-api 'head (hyperdrive-entry-url entry)
+                                      :as 'response
+                                      :then 'sync
+                                      :noquery t))))
+             (plz-http-error
+              (pcase (plz-response-status (plz-error-response (caddr err)))
+                (404 ;; Entry doesn't exist at this version: update range data.
+                 (hyperdrive-update-version-ranges entry :existsp nil)))
+              ;; Re-signal error for, e.g. `hyperdrive-entry-at'.
+              (signal (car err) (cdr err)))))
     (_ (hyperdrive-api 'head (hyperdrive-entry-url entry)
          :queue queue
          :as 'response
