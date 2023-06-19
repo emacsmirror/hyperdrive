@@ -435,26 +435,8 @@ The following ENTRY hyperdrive slots are filled:
       (unless exists-p
         (setf (plist-get current-range :exists-p) t
               (map-elt entry-ranges range-start) current-range))
-      (let* ((previous-range-end (1- range-start))
-             (previous-entry (hyperdrive-make-entry :hyperdrive hyperdrive
-                                                    :path path
-                                                    :version previous-range-end)))
-        (if-let ((previous-version-response
-                  (ignore-errors
-                    ;; FIXME: Revisit this.
-                    (with-local-quit
-                      (hyperdrive-api 'head (hyperdrive-entry-url previous-entry)
-                        :as 'response :then 'sync)))))
-            (pcase-let* (((cl-struct plz-response headers) previous-version-response)
-                         (previous-range-start (string-to-number (map-elt headers 'etag))))
-              (setf
-               (plist-get (map-elt entry-ranges previous-range-start) :range-end) previous-range-end
-               (plist-get (map-elt entry-ranges previous-range-start) :exists-p) t))
-          ;; Requested version doesn't exist.
-          ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
-          (setf (plist-get (map-elt entry-ranges previous-range-end) :range-end) previous-range-end)
-          (setf (plist-get (map-elt entry-ranges previous-range-end) :exists-p) nil))
-        (setf (gethash ranges-key hyperdrive-version-ranges) entry-ranges)))))
+      ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
+      (setf (gethash ranges-key hyperdrive-version-ranges) entry-ranges))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
