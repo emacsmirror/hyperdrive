@@ -414,6 +414,8 @@ The following ENTRY hyperdrive slots are filled:
 ;;        entry (setf (gethash (hyperdrive-public-key hyperdrive) hyperdrive-entries-metadata)
 ;;                    (make-hash-table :test #'equal))))))
 
+;; TODO: Consider using symbol-macrolet to simplify place access.
+
 (defun hyperdrive-update-version-ranges (entry)
   ;; FIXME: Docstring.
   (unless (hyperdrive--entry-directory-p entry)
