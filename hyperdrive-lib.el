@@ -384,6 +384,18 @@ The following ENTRY hyperdrive slots are filled:
     (hyperdrive-update-version-ranges entry (string-to-number etag))
     entry))
 
+(defun hyperdrive--latest-version (hyperdrive)
+  "Return the latest version number of HYPERDRIVE.
+Also sets the corresponding slot in HYPERDRIVE."
+  (pcase-let (((cl-struct plz-response (headers (map etag)))
+               (with-local-quit
+                 (hyperdrive-api
+                   'head (hyperdrive-entry-url
+                          (hyperdrive-make-entry
+                           :hyperdrive hyperdrive :path "/"))
+                   :as 'response))))
+    (setf (hyperdrive-latest-version hyperdrive) (string-to-number etag))))
+
 ;; (defun hyperdrive-cache-entry-metadata (entry)
 ;;   "Add ENTRY's metadata to `hyperdrive-entries-metadata'."
 ;;   (cl-labels
