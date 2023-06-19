@@ -313,6 +313,7 @@ filled entry; or if request fails, call ELSE (which is passed to
 the given `plz-queue'"
   (declare (indent defun))
   (pcase then
+    ;; TODO: Handle 404s for sync requests?
     ('sync (hyperdrive--fill entry
                              (plz-response-headers
                               (with-local-quit
