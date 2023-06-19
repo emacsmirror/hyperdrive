@@ -467,6 +467,7 @@ HYPERDRIVE's public metadata file."
   "Delete ENTRY, then call THEN.
 Call ELSE if request fails."
   (declare (indent defun))
+  ;; TODO: update-version-ranges here.
   (hyperdrive-api 'delete (hyperdrive-entry-url entry)
     :then then :else else))
 
