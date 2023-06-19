@@ -27,6 +27,7 @@
 (require 'cl-lib)
 (require 'map)
 (require 'pcase)
+(require 'seq)
 (require 'url-util)
 
 (require 'compat)
@@ -54,10 +55,6 @@
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
   (version nil :documentation "Hyperdrive version specified in entry's URL.")
-  (version-last-modified nil :documentation
-                         "Version of hyperdrive when current entry at VERSION was last
-modified. For directory entries, this will always be VERSION, or
-when VERSION is nil, the latest version of the hyperdrive.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
@@ -70,6 +67,7 @@ when VERSION is nil, the latest version of the hyperdrive.")
   ;; TODO: Where to invalidate old domains?
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
   (metadata nil :documentation "Public metadata alist.")
+  (latest-version nil :documentation "Latest known version of hyperdrive.")
   (etc nil :documentation "Alist of extra data."))
 
 (defun hyperdrive-url (hyperdrive)
@@ -137,6 +135,7 @@ generated from PATH. When ENCODE is non-`nil', encode PATH."
 (defvar hyperdrive-hyperdrives)
 (defvar hyperdrive-default-host-format)
 (defvar hyperdrive-honor-auto-mode-alist)
+(defvar hyperdrive-version-ranges)
 
 (eval-and-compile
   (defconst hyperdrive--hyper-prefix "hyper://"
@@ -269,9 +268,26 @@ empty public-key slot."
   "Return ENTRY at its hyperdrive's latest version, or nil."
   (hyperdrive-entry-at nil entry))
 
+(defun hyperdrive-entry-version-range-start (entry)
+  "Return the range start of ENTRY's version, or nil."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
+               (entry-key (cons hyperdrive path))
+               (ranges (gethash entry-key hyperdrive-version-ranges))
+               (range (if version
+                          (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
+                                        (and (<= start version)
+                                             (or (not range-end)
+                                                 (>= range-end version))))
+                                      ranges)
+                        (car (last ranges)))))
+    (car range)))
+
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
-  (hyperdrive-entry-at (1- (hyperdrive-entry-version-last-modified entry)) entry))
+  (when-let ((previous-entry (hyperdrive-entry-at (1- (hyperdrive-entry-version-range-start entry)) entry)))
+    ;; Entry version is currently its range end, but it should be its version range start.
+    (setf (hyperdrive-entry-version previous-entry) (hyperdrive-entry-version-range-start previous-entry))
+    previous-entry))
 
 (defun hyperdrive-entry-at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
@@ -307,19 +323,28 @@ filled entry; or if request fails, call ELSE (which is passed to
 the given `plz-queue'"
   (declare (indent defun))
   (pcase then
-    ('sync (hyperdrive--fill entry
-                             (plz-response-headers
-                              (with-local-quit
-                                (hyperdrive-api 'head (hyperdrive-entry-url entry)
-                                  :as 'response
-                                  :then 'sync
-                                  :noquery t)))))
+    ('sync (condition-case err
+               (hyperdrive--fill entry
+                                 (plz-response-headers
+                                  (with-local-quit
+                                    (hyperdrive-api 'head (hyperdrive-entry-url entry)
+                                      :as 'response
+                                      :then 'sync
+                                      :noquery t))))
+             (plz-http-error
+              (pcase (plz-response-status (plz-error-response (caddr err)))
+                (404 ;; Entry doesn't exist at this version: update range data.
+                 (hyperdrive-update-version-ranges entry (hyperdrive-entry-version entry) :existsp nil)))
+              ;; Re-signal error for, e.g. `hyperdrive-entry-at'.
+              (signal (car err) (cdr err)))))
     (_ (hyperdrive-api 'head (hyperdrive-entry-url entry)
          :queue queue
          :as 'response
          :then (lambda (response)
                  (funcall then (hyperdrive--fill entry (plz-response-headers response))))
-         :else else
+         :else (lambda (&rest args)
+                 (hyperdrive-update-version-ranges entry (hyperdrive-entry-version entry) :existsp nil)
+                 (apply else args))
          :noquery t))))
 
 (defun hyperdrive--fill (entry headers)
@@ -327,7 +352,6 @@ the given `plz-queue'"
 
 The following ENTRY slots are filled:
 - type
-- version-last-modified
 - modified
 - size
 - hyperdrive (from persisted value if it exists)
@@ -349,8 +373,8 @@ The following ENTRY hyperdrive slots are filled:
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
-          (hyperdrive-entry-modified entry) last-modified
-          (hyperdrive-entry-version-last-modified entry) (string-to-number etag))
+          ;; TODO: Rename slot to "mtime" to avoid confusion.
+          (hyperdrive-entry-modified entry) last-modified)
     (when domain
       (if persisted-hyperdrive
           ;; The previous call to hyperdrive-entry-url did not retrieve the
@@ -359,7 +383,76 @@ The following ENTRY hyperdrive slots are filled:
             (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
             (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
         (setf (hyperdrive-public-key hyperdrive) public-key)))
+    (hyperdrive-update-version-ranges entry (string-to-number etag))
     entry))
+
+(defun hyperdrive--latest-version (hyperdrive)
+  "Return the latest version number of HYPERDRIVE.
+Also sets the corresponding slot in HYPERDRIVE."
+  (pcase-let (((cl-struct plz-response (headers (map etag)))
+               (with-local-quit
+                 (hyperdrive-api
+                   'head (hyperdrive-entry-url
+                          (hyperdrive-make-entry
+                           :hyperdrive hyperdrive :path "/"))
+                   :as 'response))))
+    (setf (hyperdrive-latest-version hyperdrive) (string-to-number etag))))
+
+;; (defun hyperdrive-cache-entry-metadata (entry)
+;;   "Add ENTRY's metadata to `hyperdrive-entries-metadata'."
+;;   (cl-labels
+;;       ((merge-metadata
+;;         (a b) (map-merge-with
+;;                'plist (lambda (a b)
+;;                         (sort (seq-uniq (seq-union a b)) #'<))
+;;                a b))
+;;        ;; TODO: Consider whether having the :created versions also in
+;;        ;; the :modified list makes sense.
+;;        (entry-metadata
+;;         (entry) (pcase-let (((cl-struct hyperdrive-entry version-last-modified version) entry))
+;;                   (list :created (unless
+;;                                      ;; FIXME: This recursively tries to fetch all versions of the hyperdrive and exhausts the call stack.  Oops.
+;;                                      (hyperdrive-entry-previous entry)
+
+;;                                    ;; If entry has no previous version,
+;;                                    ;; it was created at this one.
+;;                                    (list version-last-modified))
+;;                         :modified (list version-last-modified))))
+;;        (add-entry-metadata
+;;         (entry path-cache)
+;;         (setf (gethash (hyperdrive-entry-path entry) path-cache)
+;;               (if-let ((cached-entry (gethash (hyperdrive-entry-path entry) path-cache)))
+;;                   (merge-metadata cached-entry (entry-metadata entry))
+;;                 (entry-metadata entry)))))
+;;     (if-let* ((hyperdrive (hyperdrive-entry-hyperdrive entry))
+;;               (hyperdrive-metadata-entry (gethash (hyperdrive-public-key hyperdrive)
+;;                                                   hyperdrive-entries-metadata)))
+;;         ;; Hyperdrive entry present: add to it.
+;;         (add-entry-metadata entry hyperdrive-metadata-entry)
+;;       (add-entry-metadata
+;;        entry (setf (gethash (hyperdrive-public-key hyperdrive) hyperdrive-entries-metadata)
+;;                    (make-hash-table :test #'equal))))))
+
+;; TODO: Consider using symbol-macrolet to simplify place access.
+
+(cl-defun hyperdrive-update-version-ranges (entry range-start &key (existsp t))
+  ;; FIXME: Docstring.
+  (unless (hyperdrive--entry-directory-p entry)
+    ;; TODO: Revisit whether we really want to not do anything for directories.
+    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
+                 (ranges-key (cons hyperdrive path))
+                 (entry-ranges (gethash ranges-key hyperdrive-version-ranges))
+                 (current-range (map-elt entry-ranges range-start))
+                 ((map (:range-end range-end)) current-range))
+      (when (or (not range-end)
+                (< range-end (hyperdrive-entry-version entry)))
+        (setf (plist-get current-range :range-end) (hyperdrive-entry-version entry)
+              (map-elt entry-ranges range-start) current-range))
+      (setf (plist-get current-range :exists-p) existsp
+            (map-elt entry-ranges range-start) current-range
+            entry-ranges (cl-sort entry-ranges #'< :key #'car))
+      ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
+      (setf (gethash ranges-key hyperdrive-version-ranges) entry-ranges))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
@@ -389,6 +482,7 @@ HYPERDRIVE's public metadata file."
   "Delete ENTRY, then call THEN.
 Call ELSE if request fails."
   (declare (indent defun))
+  ;; TODO: update-version-ranges here.
   (hyperdrive-api 'delete (hyperdrive-entry-url entry)
     :then then :else else))
 

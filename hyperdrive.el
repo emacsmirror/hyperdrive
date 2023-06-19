@@ -7,7 +7,7 @@
 ;; Maintainer: Joseph Turner <joseph@ushin.org>
 ;; Created: 2022
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.3.2") (plz "0.6-pre") (persist "0.5"))
+;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.4.0") (plz "0.6-pre") (persist "0.5"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
@@ -39,6 +39,9 @@
 ;; [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for
 ;; talking to the hypercore network (installation instructions -
 ;; <https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway>).
+
+;; TODO: When requiring Emacs 28+, consider using symbol shorthands to
+;; reduce how many times we have to type "hyperdrive".
 
 ;;; Code:
 
@@ -184,6 +187,17 @@ through a shell)."
                 hyperdrive-persist-location)
 (unless hyperdrive-hyperdrives
   (setf hyperdrive-hyperdrives (make-hash-table :test #'equal)))
+
+(define-hash-table-test 'hyperdrive-version-ranges-equal
+  (lambda (a b)
+    (and (eq (car a) (car b))
+         (equal (cdr a) (cdr b))))
+  #'sxhash-equal)
+
+(defvar hyperdrive-version-ranges (make-hash-table :test 'hyperdrive-version-ranges-equal)
+  "Hash table mapping (cons hyperdrive-public-keys entry-path) to an
+alist mapping version range starts to plists with `:exists-p' and
+`:range-end' keys.")
 
 ;; TODO: Flesh out the persist hook.
 ;; (defvar hyperdrive-persist-hook nil
