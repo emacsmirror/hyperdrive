@@ -55,10 +55,6 @@
   (modified nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
   (version nil :documentation "Hyperdrive version specified in entry's URL.")
-  (version-range-start nil :documentation
-                       "Version of hyperdrive when current entry at VERSION was last
-modified. For directory entries, this will always be VERSION, or
-when VERSION is nil, the latest version of the hyperdrive.")
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
@@ -272,6 +268,17 @@ empty public-key slot."
   "Return ENTRY at its hyperdrive's latest version, or nil."
   (hyperdrive-entry-at nil entry))
 
+(defun hyperdrive-entry-version-range-start (entry)
+  "Return the range start of ENTRY's version, or nil."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
+               (entry-key (cons hyperdrive path))
+               (ranges (gethash entry-key hyperdrive-version-ranges))
+               (range (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
+                                    (and (<= start version)
+                                         (>= range-end version)))
+                                  ranges)))
+    (car range)))
+
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
   (when-let ((previous-entry (hyperdrive-entry-at (1- (hyperdrive-entry-version-range-start entry)) entry)))
@@ -342,7 +349,6 @@ the given `plz-queue'"
 
 The following ENTRY slots are filled:
 - type
-- version-range-start
 - modified
 - size
 - hyperdrive (from persisted value if it exists)
@@ -365,8 +371,7 @@ The following ENTRY hyperdrive slots are filled:
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
           ;; TODO: Rename slot to "mtime" to avoid confusion.
-          (hyperdrive-entry-modified entry) last-modified
-          (hyperdrive-entry-version-range-start entry) (string-to-number etag))
+          (hyperdrive-entry-modified entry) last-modified)
     (when domain
       (if persisted-hyperdrive
           ;; The previous call to hyperdrive-entry-url did not retrieve the
@@ -385,7 +390,7 @@ The following ENTRY hyperdrive slots are filled:
                                         (hyperdrive-make-entry
                                          :hyperdrive hyperdrive :path "/"))
                                  :as 'response :else #'ignore))))))
-    (hyperdrive-update-version-ranges entry)
+    (hyperdrive-update-version-ranges entry (string-to-number etag))
     entry))
 
 ;; (defun hyperdrive-cache-entry-metadata (entry)
@@ -425,14 +430,14 @@ The following ENTRY hyperdrive slots are filled:
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
-(cl-defun hyperdrive-update-version-ranges (entry &key (existsp t))
+(cl-defun hyperdrive-update-version-ranges (entry range-start &key (existsp t))
   ;; FIXME: Docstring.
   (unless (hyperdrive--entry-directory-p entry)
     (unless (hyperdrive-entry-version entry)
       (setf entry (hyperdrive-copy-tree entry t)
             (hyperdrive-entry-version entry) (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
     ;; TODO: Revisit whether we really want to not do anything for directories.
-    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version-range-start range-start) path) entry)
+    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                  (ranges-key (cons hyperdrive path))
                  (entry-ranges (gethash ranges-key hyperdrive-version-ranges))
                  (current-range (map-elt entry-ranges range-start))
@@ -442,7 +447,8 @@ The following ENTRY hyperdrive slots are filled:
         (setf (plist-get current-range :range-end) (hyperdrive-entry-version entry)
               (map-elt entry-ranges range-start) current-range))
       (setf (plist-get current-range :exists-p) existsp
-            (map-elt entry-ranges range-start) current-range)
+            (map-elt entry-ranges range-start) current-range
+            entry-ranges (cl-sort entry-ranges #'< :key #'car))
       ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
       (setf (gethash ranges-key hyperdrive-version-ranges) entry-ranges))))
 
