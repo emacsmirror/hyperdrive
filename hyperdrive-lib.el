@@ -334,7 +334,7 @@ the given `plz-queue'"
              (plz-http-error
               (pcase (plz-response-status (plz-error-response (caddr err)))
                 (404 ;; Entry doesn't exist at this version: update range data.
-                 (hyperdrive-update-version-ranges entry :existsp nil)))
+                 (hyperdrive-update-version-ranges entry (hyperdrive-entry-version entry) :existsp nil)))
               ;; Re-signal error for, e.g. `hyperdrive-entry-at'.
               (signal (car err) (cdr err)))))
     (_ (hyperdrive-api 'head (hyperdrive-entry-url entry)
@@ -343,7 +343,7 @@ the given `plz-queue'"
          :then (lambda (response)
                  (funcall then (hyperdrive--fill entry (plz-response-headers response))))
          :else (lambda (&rest args)
-                 (hyperdrive-update-version-ranges entry :existsp nil)
+                 (hyperdrive-update-version-ranges entry (hyperdrive-entry-version entry) :existsp nil)
                  (apply else args))
          :noquery t))))
 
