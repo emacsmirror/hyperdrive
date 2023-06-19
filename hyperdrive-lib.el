@@ -270,15 +270,13 @@ empty public-key slot."
 
 (defun hyperdrive-entry-version-range-start (entry)
   "Return the range start of ENTRY's version, or nil."
-  (unless (hyperdrive-entry-version entry)
-    (setf entry (hyperdrive-copy-tree entry t)
-          (hyperdrive-entry-version entry) (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
                (entry-key (cons hyperdrive path))
                (ranges (gethash entry-key hyperdrive-version-ranges))
                (range (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
                                     (and (<= start version)
-                                         (>= range-end version)))
+                                         (or (not range-end)
+                                             (>= range-end version))))
                                   ranges)))
     (car range)))
 
@@ -383,16 +381,6 @@ The following ENTRY hyperdrive slots are filled:
             (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
             (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
         (setf (hyperdrive-public-key hyperdrive) public-key)))
-    (setf (hyperdrive-latest-version hyperdrive)
-          ;; FIXME: This is temporary; we don't want to make this extra request every time.
-          (string-to-number
-           (alist-get 'etag (plz-response-headers
-                             (with-local-quit
-                               (hyperdrive-api
-                                 'head (hyperdrive-entry-url
-                                        (hyperdrive-make-entry
-                                         :hyperdrive hyperdrive :path "/"))
-                                 :as 'response :else #'ignore))))))
     (hyperdrive-update-version-ranges entry (string-to-number etag))
     entry))
 
@@ -436,9 +424,6 @@ The following ENTRY hyperdrive slots are filled:
 (cl-defun hyperdrive-update-version-ranges (entry range-start &key (existsp t))
   ;; FIXME: Docstring.
   (unless (hyperdrive--entry-directory-p entry)
-    (unless (hyperdrive-entry-version entry)
-      (setf entry (hyperdrive-copy-tree entry t)
-            (hyperdrive-entry-version entry) (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
     ;; TODO: Revisit whether we really want to not do anything for directories.
     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                  (ranges-key (cons hyperdrive path))
