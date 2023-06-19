@@ -273,11 +273,13 @@ empty public-key slot."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
                (entry-key (cons hyperdrive path))
                (ranges (gethash entry-key hyperdrive-version-ranges))
-               (range (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
-                                    (and (<= start version)
-                                         (or (not range-end)
-                                             (>= range-end version))))
-                                  ranges)))
+               (range (if version
+                          (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
+                                        (and (<= start version)
+                                             (or (not range-end)
+                                                 (>= range-end version))))
+                                      ranges)
+                        (car (last ranges)))))
     (car range)))
 
 (defun hyperdrive-entry-previous (entry)
