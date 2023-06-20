@@ -393,6 +393,7 @@ The following ENTRY hyperdrive slots are filled:
 (defun hyperdrive--latest-version (hyperdrive)
   "Return the latest version number of HYPERDRIVE.
 Also sets the corresponding slot in HYPERDRIVE."
+  ;; TODO: Call this func and display latest version in describe-mode buffers.
   (pcase-let (((cl-struct plz-response (headers (map etag)))
                (with-local-quit
                  (hyperdrive-api
