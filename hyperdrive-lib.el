@@ -99,6 +99,8 @@ generated from PATH. When ENCODE is non-`nil', encode PATH."
   (hyperdrive-entry--create
    :hyperdrive hyperdrive
    :path path
+   ;; TODO: Is it necessary to store the name alongside the path?
+   ;;       Instead, only store path and generate name on the fly.
    :name (url-unhex-string
           (pcase path
            ("/"
