@@ -419,6 +419,7 @@ Also sets the corresponding slot in HYPERDRIVE."
             (map-elt entry-ranges range-start) current-range
             entry-ranges (cl-sort entry-ranges #'< :key #'car))
       ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
+      ;;       We could use a gv-setter for this, something like (cl-decf (hyperdrive-entry-version-range-start entry))
       (setf (gethash ranges-key hyperdrive-version-ranges) entry-ranges))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
