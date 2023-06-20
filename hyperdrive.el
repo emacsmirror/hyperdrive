@@ -237,6 +237,7 @@ Gets latest metadata from hyperdrive."
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for buffers for describing hyperdrives."
+  :group 'hyperdrive
   :interactive nil
   (setq-local revert-buffer-function #'hyperdrive-describe-revert-buffer))
 
