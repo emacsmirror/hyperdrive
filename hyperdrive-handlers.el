@@ -98,7 +98,7 @@ arguments."
                (entry-names (json-read-from-string body))
                (entries
                 (mapcar (lambda (entry-name)
-                          (hyperdrive-make-entry
+                          (hyperdrive-entry-create
                            :hyperdrive hyperdrive
                            :path (concat (url-unhex-string path) entry-name)
                            :version version

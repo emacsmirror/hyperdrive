@@ -41,7 +41,8 @@
 
 ;;;; Structs
 
-(cl-defstruct hyperdrive-entry
+(cl-defstruct (hyperdrive-entry (:constructor hyperdrive-entry--create)
+                                (:copier nil))
   "Represents an entry in a hyperdrive."
   (hyperdrive nil :documentation "The entry's hyperdrive.")
   ;; (url nil :documentation "Canonical URL to entry.")
@@ -58,7 +59,8 @@
   (type nil :documentation "MIME type of the entry.")
   (etc nil :documentation "Alist for extra data about the entry."))
 
-(cl-defstruct hyperdrive
+(cl-defstruct (hyperdrive (:constructor hyperdrive-create)
+                          (:copier nil))
   "Represents a hyperdrive."
   (public-key nil :documentation "Hyperdrive's public key.")
   (seed nil :documentation "Seed (always and only present for writable hyperdrives).")
@@ -87,14 +89,14 @@ domains slot."
 Returns URL with hyperdrive's full public key."
   (hyperdrive--format-entry-url entry :with-protocol t))
 
-(cl-defun hyperdrive-make-entry (&key hyperdrive path version etc encode)
+(cl-defun hyperdrive-entry-create (&key hyperdrive path version etc encode)
   "Return hyperdrive entry struct from args.
 HYPERDRIVE, VERSION, and ETC are used as-is. Entry NAME is
 generated from PATH. When ENCODE is non-`nil', encode PATH."
   (setf path (hyperdrive--format-path path))
   (when encode
     (cl-callf url-hexify-string path (cons ?/ url-unreserved-chars)))
-  (make-hyperdrive-entry
+  (hyperdrive-entry--create
    :hyperdrive hyperdrive
    :path path
    :name (url-unhex-string
@@ -205,7 +207,7 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
 If already at top-level directory, return nil."
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version) entry))
     (when-let ((parent-path (file-name-parent-directory path)))
-      (hyperdrive-make-entry :hyperdrive hyperdrive :path parent-path :version version))))
+      (hyperdrive-entry-create :hyperdrive hyperdrive :path parent-path :version version))))
 
 ;; (defun hyperdrive--readable-p (url)
 ;;   "Return non-nil if URL is readable.
@@ -230,14 +232,14 @@ empty public-key slot."
   (pcase-let* (((cl-struct url host (filename path) target)
                 (url-generic-parse-url url))
                ;; TODO: For now, no other function besides `hyperdrive-url-entry' calls
-               ;; `make-hyperdrive', but perhaps it would be good to add a function which wraps
-               ;; `make-hyperdrive' and returns either an existing hyperdrive or a new one?
+               ;; `hyperdrive-create', but perhaps it would be good to add a function which wraps
+               ;; `hyperdrive-create' and returns either an existing hyperdrive or a new one?
                (hyperdrive (pcase host
                              ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
-                              (make-hyperdrive :domains (list host)))
+                              (hyperdrive-create :domains (list host)))
                              (_  ;; Assume host is a public-key
                               (or (gethash host hyperdrive-hyperdrives)
-                                  (make-hyperdrive :public-key host)))))
+                                  (hyperdrive-create :public-key host)))))
                ;; TODO: Target inside etc is currently unused, consider removing or adding support inside `hyperdrive-handler-default'
                (etc (when target
                       (list (cons 'target target))))
@@ -247,7 +249,7 @@ empty public-key slot."
                            v))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
-    (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :etc etc)))
+    (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version :etc etc)))
 
 ;;;; Entries
 
@@ -393,7 +395,7 @@ Also sets the corresponding slot in HYPERDRIVE."
                (with-local-quit
                  (hyperdrive-api
                    'head (hyperdrive-entry-url
-                          (hyperdrive-make-entry
+                          (hyperdrive-entry-create
                            :hyperdrive hyperdrive :path "/"))
                    :as 'response))))
     (setf (hyperdrive-latest-version hyperdrive) (string-to-number etag))))
@@ -459,7 +461,7 @@ Also sets the corresponding slot in HYPERDRIVE."
 Sends a synchronous request to get the latest contents of
 HYPERDRIVE's public metadata file."
   (declare (indent defun))
-  (pcase-let* ((entry (hyperdrive-make-entry
+  (pcase-let* ((entry (hyperdrive-entry-create
                        :hyperdrive hyperdrive
                        :path "/.well-known/host-meta.json"
                        ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
@@ -657,7 +659,7 @@ version number."
                         (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number current-version)
                       current-version)))
          (path (hyperdrive-read-path :hyperdrive hyperdrive :version version :default default-path)))
-    (hyperdrive-make-entry :hyperdrive hyperdrive :path path :version version :encode t)))
+    (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version :encode t)))
 
 (defvar hyperdrive--version-history nil
   "Minibuffer history of `hyperdrive-read-version'.")
@@ -717,8 +719,8 @@ Prompts with PROMPT."
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
-  (let ((entry (hyperdrive-make-entry :hyperdrive hyperdrive
-                                      :path "/.well-known/host-meta.json")))
+  (let ((entry (hyperdrive-entry-create :hyperdrive hyperdrive
+                                        :path "/.well-known/host-meta.json")))
     (hyperdrive-write entry :body (json-encode (hyperdrive-metadata hyperdrive))
       :then then)
     hyperdrive))

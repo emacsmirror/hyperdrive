@@ -835,12 +835,12 @@ for predicate and set NO-CONFIRM to t."
       (setf predicate (lambda (filename)
                         (string-match-p regexp filename)))))
   (let* ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
-         (parent-entry (hyperdrive-make-entry :hyperdrive hyperdrive :path target-dir :encode t))
+         (parent-entry (hyperdrive-entry-create :hyperdrive hyperdrive :path target-dir :encode t))
          (files-and-urls
           ;; Structured according to `tabulated-list-entries'
           (mapcar (lambda (file)
                     (let ((url (hyperdrive-entry-url
-                                (hyperdrive-make-entry
+                                (hyperdrive-entry-create
                                  :hyperdrive hyperdrive
                                  :path (expand-file-name (file-relative-name file source) target-dir)
                                  :encode t))))
@@ -932,13 +932,13 @@ for a hyperdrive."
                 :limit hyperdrive-queue-size
                 :finally (lambda ()
                            ;; FIXME: Offer more informative message in case of errors?
-                           (hyperdrive-open (hyperdrive-make-entry :hyperdrive hyperdrive
-                                                                   :path target-directory
-                                                                   :encode t))
+                           (hyperdrive-open (hyperdrive-entry-create :hyperdrive hyperdrive
+                                                                     :path target-directory
+                                                                     :encode t))
                            (hyperdrive-message "Uploaded %s files." (length files))))))
     (dolist (file files)
       (let* ((path (file-name-concat target-directory (file-name-nondirectory file)))
-             (entry (hyperdrive-make-entry :hyperdrive hyperdrive :path path :encode t)))
+             (entry (hyperdrive-entry-create :hyperdrive hyperdrive :path path :encode t)))
         ;; TODO: Handle failures? Retry?
         (hyperdrive-upload-file file entry :queue queue :then #'ignore)))
     (plz-run queue)))
