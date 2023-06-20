@@ -29,6 +29,7 @@
 (require 'pcase)
 (require 'seq)
 (require 'url-util)
+(require 'gv)
 
 (require 'compat)
 (require 'persist)
@@ -272,11 +273,21 @@ empty public-key slot."
   "Return ENTRY at its hyperdrive's latest version, or nil."
   (hyperdrive-entry-at nil entry))
 
+(defun hyperdrive-entry-version-ranges (entry)
+  "Return version ranges for ENTRY."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
+               (entry-key (cons hyperdrive path)))
+    (gethash entry-key hyperdrive-version-ranges)))
+
+(gv-define-setter hyperdrive-entry-version-ranges (ranges entry)
+  `(pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) ,entry)
+                (entry-key (cons hyperdrive path)))
+     (setf (gethash entry-key hyperdrive-version-ranges) ,ranges)))
+
 (defun hyperdrive-entry-version-range-start (entry)
   "Return the range start of ENTRY's version, or nil."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
-               (entry-key (cons hyperdrive path))
-               (ranges (gethash entry-key hyperdrive-version-ranges))
+  (pcase-let* (((cl-struct hyperdrive-entry version) entry)
+               (ranges (hyperdrive-entry-version-ranges entry))
                (range (if version
                           (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
                                         (and (<= start version)
@@ -409,21 +420,17 @@ Also sets the corresponding slot in HYPERDRIVE."
   ;; FIXME: Docstring.
   (unless (hyperdrive--entry-directory-p entry)
     ;; TODO: Revisit whether we really want to not do anything for directories.
-    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-                 (ranges-key (cons hyperdrive path))
-                 (entry-ranges (gethash ranges-key hyperdrive-version-ranges))
-                 (range (map-elt entry-ranges range-start))
+    (pcase-let* ((ranges (hyperdrive-entry-version-ranges entry))
+                 (range (map-elt ranges range-start))
                  ((map (:range-end range-end)) range))
       (when (or (not range-end)
                 (< range-end (hyperdrive-entry-version entry)))
         (setf (plist-get range :range-end) (hyperdrive-entry-version entry)
-              (map-elt entry-ranges range-start) range))
+              (map-elt ranges range-start) range))
       (setf (plist-get range :exists-p) existsp
-            (map-elt entry-ranges range-start) range
-            entry-ranges (cl-sort entry-ranges #'< :key #'car))
-      ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
-      ;;       We could use a gv-setter for this, something like (cl-decf (hyperdrive-entry-version-range-start entry))
-      (setf (gethash ranges-key hyperdrive-version-ranges) entry-ranges))))
+            (map-elt ranges range-start) range
+            ranges (cl-sort ranges #'< :key #'car))
+      (setf (hyperdrive-entry-version-ranges entry) ranges))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
