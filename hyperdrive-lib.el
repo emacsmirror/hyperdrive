@@ -411,14 +411,14 @@ Also sets the corresponding slot in HYPERDRIVE."
     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                  (ranges-key (cons hyperdrive path))
                  (entry-ranges (gethash ranges-key hyperdrive-version-ranges))
-                 (current-range (map-elt entry-ranges range-start))
-                 ((map (:range-end range-end)) current-range))
+                 (range (map-elt entry-ranges range-start))
+                 ((map (:range-end range-end)) range))
       (when (or (not range-end)
                 (< range-end (hyperdrive-entry-version entry)))
-        (setf (plist-get current-range :range-end) (hyperdrive-entry-version entry)
-              (map-elt entry-ranges range-start) current-range))
-      (setf (plist-get current-range :exists-p) existsp
-            (map-elt entry-ranges range-start) current-range
+        (setf (plist-get range :range-end) (hyperdrive-entry-version entry)
+              (map-elt entry-ranges range-start) range))
+      (setf (plist-get range :exists-p) existsp
+            (map-elt entry-ranges range-start) range
             entry-ranges (cl-sort entry-ranges #'< :key #'car))
       ;; TODO: Destructively decrement range-start (car of cons cell) whenever an entry 404s
       ;;       We could use a gv-setter for this, something like (cl-decf (hyperdrive-entry-version-range-start entry))
