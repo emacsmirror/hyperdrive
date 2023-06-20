@@ -455,7 +455,8 @@ for a hyperdrive."
 
 (defun hyperdrive-revert-buffer-quick ()
   "Like `revert-buffer-quick', but works with `hyperdrive-mode' files."
-  (interactive nil hyperdrive-mode)
+  (declare (modes hyperdrive-mode))
+  (interactive)
   (hyperdrive-revert-buffer nil (not (buffer-modified-p))))
 
 ;;;; hyperdrive-mode
@@ -679,21 +680,24 @@ To be used in `write-contents-functions'."
   "Save hyperdrive ENTRY's URL to the kill ring.
 Interactively, uses `hyperdrive-current-entry', from either a
 hyperdrive directory listing or a `hyperdrive-mode' file buffer."
-  (interactive (list hyperdrive-current-entry) hyperdrive-mode)
+  (declare (modes hyperdrive-mode))
+  (interactive (list hyperdrive-current-entry))
   (let ((url (hyperdrive-entry-url entry)))
     (kill-new url)
     (hyperdrive-message "%s" url)))
 
 (defun hyperdrive-up ()
   "Go up to parent directory."
-  (interactive nil hyperdrive-mode)
+  (declare (modes hyperdrive-mode))
+  (interactive)
   (if-let ((parent (hyperdrive-parent hyperdrive-current-entry)))
       (hyperdrive-open parent)
     (user-error "At root directory")))
 
 (defun hyperdrive-previous-version (entry)
   "Show previous version of ENTRY."
-  (interactive (list hyperdrive-current-entry) hyperdrive-mode)
+  (declare (modes hyperdrive-mode))
+  (interactive (list hyperdrive-current-entry))
   (if-let ((previous-entry (hyperdrive-entry-previous entry)))
       (hyperdrive-find-file previous-entry)
     (hyperdrive-message "At earliest version of entry")))
@@ -877,7 +881,8 @@ uploading files, open PARENT-ENTRY."
 
 (defun hyperdrive-mirror-do-upload ()
   "Upload files in current \"*hyperdrive-mirror*\" buffer."
-  (interactive nil hyperdrive-describe-mode)
+  (declare (modes hyperdrive-mirror-mode))
+  (interactive)
   (if (and tabulated-list-entries hyperdrive-mirror-parent-entry)
       (when (or (not hyperdrive-mirror-already-uploaded) (yes-or-no-p "Already uploaded files. Upload again?"))
         (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry))

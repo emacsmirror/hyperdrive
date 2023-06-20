@@ -136,7 +136,8 @@ To be used as the pretty-printer for `ewoc-create'."
   "Visit hyperdrive ENTRY.
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
-  (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))) hyperdrive-dir-mode)
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
   (hyperdrive-open entry))
 
 (defun hyperdrive-dir--entry-at-point ()
@@ -157,19 +158,20 @@ With point on header, return directory entry."
 
 (defun hyperdrive-dir-copy-url (entry)
   "Copy URL of ENTRY into the kill ring."
-  (interactive (list (hyperdrive-dir--entry-at-point)) hyperdrive-dir-mode)
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-copy-url entry))
 
 (declare-function hyperdrive-download-entry "hyperdrive")
 
 (defun hyperdrive-dir-download-file (entry filename)
   "Download ENTRY at point to FILENAME on disk."
+  (declare (modes hyperdrive-dir-mode))
   (interactive
    (pcase-let* ((entry (hyperdrive-dir--entry-at-point))
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
-     (list entry read-filename))
-   hyperdrive-dir-mode)
+     (list entry read-filename)))
   (hyperdrive-download-entry entry filename))
 
 ;; TODO: Use a macro to define commands that operate on entries, and
@@ -177,7 +179,8 @@ With point on header, return directory entry."
 
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
-  (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))) hyperdrive-dir-mode)
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
               (buffer (current-buffer)))
     (when (and (yes-or-no-p (format "Delete %S? " name))
@@ -201,7 +204,8 @@ With point on header, return directory entry."
 
 (cl-defun hyperdrive-dir-next (&optional (n 1))
   "Move forward N entries."
-  (interactive "p" hyperdrive-dir-mode)
+  (declare (modes hyperdrive-dir-mode))
+  (interactive "p")
   (cond ((= 1 (line-number-at-pos))
          ;; Point on header: move into first entry.
          (forward-line 1))
@@ -212,7 +216,8 @@ With point on header, return directory entry."
 
 (cl-defun hyperdrive-dir-previous (&optional (n 1))
   "Move backward N entries."
-  (interactive "p" hyperdrive-dir-mode)
+  (declare (modes hyperdrive-dir-mode))
+  (interactive "p")
   (cond ((= 2 (line-number-at-pos))
          ;; Point on first entry: move into header.
          (forward-line -1))
