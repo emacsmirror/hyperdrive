@@ -246,7 +246,7 @@ empty public-key slot."
                (version (pcase path
                           ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
                            (setf path p)
-                           v))))
+                           (string-to-number v)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version :etc etc)))
