@@ -9,6 +9,8 @@ provides an Emacs interface for managing hyperdrives.
 
 ** Installation
 
+`hyperdrive.el` requires [[https://www.gnu.org/software/emacs/][Emacs]] version 27.1 or later.
+
 `hyperdrive.el` is available on [[https://melpa.org/#/getting-started][MELPA]]. Once you've set up MELPA, you
 can run `M-x package-install` then enter `hyperdrive`.
 
