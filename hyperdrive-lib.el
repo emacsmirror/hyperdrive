@@ -437,10 +437,12 @@ Returns the latest version number."
     ;; TODO: Revisit whether we really want to not do anything for directories.
     (pcase-let* ((ranges (hyperdrive-entry-version-ranges entry))
                  (range (map-elt ranges range-start))
-                 ((map (:range-end old-range-end)) range))
+                 ((map (:range-end old-range-end)) range)
+                 ((cl-struct hyperdrive-entry hyperdrive version) entry)
+                 (range-end (or version (hyperdrive-latest-version hyperdrive))))
       (when (or (not old-range-end)
-                (< old-range-end (hyperdrive-entry-version entry)))
-        (setf (plist-get range :range-end) (hyperdrive-entry-version entry)
+                (< old-range-end range-end))
+        (setf (plist-get range :range-end) range-end
               (map-elt ranges range-start) range))
       (setf (plist-get range :existsp) existsp
             (map-elt ranges range-start) range
