@@ -534,6 +534,10 @@ in the buffer opened by the handler."
                                                            (string-match-p regexp type))
                                                          hyperdrive-type-handlers :key #'car))
                                         #'hyperdrive-handler-default)))
+                (unless (hyperdrive--entry-directory-p entry)
+                  ;; No need to fill latest version for directories,
+                  ;; since we do it in `hyperdrive--fill' already.
+                  (hyperdrive-fill-latest-version hyperdrive))
                 (hyperdrive-persist hyperdrive)
                 (funcall handler entry :then then)))
       :else (lambda (plz-error)
