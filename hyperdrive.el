@@ -624,7 +624,7 @@ With prefix argument, prompts for more information. See
                                             :allow-version-p nil)))
   ;; FIXME: Overwrites without prompting if file exists.
   (ignore overwritep)
-  (pcase-let (((cl-struct hyperdrive-entry name) entry)
+  (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
               (url (hyperdrive-entry-url entry))
               (buffer (current-buffer)))
     (hyperdrive-write entry
@@ -640,6 +640,7 @@ With prefix argument, prompts for more information. See
                     ;; `hyperdrive-write-buffer' is called from a magit log buffer.
                     (hyperdrive-mode))
                   (hyperdrive--fill entry (plz-response-headers response))
+                  (hyperdrive-fill-latest-version hyperdrive)
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
                   ;; FIXME: For large buffers, `buffer-size' returns a different
