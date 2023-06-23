@@ -401,18 +401,25 @@ The following ENTRY hyperdrive slots are filled:
     (hyperdrive-update-version-ranges entry (string-to-number etag))
     entry))
 
-(defun hyperdrive--latest-version (hyperdrive)
-  "Return the latest version number of HYPERDRIVE.
-Also sets the corresponding slot in HYPERDRIVE."
+(defun hyperdrive-fill-latest-version (hyperdrive)
+  "Fill the latest version slot in HYPERDRIVE.
+Returns the latest version number."
   ;; TODO: Call this func and display latest version in describe-mode buffers.
-  (pcase-let (((cl-struct plz-response (headers (map etag)))
+  (pcase-let (((cl-struct plz-response headers)
                (with-local-quit
                  (hyperdrive-api
                    'head (hyperdrive-entry-url
                           (hyperdrive-entry-create
                            :hyperdrive hyperdrive :path "/"))
                    :as 'response))))
-    (setf (hyperdrive-latest-version hyperdrive) (string-to-number etag))))
+    (hyperdrive--fill-latest-version hyperdrive headers)))
+
+(defun hyperdrive--fill-latest-version (hyperdrive headers)
+  "Fill the latest version slot in HYPERDRIVE from HEADERS.
+HEADERS must from a HEAD/GET request to a directory, as only
+those requests return the correct ETag header.
+Returns the latest version number."
+  (setf (hyperdrive-latest-version hyperdrive) (string-to-number (map-elt headers 'etag))))
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
