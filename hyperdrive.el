@@ -421,13 +421,16 @@ for a hyperdrive."
         (progn
           (cl-callf map-delete (hyperdrive-metadata hyperdrive) 'name)
           (hyperdrive-put-metadata hyperdrive
-            :then (lambda (&rest _) (hyperdrive-message "Unset nickname"))))
+            :then (pcase-lambda ((cl-struct plz-response headers))
+                    (hyperdrive-message "Unset nickname")
+                    (hyperdrive--fill-latest-version hyperdrive headers))))
       (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
       (hyperdrive-put-metadata hyperdrive
-        :then (lambda (&rest _)
+        :then (pcase-lambda ((cl-struct plz-response headers))
                 (hyperdrive-message "Set nickname for «%s» to %s"
                                     (hyperdrive--format-hyperdrive hyperdrive)
-                                    (hyperdrive--format-host hyperdrive :format '(nickname))))))
+                                    (hyperdrive--format-host hyperdrive :format '(nickname)))
+                (hyperdrive--fill-latest-version hyperdrive headers))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
     (hyperdrive-persist hyperdrive))
   hyperdrive)
