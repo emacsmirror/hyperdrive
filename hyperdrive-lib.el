@@ -398,7 +398,9 @@ The following ENTRY hyperdrive slots are filled:
             (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
             (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
         (setf (hyperdrive-public-key hyperdrive) public-key)))
-    (hyperdrive-update-version-ranges entry (string-to-number etag))
+    (if (hyperdrive--entry-directory-p entry)
+        (hyperdrive--fill-latest-version hyperdrive headers)
+      (hyperdrive-update-version-ranges entry (string-to-number etag)))
     entry))
 
 (defun hyperdrive-fill-latest-version (hyperdrive)
