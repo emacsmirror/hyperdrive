@@ -427,7 +427,7 @@ Also sets the corresponding slot in HYPERDRIVE."
                 (< range-end (hyperdrive-entry-version entry)))
         (setf (plist-get range :range-end) (hyperdrive-entry-version entry)
               (map-elt ranges range-start) range))
-      (setf (plist-get range :exists-p) existsp
+      (setf (plist-get range :existsp) existsp
             (map-elt ranges range-start) range
             ranges (cl-sort ranges #'< :key #'car))
       (setf (hyperdrive-entry-version-ranges entry) ranges))))

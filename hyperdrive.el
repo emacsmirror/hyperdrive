@@ -196,7 +196,7 @@ through a shell)."
 
 (defvar hyperdrive-version-ranges (make-hash-table :test 'hyperdrive-version-ranges-equal)
   "Hash table mapping (cons hyperdrive-public-keys entry-path) to an
-alist mapping version range starts to plists with `:exists-p' and
+alist mapping version range starts to plists with `:existsp' and
 `:range-end' keys.")
 
 ;; TODO: Flesh out the persist hook.
