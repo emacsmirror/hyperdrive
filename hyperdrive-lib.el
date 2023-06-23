@@ -175,6 +175,12 @@ REST is passed to `plz', which see.
 
 REST may include the argument `:queue', a `plz-queue' in which to
 make the request."
+  ;; TODO: Should we create a wrapper for `hyperdrive-api' which calls
+  ;;  `hyperdrive--fill-latest-version' for requests to
+  ;;  directories/requests which modify the drive (and therefore
+  ;;  always return the latest version number). If we did this, we
+  ;;  could remove redundant calls to
+  ;;  `hyperdrive--fill-latest-version' everywhere else.
   (declare (indent defun))
   (pcase method
     ((and (or 'get 'head)
