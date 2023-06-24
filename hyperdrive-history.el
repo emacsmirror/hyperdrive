@@ -71,21 +71,21 @@ and who cdr is a hyperdrive entry. The entry's version is used as the range star
       ('unknown ; Not known whether it exists or not
        (format "%s  %10s          unknown"
                (propertize "?"
-                           'font-lock-face '(:foreground "black" :background "yellow"))
+                           'face '(:foreground "black" :background "yellow"))
                (propertize range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)))
       ('nil ; Known to not exist
        (format "%s  %10s          nonexistent"
                (propertize "X"
-                           'font-lock-face '(:foreground "black" :background "red"))
+                           'face '(:foreground "black" :background "red"))
                (propertize range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)))
       (t ; Known to exist
        (format "%s  %10s  %6s  %s"
                (propertize "Y"
-                           'font-lock-face '(:foreground "black" :background "green"))
+                           'face '(:foreground "black" :background "green"))
                (propertize range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)
