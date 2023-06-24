@@ -27,7 +27,6 @@
 ;;;; Requirements
 
 (require 'cl-lib)
-(require 'map)
 
 (require 'hyperdrive-lib)
 (require 'hyperdrive-ewoc)
@@ -85,9 +84,7 @@ With point on header or below last entry, return nil."
            (> (line-number-at-pos)
               (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1)))))
     ;; Point on a file version: check that it exists.
-    (pcase-let* ((entry (ewoc-data (ewoc-locate hyperdrive-ewoc)))
-                 (`(_range-start . ,(map (:existsp existsp))) (hyperdrive-entry-version-range entry)))
-      (when existsp entry))))
+    (hyperdrive-entry-exists-p (ewoc-data (ewoc-locate hyperdrive-ewoc)))))
 
 ;;;; Mode
 

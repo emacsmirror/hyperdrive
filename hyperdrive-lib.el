@@ -303,6 +303,13 @@ empty public-key slot."
                         (car (last ranges)))))
     range))
 
+(defun hyperdrive-entry-exists-p (entry)
+  "Return ENTRY when it exists at its version.
+Does not make a request to the gateway; checks the cached value
+in `hyperdrive-version-ranges'."
+  (pcase-let ((`(_range-start . ,(map (:existsp existsp))) (hyperdrive-entry-version-range entry)))
+    (when existsp entry)))
+
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
   (when-let ((previous-entry (hyperdrive-entry-at (1- (car (hyperdrive-entry-version-range entry))) entry)))
