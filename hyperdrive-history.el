@@ -56,7 +56,9 @@ RANGE-ENTRY is a cons cell whose car is a plist with two keys:
 and who cdr is a hyperdrive entry. The entry's version is used as the range start."
   (pcase-let* ((`(,(map (:range-end range-end) (:existsp existsp)) . ,entry) range-entry)
                ((cl-struct hyperdrive-entry size modified (version range-start)) entry)
-               (range (format "%d-%d" range-start range-end))
+               (range (if (eq range-start range-end)
+                          (format "%d" range-start)
+                        (format "%d-%d" range-start range-end)))
                (size (when size
                        (file-size-human-readable size)))
                (timestamp (if modified
