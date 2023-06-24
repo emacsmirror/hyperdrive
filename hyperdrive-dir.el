@@ -137,7 +137,7 @@ To be used as the pretty-printer for `ewoc-create'."
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-open entry))
 
 (defun hyperdrive-dir--entry-at-point ()
