@@ -114,24 +114,23 @@ arguments."
     (hyperdrive-fill-metadata hyperdrive)
     (setf header (hyperdrive-entry-description directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
-      ;; (when (and (bound-and-true-p hyperdrive-dir-ewoc)
-      ;;            (ewoc-nth hyperdrive-dir-ewoc 0))
+      ;; (when (and (bound-and-true-p hyperdrive-ewoc)
+      ;;            (ewoc-nth hyperdrive-ewoc 0))
       ;;   ;; When EWOC has nodes, remember the current node and line so
       ;;   ;; we can try to keep point.
-      ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-dir-ewoc))
-      ;;         prev-line (line-number-at-pos)))
-      (setf ewoc hyperdrive-dir-ewoc) ; Bind this for the hyperdrive-fill lambda.
-      (ewoc-filter hyperdrive-dir-ewoc #'ignore)
+      ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-ewoc)) ;;         prev-line (line-number-at-pos)))
+      (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
+      (ewoc-filter hyperdrive-ewoc #'ignore)
       (erase-buffer)
-      (ewoc-set-hf hyperdrive-dir-ewoc header "")
+      (ewoc-set-hf hyperdrive-ewoc header "")
       (mapc (lambda (entry)
-              (ewoc-enter-last hyperdrive-dir-ewoc entry))
+              (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
       ;; (when prev-node-data
       ;;   ;; Try to return point to where it was before reverting the buffer.
       ;;   ;; FIXME: This doesn't always work correctly, apparently due
       ;;   ;; to the async filling of entries and refreshing of the EWOC.
-      ;;   ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-dir-ewoc
+      ;;   ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
       ;;   ;;                  (lambda (node-data)
       ;;   ;;                    (hyperdrive-entry-equal prev-node-data node-data)))))
       ;;   ;;     (goto-char (ewoc-location node))
@@ -148,11 +147,11 @@ arguments."
                                                  (with-selected-window buffer-window
                                                    ;; TODO: Use `ewoc-invalidate' on individual entries
                                                    ;; (maybe later, as performance comes to matter more).
-                                                   (ewoc-refresh hyperdrive-dir-ewoc)
+                                                   (ewoc-refresh hyperdrive-ewoc)
                                                    (goto-char (point-min))
                                                    (set-buffer-modified-p nil))
                                                (with-current-buffer (ewoc-buffer ewoc)
-                                                 (ewoc-refresh hyperdrive-dir-ewoc)
+                                                 (ewoc-refresh hyperdrive-ewoc)
                                                  (goto-char (point-min))
                                                  (set-buffer-modified-p nil)))
                                              (with-current-buffer (ewoc-buffer ewoc)
