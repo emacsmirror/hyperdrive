@@ -144,14 +144,14 @@ Interactively, visit file or directory at point in
   "Return entry at point.
 With point on header, return directory entry."
   (cond ((= 1 (line-number-at-pos))
-         ;; Point on header: copy directory's entry.
+         ;; Point on header: return directory's entry.
          hyperdrive-current-entry)
         ((> (line-number-at-pos)
             (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-dir-ewoc -1))))
          ;; Point is below the last entry: return nil.
          nil)
         (t
-         ;; Point on a file entry: copy its entry.
+         ;; Point on a file entry: return its entry.
          (ewoc-data (ewoc-locate hyperdrive-dir-ewoc)))))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
