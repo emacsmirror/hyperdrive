@@ -125,6 +125,7 @@ point is on a range-entry whose entry does not exist."
 
 ;;;; Commands
 
+;;;###autoload
 (defun hyperdrive-history (entry)
   "Display version history for current hyperdrive ENTRY.
 
