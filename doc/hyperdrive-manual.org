@@ -313,6 +313,20 @@ hyperdrive's latest version will become 53. Now
 version of ~/bar.org~, while the 51- and 52-versioned URLs will continue
 to point to the original version.
 
+Here's the history of ~/bar.org~ so far (the hyperdrive's latest version
+is 53):
+
+| Version range | exists |
+|---------------+--------|
+|          1-50 | no     |
+|         51-52 | yes    |
+|            53 | yes    |
+
+The table shows that ~/bar.org~ did not exist from the beginning of the
+hyperdrive history until version 51 (when it was created) and that it
+was modified at version 53.  Since the final range number in the table
+is 53, we also know that the hyperdrive's latest version is 53.
+
 If you delete ~/bar.org~, ~hyper://PUBLIC-KEY/bar.org~ will no longer
 point to anything, but the versioned URLs will still work.
 
