@@ -76,7 +76,8 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-history--entry-at-point ()
   "Return entry at version at point.
-With point on header or below last entry, return nil."
+Returns nil when point is on header or below last entry or when
+point is on a range-entry whose entry does not exist."
   (unless (or
            ;; Point on header.
            (= 1 (line-number-at-pos))
