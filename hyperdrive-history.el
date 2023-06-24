@@ -100,6 +100,7 @@ Returns nil when point is on header or below last entry or when
 point is on a range-entry whose entry does not exist."
   (unless (or
            ;; Point on header.
+           ;; TODO: Consider returning latest entry here.
            (= 1 (line-number-at-pos))
            ;; Point is below the last entry.
            (> (line-number-at-pos)
@@ -129,6 +130,7 @@ point is on a range-entry whose entry does not exist."
 
 Prefix argument forces `hyperdrive-read-entry' to prompt for an
 entry."
+  ;; TODO: Reverse order so newest is at the top.
   ;; TODO: Deduplicate `hyperdrive-history' and
   ;; `hyperdrive-handler-directory'. Move some of the logic into
   ;; hyperdrive-ewoc.el
