@@ -43,15 +43,19 @@
 (defun hyperdrive-history-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."
-  (pcase-exhaustive thing
-    ((pred hyperdrive-entry-p)
-     (insert (hyperdrive-history--format-entry thing)))))
+  ;; FIXME: Perform type-checking? If not, is this function necessary?
+  (insert (hyperdrive-history--format-range-entry thing)))
 
-(defun hyperdrive-history--format-entry (entry)
-  "Return ENTRY formatted as a string."
-  (pcase-let* (((cl-struct hyperdrive-entry size modified) entry)
-               (`(,range-start . ,(map (:existsp existsp) (:range-end range-end)))
-                (hyperdrive-entry-version-range entry))
+(defun hyperdrive-history--format-range-entry (range-entry)
+  "Return RANGE-ENTRY formatted as a string.
+RANGE-ENTRY is a cons cell whose car is a plist with two keys:
+
+:range-end (whose value is a number)
+:existsp (whose value may be t, nil, or unknown)
+
+and who cdr is a hyperdrive entry. The entry's version is used as the range start."
+  (pcase-let* ((`(,(map (:range-end range-end) (:existsp existsp)) . ,entry) range-entry)
+               ((cl-struct hyperdrive-entry size modified (version range-start)) entry)
                (range (format "%d-%d" range-start range-end))
                (size (when size
                        (file-size-human-readable size)))
@@ -60,19 +64,32 @@ To be used as the pretty-printer for `ewoc-create'."
                             (format hyperdrive-timestamp-format-string " "))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    (if existsp
-        (format "%10s  %6s  %s"
-                (propertize range
-                            ;; TODO: Another font for range?
-                            'face 'hyperdrive-size)
-                (propertize (or size "")
-                            'face 'hyperdrive-size)
-                (propertize timestamp
-                            'face 'hyperdrive-timestamp))
-      (format "%10s  does not exist"
-              (propertize range
-                          ;; TODO: Another font for range?
-                          'face 'hyperdrive-size)))))
+    (pcase existsp
+      ('unknown ; Not known whether it exists or not
+       (format "%s  %10s  not known exist"
+               (propertize "?"
+                           'font-lock-face '(:foreground "black" :background "yellow"))
+               (propertize range
+                           ;; TODO: Another font for range?
+                           'face 'hyperdrive-size)))
+      ('nil ; Known to not exist
+       (format "%s  %10s  does not exist"
+               (propertize "X"
+                           'font-lock-face '(:foreground "black" :background "red"))
+               (propertize range
+                           ;; TODO: Another font for range?
+                           'face 'hyperdrive-size)))
+      (t ; Known to exist
+       (format "%s  %10s  %6s  %s"
+               (propertize "Y"
+                           'font-lock-face '(:foreground "black" :background "green"))
+               (propertize range
+                           ;; TODO: Another font for range?
+                           'face 'hyperdrive-size)
+               (propertize (or size "")
+                           'face 'hyperdrive-size)
+               (propertize timestamp
+                           'face 'hyperdrive-timestamp))))))
 
 (defun hyperdrive-history--entry-at-point ()
   "Return entry at version at point.
@@ -85,7 +102,8 @@ point is on a range-entry whose entry does not exist."
            (> (line-number-at-pos)
               (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1)))))
     ;; Point on a file version: check that it exists.
-    (hyperdrive-entry-exists-p (ewoc-data (ewoc-locate hyperdrive-ewoc)))))
+    (pcase-let ((`(_range . ,entry) (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+      (hyperdrive-entry-exists-p entry))))
 
 ;;;; Mode
 
@@ -117,16 +135,17 @@ entry."
                        hyperdrive-current-entry)))
   ;; TODO: Highlight range for ENTRY
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (entries
-                (mapcar (pcase-lambda (`(,range-start . _plist))
+               (range-entries
+                (mapcar (pcase-lambda (`(,range-start . ,range))
                           ;; Some entries may not exist at
                           ;; `range-start', as in the version before
                           ;; it was created. See manual:
                           ;; [[info:hyperdrive-manual.info#Versioning]]
-                          (hyperdrive-entry-create
-                           :hyperdrive hyperdrive
-                           :path path
-                           :version range-start))
+                          (cons range
+                                (hyperdrive-entry-create
+                                 :hyperdrive hyperdrive
+                                 :path path
+                                 :version range-start)))
                         (hyperdrive-entry-version-ranges-no-gaps entry)))
                (header (hyperdrive-entry-description
                         ;; Pass entry without version to
@@ -146,9 +165,9 @@ entry."
       ;; TODO: Display hyperdrive's latest version, maybe in a footer?
       ;; (footer (number-to-string (hyperdrive-latest-version hyperdrive)))
       (ewoc-set-hf hyperdrive-ewoc header "")
-      (mapc (lambda (entry)
-              (ewoc-enter-last hyperdrive-ewoc entry))
-            entries)
+      (mapc (lambda (range-entry)
+              (ewoc-enter-last hyperdrive-ewoc range-entry))
+            range-entries)
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
       (display-buffer (current-buffer) hyperdrive-history-display-buffer-action)
       (setf queue (make-plz-queue :limit 8
@@ -171,11 +190,11 @@ entry."
                                              ;;   (when then
                                              ;;     (funcall then)))
                                              )))
-      (mapc (lambda (entry)
+      (mapc (pcase-lambda (`(_range . ,entry))
               (when (hyperdrive-entry-exists-p entry)
                 ;; TODO: Handle failures?
                 (hyperdrive-fill entry :queue queue :then #'ignore)))
-            entries)
+            range-entries)
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))
 
