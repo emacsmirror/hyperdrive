@@ -295,12 +295,11 @@ empty public-key slot."
 Returns nil when ENTRY is not known to exist at its version."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
                (version (or entry-version (hyperdrive-latest-version hyperdrive)))
-               (ranges (hyperdrive-entry-version-ranges entry))
-               (range (when ranges
-                        (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
-                                      (<= start version range-end))
-                                    ranges))))
-    range))
+               (ranges (hyperdrive-entry-version-ranges entry)))
+    (when ranges
+      (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
+                    (<= start version range-end))
+                  ranges))))
 
 (defun hyperdrive-entry-exists-p (entry)
   "Return ENTRY when it exists at its version.
