@@ -78,7 +78,7 @@ Interactively, visit file or directory at point in
   "Copy URL of ENTRY into the kill ring."
   (declare (modes hyperdrive-ewoc-mode))
   (interactive (list (funcall hyperdrive-ewoc--entry-at-point)))
-  (hyperdrive-copy-url entry))
+  (when entry (hyperdrive-copy-url entry)))
 
 (declare-function hyperdrive-download-entry "hyperdrive")
 
@@ -90,7 +90,7 @@ Interactively, visit file or directory at point in
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
-  (hyperdrive-download-entry entry filename))
+  (when entry (hyperdrive-download-entry entry filename)))
 
 (cl-defun hyperdrive-ewoc-next (&optional (n 1))
   "Move forward N entries."
