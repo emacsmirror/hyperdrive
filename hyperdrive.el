@@ -127,6 +127,14 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
+(defcustom hyperdrive-history-display-buffer-action
+  '(display-buffer-same-window)
+  "Display buffer action for hyperdrive history buffers.
+Passed to `display-buffer', which see."
+  :type '(choice (const :tag "Same window" (display-buffer-same-window))
+                 (const :tag "Pop up window" (display-buffer-pop-up-window))
+                 (sexp :tag "Other")))
+
 (defcustom hyperdrive-default-host-format
   '(petname nickname domain seed short-key public-key)
   "Default format for displaying hyperdrive hostnames.

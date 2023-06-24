@@ -36,7 +36,7 @@
 (defvar-local hyperdrive-ewoc nil
   "EWOC for current hyperdrive buffer.")
 
-(defvar-local hyperdrive-ewoc--entry-at-point 'hyperdrive-ewoc--entry-at-point-default
+(defvar-local hyperdrive-ewoc--entry-at-point nil
   "Function used to determine which entry is at point.")
 
 (defvar hyperdrive-download-directory)
