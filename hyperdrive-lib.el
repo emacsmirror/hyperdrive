@@ -296,9 +296,7 @@ empty public-key slot."
                (ranges (hyperdrive-entry-version-ranges entry))
                (range (if version
                           (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
-                                        (and (<= start version)
-                                             (or (not range-end)
-                                                 (>= range-end version))))
+                                        (<= start version range-end))
                                       ranges)
                         (car (last ranges)))))
     range))
