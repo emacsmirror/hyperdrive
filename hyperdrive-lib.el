@@ -290,8 +290,8 @@ empty public-key slot."
                 (entry-key (cons hyperdrive path)))
      (setf (gethash entry-key hyperdrive-version-ranges) ,ranges)))
 
-(defun hyperdrive-entry-version-range-start (entry)
-  "Return the range start of ENTRY's version, or nil."
+(defun hyperdrive-entry-version-range (entry)
+  "Return the version range containing ENTRY."
   (pcase-let* (((cl-struct hyperdrive-entry version) entry)
                (ranges (hyperdrive-entry-version-ranges entry))
                (range (if version
@@ -301,13 +301,13 @@ empty public-key slot."
                                                  (>= range-end version))))
                                       ranges)
                         (car (last ranges)))))
-    (car range)))
+    range))
 
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
-  (when-let ((previous-entry (hyperdrive-entry-at (1- (hyperdrive-entry-version-range-start entry)) entry)))
+  (when-let ((previous-entry (hyperdrive-entry-at (1- (car (hyperdrive-entry-version-range entry))) entry)))
     ;; Entry version is currently its range end, but it should be its version range start.
-    (setf (hyperdrive-entry-version previous-entry) (hyperdrive-entry-version-range-start previous-entry))
+    (setf (hyperdrive-entry-version previous-entry) (car (hyperdrive-entry-version-range previous-entry)))
     previous-entry))
 
 (defun hyperdrive-entry-at (version entry)
