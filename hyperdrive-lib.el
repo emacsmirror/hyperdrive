@@ -294,11 +294,12 @@ empty public-key slot."
   "Return the version range containing ENTRY."
   (pcase-let* (((cl-struct hyperdrive-entry version) entry)
                (ranges (hyperdrive-entry-version-ranges entry))
-               (range (if version
-                          (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
-                                        (<= start version range-end))
-                                      ranges)
-                        (car (last ranges)))))
+               (range (when ranges
+                        (if version
+                            (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
+                                          (<= start version range-end))
+                                        ranges)
+                          (car (last ranges))))))
     range))
 
 (defun hyperdrive-entry-exists-p (entry)
