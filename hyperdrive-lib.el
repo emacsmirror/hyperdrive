@@ -293,14 +293,13 @@ empty public-key slot."
 (defun hyperdrive-entry-version-range (entry)
   "Return the version range containing ENTRY.
 Returns nil when ENTRY is not known to exist at its version."
-  (pcase-let* (((cl-struct hyperdrive-entry version) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
+               (version (or entry-version (hyperdrive-latest-version hyperdrive)))
                (ranges (hyperdrive-entry-version-ranges entry))
                (range (when ranges
-                        (if version
-                            (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
-                                          (<= start version range-end))
-                                        ranges)
-                          (car (last ranges))))))
+                        (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
+                                      (<= start version range-end))
+                                    ranges))))
     range))
 
 (defun hyperdrive-entry-exists-p (entry)
