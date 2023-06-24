@@ -62,6 +62,8 @@
 
 ;;;; Commands
 
+;; TODO: De-generalize these three commands.
+
 (declare-function hyperdrive-open "hyperdrive")
 
 (defun hyperdrive-ewoc-find-file (entry)
