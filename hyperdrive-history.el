@@ -127,7 +127,7 @@ entry."
                            :hyperdrive hyperdrive
                            :path path
                            :version range-start))
-                        (hyperdrive-entry-version-ranges entry)))
+                        (hyperdrive-entry-version-ranges-no-gaps entry)))
                (header (hyperdrive-entry-description
                         ;; Pass entry without version to
                         ;; `hyperdrive-entry-description' so header has no version.
