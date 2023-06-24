@@ -171,7 +171,7 @@ entry."
                                              ;;     (funcall then)))
                                              )))
       (mapc (lambda (entry)
-              (when (hyperdrive-entry-p entry)
+              (when (hyperdrive-entry-exists-p entry)
                 ;; TODO: Handle failures?
                 (hyperdrive-fill entry :queue queue :then #'ignore)))
             entries)
