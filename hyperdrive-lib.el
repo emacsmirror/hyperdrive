@@ -291,7 +291,8 @@ empty public-key slot."
      (setf (gethash entry-key hyperdrive-version-ranges) ,ranges)))
 
 (defun hyperdrive-entry-version-range (entry)
-  "Return the version range containing ENTRY."
+  "Return the version range containing ENTRY.
+Returns nil when ENTRY is not known to exist at its version."
   (pcase-let* (((cl-struct hyperdrive-entry version) entry)
                (ranges (hyperdrive-entry-version-ranges entry))
                (range (when ranges
