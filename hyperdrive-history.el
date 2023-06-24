@@ -66,6 +66,7 @@ and who cdr is a hyperdrive entry. The entry's version is used as the range star
                             (format hyperdrive-timestamp-format-string " "))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
+    ;; TODO: Define these ?/X/Y faces.
     (pcase existsp
       ('unknown ; Not known whether it exists or not
        (format "%s  %10s          unknown"
