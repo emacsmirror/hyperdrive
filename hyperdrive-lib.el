@@ -279,6 +279,7 @@ empty public-key slot."
   "Return ENTRY at its hyperdrive's latest version, or nil."
   (hyperdrive-entry-at nil entry))
 
+;; TODO: Add tests for version range functions
 (defun hyperdrive-entry-version-ranges (entry)
   "Return version ranges for ENTRY."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
