@@ -154,7 +154,8 @@ Interactively, visit file or directory at point in
 
 (defun hyperdrive-dir--entry-at-point ()
   "Return entry at point.
-With point on header, return directory entry."
+With point below last entry, returns nil.
+With point on header, returns directory entry."
   (cond ((= 1 (line-number-at-pos))
          ;; Point on header: return directory's entry.
          hyperdrive-current-entry)
