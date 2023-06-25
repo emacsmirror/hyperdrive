@@ -73,6 +73,7 @@ Usage
 * Open a hyperdrive::
 * Write to a hyperdrive::
 * Link to a hyperdrive::
+* View the hyperdrive version history::
 * Describe a hyperdrive::
 * Bookmark a hyperdrive::
 * Download hyperdrive files::
@@ -95,6 +96,10 @@ Hyperdrive
 
 * Sparse replication::
 * Versioning::
+
+Versioning
+
+* Partial version data::
 
 Naming
 
@@ -159,6 +164,7 @@ them.
 * Open a hyperdrive::
 * Write to a hyperdrive::
 * Link to a hyperdrive::
+* View the hyperdrive version history::
 * Describe a hyperdrive::
 * Bookmark a hyperdrive::
 * Download hyperdrive files::
@@ -271,6 +277,19 @@ to copy the URL of the current hyperdrive file or directory. If the
 current file is an org-mode file, @code{org-store-link} will store a link to
 the hyperdrive file, and if point is inside a heading, its @code{CUSTOM_ID},
 @code{ID}, or heading text will be appended to the stored URL@.
+
+@node View the hyperdrive version history
+@section View the hyperdrive version history
+
+@findex hyperdrive-previous-version
+@findex hyperdrive-history
+
+Hyperdrives are versioned (@ref{Versioning}).  To view the previous version
+of a hyperdrive file, run @code{hyperdrive-previous-version} inside the
+file's buffer.
+
+To view the entire known history of a file, use @code{hyperdrive-history}.
+For an explanation of the history buffer, @ref{Partial version data}.
 
 @node Describe a hyperdrive
 @section Describe a hyperdrive
@@ -490,12 +509,96 @@ hyperdrive's latest version will become 53. Now
 version of @code{/bar.org}, while the 51- and 52-versioned URLs will continue
 to point to the original version.
 
+Here's the history of @code{/bar.org} so far (the hyperdrive's latest version
+is 53):
+
+@multitable {aaaaaaaaaaaaa} {aaaaaa}
+@headitem Version range
+@tab exists
+@item 1-50
+@tab no
+@item 51-52
+@tab yes
+@item 53
+@tab yes
+@end multitable
+
+The table shows that @code{/bar.org} did not exist from the beginning of the
+hyperdrive history until version 51 (when it was created) and that it
+was modified at version 53.  Since the final range number in the table
+is 53, we also know that the hyperdrive's latest version is 53.
+
 If you delete @code{/bar.org}, @code{hyper://PUBLIC-KEY/bar.org} will no longer
 point to anything, but the versioned URLs will still work.
 
 Since only the current version of a hyperdrive entry can be updated,
 @code{hyperdrive.el} sets the buffer to read-only whenever a version number
 is specified in a hyper URL@.
+
+@menu
+* Partial version data::
+@end menu
+
+@node Partial version data
+@subsubsection Partial version data
+
+Because hyperdrives are sparsely replicated (@ref{Sparse replication}), you
+might not know the full version history of a file.  For example, when
+you load the most recent version of @code{/bar.org}, the gateway
+(@ref{Hyper-gateway}) will also return the start of the version range
+containing the most recent version of @code{/bar.org}.  Since we also know
+the latest version of the hyperdrive, the version ranges table with
+the same data from the prior section would look like this:
+
+@multitable {aaaaaaaaaaaaa} {aaaaaaa}
+@headitem Version range
+@tab exists
+@item 1-52
+@tab unknown
+@item 53
+@tab yes
+@end multitable
+
+Running @code{hyperdrive-previous} inside of the buffer for the latest
+version of @code{/bar.org} will load @code{/bar.org} at version 52. The gateway will
+inform us that the version range for @code{/bar.org} that contains version 52
+started at 51:
+
+@multitable {aaaaaaaaaaaaa} {aaaaaaa}
+@headitem Version range
+@tab exists
+@item 1-50
+@tab unknown
+@item 51-52
+@tab yes
+@item 53
+@tab yes
+@end multitable
+
+Running @code{hyperdrive-previous} inside of the buffer for @code{/bar.org} at
+version 51 or 52 will attempt to load @code{/bar.org} at
+version 50. @code{/bar.org} does not exist at version 50, so the table will
+now look like:
+
+@multitable {aaaaaaaaaaaaa} {aaaaaaa}
+@headitem Version range
+@tab exists
+@item 1-49
+@tab unknown
+@item 50
+@tab no
+@item 51-52
+@tab yes
+@item 53
+@tab yes
+@end multitable
+
+Crucially, when a file does not exist at a particular version, the
+gateway does not tell us whether it ever existed in the past.  In
+theory, @code{/bar.org} could have been created at version 6 and deleted
+again at version 8.  The only way to determine that a file is
+nonexistent for some version range is to query the network for that
+file at every single version in the range.
 
 @node Hyper-gateway
 @section Hyper-gateway
