@@ -83,7 +83,7 @@ the range start."
                (propertize range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)))
-      (t ; Known to exist
+      ('t ; Known to exist
        (format "%s  %10s  %6s  %s"
                (propertize "Y"
                            'face '(:foreground "black" :background "green"))
