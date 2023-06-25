@@ -309,6 +309,28 @@ in `hyperdrive-version-ranges'."
   (pcase-let ((`(_range-start . ,(map (:existsp existsp))) (hyperdrive-entry-version-range entry)))
     (when existsp entry)))
 
+(defun hyperdrive-entry-version-ranges-no-gaps (entry)
+  "Return ranges alist for ENTRY with no gaps in history.
+Returned newly-constructed alist where each range-end is always
+1- the following range-start. Each gap is filled with a cons cell
+whose car is the range start and whose cdr is a plist with a
+numerical :range-end and :existsp set to 'unknown:
+
+(range-start . (:range-end range-end :exists 'unknown))
+
+When the final range's range-end is less than ENTRY's
+hyperdrive's latest-version slot, the final gap is filled."
+  (let ((ranges '())
+        (previous-range-end 0))
+    (pcase-dolist (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) (hyperdrive-entry-version-ranges entry))
+      (let ((next-range-start (1+ previous-range-end)))
+        (when (> range-start next-range-start)
+          (cl-callf append ranges `((,next-range-start . (:range-end ,(1- range-start) :existsp unknown)))))
+        (cl-callf append ranges `((,range-start . (:range-end ,range-end :existsp ,existsp))))
+        (setf previous-range-end range-end)))
+    ;; TODO: final gap
+    ranges))
+
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
   (when-let ((previous-entry (hyperdrive-entry-at (1- (car (hyperdrive-entry-version-range entry))) entry)))
