@@ -37,6 +37,7 @@
 (defvar hyperdrive-timestamp-format)
 (defvar hyperdrive-default-host-format)
 (defvar hyperdrive-history-display-buffer-action)
+(defvar hyperdrive-download-directory)
 
 ;;;; Functions
 
@@ -114,15 +115,17 @@ point is on a range-entry whose entry does not exist."
 
 (defvar-keymap hyperdrive-history-mode-map
   :parent  hyperdrive-ewoc-mode-map
-  :doc "Local keymap for `hyperdrive-history-mode' buffers.")
+  :doc "Local keymap for `hyperdrive-history-mode' buffers."
+  "RET" #'hyperdrive-history-find-file
+  "w"   #'hyperdrive-history-copy-url
+  "d"   #'hyperdrive-history-download-file)
 
 (define-derived-mode hyperdrive-history-mode hyperdrive-ewoc-mode
   `("Hyperdrive-history"
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive history buffers."
-  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-history-pp)
-        hyperdrive-ewoc--entry-at-point #'hyperdrive-history--entry-at-point))
+  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-history-pp)))
 
 ;;;; Commands
 
@@ -204,6 +207,36 @@ entry."
             range-entries)
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))
+
+(declare-function hyperdrive-open "hyperdrive")
+
+(defun hyperdrive-history-find-file (entry)
+  "Visit hyperdrive ENTRY at point.
+Interactively, visit file or directory at point in
+`hyperdrive-history' buffer."
+  (declare (modes hyperdrive-history-mode))
+  (interactive (list (hyperdrive-history--entry-at-point)))
+  (when entry (hyperdrive-open entry)))
+
+(declare-function hyperdrive-copy-url "hyperdrive")
+
+(defun hyperdrive-history-copy-url (entry)
+  "Copy URL of ENTRY into the kill ring."
+  (declare (modes hyperdrive-history-mode))
+  (interactive (list (hyperdrive-history--entry-at-point)))
+  (when entry (hyperdrive-copy-url entry)))
+
+(declare-function hyperdrive-download-entry "hyperdrive")
+
+(defun hyperdrive-history-download-file (entry filename)
+  "Download ENTRY at point to FILENAME on disk."
+  (declare (modes hyperdrive-history-mode))
+  (interactive
+   (pcase-let* ((entry (hyperdrive-history--entry-at-point))
+                ((cl-struct hyperdrive-entry name) entry)
+                (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
+     (list entry read-filename)))
+  (when entry (hyperdrive-download-entry entry filename)))
 
 (provide 'hyperdrive-history)
 ;;; hyperdrive-history.el ends here

@@ -36,19 +36,11 @@
 (defvar-local hyperdrive-ewoc nil
   "EWOC for current hyperdrive buffer.")
 
-(defvar-local hyperdrive-ewoc--entry-at-point nil
-  "Function used to determine which entry is at point.")
-
-(defvar hyperdrive-download-directory)
-
 ;;;; Mode
 
 (defvar-keymap hyperdrive-ewoc-mode-map
   :parent  special-mode-map
   :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
-  "RET" #'hyperdrive-ewoc-find-file
-  "w"   #'hyperdrive-ewoc-copy-url
-  "d"   #'hyperdrive-ewoc-download-file
   "n"   #'hyperdrive-ewoc-next
   "p"   #'hyperdrive-ewoc-previous)
 
@@ -61,38 +53,6 @@
   (hl-line-mode))
 
 ;;;; Commands
-
-;; TODO: De-generalize these three commands.
-
-(declare-function hyperdrive-open "hyperdrive")
-
-(defun hyperdrive-ewoc-find-file (entry)
-  "Visit hyperdrive ENTRY at point.
-Interactively, visit file or directory at point in
-`hyperdrive-ewoc' buffer."
-  (declare (modes hyperdrive-ewoc-mode))
-  (interactive (list (funcall hyperdrive-ewoc--entry-at-point)))
-  (when entry (hyperdrive-open entry)))
-
-(declare-function hyperdrive-copy-url "hyperdrive")
-
-(defun hyperdrive-ewoc-copy-url (entry)
-  "Copy URL of ENTRY into the kill ring."
-  (declare (modes hyperdrive-ewoc-mode))
-  (interactive (list (funcall hyperdrive-ewoc--entry-at-point)))
-  (when entry (hyperdrive-copy-url entry)))
-
-(declare-function hyperdrive-download-entry "hyperdrive")
-
-(defun hyperdrive-ewoc-download-file (entry filename)
-  "Download ENTRY at point to FILENAME on disk."
-  (declare (modes hyperdrive-ewoc-mode))
-  (interactive
-   (pcase-let* ((entry (funcall hyperdrive-ewoc--entry-at-point))
-                ((cl-struct hyperdrive-entry name) entry)
-                (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
-     (list entry read-filename)))
-  (when entry (hyperdrive-download-entry entry filename)))
 
 (cl-defun hyperdrive-ewoc-next (&optional (n 1))
   "Move forward N entries."

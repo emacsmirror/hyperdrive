@@ -38,6 +38,7 @@
 
 (defvar hyperdrive-current-entry)
 (defvar hyperdrive-timestamp-format)
+(defvar hyperdrive-download-directory)
 
 ;;;; Faces
 
@@ -98,6 +99,9 @@ To be used as the pretty-printer for `ewoc-create'."
 (defvar-keymap hyperdrive-dir-mode-map
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
+  "RET" #'hyperdrive-dir-find-file
+  "w"   #'hyperdrive-dir-copy-url
+  "d"   #'hyperdrive-dir-download-file
   "^"   #'hyperdrive-up
   "D"   #'hyperdrive-dir-delete
   "?"   #'hyperdrive-describe-hyperdrive)
@@ -110,7 +114,6 @@ To be used as the pretty-printer for `ewoc-create'."
     )
   "Major mode for Hyperdrive directory buffers."
   (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)
-        hyperdrive-ewoc--entry-at-point #'hyperdrive-dir--entry-at-point
         ;; TODO(alphapapa): Imenu support.
         ;; imenu-create-index-function #'ement-room--imenu-create-index-function
         ))
@@ -118,6 +121,36 @@ To be used as the pretty-printer for `ewoc-create'."
 ;;;; Commands
 
 ;; TODO: Implement sorting by size, type, etc.
+
+(declare-function hyperdrive-open "hyperdrive")
+
+(defun hyperdrive-dir-find-file (entry)
+  "Visit hyperdrive ENTRY at point.
+Interactively, visit file or directory at point in
+`hyperdrive-dir' buffer."
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
+  (when entry (hyperdrive-open entry)))
+
+(declare-function hyperdrive-copy-url "hyperdrive")
+
+(defun hyperdrive-dir-copy-url (entry)
+  "Copy URL of ENTRY into the kill ring."
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
+  (when entry (hyperdrive-copy-url entry)))
+
+(declare-function hyperdrive-download-entry "hyperdrive")
+
+(defun hyperdrive-dir-download-file (entry filename)
+  "Download ENTRY at point to FILENAME on disk."
+  (declare (modes hyperdrive-dir-mode))
+  (interactive
+   (pcase-let* ((entry (hyperdrive-dir--entry-at-point))
+                ((cl-struct hyperdrive-entry name) entry)
+                (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
+     (list entry read-filename)))
+  (when entry (hyperdrive-download-entry entry filename)))
 
 (defun hyperdrive-dir--entry-at-point ()
   "Return entry at point.
