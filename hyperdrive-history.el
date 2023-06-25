@@ -135,7 +135,6 @@ point is on a range-entry whose entry does not exist."
 
 Prefix argument forces `hyperdrive-read-entry' to prompt for an
 entry."
-  ;; TODO: Reverse order so newest is at the top.
   ;; TODO: Deduplicate `hyperdrive-history' and
   ;; `hyperdrive-handler-directory'. Move some of the logic into
   ;; hyperdrive-ewoc.el
@@ -156,7 +155,8 @@ entry."
                                  :hyperdrive hyperdrive
                                  :path path
                                  :version range-start)))
-                        (hyperdrive-entry-version-ranges-no-gaps entry)))
+                        ;; Display in reverse chronological order
+                        (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
                (header (hyperdrive-entry-description
                         ;; Pass entry without version to
                         ;; `hyperdrive-entry-description' so header has no version.
