@@ -832,7 +832,7 @@ both point to the same content."
       (let (result)
 	(while (consp tree)
 	  (let ((newcar (car tree)))
-	    (if (or (consp (car tree)) (and vecp (vectorp (car tree))))
+	    (if (or (consp (car tree)) (and vecp (or (vectorp (car tree)) (recordp (car tree)))))
 		(setq newcar (copy-tree (car tree) vecp)))
 	    (push newcar result))
 	  (setq tree (cdr tree)))
