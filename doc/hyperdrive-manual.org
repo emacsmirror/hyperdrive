@@ -334,6 +334,51 @@ Since only the current version of a hyperdrive entry can be updated,
 ~hyperdrive.el~ sets the buffer to read-only whenever a version number
 is specified in a hyper URL.
 
+**** Partial version data
+
+Because hyperdrives are sparsely replicated ([[*Sparse replication]]), you
+might not know the full version history of a file.  For example, when
+you load the most recent version of ~/bar.org~, the gateway
+([[*Hyper-gateway]]) will also return the start of the version range
+containing the most recent version of ~/bar.org~.  Since we also know
+the latest version of the hyperdrive, the version ranges table with
+the same data from the prior section would look like this:
+
+| Version range | exists  |
+|---------------+---------|
+|          1-52 | unknown |
+|            53 | yes     |
+
+Running ~hyperdrive-previous~ inside of the buffer for the latest
+version of ~/bar.org~ will load ~/bar.org~ at version 52. The gateway will
+inform us that the version range for ~/bar.org~ that contains version 52
+started at 51:
+
+| Version range | exists  |
+|---------------+---------|
+|          1-50 | unknown |
+|         51-52 | yes     |
+|            53 | yes     |
+
+Running ~hyperdrive-previous~ inside of the buffer for ~/bar.org~ at
+version 51 or 52 will attempt to load ~/bar.org~ at
+version 50. ~/bar.org~ does not exist at version 50, so the table will
+now look like:
+
+| Version range | exists  |
+|---------------+---------|
+|          1-49 | unknown |
+|            50 | no      |
+|         51-52 | yes     |
+|            53 | yes     |
+
+Crucially, when a file does not exist at a particular version, the
+gateway does not tell us whether it ever existed in the past.  In
+theory, ~/bar.org~ could have been created at version 6 and deleted
+again at version 8.  The only way to determine that a file is
+nonexistent for some version range is to query the network for that
+file at every single version in the range.
+
 ** Hyper-gateway
 #+cindex: Hyper-gateway
 
