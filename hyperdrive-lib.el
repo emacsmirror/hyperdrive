@@ -314,9 +314,9 @@ in `hyperdrive-version-ranges'."
 Returned newly-constructed alist where each range-end is always
 1- the following range-start. Each gap is filled with a cons cell
 whose car is the range start and whose cdr is a plist with a
-numerical :range-end and :existsp set to 'unknown:
+numerical :RANGE-END and :EXISTSP set to 'UNKNOWN:
 
-(range-start . (:range-end range-end :exists 'unknown))
+(RANGE-START . (:RANGE-END RANGE-END :EXISTS 'UNKNOWN))
 
 When the final range's range-end is less than ENTRY's
 hyperdrive's latest-version slot, the final gap is filled."
