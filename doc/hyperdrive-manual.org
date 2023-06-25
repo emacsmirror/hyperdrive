@@ -131,6 +131,17 @@ current file is an org-mode file, ~org-store-link~ will store a link to
 the hyperdrive file, and if point is inside a heading, its ~CUSTOM_ID~,
 ~ID~, or heading text will be appended to the stored URL.
 
+** View the hyperdrive version history
+#+findex: hyperdrive-previous-version
+#+findex: hyperdrive-history
+
+Hyperdrives are versioned ([[*Versioning]]).  To view the previous version
+of a hyperdrive file, run ~hyperdrive-previous-version~ inside the
+file's buffer.
+
+To view the entire known history of a file, use ~hyperdrive-history~.
+For an explanation of the history buffer, [[*Partial version data]].
+
 ** Describe a hyperdrive
 #+findex: hyperdrive-describe-hyperdrive
 
