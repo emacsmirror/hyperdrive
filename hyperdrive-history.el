@@ -264,7 +264,7 @@ buffer."
                                                  (expand-file-name name hyperdrive-download-directory)))))
      (list range-entry read-filename)))
   (when (eq t (hyperdrive-range-entry-exists-p range-entry))
-    (hyperdrive-download-entry entry filename)))
+    (hyperdrive-download-entry (cdr range-entry) filename)))
 
 (provide 'hyperdrive-history)
 ;;; hyperdrive-history.el ends here
