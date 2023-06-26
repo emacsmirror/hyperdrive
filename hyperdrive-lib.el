@@ -303,6 +303,8 @@ Returns nil when ENTRY is not known to exist at its version."
                   ranges))))
 
 (defun hyperdrive-entry-exists-p (entry)
+  ;; This function is not currently used, but it could be useful for
+  ;; checking an entry that's unaccompanied by its range.
   "Return status of ENTRY's existence at its version.
 
 - t       :: ENTRY is known to exist.
