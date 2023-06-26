@@ -118,6 +118,16 @@ and ENTRY's version are nil."
            ;; Point on a file entry: return its entry.
            current-range-entry))))
 
+(defun hyperdrive-range-entry-exists-p (range-entry)
+  "Return status of ENTRY-RANGE's existence at its version.
+
+- t       :: ENTRY is known to exist.
+- nil     :: ENTRY is known to not exist.
+- unknown :: ENTRY is not known to exist."
+  (pcase-let* ((range (car range-entry))
+               ((map (:existsp existsp)) range))
+    existsp))
+
 ;;;; Mode
 
 (defvar-keymap hyperdrive-history-mode-map
