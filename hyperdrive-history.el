@@ -49,18 +49,15 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-history--format-range-entry (range-entry)
   "Return RANGE-ENTRY formatted as a string.
-RANGE-ENTRY is a cons cell whose car is a plist with two keys:
+RANGE-ENTRY is a cons cell whose car is a range according to `hyperdrive-version-ranges', except that :EXISTSP may have the value 'UNKNOWN.
 
-:range-end (whose value is a number)
-:existsp (whose value may be t, nil, or unknown)
-
-and who cdr is a hyperdrive entry. The entry's version is used as
-the range start."
-  (pcase-let* ((`(,(map (:range-end range-end) (:existsp existsp)) . ,entry) range-entry)
-               ((cl-struct hyperdrive-entry size modified (version range-start)) entry)
-               (range (if (eq range-start range-end)
-                          (format "%d" range-start)
-                        (format "%d-%d" range-start range-end)))
+and whose cdr is a hyperdrive entry."
+  (pcase-let* ((`(,range . ,entry) range-entry)
+               (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) range)
+               ((cl-struct hyperdrive-entry size modified) entry)
+               (formatted-range (if (eq range-start range-end)
+                                    (format "%d" range-start)
+                                  (format "%d-%d" range-start range-end)))
                (size (when size
                        (file-size-human-readable size)))
                (timestamp (if modified
@@ -74,21 +71,21 @@ the range start."
        (format "%s  %10s          unknown"
                (propertize "?"
                            'face '(:foreground "black" :background "yellow"))
-               (propertize range
+               (propertize formatted-range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)))
       ('nil ; Known to not exist
        (format "%s  %10s          nonexistent"
                (propertize "X"
                            'face '(:foreground "black" :background "red"))
-               (propertize range
+               (propertize formatted-range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)))
       ('t ; Known to exist
        (format "%s  %10s  %6s  %s"
                (propertize "Y"
                            'face '(:foreground "black" :background "green"))
-               (propertize range
+               (propertize formatted-range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)
                (propertize (or size "")
@@ -108,7 +105,7 @@ and ENTRY's version are nil."
            ;; Point on header: set range-end and entry version to nil
            (pcase-let ((`(,range . ,entry)
                         (hyperdrive-copy-tree current-range-entry t)))
-             (setf (map-elt range :range-end) nil)
+             (setf (map-elt (cdr range) :range-end) nil)
              (setf (hyperdrive-entry-version entry) nil)
              (cons range entry)))
           ((> current-line last-line)
@@ -125,7 +122,7 @@ and ENTRY's version are nil."
 - nil     :: ENTRY is known to not exist.
 - unknown :: ENTRY is not known to exist."
   (pcase-let* ((range (car range-entry))
-               ((map (:existsp existsp)) range))
+               ((map (:existsp existsp)) (cdr range)))
     existsp))
 
 ;;;; Mode
@@ -162,7 +159,7 @@ entry."
   ;; TODO: Highlight range for ENTRY
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                (range-entries
-                (mapcar (pcase-lambda (`(,range-start . ,range))
+                (mapcar (lambda (range)
                           ;; Some entries may not exist at
                           ;; `range-start', as in the version before
                           ;; it was created. See manual:
@@ -171,7 +168,8 @@ entry."
                                 (hyperdrive-entry-create
                                  :hyperdrive hyperdrive
                                  :path path
-                                 :version range-start)))
+                                 ;; Set version to range-start
+                                 :version (car range))))
                         ;; Display in reverse chronological order
                         (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
                (header (hyperdrive-entry-description
