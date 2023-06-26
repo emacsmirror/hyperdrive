@@ -260,7 +260,16 @@ buffer."
   (interactive
    (pcase-let* ((range-entry (hyperdrive-history-range-entry-at-point))
                 ((cl-struct hyperdrive-entry name) (cdr range-entry))
-                (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
+                (read-filename (when (eq t (hyperdrive-range-entry-exists-p range-entry))
+                                 ;; Only prompt for filename when entry exists
+
+                                 ;; FIXME: This function is only intended for
+                                 ;; interactive use. Is it acceptable to have a nil
+                                 ;; argument list and perform the user interactions
+                                 ;; in the body? This change would deduplicate the
+                                 ;; check for the existence of the entry.
+                                 (read-file-name "Filename: "
+                                                 (expand-file-name name hyperdrive-download-directory)))))
      (list range-entry read-filename)))
   (when (eq t (hyperdrive-range-entry-exists-p range-entry))
     (hyperdrive-download-entry entry filename)))
