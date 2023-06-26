@@ -30,7 +30,7 @@
 ;;;; Configuration:
 
 (defgroup hyperdrive nil
-  "Emacs gateway to the Hypercore network."
+  "P2P filesystem in Emacs."
   :group 'communication
   :group 'external
   :prefix "hyperdrive-")
