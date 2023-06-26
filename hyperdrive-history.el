@@ -96,21 +96,27 @@ the range start."
                (propertize timestamp
                            'face 'hyperdrive-timestamp))))))
 
-(defun hyperdrive-history--entry-at-point ()
-  "Return entry at version at point.
-Returns nil when point is on header or below last entry or when
-point is on a range-entry whose entry does not exist."
-  (unless (or
-           ;; Point on header.
-           ;; TODO: Consider returning latest entry here.
-           (= 1 (line-number-at-pos))
-           ;; Point is below the last entry.
-           (> (line-number-at-pos)
-              (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1)))))
-    ;; Point on a file version: check that it exists.
-    (pcase-let ((`(,_range . ,entry) (ewoc-data (ewoc-locate hyperdrive-ewoc))))
-      (when (eq t (hyperdrive-entry-exists-p entry))
-        entry))))
+(defun hyperdrive-history-range-entry-at-point ()
+  "Return range-entry at version at point.
+With point below last entry, returns nil.
+With point on header, returns a rangle-entry whose RANGE-END
+and ENTRY's version are nil."
+  (let ((current-line (line-number-at-pos))
+        (last-line (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+        (current-range-entry (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+    (cond ((= 1 current-line)
+           ;; Point on header: set range-end and entry version to nil
+           (pcase-let ((`(,range . ,entry)
+                        (hyperdrive-copy-tree current-range-entry t)))
+             (setf (map-elt range :range-end) nil)
+             (setf (hyperdrive-entry-version entry) nil)
+             (cons range entry)))
+          ((> current-line last-line)
+           ;; Point is below the last entry: return nil.
+           nil)
+          (t
+           ;; Point on a file entry: return its entry.
+           current-range-entry))))
 
 ;;;; Mode
 
@@ -211,33 +217,40 @@ entry."
 
 (declare-function hyperdrive-open "hyperdrive")
 
-(defun hyperdrive-history-find-file (entry)
-  "Visit hyperdrive ENTRY at point.
-Interactively, visit file or directory at point in
-`hyperdrive-history' buffer."
+(defun hyperdrive-history-find-file (range-entry)
+  "Visit hyperdrive entry in RANGE-ENTRY at point.
+When entry does not exist, does nothing and returns nil.
+When entry is not known to exist, attempts to load entry at
+RANGE-ENTRY's RANGE-END.
+
+Interactively, visit entry at point in `hyperdrive-history'
+buffer."
   (declare (modes hyperdrive-history-mode))
-  (interactive (list (hyperdrive-history--entry-at-point)))
-  (when entry (hyperdrive-open entry)))
+  (interactive (list (hyperdrive-history-range-entry-at-point)))
+  (let ((entry (cdr range-entry)))
+    (when (eq t (hyperdrive-entry-exists-p entry)) (hyperdrive-open entry))))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 
-(defun hyperdrive-history-copy-url (entry)
-  "Copy URL of ENTRY into the kill ring."
+(defun hyperdrive-history-copy-url (range-entry)
+  "Copy URL of entry in RANGE-ENTRY into the kill ring."
   (declare (modes hyperdrive-history-mode))
-  (interactive (list (hyperdrive-history--entry-at-point)))
-  (when entry (hyperdrive-copy-url entry)))
+  (interactive (list (hyperdrive-history-range-entry-at-point)))
+  (let ((entry (cdr range-entry)))
+    (when (eq t (hyperdrive-entry-exists-p entry)) (hyperdrive-copy-url entry))))
 
 (declare-function hyperdrive-download-entry "hyperdrive")
 
-(defun hyperdrive-history-download-file (entry filename)
-  "Download ENTRY at point to FILENAME on disk."
+(defun hyperdrive-history-download-file (range-entry filename)
+  "Download entry in RANGE-ENTRY at point to FILENAME on disk."
   (declare (modes hyperdrive-history-mode))
   (interactive
-   (pcase-let* ((entry (hyperdrive-history--entry-at-point))
-                ((cl-struct hyperdrive-entry name) entry)
+   (pcase-let* ((range-entry (hyperdrive-history-range-entry-at-point))
+                ((cl-struct hyperdrive-entry name) (cdr range-entry))
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
-     (list entry read-filename)))
-  (when entry (hyperdrive-download-entry entry filename)))
+     (list range-entry read-filename)))
+  (let ((entry (cdr range-entry)))
+    (when (eq t (hyperdrive-entry-exists-p entry)) (hyperdrive-download-entry entry filename))))
 
 (provide 'hyperdrive-history)
 ;;; hyperdrive-history.el ends here
