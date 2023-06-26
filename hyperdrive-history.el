@@ -217,10 +217,10 @@ entry."
                                              ;;   (when then
                                              ;;     (funcall then)))
                                              )))
-      (mapc (pcase-lambda (`(,_range . ,entry))
-              (when (eq t (hyperdrive-entry-exists-p entry))
+      (mapc (lambda (range-entry)
+              (when (eq t (hyperdrive-range-entry-exists-p range-entry))
                 ;; TODO: Handle failures?
-                (hyperdrive-fill entry :queue queue :then #'ignore)))
+                (hyperdrive-fill (cdr range-entry) :queue queue :then #'ignore)))
             range-entries)
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))
@@ -240,8 +240,8 @@ Interactively, visit entry at point in `hyperdrive-history'
 buffer."
   (declare (modes hyperdrive-history-mode))
   (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (let ((entry (cdr range-entry)))
-    (when (eq t (hyperdrive-entry-exists-p entry)) (hyperdrive-open entry))))
+  (when (eq t (hyperdrive-range-entry-exists-p range-entry))
+    (hyperdrive-open (cdr range-entry))))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 
@@ -249,8 +249,8 @@ buffer."
   "Copy URL of entry in RANGE-ENTRY into the kill ring."
   (declare (modes hyperdrive-history-mode))
   (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (let ((entry (cdr range-entry)))
-    (when (eq t (hyperdrive-entry-exists-p entry)) (hyperdrive-copy-url entry))))
+  (when (eq t (hyperdrive-range-entry-exists-p range-entry))
+    (hyperdrive-copy-url (cdr range-entry))))
 
 (declare-function hyperdrive-download-entry "hyperdrive")
 
@@ -262,8 +262,8 @@ buffer."
                 ((cl-struct hyperdrive-entry name) (cdr range-entry))
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list range-entry read-filename)))
-  (let ((entry (cdr range-entry)))
-    (when (eq t (hyperdrive-entry-exists-p entry)) (hyperdrive-download-entry entry filename))))
+  (when (eq t (hyperdrive-range-entry-exists-p range-entry))
+    (hyperdrive-download-entry entry filename)))
 
 (provide 'hyperdrive-history)
 ;;; hyperdrive-history.el ends here
