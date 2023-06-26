@@ -28,8 +28,6 @@
 
 (require 'cl-lib)
 
-(require 'bookmark)
-
 (require 'hyperdrive-lib)
 (require 'hyperdrive-ewoc)
 
