@@ -312,7 +312,7 @@ Returns nil when ENTRY is not known to exist at its version."
 Does not make a request to the gateway; checks the cached value
 in `hyperdrive-version-ranges'."
   (if-let ((range (hyperdrive-entry-version-range entry)))
-      (pcase-let ((`(_range-start . ,(map (:existsp existsp))) range))
+      (pcase-let ((`(,_range-start . ,(map (:existsp existsp))) range))
         existsp)
     'unknown))
 
