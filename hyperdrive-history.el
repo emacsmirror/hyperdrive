@@ -215,6 +215,9 @@ entry."
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))
 
+;; TODO: Design behavior of these functions when file doesn't exist at
+;; hyperdrive's latest version.
+
 (declare-function hyperdrive-open "hyperdrive")
 
 (defun hyperdrive-history-find-file (range-entry)
