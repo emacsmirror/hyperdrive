@@ -41,7 +41,9 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-history--format-range-entry (range-entry)
   "Return RANGE-ENTRY formatted as a string.
-RANGE-ENTRY is a cons cell whose car is a range according to `hyperdrive-version-ranges', except that :EXISTSP may have the value 'UNKNOWN.
+RANGE-ENTRY is a cons cell whose car is a range according to
+`hyperdrive-version-ranges', except that :EXISTSP may have the
+value 'UNKNOWN.
 
 and whose cdr is a hyperdrive entry."
   (pcase-let* ((`(,range . ,entry) range-entry)
