@@ -303,11 +303,18 @@ Returns nil when ENTRY is not known to exist at its version."
                   ranges))))
 
 (defun hyperdrive-entry-exists-p (entry)
-  "Return ENTRY when it exists at its version.
+  "Return status of ENTRY's existence at its version.
+
+- t       :: ENTRY is known to exist.
+- nil     :: ENTRY is known to not exist.
+- unknown :: ENTRY is not known to exist.
+
 Does not make a request to the gateway; checks the cached value
 in `hyperdrive-version-ranges'."
-  (pcase-let ((`(_range-start . ,(map (:existsp existsp))) (hyperdrive-entry-version-range entry)))
-    (when existsp entry)))
+  (if-let ((range (hyperdrive-entry-version-range entry)))
+      (pcase-let ((`(_range-start . ,(map (:existsp existsp))) range))
+        existsp)
+    'unknown))
 
 (defun hyperdrive-entry-version-ranges-no-gaps (entry)
   "Return ranges alist for ENTRY with no gaps in history.

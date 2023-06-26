@@ -109,7 +109,8 @@ point is on a range-entry whose entry does not exist."
               (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1)))))
     ;; Point on a file version: check that it exists.
     (pcase-let ((`(,_range . ,entry) (ewoc-data (ewoc-locate hyperdrive-ewoc))))
-      (hyperdrive-entry-exists-p entry))))
+      (when (eq t (hyperdrive-entry-exists-p entry))
+        entry))))
 
 ;;;; Mode
 
@@ -201,7 +202,7 @@ entry."
                                              ;;     (funcall then)))
                                              )))
       (mapc (pcase-lambda (`(,_range . ,entry))
-              (when (hyperdrive-entry-exists-p entry)
+              (when (eq t (hyperdrive-entry-exists-p entry))
                 ;; TODO: Handle failures?
                 (hyperdrive-fill entry :queue queue :then #'ignore)))
             range-entries)
