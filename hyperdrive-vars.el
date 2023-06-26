@@ -216,14 +216,8 @@ Capture group matches version number.")
 (unless hyperdrive-hyperdrives
   (setf hyperdrive-hyperdrives (make-hash-table :test #'equal)))
 
-(define-hash-table-test 'hyperdrive-version-ranges-equal
-                        (lambda (a b)
-                          (and (eq (car a) (car b))
-                               (equal (cdr a) (cdr b))))
-                        #'sxhash-equal)
-
-(defvar hyperdrive-version-ranges (make-hash-table :test 'hyperdrive-version-ranges-equal)
-  "Hash table mapping (cons hyperdrive-public-keys entry-path) to an
+(defvar hyperdrive-version-ranges (make-hash-table :test 'equal)
+  "Hash table mapping a version-less hyperdrive entry URL to an
 alist mapping version range starts to plists with `:existsp' and
 `:range-end' keys.")
 

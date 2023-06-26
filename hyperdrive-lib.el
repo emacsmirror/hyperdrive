@@ -240,14 +240,16 @@ empty public-key slot."
 ;; TODO: Add tests for version range functions
 (defun hyperdrive-entry-version-ranges (entry)
   "Return version ranges for ENTRY."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (entry-key (cons hyperdrive path)))
-    (gethash entry-key hyperdrive-version-ranges)))
+  (let ((copy (hyperdrive-copy-tree entry t)))
+    (setf (hyperdrive-entry-version copy) nil)
+    ;; Table is keyed by version-less entry URL
+    (gethash (hyperdrive-entry-url copy) hyperdrive-version-ranges)))
 
 (gv-define-setter hyperdrive-entry-version-ranges (ranges entry)
-  `(pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) ,entry)
-                (entry-key (cons hyperdrive path)))
-     (setf (gethash entry-key hyperdrive-version-ranges) ,ranges)))
+  `(let ((copy (hyperdrive-copy-tree ,entry t)))
+     (setf (hyperdrive-entry-version copy) nil)
+     ;; Table is keyed by version-less entry URL
+     (setf (gethash (hyperdrive-entry-url copy) hyperdrive-version-ranges) ,ranges)))
 
 (defun hyperdrive-entry-version-range (entry)
   "Return the version range containing ENTRY.
