@@ -29,38 +29,9 @@
 (require 'cl-lib)
 
 (require 'bookmark)
-(require 'dired)  ; For faces.
 
 (require 'hyperdrive-lib)
 (require 'hyperdrive-ewoc)
-
-;;;; Variables
-
-(defvar hyperdrive-current-entry)
-(defvar hyperdrive-timestamp-format)
-(defvar hyperdrive-download-directory)
-
-;;;; Faces
-
-(defgroup hyperdrive-faces nil
-  "Faces shown in directory listings."
-  :group 'hyperdrive)
-
-(defface hyperdrive-header
-  '((t (:inherit dired-header)))
-  "Directory path.")
-
-(defface hyperdrive-directory
-  '((t (:inherit dired-directory)))
-  "Subdirectories.")
-
-(defface hyperdrive-size
-  '((t (:inherit font-lock-doc-face)))
-  "Size of entries.")
-
-(defface hyperdrive-timestamp
-  '((t (:inherit default)))
-  "Entry timestamp.")
 
 ;;;; Functions
 
@@ -93,6 +64,7 @@ To be used as the pretty-printer for `ewoc-create'."
 
 ;;;; Mode
 
+(declare-function hyperdrive-find-file "hyperdrive")
 (declare-function hyperdrive-up "hyperdrive")
 (declare-function hyperdrive-describe-hyperdrive "hyperdrive")
 
@@ -100,12 +72,14 @@ To be used as the pretty-printer for `ewoc-create'."
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
+  "f"   #'hyperdrive-find-file ;; Alternatively, define new function which fills in name of entry at point.
   "w"   #'hyperdrive-dir-copy-url
   "d"   #'hyperdrive-dir-download-file
   "^"   #'hyperdrive-up
   "D"   #'hyperdrive-dir-delete
   "?"   #'hyperdrive-describe-hyperdrive)
 
+;; TODO: Get rid of this?
 (declare-function hyperdrive-bookmark-make-record "hyperdrive")
 
 (define-derived-mode hyperdrive-dir-mode hyperdrive-ewoc-mode

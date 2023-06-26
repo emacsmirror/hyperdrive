@@ -35,6 +35,8 @@
 (require 'persist)
 (require 'plz)
 
+(require 'hyperdrive-vars)
+
 ;;;; Declarations
 
 (declare-function hyperdrive-mode "hyperdrive")
@@ -104,61 +106,17 @@ generated from PATH. When ENCODE is non-`nil', encode PATH."
    ;;       Instead, only store path and generate name on the fly.
    :name (url-unhex-string
           (pcase path
-           ("/"
-            ;; Root directory: use "/" for clarity.
-            "/")
-           ((pred (string-suffix-p "/"))
-            ;; A subdirectory: keep the trailing slash for clarity
-            (file-relative-name path (file-name-parent-directory path)))
-           (_
-            ;; A file: remove directory part.
-            (file-name-nondirectory path))))
+            ("/"
+             ;; Root directory: use "/" for clarity.
+             "/")
+            ((pred (string-suffix-p "/"))
+             ;; A subdirectory: keep the trailing slash for clarity
+             (file-relative-name path (file-name-parent-directory path)))
+            (_
+             ;; A file: remove directory part.
+             (file-name-nondirectory path))))
    :version version
    :etc etc))
-
-;;;; Variables
-
-(defvar-local hyperdrive-current-entry nil
-  "Entry for current buffer.")
-(put 'hyperdrive-current-entry 'permanent-local t)
-
-(defvar-local hyperdrive-describe-current-hyperdrive nil
-  "Hyperdrive for current `hyperdrive-describe-mode' buffer.")
-(put 'hyperdrive-describe-current-hyperdrive 'permanent-local t)
-
-(defvar-local hyperdrive-mirror-parent-entry nil
-  "Parent entry for `hyperdrive-mirror-mode' buffer.")
-(put 'hyperdrive-mirror-parent-entry 'permanent-local t)
-
-(defvar-local hyperdrive-mirror-already-uploaded nil
-  "Non-nil if files in `hyperdrive-mirror-mode' buffer have already been uploaded.")
-
-(defvar hyperdrive-timestamp-format-string nil)
-
-(defvar hyperdrive-current-entry)
-(defvar hyperdrive-hyper-gateway-port)
-(defvar hyperdrive-hyperdrives)
-(defvar hyperdrive-default-host-format)
-(defvar hyperdrive-honor-auto-mode-alist)
-(defvar hyperdrive-version-ranges)
-
-(eval-and-compile
-  (defconst hyperdrive--hyper-prefix "hyper://"
-    "Hyperdrive URL prefix."))
-
-(defconst hyperdrive--public-key-re
-  (rx (eval hyperdrive--hyper-prefix) (group (= 52 alphanumeric)))
-  "Regexp to match \"hyper://\" + public key.
-
-Capture group matches public key.")
-
-(defconst hyperdrive--version-re
-  (rx (eval hyperdrive--hyper-prefix)
-      (one-or-more alnum)
-      (group "+" (one-or-more num)))
-  "Regexp to match \"hyper://\" + public key or seed + version number.
-
-Capture group matches version number.")
 
 ;;;; API
 

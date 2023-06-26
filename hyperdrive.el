@@ -70,153 +70,10 @@
 
 (require 'compat)
 (require 'plz)
-(require 'persist)
 
 (require 'hyperdrive-lib)
 (require 'hyperdrive-handlers)
 (require 'hyperdrive-org)
-
-(defgroup hyperdrive nil
-  "Emacs gateway to the Hypercore network."
-  :group 'communication
-  :group 'external
-  :prefix "hyperdrive-")
-
-;;;; Configuration
-
-(defcustom hyperdrive-storage-location
-  (expand-file-name "~/.local/share/hyper-gateway-nodejs/")
-  "Location to store Hypercore data."
-  :type '(file :must-match t))
-
-(defcustom hyperdrive-hyper-gateway-port 4973
-  "Port on which to run the hyper-gateway server."
-  :type 'natnum)
-
-(defcustom hyperdrive-hyper-gateway-p2p-port 4977
-  "Port on which to run the p2p network."
-  :type 'natnum)
-
-(defcustom hyperdrive-honor-auto-mode-alist t
-  "If non-nil, use file extension of hyperdrive file to set `major-mode'."
-  :type 'boolean)
-
-(defcustom hyperdrive-persist-location nil
-  "Location where `persist' will store data."
-  :type '(choice (const :tag "Use default persist location" nil)
-                 (file :tag "Custom location")))
-
-(defcustom hyperdrive-download-directory (expand-file-name
-                                          (if (bound-and-true-p eww-download-directory)
-                                              (if (stringp eww-download-directory)
-                                                  eww-download-directory
-                                                (funcall eww-download-directory))
-                                            "~/"))
-  "Location where `hyperdrive-download-url' will download files.
-Defaults to `eww-download-directory'."
-  :type '(file :must-match t))
-
-(defcustom hyperdrive-timestamp-format "%x %X"
-  "Format string used for timestamps.
-Passed to `format-time-string', which see."
-  :type 'string
-  :set (lambda (option value)
-         (set option value)
-         (setf hyperdrive-timestamp-format-string
-               (format "%%%ss"
-                       (string-width (format-time-string value))))))
-
-(defcustom hyperdrive-directory-display-buffer-action
-  '(display-buffer-same-window)
-  "Display buffer action for hyperdrive directories.
-Passed to `display-buffer', which see."
-  :type '(choice (const :tag "Same window" (display-buffer-same-window))
-                 (const :tag "Pop up window" (display-buffer-pop-up-window))
-                 (sexp :tag "Other")))
-
-(defcustom hyperdrive-history-display-buffer-action
-  '(display-buffer-same-window)
-  "Display buffer action for hyperdrive history buffers.
-Passed to `display-buffer', which see."
-  :type '(choice (const :tag "Same window" (display-buffer-same-window))
-                 (const :tag "Pop up window" (display-buffer-pop-up-window))
-                 (sexp :tag "Other")))
-
-(defcustom hyperdrive-default-host-format
-  '(petname nickname domain seed short-key public-key)
-  "Default format for displaying hyperdrive hostnames.
-Each option is checked in order, and the first available type is
-used."
-  :type '(repeat
-          (choice (const :tag "Petname" petname)
-                  (const :tag "Nickname"
-                         :doc "(Nickname specified by hyperdrive author)"
-                         :format "%t %h"
-                         nickname)
-                  (const :tag "DNSLink domain" domain)
-                  (const :tag "Seed" seed)
-                  (const :tag "Shortened public key" short-key)
-                  (const :tag "Full public key" public-key))))
-
-(defcustom hyperdrive-stream-player-command "mpv --force-window=immediate %s"
-  "Command used to play streamable URLs externally.
-In the command, \"%s\" is replaced with the URL (it should not be
-quoted, because the arguments are passed directly rather than
-through a shell)."
-  :type '(choice (const :tag "MPV" "mpv --force-window=immediate %s")
-                 (const :tag "VLC" "vlc %s")
-                 (string :tag "Other command")))
-
-(defcustom hyperdrive-queue-size 2
-  "Default size of request queues."
-  ;; TODO: Use this elsewhere also.
-  :type 'integer)
-
-;;;;; Faces
-
-(defface hyperdrive-petname '((t :inherit font-lock-type-face))
-  "Applied to hyperdrive petnames.")
-
-(defface hyperdrive-seed '((t :inherit font-lock-doc-face))
-  "Applied to hyperdrive seeds.")
-
-(defface hyperdrive-domain '((t :inherit font-lock-keyword-face))
-  "Applied to hyperdrive domains.")
-
-(defface hyperdrive-nickname '((t :inherit font-lock-warning-face))
-  "Applied to hyperdrive nicknames.")
-
-(defface hyperdrive-public-key '((t :inherit font-lock-function-name-face))
-  "Applied to hyperdrive public keys.")
-
-;;;; Internal variables
-
-;; NOTE: `persist' currently does not work correctly with hash tables
-;; if the default value of a persisted variable is one; it considers
-;; them equal at save time and so deletes the persisted variable file.
-;; To work around this, we set the default value to nil and initialize
-;; it to a hash table "manually".
-;; TODO: See persist.el patch: <https://debbugs.gnu.org/cgi/bugreport.cgi?bug=63513>
-(persist-defvar hyperdrive-hyperdrives nil
-                "List of known hyperdrives."
-                hyperdrive-persist-location)
-(unless hyperdrive-hyperdrives
-  (setf hyperdrive-hyperdrives (make-hash-table :test #'equal)))
-
-(define-hash-table-test 'hyperdrive-version-ranges-equal
-  (lambda (a b)
-    (and (eq (car a) (car b))
-         (equal (cdr a) (cdr b))))
-  #'sxhash-equal)
-
-(defvar hyperdrive-version-ranges (make-hash-table :test 'hyperdrive-version-ranges-equal)
-  "Hash table mapping (cons hyperdrive-public-keys entry-path) to an
-alist mapping version range starts to plists with `:existsp' and
-`:range-end' keys.")
-
-;; TODO: Flesh out the persist hook.
-;; (defvar hyperdrive-persist-hook nil
-;;   :type 'hook)
 
 ;;;; Links
 
@@ -238,8 +95,6 @@ alist mapping version range starts to plists with `:existsp' and
 ;;;; Commands
 
 ;; TODO(A): Command to rename paths.
-
-(defvar hyperdrive-describe-current-hyperdrive)
 
 (defun hyperdrive-describe-revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-describe-mode' buffer.

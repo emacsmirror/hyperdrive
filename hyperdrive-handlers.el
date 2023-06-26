@@ -27,10 +27,6 @@
 (require 'hyperdrive-dir)
 (require 'hyperdrive-lib)
 
-(defvar hyperdrive-dir)
-(defvar hyperdrive-directory-display-buffer-action)
-(defvar hyperdrive-stream-player-command)
-
 ;;;; Handlers
 
 (defvar hyperdrive-type-handlers

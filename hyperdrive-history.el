@@ -31,14 +31,6 @@
 (require 'hyperdrive-lib)
 (require 'hyperdrive-ewoc)
 
-;;;; Variables
-
-(defvar hyperdrive-current-entry)
-(defvar hyperdrive-timestamp-format)
-(defvar hyperdrive-default-host-format)
-(defvar hyperdrive-history-display-buffer-action)
-(defvar hyperdrive-download-directory)
-
 ;;;; Functions
 
 (defun hyperdrive-history-pp (thing)

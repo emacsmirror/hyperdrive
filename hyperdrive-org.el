@@ -29,7 +29,6 @@
 (require 'hyperdrive-lib)
 
 (defvar hyperdrive-mode)
-(defvar hyperdrive-current-entry)
 
 (declare-function hyperdrive-open "hyperdrive")
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
