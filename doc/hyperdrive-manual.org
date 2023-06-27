@@ -91,6 +91,8 @@ remembers hyperdrives you have already created or visited. It will
 prompt you to select a known hyperdrive by its public key or seed and
 then enter a path inside that hyperdrive.
 
+*** Directory view
+
 The following keybindings are available inside the directory view by
 default:
 
