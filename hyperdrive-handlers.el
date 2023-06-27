@@ -101,14 +101,13 @@ arguments."
                            :encode t))
                         entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
-               (queue) (ewoc) (header) ;; (prev-node-data) (prev-line)
+               (queue) (ewoc) ;; (prev-node-data) (prev-line)
                )
     (when parent-entry
       (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
       (push parent-entry entries))
     (setf directory-entry (hyperdrive--fill directory-entry headers))
     (hyperdrive-fill-metadata hyperdrive)
-    (setf header (hyperdrive-entry-description directory-entry))
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
       ;; (when (and (bound-and-true-p hyperdrive-ewoc)
       ;;            (ewoc-nth hyperdrive-ewoc 0))
@@ -118,7 +117,9 @@ arguments."
       (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-ewoc #'ignore)
       (erase-buffer)
-      (ewoc-set-hf hyperdrive-ewoc header "")
+      (ewoc-set-hf hyperdrive-ewoc
+                   (hyperdrive-entry-description directory-entry)
+                   "")
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
