@@ -100,6 +100,13 @@ Passed to `display-buffer', which see."
   :type 'boolean
   :group 'hyperdrive)
 
+(defcustom hyperdrive-history-short-exists-marker 'nil
+  "If non-nil, use a single character to mark an entry as
+ existent, nonexistent, or unknown in `hyperdrive-history'
+ buffers."
+  :type 'boolean
+  :group 'hyperdrive)
+
 (defcustom hyperdrive-history-display-buffer-action
   '(display-buffer-same-window)
   "Display buffer action for hyperdrive history buffers.
