@@ -430,7 +430,13 @@ Returns the latest version number."
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
 (cl-defun hyperdrive-update-version-ranges (entry range-start &key (existsp t))
-  ;; FIXME: Docstring.
+  "Update the version range for ENTRY.
+Sets the range keyed by RANGE-START to a plist whose :existsp
+value is EXISTSP and whose :range-end value is ENTRY's version.
+
+For the format of each version range, see `hyperdrive-version-ranges'.
+
+Returns the ranges cons cell for ENTRY."
   (unless (hyperdrive--entry-directory-p entry)
     ;; TODO: Revisit whether we really want to not do anything for directories.
     (pcase-let* ((ranges (hyperdrive-entry-version-ranges entry))
