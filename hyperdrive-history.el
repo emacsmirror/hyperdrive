@@ -60,20 +60,6 @@ and whose cdr is a hyperdrive entry."
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
     (pcase existsp
-      ('unknown ; Not known whether it exists or not
-       (format "%s  %10s          unknown"
-               (propertize "?"
-                           'face 'hyperdrive-history-unknown)
-               (propertize formatted-range
-                           ;; TODO: Another font for range?
-                           'face 'hyperdrive-size)))
-      ('nil ; Known to not exist
-       (format "%s  %10s          nonexistent"
-               (propertize "X"
-                           'face 'hyperdrive-history-nonexistent)
-               (propertize formatted-range
-                           ;; TODO: Another font for range?
-                           'face 'hyperdrive-size)))
       ('t ; Known to exist
        (format "%s  %10s  %6s  %s"
                (propertize "Y"
@@ -84,7 +70,21 @@ and whose cdr is a hyperdrive entry."
                (propertize (or size "")
                            'face 'hyperdrive-size)
                (propertize timestamp
-                           'face 'hyperdrive-timestamp))))))
+                           'face 'hyperdrive-timestamp)))
+      ('nil ; Known to not exist
+       (format "%s  %10s          nonexistent"
+               (propertize "X"
+                           'face 'hyperdrive-history-nonexistent)
+               (propertize formatted-range
+                           ;; TODO: Another font for range?
+                           'face 'hyperdrive-size)))
+      ('unknown ; Not known whether it exists or not
+       (format "%s  %10s          unknown"
+               (propertize "?"
+                           'face 'hyperdrive-history-unknown)
+               (propertize formatted-range
+                           ;; TODO: Another font for range?
+                           'face 'hyperdrive-size))))))
 
 (defun hyperdrive-history-range-entry-at-point ()
   "Return range-entry at version at point.
