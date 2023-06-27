@@ -232,13 +232,13 @@ buffer."
   (declare (modes hyperdrive-history-mode))
   (interactive (list (hyperdrive-history-range-entry-at-point)))
   (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
-    ('t
+    ((t quote)
      ;; Known to exist: open it.
      (hyperdrive-open (cdr range-entry)))
-    ('nil
+    ((nil quote)
      ;; Known to not exist: warn user.
      (user-error "File does not exist!"))
-    ('unknown
+    ((unknown quote)
      ;; Not known to exist: prompt user
      ;; TODO: Design options
      (hyperdrive-message "File not known to exist. What do you want to do?"))))
@@ -250,13 +250,13 @@ buffer."
   (declare (modes hyperdrive-history-mode))
   (interactive (list (hyperdrive-history-range-entry-at-point)))
   (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
-    ('t
+    ((t quote)
      ;; Known to exist: copy it.
      (hyperdrive-copy-url (cdr range-entry)))
-    ('nil
+    ((nil quote)
      ;; Known to not exist: warn user.
      (user-error "File does not exist!"))
-    ('unknown
+    ((unknown quote)
      ;; Not known to exist: warn user.
      (user-error "File not known to exist!"))))
 
@@ -280,13 +280,13 @@ buffer."
                                                  (expand-file-name name hyperdrive-download-directory)))))
      (list range-entry read-filename)))
   (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
-    ('t
+    ((t quote)
      ;; Known to exist: download it.
      (hyperdrive-download-entry (cdr range-entry) filename))
-    ('nil
+    ((nil quote)
      ;; Known to not exist: warn user.
      (user-error "File does not exist!"))
-    ('unknown
+    ((unknown quote)
      ;; Not known to exist: warn user.
      (user-error "File not known to exist!"))))
 
