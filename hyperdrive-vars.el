@@ -94,6 +94,12 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other"))
   :group 'hyperdrive)
 
+(defcustom hyperdrive-column-headers 't
+  "If non-nil, display column headers in `hyperdrive-dir' and
+`hyperdrive-history' buffers."
+  :type 'boolean
+  :group 'hyperdrive)
+
 (defcustom hyperdrive-history-display-buffer-action
   '(display-buffer-same-window)
   "Display buffer action for hyperdrive history buffers.
@@ -164,6 +170,11 @@ through a shell)."
 
 (defface hyperdrive-header
   '((t (:inherit dired-header)))
+  "Directory path."
+  :group 'hyperdrive-faces)
+
+(defface hyperdrive-column-header
+  '((t (:inherit underline)))
   "Directory path."
   :group 'hyperdrive-faces)
 

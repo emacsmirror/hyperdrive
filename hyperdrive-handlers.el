@@ -101,6 +101,14 @@ arguments."
                            :encode t))
                         entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
+               (main-header (hyperdrive-entry-description directory-entry))
+               (header (if hyperdrive-column-headers
+                           (concat main-header "\n"
+                                   (format "%6s  %s  %s"
+                                           (propertize "Size" 'face 'hyperdrive-column-header)
+                                           (format hyperdrive-timestamp-format-string (propertize "Last Modified" 'face 'hyperdrive-column-header))
+                                           (propertize "Name" 'face 'hyperdrive-column-header)))
+                         main-header))
                (queue) (ewoc) ;; (prev-node-data) (prev-line)
                )
     (when parent-entry
@@ -117,9 +125,7 @@ arguments."
       (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-ewoc #'ignore)
       (erase-buffer)
-      (ewoc-set-hf hyperdrive-ewoc
-                   (hyperdrive-entry-description directory-entry)
-                   "")
+      (ewoc-set-hf hyperdrive-ewoc header "")
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
