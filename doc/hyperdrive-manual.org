@@ -99,7 +99,6 @@ default:
 - ~n~ and ~p~ move between entries
 #+kindex: hyperdrive-dir-find-file
 - ~RET~ opens file or directory at point
-# TODO: Document up mapped to dired-jump
 #+kindex: hyperdrive-up
 - ~^~ goes up to the parent directory [fn:1]
 #+kindex: revert-buffer
