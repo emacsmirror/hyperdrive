@@ -102,6 +102,8 @@ default:
 # TODO: Document up mapped to dired-jump
 #+kindex: hyperdrive-up
 - ~^~ goes up to the parent directory [fn:1]
+#+kindex: revert-buffer
+- ~g~ refreshes the directory to display potential updates
 #+kindex: hyperdrive-dir-download-file
 - ~d~ downloads the file at point to disk
 #+kindex: hyperdrive-dir-delete
