@@ -114,6 +114,14 @@ default:
 #+kindex: hyperdrive-describe-hyperdrive
 - ~?~ opens a buffer describing the current hyperdrive
 
+*** File view
+
+The following keybindings are available inside the directory view by
+default:
+
+#+kindex: revert-buffer-quick
+- ~C-x x g~ refreshes the file to display potential updates
+
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
 
