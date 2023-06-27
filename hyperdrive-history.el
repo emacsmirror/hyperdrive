@@ -83,11 +83,7 @@ and whose cdr is a hyperdrive entry."
                         'face 'hyperdrive-history-range)
             (propertize (or size "")
                         'face 'hyperdrive-size)
-            (propertize (pcase-exhaustive existsp
-                          ('t (or timestamp ""))
-                          ('nil "nonexistent")
-                          ('unknown "unknown"))
-                        ;; TODO: Consider adding separate faces for "nonexistent" and "unknown" text
+            (propertize (or timestamp "")
                         'face 'hyperdrive-timestamp))))
 
 (defun hyperdrive-history-range-entry-at-point ()
