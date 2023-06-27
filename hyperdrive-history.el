@@ -132,6 +132,7 @@ and ENTRY's version are nil."
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive history buffers."
+  :interactive nil
   (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-history-pp)))
 
 ;;;; Commands
