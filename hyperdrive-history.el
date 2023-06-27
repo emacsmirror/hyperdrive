@@ -148,7 +148,7 @@ and ENTRY's version are nil."
 Prefix argument forces `hyperdrive-read-entry' to prompt for an
 entry."
   ;; TODO: Traverse history backward from known existent ranges.
-  (interactive (list (if current-prefix-arg
+  (interactive (list (if (or current-prefix-arg (not hyperdrive-current-entry))
                          (hyperdrive-read-entry :force-prompt t :allow-version-p nil)
                        hyperdrive-current-entry)))
   ;; TODO: Highlight range for ENTRY
