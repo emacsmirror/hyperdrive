@@ -102,7 +102,7 @@ default:
 #+kindex: hyperdrive-dir-find-file
 - ~RET~ opens file or directory at point
 #+kindex: hyperdrive-up
-- ~^~ goes up to the parent directory [fn:1]
+- ~^~ goes up to the parent directory
 #+kindex: revert-buffer
 - ~g~ refreshes the directory to display potential updates
 #+kindex: hyperdrive-dir-download-file
@@ -121,6 +121,10 @@ default:
 
 #+kindex: revert-buffer-quick
 - ~C-x x g~ refreshes the file to display potential updates
+
+If you have bound ~dired-jump~ in the global keymap (people often choose
+~C-x C-j~), you can use the same binding to jump to the parent
+hyperdrive directory from any hyperdrive file or directory buffer.
 
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
@@ -568,11 +572,6 @@ files from the filesystem.
 :INDEX: cp
 :END:
 
-* Footnotes
-
-[fn:1] If you have bound ~dired-jump~ in the global keymap (people often
-choose ~C-x C-j~), you can use the same binding to jump to the parent
-hyperdrive directory from any hyperdrive file or directory buffer.
 
 # Local Variables:
 # sentence-end-double-space: t
