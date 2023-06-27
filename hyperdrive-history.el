@@ -244,8 +244,16 @@ buffer."
   "Copy URL of entry in RANGE-ENTRY into the kill ring."
   (declare (modes hyperdrive-history-mode))
   (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (when (eq t (hyperdrive-range-entry-exists-p range-entry))
-    (hyperdrive-copy-url (cdr range-entry))))
+  (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
+    ('t
+     ;; Known to exist: copy it.
+     (hyperdrive-copy-url (cdr range-entry)))
+    ('nil
+     ;; Known to not exist: warn user.
+     (user-error "File does not exist!"))
+    ('unknown
+     ;; Not known to exist: warn user.
+     (user-error "File not known to exist!"))))
 
 (declare-function hyperdrive-download-entry "hyperdrive")
 
