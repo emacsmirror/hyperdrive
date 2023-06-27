@@ -154,8 +154,20 @@ Hyperdrives are versioned ([[*Versioning]]).  To view the previous version
 of a hyperdrive file, run ~hyperdrive-previous-version~ inside the
 file's buffer.
 
+*** History buffer
+
 To view the entire known history of a file, use ~hyperdrive-history~.
 For an explanation of the history buffer, [[*Partial version data]].
+
+The following keybindings are available inside the directory view by
+default:
+
+#+kindex: hyperdrive-history-find-file
+- ~RET~ opens the file at the start of the range at point
+#+kindex: hyperdrive-history-copy-url
+- ~w~ copies the URL of the file at the start of the range at point
+#+kindex: hyperdrive-history-download-file)
+- ~d~ downloads the file at the start of the range at point
 
 ** Describe a hyperdrive
 #+findex: hyperdrive-describe-hyperdrive
