@@ -182,6 +182,11 @@ through a shell)."
   "Entry timestamp."
   :group 'hyperdrive-faces)
 
+(defface hyperdrive-history-range
+  '((t (:inherit font-lock-escape-face)))
+  "Version range in `hyperdrive-history' buffers."
+  :group 'hyperdrive-faces)
+
 (defface hyperdrive-history-existent '((t (:foreground "black" :background "green")))
   "Marker for known existent entries in `hyperdrive-history'
 buffers."

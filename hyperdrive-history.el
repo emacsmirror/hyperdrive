@@ -65,8 +65,7 @@ and whose cdr is a hyperdrive entry."
                (propertize "Y"
                            'face 'hyperdrive-history-existent)
                (propertize formatted-range
-                           ;; TODO: Another font for range?
-                           'face 'hyperdrive-size)
+                           'face 'hyperdrive-history-range)
                (propertize (or size "")
                            'face 'hyperdrive-size)
                (propertize timestamp
@@ -76,15 +75,13 @@ and whose cdr is a hyperdrive entry."
                (propertize "X"
                            'face 'hyperdrive-history-nonexistent)
                (propertize formatted-range
-                           ;; TODO: Another font for range?
-                           'face 'hyperdrive-size)))
+                           'face 'hyperdrive-history-range)))
       ('unknown ; Not known whether it exists or not
        (format "%s  %10s          unknown"
                (propertize "?"
                            'face 'hyperdrive-history-unknown)
                (propertize formatted-range
-                           ;; TODO: Another font for range?
-                           'face 'hyperdrive-size))))))
+                           'face 'hyperdrive-history-range))))))
 
 (defun hyperdrive-history-range-entry-at-point ()
   "Return range-entry at version at point.
