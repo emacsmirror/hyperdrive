@@ -274,8 +274,16 @@ buffer."
                                  (read-file-name "Filename: "
                                                  (expand-file-name name hyperdrive-download-directory)))))
      (list range-entry read-filename)))
-  (when (eq t (hyperdrive-range-entry-exists-p range-entry))
-    (hyperdrive-download-entry (cdr range-entry) filename)))
+  (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
+    ('t
+     ;; Known to exist: download it.
+     (hyperdrive-download-entry (cdr range-entry) filename))
+    ('nil
+     ;; Known to not exist: warn user.
+     (user-error "File does not exist!"))
+    ('unknown
+     ;; Not known to exist: warn user.
+     (user-error "File not known to exist!"))))
 
 (provide 'hyperdrive-history)
 ;;; hyperdrive-history.el ends here
