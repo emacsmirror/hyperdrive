@@ -143,9 +143,6 @@ and ENTRY's version are nil."
 
 Prefix argument forces `hyperdrive-read-entry' to prompt for an
 entry."
-  ;; TODO: Deduplicate `hyperdrive-history' and
-  ;; `hyperdrive-handler-directory'. Move some of the logic into
-  ;; hyperdrive-ewoc.el
   ;; TODO: Traverse history backward from known existent ranges.
   (interactive (list (if current-prefix-arg
                          (hyperdrive-read-entry :force-prompt t :allow-version-p nil)
