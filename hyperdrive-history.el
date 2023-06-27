@@ -226,8 +226,17 @@ Interactively, visit entry at point in `hyperdrive-history'
 buffer."
   (declare (modes hyperdrive-history-mode))
   (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (when (eq t (hyperdrive-range-entry-exists-p range-entry))
-    (hyperdrive-open (cdr range-entry))))
+  (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
+    ('t
+     ;; Known to exist: open it.
+     (hyperdrive-open (cdr range-entry)))
+    ('nil
+     ;; Known to not exist: warn user.
+     (user-error "File does not exist!"))
+    ('unknown
+     ;; Not known to exist: prompt user
+     ;; TODO: Design options
+     (hyperdrive-message "File not known to exist. What do you want to do?"))))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 
