@@ -182,6 +182,22 @@ through a shell)."
   "Entry timestamp."
   :group 'hyperdrive-faces)
 
+(defface hyperdrive-history-existent '((t (:foreground "black" :background "green")))
+  "Marker for known existent entries in `hyperdrive-history'
+buffers."
+  :group 'hyperdrive-faces)
+
+(defface hyperdrive-history-nonexistent '((t (:foreground "black" :background "red")))
+  "Marker for known nonexistent entries in `hyperdrive-history'
+buffers."
+  :group 'hyperdrive-faces)
+
+(defface hyperdrive-history-unknown '((t (:foreground "black" :background "yellow")))
+  "Marker for entries whose existence is unknown in
+ `hyperdrive-history' buffers."
+  :group 'hyperdrive-faces)
+
+
 ;;;;; Regular expressions
 
 (eval-and-compile

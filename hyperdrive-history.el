@@ -59,26 +59,25 @@ and whose cdr is a hyperdrive entry."
                             (format hyperdrive-timestamp-format-string " "))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    ;; TODO: Define these ?/X/Y faces.
     (pcase existsp
       ('unknown ; Not known whether it exists or not
        (format "%s  %10s          unknown"
                (propertize "?"
-                           'face '(:foreground "black" :background "yellow"))
+                           'face 'hyperdrive-history-unknown)
                (propertize formatted-range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)))
       ('nil ; Known to not exist
        (format "%s  %10s          nonexistent"
                (propertize "X"
-                           'face '(:foreground "black" :background "red"))
+                           'face 'hyperdrive-history-nonexistent)
                (propertize formatted-range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)))
       ('t ; Known to exist
        (format "%s  %10s  %6s  %s"
                (propertize "Y"
-                           'face '(:foreground "black" :background "green"))
+                           'face 'hyperdrive-history-existent)
                (propertize formatted-range
                            ;; TODO: Another font for range?
                            'face 'hyperdrive-size)
