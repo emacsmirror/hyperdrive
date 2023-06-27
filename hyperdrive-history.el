@@ -52,6 +52,10 @@ and whose cdr is a hyperdrive entry."
                (formatted-range (if (eq range-start range-end)
                                     (format "%d" range-start)
                                   (format "%d-%d" range-start range-end)))
+               (exists-marker (pcase-exhaustive existsp
+                                ('t "Y")
+                                ('nil "X")
+                                ('unknown "?")))
                (size (when size
                        (file-size-human-readable size)))
                (timestamp (if modified
@@ -59,29 +63,22 @@ and whose cdr is a hyperdrive entry."
                             (format hyperdrive-timestamp-format-string " "))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    (pcase existsp
-      ('t ; Known to exist
-       (format "%s  %10s  %6s  %s"
-               (propertize "Y"
-                           'face 'hyperdrive-history-existent)
-               (propertize formatted-range
-                           'face 'hyperdrive-history-range)
-               (propertize (or size "")
-                           'face 'hyperdrive-size)
-               (propertize timestamp
-                           'face 'hyperdrive-timestamp)))
-      ('nil ; Known to not exist
-       (format "%s  %10s          nonexistent"
-               (propertize "X"
-                           'face 'hyperdrive-history-nonexistent)
-               (propertize formatted-range
-                           'face 'hyperdrive-history-range)))
-      ('unknown ; Not known whether it exists or not
-       (format "%s  %10s          unknown"
-               (propertize "?"
-                           'face 'hyperdrive-history-unknown)
-               (propertize formatted-range
-                           'face 'hyperdrive-history-range))))))
+    (format "%s  %10s  %6s  %s"
+            (propertize exists-marker
+                        'face (pcase-exhaustive existsp
+                                ('t 'hyperdrive-history-existent)
+                                ('nil 'hyperdrive-history-nonexistent)
+                                ('unknown 'hyperdrive-history-unknown)))
+            (propertize formatted-range
+                        'face 'hyperdrive-history-range)
+            (propertize (or size "")
+                        'face 'hyperdrive-size)
+            (propertize (pcase-exhaustive existsp
+                          ('t (or timestamp ""))
+                          ('nil "nonexistent")
+                          ('unknown "unknown"))
+                        ;; TODO: Consider adding separate faces for "nonexistent" and "unknown" text
+                        'face 'hyperdrive-timestamp))))
 
 (defun hyperdrive-history-range-entry-at-point ()
   "Return range-entry at version at point.
