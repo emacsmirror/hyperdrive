@@ -129,10 +129,17 @@ and ENTRY's version are nil."
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive history buffers."
+  ;; TODO: Add revert buffer function. This will likely require
+  ;; binding hyperdrive-current-entry in this mode. Consider keeping
+  ;; the version around so that we can highlight the line
+  ;; corresponding to version currently open in another buffer.
   :interactive nil
   (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-history-pp)))
 
 ;;;; Commands
+
+
+;; TODO: Test with deleted and recreated files
 
 ;;;###autoload
 (defun hyperdrive-history (entry)

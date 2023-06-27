@@ -444,6 +444,7 @@ Returns the ranges cons cell for ENTRY."
                  ((map (:range-end old-range-end)) range)
                  ((cl-struct hyperdrive-entry hyperdrive version) entry)
                  (range-end (or version (hyperdrive-latest-version hyperdrive))))
+      ;; TODO: Update range start for contiguous nonexistent entries
       (when (or (not old-range-end)
                 (< old-range-end range-end))
         (setf (plist-get range :range-end) range-end
