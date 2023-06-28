@@ -82,6 +82,10 @@ Passed to `format-time-string', which see."
          (set option value)
          (setf hyperdrive-timestamp-format-string
                (format "%%%ss"
+                       ;; FIXME: This value varies based on current
+                       ;;        time. (format-time-string "%-I") will
+                       ;;        be one or two characters long
+                       ;;        depending on the time of day
                        (string-width (format-time-string value)))))
   :group 'hyperdrive)
 
