@@ -167,10 +167,28 @@ entry."
                                  :version (car range))))
                         ;; Display in reverse chronological order
                         (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
-               (header (hyperdrive-entry-description
-                        ;; Pass entry without version to
-                        ;; `hyperdrive-entry-description' so header has no version.
-                        (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
+               (main-header (hyperdrive-entry-description
+                             ;; Pass entry without version to
+                             ;; `hyperdrive-entry-description' so header has no version.
+                             (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
+               (exists-column-header (if hyperdrive-history-short-exists-marker
+                                         ;; TODO: Use "∃" instead. The alignment of the
+                                         ;; subsequent column headers was off when I tried.
+                                         "E"
+                                       "Exists?"))
+               ;; TODO: By default, use whole word for exists-marker
+               ;; (with user option to use single character). Remove
+               ;; unknown, non-existent from timestamp column
+               (header (if hyperdrive-column-headers
+                           (concat main-header "\n"
+                                   (format "%s  %10s  %6s  %s"
+                                           (format hyperdrive-history-exists-marker-format-string
+                                                   (propertize exists-column-header 'face 'hyperdrive-column-header))
+                                           (propertize "Ver. Range" 'face 'hyperdrive-column-header)
+                                           (propertize "Size" 'face 'hyperdrive-column-header)
+                                           (format hyperdrive-timestamp-format-string
+                                                   (propertize "Last Modified" 'face 'hyperdrive-column-header))))
+                         main-header))
                (inhibit-read-only t)
                (queue) (ewoc))
     (with-current-buffer (get-buffer-create
