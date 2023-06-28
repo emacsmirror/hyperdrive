@@ -56,10 +56,10 @@ and whose cdr is a hyperdrive entry."
                                       (pcase-exhaustive existsp
                                         ('t (if hyperdrive-history-short-exists-marker
                                                 "Y"
-                                              "Existent"))
+                                              "Yes"))
                                         ('nil (if hyperdrive-history-short-exists-marker
                                                   "X"
-                                                "Nonexistent"))
+                                                "No"))
                                         ('unknown (if hyperdrive-history-short-exists-marker
                                                       "?"
                                                     "Unknown")))))

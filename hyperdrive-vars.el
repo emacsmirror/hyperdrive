@@ -116,7 +116,7 @@ Passed to `display-buffer', which see."
                (format "%%%ds"
                        (if value
                            (string-width "X")
-                         (max (string-width "Existent") (string-width "Nonexistent") (string-width "Unknown"))))))
+                         (max (string-width "Yes") (string-width "No") (string-width "Unknown"))))))
   :group 'hyperdrive)
 
 (defcustom hyperdrive-history-display-buffer-action
