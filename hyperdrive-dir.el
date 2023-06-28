@@ -146,26 +146,27 @@ With point on header, returns directory entry."
   "Delete ENTRY."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
-  (pcase-let (((cl-struct hyperdrive-entry name) entry)
-              (buffer (current-buffer)))
-    (when (and (yes-or-no-p (format "Delete %S? " name))
-               (or (not (hyperdrive--entry-directory-p entry))
-                   (yes-or-no-p (format "Recursively delete %S? " name))))
-      (hyperdrive-delete entry
-        :then (lambda (_)
-                (when (buffer-live-p buffer)
-                  (with-current-buffer buffer
-                    (revert-buffer)))
-                (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
-        :else (lambda (plz-error)
-                (pcase-let* (((cl-struct plz-error response) plz-error)
-                             ((cl-struct plz-response status) response)
-                             (message
-                              (pcase status
-                                (403 "Hyperdrive not writable")
-                                (405 "Cannot write to old version")
-                                (_ plz-error))))
-                  (hyperdrive-message "Unable to delete: %S: %S" name message)))))))
+  (when entry
+    (pcase-let (((cl-struct hyperdrive-entry name) entry)
+                (buffer (current-buffer)))
+      (when (and (yes-or-no-p (format "Delete %S? " name))
+                 (or (not (hyperdrive--entry-directory-p entry))
+                     (yes-or-no-p (format "Recursively delete %S? " name))))
+        (hyperdrive-delete entry
+          :then (lambda (_)
+                  (when (buffer-live-p buffer)
+                    (with-current-buffer buffer
+                      (revert-buffer)))
+                  (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
+          :else (lambda (plz-error)
+                  (pcase-let* (((cl-struct plz-error response) plz-error)
+                               ((cl-struct plz-response status) response)
+                               (message
+                                (pcase status
+                                  (403 "Hyperdrive not writable")
+                                  (405 "Cannot write to old version")
+                                  (_ plz-error))))
+                    (hyperdrive-message "Unable to delete: %S: %S" name message))))))))
 
 (provide 'hyperdrive-dir)
 ;;; hyperdrive-dir.el ends here
