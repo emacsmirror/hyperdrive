@@ -145,7 +145,7 @@ With point on header, returns directory entry."
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
               (buffer (current-buffer)))
     (when (and (yes-or-no-p (format "Delete %S? " name))
