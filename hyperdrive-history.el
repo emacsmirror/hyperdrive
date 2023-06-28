@@ -52,28 +52,25 @@ and whose cdr is a hyperdrive entry."
                (formatted-range (if (eq range-start range-end)
                                     (format "%d" range-start)
                                   (format "%d-%d" range-start range-end)))
-               (exists-marker (pcase-exhaustive existsp
-                                ('t (if hyperdrive-history-short-exists-marker
-                                        "Y"
-                                      "Existent"))
-                                ('nil (if hyperdrive-history-short-exists-marker
-                                          "X"
-                                        "Nonexistent"))
-                                ('unknown (if hyperdrive-history-short-exists-marker
-                                              "?"
-                                            "Unknown"))))
-               (exists-marker-width (if hyperdrive-history-short-exists-marker
-                                        (string-width "X")
-                                      (max (string-width "Existent") (string-width "Nonexistent") (string-width "Unknown"))))
+               (exists-marker (format hyperdrive-history-exists-marker-format-string
+                                      (pcase-exhaustive existsp
+                                        ('t (if hyperdrive-history-short-exists-marker
+                                                "Y"
+                                              "Existent"))
+                                        ('nil (if hyperdrive-history-short-exists-marker
+                                                  "X"
+                                                "Nonexistent"))
+                                        ('unknown (if hyperdrive-history-short-exists-marker
+                                                      "?"
+                                                    "Unknown")))))
                (size (when size
                        (file-size-human-readable size)))
                (timestamp (if modified
                               (format-time-string hyperdrive-timestamp-format modified)
-                            (format hyperdrive-timestamp-format-string " ")))
-               (format-string (format "%%%ds  %%10s  %%6s  %%s" exists-marker-width)))
+                            (format hyperdrive-timestamp-format-string " "))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    (format format-string
+    (format "%s  %10s  %6s  %s"
             (propertize exists-marker
                         'face (pcase-exhaustive existsp
                                 ('t 'hyperdrive-history-existent)

@@ -104,11 +104,19 @@ Passed to `display-buffer', which see."
   :type 'boolean
   :group 'hyperdrive)
 
+(defvar hyperdrive-history-exists-marker-format-string)
 (defcustom hyperdrive-history-short-exists-marker 'nil
   "If non-nil, use a single character to mark an entry as
  existent, nonexistent, or unknown in `hyperdrive-history'
  buffers."
   :type 'boolean
+  :set (lambda (option value)
+         (set option value)
+         (setf hyperdrive-history-exists-marker-format-string
+               (format "%%%ds"
+                       (if value
+                           (string-width "X")
+                         (max (string-width "Existent") (string-width "Nonexistent") (string-width "Unknown"))))))
   :group 'hyperdrive)
 
 (defcustom hyperdrive-history-display-buffer-action
