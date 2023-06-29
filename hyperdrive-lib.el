@@ -491,6 +491,28 @@ Call ELSE if request fails."
   (hyperdrive-api 'delete (hyperdrive-entry-url entry)
     :then then :else else))
 
+(cl-defun hyperdrive-diff-file-entries (old-entry new-entry &key then else)
+  "Diff OLD-ENTRY and NEW-ENTRY, then call THEN on diff buffer.
+Call ELSE if either request fails.  ELSE may potentially be called
+twice, once per failed request.
+This function is intended to diff files, not directories."
+  (declare (indent defun))
+  (let* (old-buffer
+         new-buffer
+         (diff-buffer (get-buffer-create "*hyperdrive-diff*"))
+         (queue (make-plz-queue :limit 2
+                                :finally (lambda ()
+                                           (funcall then (let ((diff-entire-buffers nil))
+                                                           (diff-no-select old-buffer new-buffer nil nil diff-buffer)))))))
+    (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
+      :queue queue :as 'buffer :else else
+      :then (lambda (buffer)
+              (setf old-buffer buffer)))
+    (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
+      :queue queue :as 'buffer :else else
+      :then (lambda (buffer)
+              (setf new-buffer buffer)))))
+
 (cl-defun hyperdrive-write (entry &key body then else queue)
   "Write BODY to hyperdrive ENTRY's URL."
   (declare (indent defun))
