@@ -504,14 +504,18 @@ This function is intended to diff files, not directories."
                                 :finally (lambda ()
                                            (funcall then (let ((diff-entire-buffers nil))
                                                            (diff-no-select old-buffer new-buffer nil nil diff-buffer)))))))
-    (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
-      :queue queue :as 'buffer :else else
-      :then (lambda (buffer)
-              (setf old-buffer buffer)))
-    (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
-      :queue queue :as 'buffer :else else
-      :then (lambda (buffer)
-              (setf new-buffer buffer)))))
+    (if old-entry
+        (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
+          :queue queue :as 'buffer :else else
+          :then (lambda (buffer)
+                  (setf old-buffer buffer)))
+      (setf old-buffer (generate-new-buffer "old-entry-nonexistent")))
+    (if new-entry
+        (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
+          :queue queue :as 'buffer :else else
+          :then (lambda (buffer)
+                  (setf new-buffer buffer)))
+      (setf new-buffer (generate-new-buffer "new-entry-nonexistent")))))
 
 (cl-defun hyperdrive-write (entry &key body then else queue)
   "Write BODY to hyperdrive ENTRY's URL."
