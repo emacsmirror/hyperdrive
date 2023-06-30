@@ -90,9 +90,10 @@ arguments."
                  (inhibit-read-only t)
                  ((cl-struct plz-response headers body)
                   ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
+                  ;; FIXME: Remove with-local-quit since plz should cover that now.
                   (with-local-quit
                     (hyperdrive-api 'get url :as 'response
-                                    :noquery t)))
+                      :noquery t)))
                  (entry-names (json-read-from-string body))
                  (entries
                   (mapcar (lambda (entry-name)
