@@ -126,6 +126,7 @@ and ENTRY's version are nil."
   :parent  hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-history-mode' buffers."
   "RET" #'hyperdrive-history-find-file
+  "="   #'hyperdrive-history-diff
   "w"   #'hyperdrive-history-copy-url
   "d"   #'hyperdrive-history-download-file)
 
@@ -243,6 +244,18 @@ entry."
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))
 
+(defun hyperdrive-history-diff (old-entry new-entry)
+  ;; TODO: Docstring
+  (declare (modes hyperdrive-history-mode))
+  ;; TODO: Set entries based on marked ranges
+  (interactive (let* ((new-entry (cdr (hyperdrive-history-range-entry-at-point)))
+                      (old-entry (hyperdrive-entry-previous new-entry)))
+                 (list old-entry new-entry)))
+  (hyperdrive-diff-file-entries old-entry new-entry
+    :then (lambda (diff-buffer)
+            (pop-to-buffer diff-buffer))
+    :else (lambda ()
+            (hyperdrive-message "Unable to display diff."))))
 
 (declare-function hyperdrive-open "hyperdrive")
 
