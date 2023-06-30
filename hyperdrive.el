@@ -574,6 +574,12 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
       (hyperdrive-open parent)
     (user-error "At root directory")))
 
+(defvar-keymap hyperdrive-up-map
+  :doc "Keymap to repeat `hyperdrive-up'.  Used in `repeat-mode'."
+  :repeat t
+  "j"   #'hyperdrive-up
+  "C-j" #'hyperdrive-up)
+
 (defun hyperdrive-previous-version (entry)
   "Show previous version of ENTRY."
   (declare (modes hyperdrive-mode))
