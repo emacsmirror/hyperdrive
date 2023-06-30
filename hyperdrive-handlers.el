@@ -30,7 +30,9 @@
 ;;;; Handlers
 
 (defvar hyperdrive-type-handlers
-  '(("application/json" . hyperdrive-handler-json)
+  '(
+    ;; Directories are sent from the gateway as JSON arrays
+    ("application/json" . hyperdrive-handler-json)
     ("\\`audio/" . hyperdrive-handler-streamable)
     ("\\`video/" . hyperdrive-handler-streamable))
   "Alist mapping MIME types to handler functions.
