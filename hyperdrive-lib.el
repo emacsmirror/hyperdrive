@@ -327,13 +327,13 @@ When VERSION is `nil', return latest version of ENTRY."
 (cl-defun hyperdrive-fill
     (entry &key queue then
            (else (lambda (plz-error)
-                   ;; FIXME: Use a message instead of a warning for
-                   ;; now, because the 404 errors for filenames with
-                   ;; spaces are annoying as warnings.
-                   (hyperdrive-message (format "hyperdrive-fill: error: %S" plz-error) )
-                   ;; (display-warning 'hyperdrive
-                   ;;                  (format "hyperdrive-fill: error: %S" plz-error))
-                   )))
+                   (pcase (plz-error-message plz-error)
+                     ((or "‘plz’ queue cleared; request canceled."
+                          "curl process killed")
+                      ;; Don't message when the queue was cleared
+                      ;; (e.g. if the user reverted too quickly).
+                      nil)
+                     (_ (hyperdrive-message (format "hyperdrive-fill: error: %S" plz-error)))) )))
   "Fill ENTRY's metadata and call THEN.
 If THEN is `sync', return the filled entry and ignore ELSE.
 Otherwise, make request asynchronously and call THEN with the
