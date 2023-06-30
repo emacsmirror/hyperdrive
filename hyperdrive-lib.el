@@ -403,7 +403,11 @@ The following ENTRY hyperdrive slots are filled:
             (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
         (setf (hyperdrive-public-key hyperdrive) public-key)))
     (if (hyperdrive--entry-directory-p entry)
+        ;; Directory HEAD/GET request ETag header always have the
+        ;; hyperdrive's latest version
         (hyperdrive--fill-latest-version hyperdrive headers)
+      ;; We don't currently store version ranges for directories
+      ;; (since they don't technically have versions in hyperdrive)
       (hyperdrive-update-version-ranges entry (string-to-number etag)))
     entry))
 
