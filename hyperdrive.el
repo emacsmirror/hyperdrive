@@ -357,10 +357,9 @@ for a hyperdrive."
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer
                     bookmark-make-record-function #'hyperdrive-bookmark-make-record)
         (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
-    ;; FIXME: Use `kill-local-variable' for `revert-buffer-function'.
     (kill-local-variable 'bookmark-make-record-function)
-    (setq-local revert-buffer-function #'revert-buffer--default
-                write-contents-functions
+    (kill-local-variable 'revert-buffer-function)
+    (setq-local write-contents-functions
                 (remove #'hyperdrive--write-contents write-contents-functions))))
 
 ;;;###autoload
