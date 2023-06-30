@@ -221,8 +221,7 @@ Gateway must be running."
 If SEED is not currently used as the petname for another
 hyperdrive, the new hyperdrive's petname will be set to SEED."
   (interactive (list (hyperdrive-read-name :prompt "New hyperdrive seed")))
-  (let* ((response (with-local-quit
-                     (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string seed)))))
+  (let* ((response (hyperdrive-api 'post (concat "hyper://localhost/?key=" (url-hexify-string seed))))
          (url (progn
                 ;; NOTE: Working around issue in plz whereby the
                 ;; stderr process sentinel sometimes leaves "stderr

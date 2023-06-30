@@ -41,39 +41,38 @@ Keys are regexps matched against MIME types.")
 (cl-defun hyperdrive-handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
-  (with-local-quit
-    (hyperdrive-api 'get (hyperdrive-entry-url entry)
-      :noquery t
-      :as (lambda ()
-            (let ((response-buffer (current-buffer))
-                  (inhibit-read-only t))
-              ;; TODO: Revisit buffer naming/"visiting" (e.g. what
-              ;; happens if the user opens a Hyperdrive file and then
-              ;; saves another buffer to the same location?).  See
-              ;; also: hyperdrive-save, etc.
-              (switch-to-buffer (hyperdrive--get-buffer-create entry))
-              (when (buffer-modified-p)
-                (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
-              (erase-buffer)
-              (insert-buffer-substring response-buffer)
-              (setf buffer-undo-list nil
-                    buffer-read-only (or (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry)))
-                                         (hyperdrive-entry-version entry)))
-              (set-buffer-modified-p nil)
-              (set-visited-file-modtime (current-time))
-              (goto-char (point-min))
-              ;; TODO: Option to defer showing buffer.
-              ;; FIXME: Do this in a wrapper.
-              ;; (when target
-              ;;   ;; FIXME: This is specific to Org files and doesn't
-              ;;   ;; quite belong here.  (OTOH we could use this
-              ;;   ;; function to find text in non-Org files, too, I
-              ;;   ;; think.)
-              ;;   (require 'ol)
-              ;;   (org-link-search target))
-              (pop-to-buffer (current-buffer))
-              (when then
-                (funcall then)))))))
+  (hyperdrive-api 'get (hyperdrive-entry-url entry)
+    :noquery t
+    :as (lambda ()
+          (let ((response-buffer (current-buffer))
+                (inhibit-read-only t))
+            ;; TODO: Revisit buffer naming/"visiting" (e.g. what
+            ;; happens if the user opens a Hyperdrive file and then
+            ;; saves another buffer to the same location?).  See
+            ;; also: hyperdrive-save, etc.
+            (switch-to-buffer (hyperdrive--get-buffer-create entry))
+            (when (buffer-modified-p)
+              (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
+            (erase-buffer)
+            (insert-buffer-substring response-buffer)
+            (setf buffer-undo-list nil
+                  buffer-read-only (or (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry)))
+                                       (hyperdrive-entry-version entry)))
+            (set-buffer-modified-p nil)
+            (set-visited-file-modtime (current-time))
+            (goto-char (point-min))
+            ;; TODO: Option to defer showing buffer.
+            ;; FIXME: Do this in a wrapper.
+            ;; (when target
+            ;;   ;; FIXME: This is specific to Org files and doesn't
+            ;;   ;; quite belong here.  (OTOH we could use this
+            ;;   ;; function to find text in non-Org files, too, I
+            ;;   ;; think.)
+            ;;   (require 'ol)
+            ;;   (org-link-search target))
+            (pop-to-buffer (current-buffer))
+            (when then
+              (funcall then))))))
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
@@ -90,10 +89,7 @@ arguments."
                  (inhibit-read-only t)
                  ((cl-struct plz-response headers body)
                   ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
-                  ;; FIXME: Remove with-local-quit since plz should cover that now.
-                  (with-local-quit
-                    (hyperdrive-api 'get url :as 'response
-                      :noquery t)))
+                  (hyperdrive-api 'get url :as 'response :noquery t))
                  (entry-names (json-read-from-string body))
                  (entries
                   (mapcar (lambda (entry-name)

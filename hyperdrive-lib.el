@@ -345,11 +345,10 @@ the given `plz-queue'"
     ('sync (condition-case err
                (hyperdrive--fill entry
                                  (plz-response-headers
-                                  (with-local-quit
-                                    (hyperdrive-api 'head (hyperdrive-entry-url entry)
-                                      :as 'response
-                                      :then 'sync
-                                      :noquery t))))
+                                  (hyperdrive-api 'head (hyperdrive-entry-url entry)
+                                    :as 'response
+                                    :then 'sync
+                                    :noquery t)))
              (plz-http-error
               (pcase (plz-response-status (plz-error-response (caddr err)))
                 (404 ;; Entry doesn't exist at this version: update range data.
@@ -421,12 +420,11 @@ The following ENTRY hyperdrive slots are filled:
 Returns the latest version number."
   ;; TODO: Call this func and display latest version in describe-mode buffers.
   (pcase-let (((cl-struct plz-response headers)
-               (with-local-quit
-                 (hyperdrive-api
-                   'head (hyperdrive-entry-url
-                          (hyperdrive-entry-create
-                           :hyperdrive hyperdrive :path "/"))
-                   :as 'response))))
+               (hyperdrive-api
+                 'head (hyperdrive-entry-url
+                        (hyperdrive-entry-create
+                         :hyperdrive hyperdrive :path "/"))
+                 :as 'response)))
     (hyperdrive--fill-latest-version hyperdrive headers)))
 
 (defun hyperdrive--fill-latest-version (hyperdrive headers)
@@ -474,16 +472,15 @@ HYPERDRIVE's public metadata file."
                        :path "/.well-known/host-meta.json"
                        ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
                        :version nil))
-               (metadata (with-local-quit
-                           (condition-case err
-                               (hyperdrive-api 'get (hyperdrive-entry-url entry)
-                                 ;; TODO: How to handle invalid JSON? Currently, we get this error:
-                                 ;; error in process sentinel: JSON readtable error: 105
-                                 :as #'json-read :noquery t)
-                             (plz-http-error
-                              (pcase (plz-response-status (plz-error-response (caddr err)))
-                                (404 nil)
-                                (_ (signal (car err) (cdr err)))))))))
+               (metadata (condition-case err
+                             (hyperdrive-api 'get (hyperdrive-entry-url entry)
+                               ;; TODO: How to handle invalid JSON? Currently, we get this error:
+                               ;; error in process sentinel: JSON readtable error: 105
+                               :as #'json-read :noquery t)
+                           (plz-http-error
+                            (pcase (plz-response-status (plz-error-response (caddr err)))
+                              (404 nil)
+                              (_ (signal (car err) (cdr err))))))))
     (setf (hyperdrive-metadata hyperdrive) metadata)
     (hyperdrive-persist hyperdrive)
     hyperdrive))
@@ -770,9 +767,8 @@ Prompts with PROMPT."
 That is, if the SEED has been used to create a local
 hyperdrive."
   (condition-case err
-      (pcase (with-local-quit
-               (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string seed))
-                 :as 'response :noquery t))
+      (pcase (hyperdrive-api 'get (concat "hyper://localhost/?key=" (url-hexify-string seed))
+               :as 'response :noquery t)
         ((and (pred plz-response-p)
               response
               (guard (= 200 (plz-response-status response))))
