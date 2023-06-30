@@ -293,16 +293,18 @@ for a hyperdrive."
           (hyperdrive-put-metadata hyperdrive
             :then (pcase-lambda ((cl-struct plz-response headers))
                     (hyperdrive-message "Unset nickname")
-                    (hyperdrive--fill-latest-version hyperdrive headers))))
+                    (hyperdrive--fill-latest-version hyperdrive headers)
+                    (hyperdrive-persist hyperdrive))))
       (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
       (hyperdrive-put-metadata hyperdrive
         :then (pcase-lambda ((cl-struct plz-response headers))
                 (hyperdrive-message "Set nickname for «%s» to %s"
                                     (hyperdrive--format-hyperdrive hyperdrive)
                                     (hyperdrive--format-host hyperdrive :format '(nickname)))
-                (hyperdrive--fill-latest-version hyperdrive headers))))
+                (hyperdrive--fill-latest-version hyperdrive headers)
+                (hyperdrive-persist hyperdrive))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
-    (hyperdrive-persist hyperdrive))
+    )
   hyperdrive)
 
 (defun hyperdrive-revert-buffer (&optional _ignore-auto noconfirm)
