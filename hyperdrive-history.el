@@ -115,6 +115,11 @@ and ENTRY's version are nil."
                ((map (:existsp existsp)) (cdr range)))
     existsp))
 
+(defun hyperdrive-history-revert-buffer (&optional _ignore-auto _noconfirm)
+  "Revert `hyperdrive-history-mode' buffer."
+  ;; TODO: Preserve point position in buffer.
+  (hyperdrive-history hyperdrive-current-entry))
+
 ;;;; Mode
 
 (defvar-keymap hyperdrive-history-mode-map
@@ -134,7 +139,8 @@ and ENTRY's version are nil."
   ;; the version around so that we can highlight the line
   ;; corresponding to version currently open in another buffer.
   :interactive nil
-  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-history-pp)))
+  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-history-pp))
+  (setq-local revert-buffer-function #'hyperdrive-history-revert-buffer))
 
 ;;;; Commands
 
@@ -197,6 +203,7 @@ entry."
                                                            :with-label t)
                                   (url-unhex-string path)))
       (hyperdrive-history-mode)
+      (setq-local hyperdrive-current-entry entry)
       (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
       (ewoc-filter hyperdrive-ewoc #'ignore)
       (erase-buffer)
