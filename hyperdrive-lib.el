@@ -324,16 +324,7 @@ When VERSION is `nil', return latest version of ENTRY."
          (404 nil)
          (_ (signal (car err) (cdr err))))))))
 
-(cl-defun hyperdrive-fill
-    (entry &key queue then
-           (else (lambda (plz-error)
-                   (pcase (plz-error-message plz-error)
-                     ((or (rx "queue cleared; request canceled.")
-                          "curl process killed")
-                      ;; Don't message when the queue was cleared
-                      ;; (e.g. if the user reverted too quickly).
-                      nil)
-                     (_ (hyperdrive-message (format "hyperdrive-fill: error: %S" plz-error)))) )))
+(cl-defun hyperdrive-fill (entry &key queue then else)
   "Fill ENTRY's metadata and call THEN.
 If THEN is `sync', return the filled entry and ignore ELSE.
 Otherwise, make request asynchronously and call THEN with the
@@ -341,6 +332,20 @@ filled entry; or if request fails, call ELSE (which is passed to
 `hyperdrive-api', which see.  If QUEUE, make the fill request in
 the given `plz-queue'"
   (declare (indent defun))
+  (unless else
+    ;; Binding this in the function argument form causes a spurious
+    ;; lint warning about a docstring being too long, so we do this
+    ;; here instead.
+    (setf else (lambda (plz-error)
+                 (pcase (plz-error-message plz-error)
+                   ((or (rx "queue cleared; request canceled.")
+                        "curl process killed")
+                    ;; Don't message when the queue was cleared
+                    ;; (e.g. if the user reverted too quickly).
+                    nil)
+                   (_
+                    (hyperdrive-message
+                     (format "hyperdrive-fill: error: %S" plz-error)))))))
   (pcase then
     ('sync (condition-case err
                (hyperdrive--fill entry
