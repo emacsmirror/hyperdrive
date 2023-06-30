@@ -446,6 +446,7 @@ value is EXISTSP and whose :range-end value is ENTRY's version.
 For the format of each version range, see `hyperdrive-version-ranges'.
 
 Returns the ranges cons cell for ENTRY."
+  (cl-check-type range-start integer)
   (unless (hyperdrive--entry-directory-p entry)
     ;; TODO: Revisit whether we really want to not do anything for directories.
     (pcase-let* ((ranges (hyperdrive-entry-version-ranges entry))
