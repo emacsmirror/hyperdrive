@@ -328,7 +328,7 @@ When VERSION is `nil', return latest version of ENTRY."
     (entry &key queue then
            (else (lambda (plz-error)
                    (pcase (plz-error-message plz-error)
-                     ((or "‘plz’ queue cleared; request canceled."
+                     ((or (rx "queue cleared; request canceled.")
                           "curl process killed")
                       ;; Don't message when the queue was cleared
                       ;; (e.g. if the user reverted too quickly).
