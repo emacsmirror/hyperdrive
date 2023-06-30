@@ -394,14 +394,17 @@ The following ENTRY hyperdrive slots are filled:
           (hyperdrive-entry-type entry) content-type
           ;; TODO: Rename slot to "mtime" to avoid confusion.
           (hyperdrive-entry-modified entry) last-modified)
-    (when domain
-      (if persisted-hyperdrive
-          ;; The previous call to hyperdrive-entry-url did not retrieve the
-          ;; persisted hyperdrive because we had no public-key, only a domain.
-          (progn
-            (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
-            (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal))
-        (setf (hyperdrive-public-key hyperdrive) public-key)))
+    (if persisted-hyperdrive
+        (progn
+          ;; Ensure that entry's hyperdrive is the persisted hyperdrive,
+          ;; since it may be used later as part of a
+          ;; `hyperdrive-version-ranges' key and compared using `eq'.
+          (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
+          (when domain
+            ;; The previous call to hyperdrive-entry-url may not have retrieved
+            ;; the persisted hyperdrive if we had only a domain but no public-key.
+            (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal)))
+      (setf (hyperdrive-public-key hyperdrive) public-key))
     (if (hyperdrive--entry-directory-p entry)
         ;; Directory HEAD/GET request ETag header always have the
         ;; hyperdrive's latest version
