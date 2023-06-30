@@ -362,7 +362,9 @@ the given `plz-queue'"
          :then (lambda (response)
                  (funcall then (hyperdrive--fill entry (plz-response-headers response))))
          :else (lambda (&rest args)
-                 (hyperdrive-update-version-ranges entry (hyperdrive-entry-version entry) :existsp nil)
+                 (when-let ((version (hyperdrive-entry-version entry)))
+                   ;; If request is canceled, the entry may not have a version.
+                   (hyperdrive-update-version-ranges entry version :existsp nil))
                  (apply else args))
          :noquery t))))
 
