@@ -244,13 +244,16 @@ entry."
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))
 
+(declare-function hyperdrive-diff-file-entries "hyperdrive-diff")
 (defun hyperdrive-history-diff (old-entry new-entry)
-  ;; TODO: Docstring
+  "Show diff between OLD-ENTRY and NEW-ENTRY.
+Interactively, diff range entry at point with previous entry."
   (declare (modes hyperdrive-history-mode))
   ;; TODO: Set entries based on marked ranges
   (interactive (let* ((new-entry (cdr (hyperdrive-history-range-entry-at-point)))
                       (old-entry (hyperdrive-entry-previous new-entry)))
                  (list old-entry new-entry)))
+  (require 'hyperdrive-diff)
   (hyperdrive-diff-file-entries old-entry new-entry
     :then (lambda (diff-buffer)
             (pop-to-buffer diff-buffer))
