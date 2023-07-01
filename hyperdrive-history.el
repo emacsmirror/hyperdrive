@@ -83,11 +83,11 @@ With point on header, returns a rangle-entry whose RANGE-END
 and ENTRY's version are nil."
   (let ((current-line (line-number-at-pos))
         (last-line (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
-        (current-range-entry (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+        (range-entry-at-point (ewoc-data (ewoc-locate hyperdrive-ewoc))))
     (cond ((= 1 current-line)
            ;; Point on header: set range-end and entry version to nil
            (pcase-let ((`(,range . ,entry)
-                        (hyperdrive-copy-tree current-range-entry t)))
+                        (hyperdrive-copy-tree range-entry-at-point t)))
              (setf (map-elt (cdr range) :range-end) nil)
              (setf (hyperdrive-entry-version entry) nil)
              (cons range entry)))
@@ -97,7 +97,7 @@ and ENTRY's version are nil."
            (hyperdrive-user-error "No file on this line"))
           (t
            ;; Point on a file entry: return its entry.
-           current-range-entry))))
+           range-entry-at-point))))
 
 (defun hyperdrive-range-entry-exists-p (range-entry)
   "Return status of ENTRY-RANGE's existence at its version.
