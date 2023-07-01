@@ -64,19 +64,19 @@ To be used as the pretty-printer for `ewoc-create'."
   "Return entry at point.
 With point below last entry, returns nil.
 With point on header, returns directory entry."
-  (let ((header-height (if hyperdrive-column-headers
-                           2
-                         1)))
-    (cond ((>= header-height (line-number-at-pos))
+  (let ((current-line (line-number-at-pos))
+        (last-line (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+        (entry-at-point (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+    (cond ((= 1 current-line)
            ;; Point on header: return directory's entry.
            hyperdrive-current-entry)
-          ((> (line-number-at-pos)
-              (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
-           ;; Point is below the last entry: return nil.
-           nil)
+          ((or (> current-line last-line)
+               (and hyperdrive-column-headers (= 2 current-line)))
+           ;; Point is below the last entry or on column headers: signal error.
+           (hyperdrive-user-error "No file on this line"))
           (t
            ;; Point on a file entry: return its entry.
-           (ewoc-data (ewoc-locate hyperdrive-ewoc))))))
+           entry-at-point))))
 
 ;;;; Mode
 
@@ -120,7 +120,7 @@ Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
-  (when entry (hyperdrive-open entry)))
+  (hyperdrive-open entry))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 
@@ -128,7 +128,7 @@ Interactively, visit file or directory at point in
   "Copy URL of ENTRY into the kill ring."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
-  (when entry (hyperdrive-copy-url entry)))
+  (hyperdrive-copy-url entry))
 
 (declare-function hyperdrive-download-entry "hyperdrive")
 
@@ -140,33 +140,32 @@ Interactively, visit file or directory at point in
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
-  (when entry (hyperdrive-download-entry entry filename)))
+  (hyperdrive-download-entry entry filename))
 
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
-  (when entry
-    (pcase-let (((cl-struct hyperdrive-entry name) entry)
-                (buffer (current-buffer)))
-      (when (and (yes-or-no-p (format "Delete %S? " name))
-                 (or (not (hyperdrive--entry-directory-p entry))
-                     (yes-or-no-p (format "Recursively delete %S? " name))))
-        (hyperdrive-delete entry
-          :then (lambda (_)
-                  (when (buffer-live-p buffer)
-                    (with-current-buffer buffer
-                      (revert-buffer)))
-                  (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
-          :else (lambda (plz-error)
-                  (pcase-let* (((cl-struct plz-error response) plz-error)
-                               ((cl-struct plz-response status) response)
-                               (message
-                                (pcase status
-                                  (403 "Hyperdrive not writable")
-                                  (405 "Cannot write to old version")
-                                  (_ plz-error))))
-                    (hyperdrive-message "Unable to delete: %S: %S" name message))))))))
+  (pcase-let (((cl-struct hyperdrive-entry name) entry)
+              (buffer (current-buffer)))
+    (when (and (yes-or-no-p (format "Delete %S? " name))
+               (or (not (hyperdrive--entry-directory-p entry))
+                   (yes-or-no-p (format "Recursively delete %S? " name))))
+      (hyperdrive-delete entry
+        :then (lambda (_)
+                (when (buffer-live-p buffer)
+                  (with-current-buffer buffer
+                    (revert-buffer)))
+                (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
+        :else (lambda (plz-error)
+                (pcase-let* (((cl-struct plz-error response) plz-error)
+                             ((cl-struct plz-response status) response)
+                             (message
+                              (pcase status
+                                (403 "Hyperdrive not writable")
+                                (405 "Cannot write to old version")
+                                (_ plz-error))))
+                  (hyperdrive-message "Unable to delete: %S: %S" name message)))))))
 
 (provide 'hyperdrive-dir)
 ;;; hyperdrive-dir.el ends here
