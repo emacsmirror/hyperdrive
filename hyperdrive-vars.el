@@ -81,6 +81,7 @@ Passed to `format-time-string', which see."
   :set (lambda (option value)
          (set option value)
          (setf hyperdrive-timestamp-format-string
+               ;; TODO: Left-align this header.
                (format "%%%ds"
                        ;; FIXME: This value varies based on current
                        ;;        time. (format-time-string "%-I") will
