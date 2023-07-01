@@ -357,6 +357,7 @@ for a hyperdrive."
       (progn
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer
                     bookmark-make-record-function #'hyperdrive-bookmark-make-record)
+        ;; FIXME: `write-contents-functions' is cleared when changing the major mode
         (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
     (kill-local-variable 'bookmark-make-record-function)
     (kill-local-variable 'revert-buffer-function)
