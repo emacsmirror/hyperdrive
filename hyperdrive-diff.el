@@ -64,11 +64,7 @@ This function is intended to diff files, not directories."
                                       (progn
                                         (diff-no-select old-buffer new-buffer nil t diff-buffer)
                                         (with-current-buffer diff-buffer
-                                          (narrow-to-region (1+ (point-at-eol))
-                                                            (save-excursion
-                                                              (goto-char (point-max))
-                                                              (forward-line -2)
-                                                              (point))))
+                                          (hyperdrive-diff-mode))
                                         (funcall then diff-buffer))
                                     (error (kill-buffer diff-buffer)
                                            (signal (car err) (cdr err))))
@@ -84,6 +80,19 @@ This function is intended to diff files, not directories."
         :queue queue :as 'response :else else
         :then (lambda (response)
                 (setf new-response response))))))
+
+;;;; Mode
+
+(define-derived-mode hyperdrive-diff-mode diff-mode "hyperdrive-diff"
+  "Major mode for `hyperdrive-diff' buffers."
+  :group 'hyperdrive
+  :interactive nil
+  ;; Narrow the buffer to hide the diff command and "diff finished" lines.
+  (narrow-to-region
+   (1+ (point-at-eol)) (save-excursion
+                         (goto-char (point-max))
+                         (forward-line -2)
+                         (point))))
 
 ;;;; Footer
 
