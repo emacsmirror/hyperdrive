@@ -52,17 +52,10 @@ and whose cdr is a hyperdrive entry."
                (formatted-range (if (eq range-start range-end)
                                     (format "%d" range-start)
                                   (format "%d-%d" range-start range-end)))
-               (exists-marker (format hyperdrive-history-exists-marker-format-string
-                                      (pcase-exhaustive existsp
-                                        ('t (if hyperdrive-history-short-exists-marker
-                                                "Y"
-                                              "Yes"))
-                                        ('nil (if hyperdrive-history-short-exists-marker
-                                                  "X"
-                                                "No"))
-                                        ('unknown (if hyperdrive-history-short-exists-marker
-                                                      "?"
-                                                    "Unknown")))))
+               (exists-marker (format "%7s" (pcase-exhaustive existsp
+                                              ('t "Yes")
+                                              ('nil "No")
+                                              ('unknown "Unknown"))))
                (size (when size
                        (file-size-human-readable size)))
                (timestamp (if modified
@@ -70,7 +63,7 @@ and whose cdr is a hyperdrive entry."
                             (format hyperdrive-timestamp-format-string " "))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    (format "%s  %10s  %6s  %s"
+    (format "%7s  %13s  %6s  %s"
             (propertize exists-marker
                         'face (pcase-exhaustive existsp
                                 ('t 'hyperdrive-history-existent)
@@ -178,20 +171,11 @@ entry."
                              ;; Pass entry without version to
                              ;; `hyperdrive-entry-description' so header has no version.
                              (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
-               (exists-column-header (if hyperdrive-history-short-exists-marker
-                                         ;; TODO: Use "∃" instead. The alignment of the
-                                         ;; subsequent column headers was off when I tried.
-                                         "E"
-                                       "Exists?"))
-               ;; TODO: By default, use whole word for exists-marker
-               ;; (with user option to use single character). Remove
-               ;; unknown, non-existent from timestamp column
                (header (if hyperdrive-column-headers
                            (concat main-header "\n"
-                                   (format "%s  %10s  %6s  %s"
-                                           (format hyperdrive-history-exists-marker-format-string
-                                                   (propertize exists-column-header 'face 'hyperdrive-column-header))
-                                           (propertize "Ver. Range" 'face 'hyperdrive-column-header)
+                                   (format "%7s  %13s  %6s  %s"
+                                           (propertize "Exists?" 'face 'hyperdrive-column-header)
+                                           (propertize "Version Range" 'face 'hyperdrive-column-header)
                                            (propertize "Size" 'face 'hyperdrive-column-header)
                                            (format hyperdrive-timestamp-format-string
                                                    (propertize "Last Modified" 'face 'hyperdrive-column-header))))
