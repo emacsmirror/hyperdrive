@@ -52,7 +52,7 @@ If then, then call THEN with no arguments.  Default handler."
             ;; also: hyperdrive-save, etc.
             (switch-to-buffer (hyperdrive--get-buffer-create entry))
             (when (buffer-modified-p)
-              (error "Hyperdrive: Buffer modified: %S" (current-buffer)))
+              (hyperdrive-error "Buffer modified: %S" (current-buffer)))
             (erase-buffer)
             (insert-buffer-substring response-buffer)
             (setf buffer-undo-list nil

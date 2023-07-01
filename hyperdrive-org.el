@@ -123,7 +123,7 @@ TARGET may be a CUSTOM_ID, an ID, or a headline."
   (goto-char (or (org-find-property "CUSTOM_ID" target)
                  (org-find-property "ID" target)
                  (org-find-exact-headline-in-buffer target)
-                 (error "Hyperdrive: Unable to find entry in file: %S" target))))
+                 (hyperdrive-error "Unable to find entry in file: %S" target))))
 
 ;;;###autoload
 (with-eval-after-load 'org

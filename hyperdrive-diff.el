@@ -46,7 +46,7 @@ This function is intended to diff files, not directories."
                  :limit 2
                  :finally (lambda ()
                             (unless (or old-response new-response)
-                              (error "Files non-existent"))
+                              (hyperdrive-error "Files non-existent"))
                             (let ((old-buffer (generate-new-buffer
                                                (hyperdrive-entry-description old-entry)))
                                   (new-buffer (generate-new-buffer

@@ -812,6 +812,10 @@ both point to the same content."
   "Call `message' with MESSAGE and ARGS, prefixing MESSAGE with \"Hyperdrive:\"."
   (apply #'message (concat "Hyperdrive: " message) args))
 
+(defun hyperdrive-error (string &rest args)
+  "Call `error' with STRING and ARGS, prefixing STRING with \"Hyperdrive:\"."
+  (apply #'error (concat "Hyperdrive: " string) args))
+
 (defun hyperdrive-copy-tree (tree &optional vecp)
   "Like `copy-tree', but with VECP, works for records too."
   ;; TODO: Now that the new copy-tree behavior has been merged into Emacs,
