@@ -40,25 +40,50 @@ twice, once per failed request.
 This function is intended to diff files, not directories."
   (declare (indent defun))
   (require 'diff)
-  (let* (old-buffer
-         new-buffer
-         (diff-buffer (get-buffer-create "*hyperdrive-diff*"))
-         (queue (make-plz-queue :limit 2
-                                :finally (lambda ()
-                                           (funcall then (let ((diff-entire-buffers nil))
-                                                           (diff-no-select old-buffer new-buffer nil nil diff-buffer)))))))
-    (if old-entry
-        (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
-          :queue queue :as 'buffer :else else
-          :then (lambda (buffer)
-                  (setf old-buffer buffer)))
-      (setf old-buffer (generate-new-buffer "old-entry-nonexistent")))
-    (if new-entry
-        (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
-          :queue queue :as 'buffer :else else
-          :then (lambda (buffer)
-                  (setf new-buffer buffer)))
-      (setf new-buffer (generate-new-buffer "new-entry-nonexistent")))))
+  (let* (old-response
+         new-response
+         (queue (make-plz-queue
+                 :limit 2
+                 :finally (lambda ()
+                            (unless (or old-response new-response)
+                              (error "Files non-existent"))
+                            (let ((old-buffer (generate-new-buffer
+                                               (hyperdrive-entry-description old-entry)))
+                                  (new-buffer (generate-new-buffer
+                                               (hyperdrive-entry-description new-entry)))
+                                  ;; TODO: Improve diff buffer name.
+                                  (diff-buffer (get-buffer-create "*hyperdrive-diff*")))
+                              (when old-response
+                                (with-current-buffer old-buffer
+                                  (insert (plz-response-body old-response))))
+                              (when new-response
+                                (with-current-buffer new-buffer
+                                  (insert (plz-response-body new-response))))
+                              (unwind-protect
+                                  (condition-case err
+                                      (progn
+                                        (diff-no-select old-buffer new-buffer nil t diff-buffer)
+                                        (with-current-buffer diff-buffer
+                                          (narrow-to-region (1+ (point-at-eol))
+                                                            (save-excursion
+                                                              (goto-char (point-max))
+                                                              (forward-line -2)
+                                                              (point))))
+                                        (funcall then diff-buffer))
+                                    (error (kill-buffer diff-buffer)
+                                           (signal (car err) (cdr err))))
+                                (kill-buffer old-buffer)
+                                (kill-buffer new-buffer)))))))
+    (when old-entry
+      (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
+        :queue queue :as 'response :else else
+        :then (lambda (response)
+                (setf old-response response))))
+    (when new-entry
+      (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
+        :queue queue :as 'response :else else
+        :then (lambda (response)
+                (setf new-response response))))))
 
 ;;;; Footer
 
