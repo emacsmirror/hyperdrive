@@ -60,6 +60,24 @@ To be used as the pretty-printer for `ewoc-create'."
                             (hyperdrive-entry-name entry))
                         'face face))))
 
+(defun hyperdrive-dir--entry-at-point ()
+  "Return entry at point.
+With point below last entry, returns nil.
+With point on header, returns directory entry."
+  (let ((header-height (if hyperdrive-column-headers
+                           2
+                         1)))
+    (cond ((>= header-height (line-number-at-pos))
+           ;; Point on header: return directory's entry.
+           hyperdrive-current-entry)
+          ((> (line-number-at-pos)
+              (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+           ;; Point is below the last entry: return nil.
+           nil)
+          (t
+           ;; Point on a file entry: return its entry.
+           (ewoc-data (ewoc-locate hyperdrive-ewoc))))))
+
 ;;;; Mode
 
 (declare-function hyperdrive-find-file "hyperdrive")
@@ -123,24 +141,6 @@ Interactively, visit file or directory at point in
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
   (when entry (hyperdrive-download-entry entry filename)))
-
-(defun hyperdrive-dir--entry-at-point ()
-  "Return entry at point.
-With point below last entry, returns nil.
-With point on header, returns directory entry."
-  (let ((header-height (if hyperdrive-column-headers
-                           2
-                         1)))
-    (cond ((>= header-height (line-number-at-pos))
-           ;; Point on header: return directory's entry.
-           hyperdrive-current-entry)
-          ((> (line-number-at-pos)
-              (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
-           ;; Point is below the last entry: return nil.
-           nil)
-          (t
-           ;; Point on a file entry: return its entry.
-           (ewoc-data (ewoc-locate hyperdrive-ewoc))))))
 
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
