@@ -89,10 +89,10 @@ This function is intended to diff files, not directories."
   :interactive nil
   ;; Narrow the buffer to hide the diff command and "diff finished" lines.
   (narrow-to-region
-   (1+ (point-at-eol)) (save-excursion
-                         (goto-char (point-max))
-                         (forward-line -2)
-                         (point))))
+   (1+ (pos-eol)) (save-excursion
+                    (goto-char (point-max))
+                    (forward-line -2)
+                    (point))))
 
 ;;;; Footer
 
