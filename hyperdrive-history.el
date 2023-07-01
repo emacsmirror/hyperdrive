@@ -93,7 +93,7 @@ and ENTRY's version are nil."
              (cons range entry)))
           ((or (> current-line last-line)
                (and hyperdrive-column-headers (= 2 current-line)))
-           ;; Point is below the last entry: signal error.
+           ;; Point is below the last entry or on column headers: signal error.
            (hyperdrive-user-error "No file on this line"))
           (t
            ;; Point on a file entry: return its entry.
