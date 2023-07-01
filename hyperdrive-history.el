@@ -262,7 +262,7 @@ buffer."
      (hyperdrive-open (cdr range-entry)))
     ((nil quote)
      ;; Known to not exist: warn user.
-     (user-error "File does not exist!"))
+     (hyperdrive-user-error "File does not exist!"))
     ((unknown quote)
      ;; Not known to exist: prompt user
      ;; TODO: Design options
@@ -280,10 +280,10 @@ buffer."
      (hyperdrive-copy-url (cdr range-entry)))
     ((nil quote)
      ;; Known to not exist: warn user.
-     (user-error "File does not exist!"))
+     (hyperdrive-user-error "File does not exist!"))
     ((unknown quote)
      ;; Not known to exist: warn user.
-     (user-error "File not known to exist!"))))
+     (hyperdrive-user-error "File not known to exist!"))))
 
 (declare-function hyperdrive-download-entry "hyperdrive")
 
@@ -310,10 +310,10 @@ buffer."
      (hyperdrive-download-entry (cdr range-entry) filename))
     ((nil quote)
      ;; Known to not exist: warn user.
-     (user-error "File does not exist!"))
+     (hyperdrive-user-error "File does not exist!"))
     ((unknown quote)
      ;; Not known to exist: warn user.
-     (user-error "File not known to exist!"))))
+     (hyperdrive-user-error "File not known to exist!"))))
 
 (provide 'hyperdrive-history)
 ;;; hyperdrive-history.el ends here

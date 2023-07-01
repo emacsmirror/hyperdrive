@@ -631,7 +631,7 @@ case, when PREDICATE, only offer hyperdrives matching it."
            (completion-styles (cons 'substring completion-styles))
            (selected (completing-read prompt candidates nil 'require-match nil nil default)))
       (or (alist-get selected candidates nil nil #'equal)
-          (user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one")))))
+          (hyperdrive-user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one")))))
 
 (cl-defun hyperdrive--format-hyperdrive (hyperdrive)
   "Return HYPERDRIVE formatted for completion."
@@ -815,6 +815,10 @@ both point to the same content."
 (defun hyperdrive-error (string &rest args)
   "Call `error' with STRING and ARGS, prefixing STRING with \"Hyperdrive:\"."
   (apply #'error (concat "Hyperdrive: " string) args))
+
+(defun hyperdrive-user-error (format &rest args)
+  "Call `user-error' with FORMAT and ARGS, prefixing FORMAT with \"Hyperdrive:\"."
+  (apply #'user-error (concat "Hyperdrive: " format) args))
 
 (defun hyperdrive-copy-tree (tree &optional vecp)
   "Like `copy-tree', but with VECP, works for records too."

@@ -572,7 +572,7 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   (interactive)
   (if-let ((parent (hyperdrive-parent hyperdrive-current-entry)))
       (hyperdrive-open parent)
-    (user-error "At root directory")))
+    (hyperdrive-user-error "At root directory")))
 
 (defvar-keymap hyperdrive-up-map
   :doc "Keymap to repeat `hyperdrive-up'.  Used in `repeat-mode'."
@@ -734,7 +734,7 @@ for predicate and set NO-CONFIRM to t."
                       (list url (vector file url))))
                   files)))
     (unless files
-      (user-error "No files selected for mirroring (double-check predicate)"))
+      (hyperdrive-user-error "No files selected for mirroring (double-check predicate)"))
     (if no-confirm
         (hyperdrive--mirror files-and-urls parent-entry)
       (pop-to-buffer (get-buffer-create "*hyperdrive-mirror*"))
@@ -772,7 +772,7 @@ uploading files, open PARENT-ENTRY."
   (if (and tabulated-list-entries hyperdrive-mirror-parent-entry)
       (when (or (not hyperdrive-mirror-already-uploaded) (yes-or-no-p "Already uploaded files. Upload again?"))
         (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry))
-    (user-error "Hyperdrive: Missing information about files to upload. Are you in a \"*hyperdrive-mirror*\" buffer?")))
+    (hyperdrive-user-error "Missing information about files to upload. Are you in a \"*hyperdrive-mirror*\" buffer?")))
 
 (defvar-keymap hyperdrive-mirror-mode-map
   :parent  tabulated-list-mode-map
@@ -812,7 +812,7 @@ for a hyperdrive."
   (dolist (file files)
     (unless (= 1 (cl-count (file-name-nondirectory file) files
                            :test #'equal :key #'file-name-nondirectory))
-      (user-error "Can't upload multiple files with same name: %S" (file-name-nondirectory file))))
+      (hyperdrive-user-error "Can't upload multiple files with same name: %S" (file-name-nondirectory file))))
   (setf target-directory (hyperdrive--format-path target-directory :directoryp t))
   (let ((queue (make-plz-queue
                 :limit hyperdrive-queue-size
