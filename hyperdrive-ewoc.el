@@ -55,31 +55,42 @@
 ;;;; Commands
 
 (cl-defun hyperdrive-ewoc-next (&optional (n 1))
-  "Move forward N entries."
+  "Move forward N entries.
+When on header line, moves point to first entry, skipping over
+column headers when `hyperdrive-column-headers' is non-nil."
   (declare (modes hyperdrive-ewoc-mode))
   (interactive "p")
-  (cond ((= 1 (line-number-at-pos))
-         ;; Point on header: move into first entry.
-         (forward-line 1))
-        (t
-         ;; Point is elsewhere: move to next entry (`ewoc-next' won't
-         ;; move past the last entry).
-         (hyperdrive-ewoc-move n))))
+  (pcase (line-number-at-pos)
+    (1
+     ;; Point on header: move into first entry.
+     (forward-line (if hyperdrive-column-headers 2 1)))
+    ((and 2 (guard hyperdrive-column-headers))
+     ;; Point on column headers: move into first entry.
+     (forward-line 1))
+    (_
+     ;; Point is elsewhere: move to next entry (`ewoc-next' won't
+     ;; move past the last entry).
+     (hyperdrive-ewoc-move n))))
 
 (cl-defun hyperdrive-ewoc-previous (&optional (n 1))
-  "Move backward N entries."
+  "Move backward N entries.
+When on first entry, moves point to header line, skipping over
+column headers when `hyperdrive-column-headers' is non-nil."
   (declare (modes hyperdrive-ewoc-mode))
   (interactive "p")
-  (cond ((= 2 (line-number-at-pos))
-         ;; Point on first entry: move into header.
-         (forward-line -1))
-        ((> (line-number-at-pos)
-            (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
-         ;; Point is past last entry: move to last entry.
-         (goto-char (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
-        (t
-         ;; Point is elsewhere: move to previous entry.
-         (hyperdrive-ewoc-move (- n)))))
+  (pcase (line-number-at-pos)
+    (2
+     ;; Point on first entry or column headers: move into header.
+     (forward-line -1))
+    ((and 3 (guard hyperdrive-column-headers))
+     ;; Point on column headers: move into header.
+     (forward-line -2))
+    ((pred (< (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1)))))
+     ;; Point is past last entry: move to last entry.
+     (goto-char (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
+    (_
+     ;; Point is elsewhere: move to previous entry.
+     (hyperdrive-ewoc-move (- n)))))
 
 (cl-defun hyperdrive-ewoc-move (&optional (n 1))
   "Move forward N entries."
