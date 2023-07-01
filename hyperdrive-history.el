@@ -78,7 +78,7 @@ and whose cdr is a hyperdrive entry."
 
 (defun hyperdrive-history-range-entry-at-point ()
   "Return range-entry at version at point.
-With point below last entry, returns nil.
+With point below last entry, signals a user-error.
 With point on header, returns a rangle-entry whose RANGE-END
 and ENTRY's version are nil."
   (let ((current-line (line-number-at-pos))
@@ -92,8 +92,8 @@ and ENTRY's version are nil."
              (setf (hyperdrive-entry-version entry) nil)
              (cons range entry)))
           ((> current-line last-line)
-           ;; Point is below the last entry: return nil.
-           nil)
+           ;; Point is below the last entry: signal error.
+           (hyperdrive-user-error "No file on this line"))
           (t
            ;; Point on a file entry: return its entry.
            current-range-entry))))
