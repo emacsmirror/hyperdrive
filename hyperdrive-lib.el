@@ -475,6 +475,7 @@ Returns the ranges cons cell for ENTRY."
 First, get latest version of ENTRY's hyperdrive and fill the
 latest range. Then recurse backward through unknown ranges and
 fill them. Once all requests return, call THEN with no arguments."
+  ;; TODO: Limit the number of recursive calls made.
   (declare (indent defun))
   ;; Filling drive's latest version lets us display the full history,
   ;; and it ensures that the final range is not unknown.
