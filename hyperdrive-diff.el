@@ -39,6 +39,10 @@ Call ELSE if either request fails.  ELSE may potentially be called
 twice, once per failed request.
 This function is intended to diff files, not directories."
   (declare (indent defun))
+  ;; Both entries should exist since we use
+  ;; `hyperdrive-entry-description' to generate buffer names
+  (cl-check-type old-entry hyperdrive-entry-p)
+  (cl-check-type new-entry hyperdrive-entry-p)
   (require 'diff)
   (let* (old-response
          new-response
