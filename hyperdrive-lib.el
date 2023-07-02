@@ -413,10 +413,13 @@ The following ENTRY hyperdrive slots are filled:
       (setf (hyperdrive-public-key hyperdrive) public-key))
     (if (hyperdrive--entry-directory-p entry)
         ;; Directory HEAD/GET request ETag header always have the
-        ;; hyperdrive's latest version
+        ;; hyperdrive's latest version. We don't currently store
+        ;; version ranges for directories (since they don't
+        ;; technically have versions in hyperdrive).
         (hyperdrive--fill-latest-version hyperdrive headers)
-      ;; We don't currently store version ranges for directories
-      ;; (since they don't technically have versions in hyperdrive)
+      ;; File HEAD/GET request ETag header does not retrieve the
+      ;; hyperdrive's latest version, so `hyperdrive-update-version-ranges'
+      ;; will not necessarily fill in the entry's last range.
       (hyperdrive-update-version-ranges entry (string-to-number etag)))
     entry))
 
