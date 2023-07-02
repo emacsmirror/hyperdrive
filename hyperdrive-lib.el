@@ -502,7 +502,7 @@ fill them. Once all requests return, call THEN with no arguments."
                           ;; `hyperdrive-version-ranges'. The copied entry is thrown away.
                           :then (lambda (filled-entry)
                                   ;; Don't use `hyperdrive-entry-previous' here, since it makes a sync request
-                                  (pcase-let ((`(,range-start . ,plist) (hyperdrive-entry-version-range filled-entry)))
+                                  (pcase-let ((`(,range-start . ,_plist) (hyperdrive-entry-version-range filled-entry)))
                                     (setf (hyperdrive-entry-version filled-entry) (1- range-start))
                                     (when (eq 'unknown (hyperdrive-entry-exists-p filled-entry))
                                       ;; Recurse backward through history, filling unknown
