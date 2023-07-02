@@ -424,7 +424,7 @@ The following ENTRY hyperdrive slots are filled:
     entry))
 
 (defun hyperdrive-fill-latest-version (hyperdrive)
-  "Fill the latest version slot in HYPERDRIVE.
+  "Synchronously fill the latest version slot in HYPERDRIVE.
 Returns the latest version number."
   ;; TODO: Call this func and display latest version in describe-mode buffers.
   (pcase-let (((cl-struct plz-response headers)
