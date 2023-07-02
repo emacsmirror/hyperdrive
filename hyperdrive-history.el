@@ -243,6 +243,7 @@ Interactively, diff range entry at point with previous entry."
                    (cl-decf (hyperdrive-entry-version old-entry)))
                  (list old-entry new-entry)))
   (require 'hyperdrive-diff)
+  ;; TODO: Only call `hyperdrive-diff-file-entries' when at least one entry exists.
   (hyperdrive-diff-file-entries old-entry new-entry
     :then (lambda (diff-buffer)
             (pop-to-buffer diff-buffer))
