@@ -402,9 +402,11 @@ The following ENTRY hyperdrive slots are filled:
           (hyperdrive-entry-modified entry) last-modified)
     (if persisted-hyperdrive
         (progn
-          ;; Ensure that entry's hyperdrive is the persisted hyperdrive,
-          ;; since it may be used later as part of a
+          ;; Ensure that entry's hyperdrive is the persisted
+          ;; hyperdrive, since it may be used later as part of a
           ;; `hyperdrive-version-ranges' key and compared using `eq'.
+          ;; Also, we want the call to `hyperdrive--fill-latest-version'
+          ;; below to update the persisted hyperdrive.
           (setf (hyperdrive-entry-hyperdrive entry) persisted-hyperdrive)
           (when domain
             ;; The previous call to hyperdrive-entry-url may not have retrieved
