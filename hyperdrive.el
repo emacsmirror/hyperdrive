@@ -121,6 +121,8 @@ for a hyperdrive."
   ;; TODO: Display latest known version of hyperdrive? Should we
   ;; store/persist that info in the hyperdrive struct?
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
+  ;; TODO: Do we want to asynchronously fill the hyperdrive's latest version?
+  (hyperdrive-fill-latest-version hyperdrive)
   (with-current-buffer (get-buffer-create
                         (format "*Hyperdrive: %s*"
                                 (hyperdrive--format-host hyperdrive :format '(short-key)
@@ -146,6 +148,7 @@ for a hyperdrive."
                                         domains)
                                 ", ")
                  "[none]"))
+       (format "Latest version: %s\n" (hyperdrive-latest-version hyperdrive))
        (format "Writable: %s\n" (if writablep "yes" "no"))
        ;; TODO: Consider removing metadata table since we already display nickname above
        (format "Metadata: %s\n"
