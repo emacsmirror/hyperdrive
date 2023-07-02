@@ -41,8 +41,8 @@ This function is intended to diff files, not directories."
   (declare (indent defun))
   ;; Both entries should exist since we use
   ;; `hyperdrive-entry-description' to generate buffer names
-  (cl-check-type old-entry hyperdrive-entry-p)
-  (cl-check-type new-entry hyperdrive-entry-p)
+  (cl-check-type old-entry hyperdrive-entry)
+  (cl-check-type new-entry hyperdrive-entry)
   (require 'diff)
   (let* (old-response
          new-response
