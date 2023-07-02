@@ -10,14 +10,14 @@ provides an Emacs interface for managing hyperdrives.
 
 `hyperdrive.el` requires [Emacs](https://www.gnu.org/software/emacs/) version 27.1 or later.
 
-`hyperdrive.el` is available on [MELPA](https://melpa.org/#/getting-started). Once you've set up MELPA, you
-can run `M-x package-install` then enter `hyperdrive`.
+`hyperdrive.el` is available on
+[MELPA](https://melpa.org/#/getting-started). Once you've set up
+MELPA, run `M-x package-install` then enter `hyperdrive`.
 
 
 ### `hyper-gateway`
 
-`hyperdrive.el` relies on [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for talking to the hypercore
-network ([installation instructions](https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway)).
+`hyperdrive.el` relies on [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for connecting to the P2P network ([installation instructions](https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway)).
 
 
 ## Manual
