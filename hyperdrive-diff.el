@@ -32,6 +32,13 @@
 
 ;;;; Commands
 
+;;;; Internal variables
+
+(defvar-local hyperdrive-diff-entries nil
+  "Entries to be diffed in `hyperdrive-diff' buffer.
+A cons cell whose car is OLD-ENTRY and whose cdr is NEW-ENTRY.")
+(put 'hyperdrive-diff-entries 'permanent-local t)
+
 ;;;; Functions
 
 (defun hyperdrive-diff-empty-diff-p (buffer)
@@ -78,7 +85,8 @@ This function is intended to diff files, not directories."
                                       (progn
                                         (diff-no-select old-buffer new-buffer nil t diff-buffer)
                                         (with-current-buffer diff-buffer
-                                          (hyperdrive-diff-mode))
+                                          (hyperdrive-diff-mode)
+                                          (setf hyperdrive-diff-entries (cons old-entry new-entry)))
                                         (funcall then diff-buffer))
                                     (error (kill-buffer diff-buffer)
                                            (signal (car err) (cdr err))))
