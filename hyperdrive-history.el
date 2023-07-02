@@ -238,6 +238,9 @@ Interactively, diff range entry at point with previous entry."
   ;; TODO: Set entries based on marked ranges
   (interactive (let* ((new-entry (cdr (hyperdrive-history-range-entry-at-point)))
                       (old-entry (hyperdrive-entry-previous new-entry)))
+                 (unless old-entry
+                   (setf old-entry (hyperdrive-copy-tree new-entry t))
+                   (cl-decf (hyperdrive-entry-version old-entry)))
                  (list old-entry new-entry)))
   (require 'hyperdrive-diff)
   (hyperdrive-diff-file-entries old-entry new-entry
