@@ -148,86 +148,87 @@ and ENTRY's version are nil."
 
 Prefix argument forces `hyperdrive-read-entry' to prompt for an
 entry."
-  ;; TODO: Traverse history backward from known existent ranges.
   (interactive (list (if (or current-prefix-arg (not hyperdrive-current-entry))
                          (hyperdrive-read-entry :force-prompt t :allow-version-p nil)
                        hyperdrive-current-entry)))
   ;; TODO: Highlight range for ENTRY
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (range-entries
-                (mapcar (lambda (range)
-                          ;; Some entries may not exist at
-                          ;; `range-start', as in the version before
-                          ;; it was created. See manual:
-                          ;; [[info:hyperdrive-manual.info#Versioning]]
-                          (cons range
-                                (hyperdrive-entry-create
-                                 :hyperdrive hyperdrive
-                                 :path path
-                                 ;; Set version to range-start
-                                 :version (car range))))
-                        ;; Display in reverse chronological order
-                        (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
-               (main-header (hyperdrive-entry-description
-                             ;; Pass entry without version to
-                             ;; `hyperdrive-entry-description' so header has no version.
-                             (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
-               (header (if hyperdrive-column-headers
-                           (concat main-header "\n"
-                                   (format "%7s  %13s  %6s  %s"
-                                           (propertize "Exists?" 'face 'hyperdrive-column-header)
-                                           (propertize "Version Range" 'face 'hyperdrive-column-header)
-                                           (propertize "Size" 'face 'hyperdrive-column-header)
-                                           (format hyperdrive-timestamp-format-string
-                                                   (propertize "Last Modified" 'face 'hyperdrive-column-header))))
-                         main-header))
-               (inhibit-read-only t)
-               (queue) (ewoc))
-    (with-current-buffer (get-buffer-create
-                          (format "*Hyperdrive-history: %s %s*"
-                                  (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
-                                                           :with-label t)
-                                  (url-unhex-string path)))
-      (hyperdrive-history-mode)
-      (setq-local hyperdrive-current-entry entry)
-      (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
-      (ewoc-filter hyperdrive-ewoc #'ignore)
-      (erase-buffer)
-      ;; TODO: Display hyperdrive's latest version, maybe in a footer?
-      ;; (footer (number-to-string (hyperdrive-latest-version hyperdrive)))
-      (ewoc-set-hf hyperdrive-ewoc header "")
-      (mapc (lambda (range-entry)
-              (ewoc-enter-last hyperdrive-ewoc range-entry))
-            range-entries)
-      ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
-      (display-buffer (current-buffer) hyperdrive-history-display-buffer-action)
-      (setf queue (make-plz-queue :limit 8
-                                  :finally (lambda ()
-                                             ;; NOTE: Ensure that the buffer's window is selected,
-                                             ;; if it has one.  (Workaround a possible bug in EWOC.)
-                                             (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                                                 (with-selected-window buffer-window
-                                                   ;; TODO: Use `ewoc-invalidate' on individual entries
-                                                   ;; (maybe later, as performance comes to matter more).
-                                                   (ewoc-refresh hyperdrive-ewoc)
-                                                   (goto-char (point-min))
-                                                   (set-buffer-modified-p nil))
-                                               (with-current-buffer (ewoc-buffer ewoc)
-                                                 (ewoc-refresh hyperdrive-ewoc)
-                                                 (goto-char (point-min))
-                                                 (set-buffer-modified-p nil)))
-                                             ;; TODO: Accept then argument?
-                                             ;; (with-current-buffer (ewoc-buffer ewoc)
-                                             ;;   (when then
-                                             ;;     (funcall then)))
-                                             )))
-      (mapc (lambda (range-entry)
-              (when (eq t (hyperdrive-range-entry-exists-p range-entry))
-                ;; TODO: Handle failures?
-                (hyperdrive-fill (cdr range-entry) :queue queue :then #'ignore)))
-            range-entries)
-      (set-buffer-modified-p nil)
-      (goto-char (point-min)))))
+  (hyperdrive-fill-version-ranges entry :then
+    (lambda ()
+      (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
+                   (range-entries
+                    (mapcar (lambda (range)
+                              ;; Some entries may not exist at
+                              ;; `range-start', as in the version before
+                              ;; it was created. See manual:
+                              ;; [[info:hyperdrive-manual.info#Versioning]]
+                              (cons range
+                                    (hyperdrive-entry-create
+                                     :hyperdrive hyperdrive
+                                     :path path
+                                     ;; Set version to range-start
+                                     :version (car range))))
+                            ;; Display in reverse chronological order
+                            (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
+                   (main-header (hyperdrive-entry-description
+                                 ;; Pass entry without version to
+                                 ;; `hyperdrive-entry-description' so header has no version.
+                                 (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
+                   (header (if hyperdrive-column-headers
+                               (concat main-header "\n"
+                                       (format "%7s  %13s  %6s  %s"
+                                               (propertize "Exists?" 'face 'hyperdrive-column-header)
+                                               (propertize "Version Range" 'face 'hyperdrive-column-header)
+                                               (propertize "Size" 'face 'hyperdrive-column-header)
+                                               (format hyperdrive-timestamp-format-string
+                                                       (propertize "Last Modified" 'face 'hyperdrive-column-header))))
+                             main-header))
+                   (inhibit-read-only t)
+                   (queue) (ewoc))
+        (with-current-buffer (get-buffer-create
+                              (format "*Hyperdrive-history: %s %s*"
+                                      (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
+                                                               :with-label t)
+                                      (url-unhex-string path)))
+          (hyperdrive-history-mode)
+          (setq-local hyperdrive-current-entry entry)
+          (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
+          (ewoc-filter hyperdrive-ewoc #'ignore)
+          (erase-buffer)
+          ;; TODO: Display hyperdrive's latest version, maybe in a footer?
+          ;; (footer (number-to-string (hyperdrive-latest-version hyperdrive)))
+          (ewoc-set-hf hyperdrive-ewoc header "")
+          (mapc (lambda (range-entry)
+                  (ewoc-enter-last hyperdrive-ewoc range-entry))
+                range-entries)
+          ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
+          (display-buffer (current-buffer) hyperdrive-history-display-buffer-action)
+          (setf queue (make-plz-queue :limit 8
+                                      :finally (lambda ()
+                                                 ;; NOTE: Ensure that the buffer's window is selected,
+                                                 ;; if it has one.  (Workaround a possible bug in EWOC.)
+                                                 (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                                                     (with-selected-window buffer-window
+                                                       ;; TODO: Use `ewoc-invalidate' on individual entries
+                                                       ;; (maybe later, as performance comes to matter more).
+                                                       (ewoc-refresh hyperdrive-ewoc)
+                                                       (goto-char (point-min))
+                                                       (set-buffer-modified-p nil))
+                                                   (with-current-buffer (ewoc-buffer ewoc)
+                                                     (ewoc-refresh hyperdrive-ewoc)
+                                                     (goto-char (point-min))
+                                                     (set-buffer-modified-p nil)))
+                                                 ;; TODO: Accept then argument?
+                                                 ;; (with-current-buffer (ewoc-buffer ewoc)
+                                                 ;;   (when then
+                                                 ;;     (funcall then)))
+                                                 )))
+          (mapc (lambda (range-entry)
+                  (when (eq t (hyperdrive-range-entry-exists-p range-entry))
+                    ;; TODO: Handle failures?
+                    (hyperdrive-fill (cdr range-entry) :queue queue :then #'ignore)))
+                range-entries)
+          (set-buffer-modified-p nil)
+          (goto-char (point-min)))))))
 
 (declare-function hyperdrive-diff-file-entries "hyperdrive-diff")
 (defun hyperdrive-history-diff (old-entry new-entry)

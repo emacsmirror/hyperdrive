@@ -263,8 +263,6 @@ Returns nil when ENTRY is not known to exist at its version."
                   ranges))))
 
 (defun hyperdrive-entry-exists-p (entry)
-  ;; This function is not currently used, but it could be useful for
-  ;; checking an entry that's unaccompanied by its range.
   "Return status of ENTRY's existence at its version.
 
 - t       :: ENTRY is known to exist.
@@ -471,6 +469,59 @@ Returns the ranges cons cell for ENTRY."
             (map-elt ranges range-start) range
             ranges (cl-sort ranges #'< :key #'car))
       (setf (hyperdrive-entry-version-ranges entry) ranges))))
+
+(cl-defun hyperdrive-fill-version-ranges (entry &key then)
+  "Asynchronously fill in versions ranges for ENTRY and call THEN.
+First, get latest version of ENTRY's hyperdrive and fill the
+latest range. Then recurse backward through unknown ranges and
+fill them. Once all requests return, call THEN with no arguments."
+  (declare (indent defun))
+  ;; Filling drive's latest version lets us display the full history,
+  ;; and it ensures that the final range is not unknown.
+  (hyperdrive-fill-latest-version (hyperdrive-entry-hyperdrive entry))
+  (let* ((unknown-ranges (hyperdrive-entry-version-ranges-no-gaps entry))
+         queue)
+    (setf unknown-ranges
+          ;; TODO: Destructively modify unknown-ranges?
+          (cl-remove-if-not
+           ;; Keep unknown ranges which are followed by an existent range
+           (pcase-lambda (`(,_df . ,(map (:existsp existsp) (:range-end range-end))))
+             (and (eq 'unknown existsp)
+                  (eq t (map-elt (map-elt unknown-ranges (1+ range-end)) :existsp))))
+           unknown-ranges))
+    (if unknown-ranges
+        (progn
+          ;; TODO: When `plz' lets us handle errors in the queue finalizer, add that here.
+          ;; FIXME: Is this the correct way to pass `then'?
+          (setf queue (make-plz-queue :limit 8 :finally then))
+          (cl-labels ((fill-recursively (unknown-entry)
+                        ;; Fill entry at its version, then if its previous
+                        ;; version is unknown, recurse on previous version.
+                        (hyperdrive-fill unknown-entry
+                          ;; `hyperdrive-fill' is only used here for updating
+                          ;; `hyperdrive-version-ranges'. The copied entry is thrown away.
+                          :then (lambda (filled-entry)
+                                  ;; Don't use `hyperdrive-entry-previous' here, since it makes a sync request
+                                  (pcase-let ((`(,range-start . ,plist) (hyperdrive-entry-version-range filled-entry)))
+                                    (setf (hyperdrive-entry-version filled-entry) (1- range-start))
+                                    (when (eq 'unknown (hyperdrive-entry-exists-p filled-entry))
+                                      ;; Recurse backward through history, filling unknown
+                                      ;; entries. Stop recursing at known nonexistent entry.
+                                      (fill-recursively filled-entry))))
+                          :else (lambda (err)
+                                  ;; FIXME: Do we need to distinguish `plz-curl-error' from `plz-http-error'?
+                                  (pcase (plz-response-status (plz-error-response err))
+                                    (404 nil)
+                                    ;; FIXME: Should we signal here?
+                                    (_ (hyperdrive-message (car err) (cdr err))))
+                                  err)
+                          :queue queue)))
+            (pcase-dolist (`(,_range-start . ,(map (:range-end range-end))) unknown-ranges)
+              ;; TODO: Consider using async iterator instead (with `iter-defun' or `aio'?)
+              (let ((range-end-entry (hyperdrive-copy-tree entry t)))
+                (setf (hyperdrive-entry-version range-end-entry) range-end)
+                (fill-recursively range-end-entry)))))
+      (funcall then))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
