@@ -231,6 +231,7 @@ entry."
           (goto-char (point-min)))))))
 
 (declare-function hyperdrive-diff-file-entries "hyperdrive-diff")
+(declare-function hyperdrive-diff-empty-diff-p "hyperdrive-diff")
 (defun hyperdrive-history-diff (old-entry new-entry)
   "Show diff between OLD-ENTRY and NEW-ENTRY.
 Interactively, diff range entry at point with previous entry."
@@ -246,7 +247,12 @@ Interactively, diff range entry at point with previous entry."
   ;; TODO: Only call `hyperdrive-diff-file-entries' when at least one entry exists.
   (hyperdrive-diff-file-entries old-entry new-entry
     :then (lambda (diff-buffer)
-            (pop-to-buffer diff-buffer))
+            (if (with-current-buffer diff-buffer
+                  (hyperdrive-diff-empty-diff-p diff-buffer))
+                (hyperdrive-message "No difference between %s and %s"
+                                    (hyperdrive-entry-description old-entry)
+                                    (hyperdrive-entry-description new-entry))
+              (pop-to-buffer diff-buffer)))
     :else (lambda ()
             (hyperdrive-message "Unable to display diff."))))
 
