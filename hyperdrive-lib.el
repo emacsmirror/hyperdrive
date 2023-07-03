@@ -293,11 +293,11 @@ hyperdrive's latest-version slot, the final gap is filled."
       (let ((next-range-start (1+ previous-range-end)))
         (when (> range-start next-range-start)
           ;; Insert an "unknown" gap range
-          (cl-callf append ranges `((,next-range-start . (:range-end ,(1- range-start) :existsp unknown)))))
-        (cl-callf append ranges `((,range-start . (:range-end ,range-end :existsp ,existsp))))
+          (push `(,next-range-start . (:range-end ,(1- range-start) :existsp unknown)) ranges))
+        (push `(,range-start . (:range-end ,range-end :existsp ,existsp)) ranges)
         (setf previous-range-end range-end)))
     ;; TODO: final gap
-    ranges))
+    (nreverse ranges)))
 
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil."
