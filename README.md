@@ -36,7 +36,5 @@ questions can be submitted to the [ushin public inbox](https://lists.sr.ht/~ushi
 You're welcome to join our public XMPP chat
 room!
 
-- `xmpp:discuss@conference.ushin.org`
+- `xmpp:discuss@conference.ushin.org` ([Join anonymously from your browser](https://anonymous.cheogram.com/discuss@conference.ushin.org))
 - `#xmpp_discuss_conference.ushin.org:matrix.org` (Matrix bridge)
-
-<!-- TODO: [Join anonymously from your browser](https://anonymous.cheogram.com/discuss@conference.ushin.org)! -->
