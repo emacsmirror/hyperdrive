@@ -95,8 +95,7 @@ This function is intended to diff files, not directories."
   (narrow-to-region
    (pos-bol 2) (save-excursion
                  (goto-char (point-max))
-                 (forward-line -2)
-                 (point))))
+                 (pos-bol -1))))
 
 ;;;; Footer
 
