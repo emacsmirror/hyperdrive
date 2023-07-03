@@ -489,7 +489,7 @@ fill them. Once all requests return, call THEN with no arguments."
           ;; TODO: Destructively modify unknown-ranges?
           (cl-remove-if-not
            ;; Keep unknown ranges which are followed by an existent range
-           (pcase-lambda (`(,_df . ,(map (:existsp existsp) (:range-end range-end))))
+           (pcase-lambda (`(,_range-start . ,(map (:existsp existsp) (:range-end range-end))))
              (and (eq 'unknown existsp)
                   (eq t (map-elt (map-elt ranges-no-gaps (1+ range-end)) :existsp))))
            ranges-no-gaps))
