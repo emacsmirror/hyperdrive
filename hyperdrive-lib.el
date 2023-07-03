@@ -483,17 +483,18 @@ fill them. Once all requests return, call THEN with no arguments."
   ;; Filling drive's latest version lets us display the full history,
   ;; and it ensures that the final range is not unknown.
   (hyperdrive-fill-latest-version (hyperdrive-entry-hyperdrive entry))
-  (let* ((unknown-ranges (hyperdrive-entry-version-ranges-no-gaps entry))
-         queue)
-    (setf unknown-ranges
+  ;; TODO: Naming ranges-no-gaps
+  (let* ((ranges-no-gaps (hyperdrive-entry-version-ranges-no-gaps entry))
+         (ranges-to-fill
           ;; TODO: Destructively modify unknown-ranges?
           (cl-remove-if-not
            ;; Keep unknown ranges which are followed by an existent range
            (pcase-lambda (`(,_df . ,(map (:existsp existsp) (:range-end range-end))))
              (and (eq 'unknown existsp)
-                  (eq t (map-elt (map-elt unknown-ranges (1+ range-end)) :existsp))))
-           unknown-ranges))
-    (if unknown-ranges
+                  (eq t (map-elt (map-elt ranges-no-gaps (1+ range-end)) :existsp))))
+           ranges-no-gaps))
+         queue)
+    (if ranges-to-fill
         (progn
           ;; TODO: When `plz' lets us handle errors in the queue finalizer, add that here.
           ;; FIXME: Is this the correct way to pass `then'?
@@ -520,7 +521,7 @@ fill them. Once all requests return, call THEN with no arguments."
                                     (_ (hyperdrive-message (car err) (cdr err))))
                                   err)
                           :queue queue)))
-            (pcase-dolist (`(,_range-start . ,(map (:range-end range-end))) unknown-ranges)
+            (pcase-dolist (`(,_range-start . ,(map (:range-end range-end))) ranges-to-fill)
               ;; TODO: Consider using async iterator instead (with `iter-defun' or `aio'?)
               (let ((range-end-entry (hyperdrive-copy-tree entry t)))
                 (setf (hyperdrive-entry-version range-end-entry) range-end)
