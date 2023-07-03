@@ -133,6 +133,7 @@ and ENTRY's version are nil."
   ;; binding hyperdrive-current-entry in this mode. Consider keeping
   ;; the version around so that we can highlight the line
   ;; corresponding to version currently open in another buffer.
+  :group 'hyperdrive
   :interactive nil
   (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-history-pp))
   (setq-local revert-buffer-function #'hyperdrive-history-revert-buffer))
