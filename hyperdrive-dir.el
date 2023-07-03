@@ -103,6 +103,7 @@ With point on header, returns directory entry."
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive directory buffers."
+  :group 'hyperdrive
   :interactive nil
   (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)
         ;; TODO(alphapapa): Imenu support.
