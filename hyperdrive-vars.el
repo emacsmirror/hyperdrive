@@ -100,8 +100,7 @@ Passed to `display-buffer', which see."
   :group 'hyperdrive)
 
 (defcustom hyperdrive-column-headers 't
-  "If non-nil, display column headers in `hyperdrive-dir' and
-`hyperdrive-history' buffers."
+  "Display column headers in `hyperdrive-dir' and `hyperdrive-history' buffers."
   :type 'boolean
   :group 'hyperdrive)
 
