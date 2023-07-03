@@ -28,10 +28,21 @@
 (require 'hyperdrive-vars)
 
 (require 'diff)
+(require 'rx)
 
 ;;;; Commands
 
 ;;;; Functions
+
+(defun hyperdrive-diff-empty-diff-p (buffer)
+  "Return t if `hyperdrive-diff-mode' buffer contains no differences."
+  (with-current-buffer buffer
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-max))
+        (forward-line -1)
+        (looking-at (rx line-start "Diff finished (no differences)."))))))
 
 (cl-defun hyperdrive-diff-file-entries (old-entry new-entry &key then else)
   "Diff OLD-ENTRY and NEW-ENTRY, then call THEN on diff buffer.
