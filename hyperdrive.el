@@ -385,6 +385,7 @@ With prefix argument, prompts for more information. See
   (interactive (list (hyperdrive-read-url :prompt "Open hyperdrive URL")))
   (hyperdrive-open (hyperdrive-url-entry url)))
 
+(declare-function hyperdrive-history "hyperdrive-history")
 (cl-defun hyperdrive-open (entry &key then recurse)
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
@@ -417,22 +418,24 @@ in the buffer opened by the handler."
                 (hyperdrive-persist hyperdrive)
                 (funcall handler entry :then then)))
       :else (lambda (plz-error)
-              (cl-labels ((go-up
-                           () (if recurse
-                                  (hyperdrive-open (hyperdrive-parent entry) :recurse t)
-                                (pcase (prompt-to-go-up)
-                                  (1 (hyperdrive-open (hyperdrive-parent entry)))
-                                  (`t (hyperdrive-open (hyperdrive-parent entry) :recurse t)))))
-                          (prompt-to-go-up
-                           () (pcase-exhaustive
-                                  (read-answer (format "URL not found: \"%s\".  Try to load parent directory? "
-                                                       (hyperdrive-entry-url entry))
-                                               '(("yes" ?y "go up one level")
-                                                 ("no" ?n "exit")
-                                                 ("recurse" ?! "go up until a directory is found")))
-                                ("yes" 1)
-                                ("recurse" t)
-                                ("no" nil))))
+              (cl-labels ((not-found-action
+                            () (if recurse
+                                   (hyperdrive-open (hyperdrive-parent entry) :recurse t)
+                                 (pcase (prompt)
+                                   ('history (hyperdrive-history entry))
+                                   ('up (hyperdrive-open (hyperdrive-parent entry)))
+                                   ('recurse (hyperdrive-open (hyperdrive-parent entry) :recurse t)))))
+                          (prompt
+                            () (pcase-exhaustive
+                                   (read-answer (format "URL not found: \"%s\". " (hyperdrive-entry-url entry))
+                                                '(("history" ?h "open version history")
+                                                  ("up" ?u "open parent directory")
+                                                  ("recurse" ?r "go up until a directory is found")
+                                                  ("exit" ?q "exit")))
+                                 ("history" 'history)
+                                 ("up" 'up)
+                                 ("recurse" 'recurse)
+                                 ("exit" nil))))
                 (pcase-let (((cl-struct plz-error curl-error response) plz-error))
                   (pcase curl-error
                     (`(7 . ,_message) ;; Connection fails, most likely the gateway isn't started yet.
@@ -457,8 +460,8 @@ in the buffer opened by the handler."
                                   (message "Entry no longer exists!  %s" (hyperdrive-entry-description entry)))
                               ;; Make and switch to new buffer.
                               (switch-to-buffer (hyperdrive--get-buffer-create entry)))
-                          ;; Hyperdrive entry is not writable: offer to go up.
-                          (go-up)))
+                          ;; Hyperdrive entry is not writable: prompt for action.
+                          (not-found-action)))
                        (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
                                               (hyperdrive-entry-url entry) plz-error)))))))))))
 
