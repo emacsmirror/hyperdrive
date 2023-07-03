@@ -153,6 +153,7 @@ entry."
                          (hyperdrive-read-entry :force-prompt t :allow-version-p nil)
                        hyperdrive-current-entry)))
   ;; TODO: Highlight range for ENTRY
+  ;; TODO: What to do when ENTRY is a directory?
   (hyperdrive-fill-version-ranges entry :then
     (lambda ()
       (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
