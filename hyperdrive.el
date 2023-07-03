@@ -362,7 +362,8 @@ for a hyperdrive."
       (progn
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer
                     bookmark-make-record-function #'hyperdrive-bookmark-make-record)
-        ;; FIXME: `write-contents-functions' is cleared when changing the major mode
+        ;; FIXME: `write-contents-functions' is cleared when changing the
+        ;; major mode (add to local value of `after-change-major-mode-hook'.
         (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
     (kill-local-variable 'bookmark-make-record-function)
     (kill-local-variable 'revert-buffer-function)
@@ -620,9 +621,11 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
                 ;; the `hyperdrive-fill-latest-version' call, this entry was updated.
                 (setf (hyperdrive-entry-version copy) nil)
                 (hyperdrive-find-file copy)
+                ;; TODO: Edit message, remove "removed...".
                 (hyperdrive-message "Already at latest version of entry; removed version number"))
             (pcase-let* ((next-range-start (1+ range-end))
                          ((map (:existsp next-range-existsp) (:range-end next-range-end))
+                          ;; FIXME: Use `hyperdrive-entry-version-ranges-no-gaps' here.
                           (map-elt (hyperdrive-entry-version-ranges entry) next-range-start)))
               (pcase next-range-existsp
                 ('t
@@ -643,6 +646,7 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
                    (hyperdrive-fill-version-ranges entry
                      :then (lambda () (hyperdrive-next-version entry t)))
                    (hyperdrive-message "Loading history to find next version..."))))))))
+    ;; TODO: Use `substitute-command-keys' to suggest that the user revert the buffer.
     (hyperdrive-message "Already at latest version of entry")))
 
 ;;;; Bookmark support

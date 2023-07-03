@@ -42,6 +42,7 @@
         (widen)
         (goto-char (point-max))
         (forward-line -1)
+        ;; TODO: Use looking-at-p here.
         (looking-at (rx line-start "Diff finished (no differences)."))))))
 
 (cl-defun hyperdrive-diff-file-entries (old-entry new-entry &key then)
@@ -102,6 +103,7 @@ This function is intended to diff files, not directories."
   :group 'hyperdrive
   :interactive nil
   ;; Narrow the buffer to hide the diff command and "diff finished" lines.
+  ;; TODO: Check for "no differences" and just display that when there are none.
   (narrow-to-region
    (pos-bol 2) (save-excursion
                  (goto-char (point-max))

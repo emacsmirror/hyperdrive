@@ -60,6 +60,8 @@ When on header line, moves point to first entry, skipping over
 column headers when `hyperdrive-column-headers' is non-nil."
   (declare (modes hyperdrive-ewoc-mode))
   (interactive "p")
+  ;; TODO: Try using the intangible text property on headers to
+  ;; automatically skip over them without conditional code.
   (pcase (line-number-at-pos)
     (1
      ;; Point on header: move into first entry.

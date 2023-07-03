@@ -500,6 +500,8 @@ fill them. Once all requests return, call THEN with no arguments."
           ;; FIXME: Is this the correct way to pass `then'?
           (setf queue (make-plz-queue :limit 8 :finally then))
           (cl-labels ((fill-recursively (unknown-entry)
+                        ;; NOTE: `fill-recursively' is recursive logically but
+                        ;; not technically, because each call is in the async callback.
                         ;; Fill entry at its version, then if its previous
                         ;; version is unknown, recurse on previous version.
                         (hyperdrive-fill unknown-entry
