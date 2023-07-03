@@ -44,10 +44,9 @@
         (forward-line -1)
         (looking-at (rx line-start "Diff finished (no differences)."))))))
 
-(cl-defun hyperdrive-diff-file-entries (old-entry new-entry &key then else)
+(cl-defun hyperdrive-diff-file-entries (old-entry new-entry &key then)
   "Diff OLD-ENTRY and NEW-ENTRY, then call THEN on diff buffer.
-Call ELSE if either request fails.  ELSE may potentially be called
-twice, once per failed request.
+Call ELSE if either request fails.
 This function is intended to diff files, not directories."
   (declare (indent defun))
   ;; Both entries should exist since we use
@@ -87,12 +86,12 @@ This function is intended to diff files, not directories."
                                 (kill-buffer new-buffer)))))))
     (when old-entry
       (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
-        :queue queue :as 'response :else else
+        :queue queue :as 'response :else #'ignore
         :then (lambda (response)
                 (setf old-response response))))
     (when new-entry
       (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
-        :queue queue :as 'response :else else
+        :queue queue :as 'response :else #'ignore
         :then (lambda (response)
                 (setf new-response response))))))
 

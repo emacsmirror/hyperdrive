@@ -252,9 +252,7 @@ Interactively, diff range entry at point with previous entry."
                 (hyperdrive-message "No difference between %s and %s"
                                     (hyperdrive-entry-description old-entry)
                                     (hyperdrive-entry-description new-entry))
-              (pop-to-buffer diff-buffer)))
-    :else (lambda ()
-            (hyperdrive-message "Unable to display diff."))))
+              (pop-to-buffer diff-buffer)))))
 
 (declare-function hyperdrive-open "hyperdrive")
 
