@@ -149,7 +149,8 @@ Interactively, visit file or directory at point in
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (when (eq entry hyperdrive-current-entry)
-    (hyperdrive-user-error "Won't delete parent directory from within."))
+    ;; TODO: Also prevent deletion of "..".
+    (hyperdrive-user-error "Won't delete parent directory from within"))
   (pcase-let (((cl-struct hyperdrive-entry name) entry)
               (buffer (current-buffer)))
     (when (and (yes-or-no-p (format "Delete %S? " name))
