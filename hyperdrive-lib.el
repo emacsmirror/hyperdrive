@@ -491,7 +491,14 @@ requests return, call THEN with no arguments."
   (let* ((ranges-no-gaps (hyperdrive-entry-version-ranges-no-gaps entry))
          (ranges-to-fill
           (cl-delete-if-not
-           ;; Keep unknown ranges which are followed by an existent range
+           ;; Select certain unknown ranges to be filled. Unknown
+           ;; ranges are filled by requesting the version at its
+           ;; range-end. The entry at the range-end of an unknown
+           ;; ranges which is followed by a nonexistent entry is
+           ;; likely to also be nonexistent. By only attempting to
+           ;; fill unknown ranges which are either followed by a
+           ;; existent range or are themselves the final range, we
+           ;; minimize the number of unnecessary requests.
            (pcase-lambda (`(,_range-start . ,(map (:existsp existsp) (:range-end range-end))))
              (and (eq 'unknown existsp)
                   (if-let ((next-range (map-elt ranges-no-gaps (1+ range-end))))
