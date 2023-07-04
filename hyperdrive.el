@@ -621,8 +621,7 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
                 ;; the `hyperdrive-fill-latest-version' call, this entry was updated.
                 (setf (hyperdrive-entry-version copy) nil)
                 (hyperdrive-find-file copy)
-                ;; TODO: Edit message, remove "removed...".
-                (hyperdrive-message "Already at latest version of entry; removed version number"))
+                (hyperdrive-message "Already at latest version of entry."))
             (pcase-let* ((next-range-start (1+ range-end))
                          ((map (:existsp next-range-existsp) (:range-end next-range-end))
                           ;; FIXME: Use `hyperdrive-entry-version-ranges-no-gaps' here.
