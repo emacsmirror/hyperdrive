@@ -488,7 +488,6 @@ fill them. Once all requests return, call THEN with no arguments."
   ;; Filling drive's latest version lets us display the full history,
   ;; and it ensures that the final range is not unknown.
   (hyperdrive-fill-latest-version (hyperdrive-entry-hyperdrive entry))
-  ;; TODO: Naming ranges-no-gaps
   (let* ((ranges-no-gaps (hyperdrive-entry-version-ranges-no-gaps entry))
          (ranges-to-fill
           ;; TODO: Destructively modify unknown-ranges?
@@ -502,7 +501,6 @@ fill them. Once all requests return, call THEN with no arguments."
     (if ranges-to-fill
         (progn
           ;; TODO: When `plz' lets us handle errors in the queue finalizer, add that here.
-          ;; FIXME: Is this the correct way to pass `then'?
           (setf queue (make-plz-queue :limit 8 :finally then))
           (cl-labels ((fill-recursively (unknown-entry)
                         ;; NOTE: `fill-recursively' is recursive logically but
