@@ -42,8 +42,7 @@
         (widen)
         (goto-char (point-max))
         (forward-line -1)
-        ;; TODO: Use looking-at-p here.
-        (looking-at (rx line-start "Diff finished (no differences)."))))))
+        (looking-at-p (rx line-start "Diff finished (no differences)."))))))
 
 (cl-defun hyperdrive-diff-file-entries (old-entry new-entry &key then)
   "Diff OLD-ENTRY and NEW-ENTRY, then call THEN on diff buffer.
