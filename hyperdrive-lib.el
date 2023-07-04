@@ -480,9 +480,9 @@ Returns the ranges cons cell for ENTRY."
 
 (cl-defun hyperdrive-fill-version-ranges (entry &key then)
   "Asynchronously fill in versions ranges for ENTRY and call THEN.
-First, get latest version of ENTRY's hyperdrive and fill the
-latest range. Then recurse backward through unknown ranges and
-fill them. Once all requests return, call THEN with no arguments."
+First fill latest version of ENTRY's hyperdrive. Then recurse
+backward through some unknown ranges and fill them. Once all
+requests return, call THEN with no arguments."
   ;; TODO: Limit the number of recursive calls made.
   (declare (indent defun))
   ;; Filling drive's latest version lets us display the full history,
