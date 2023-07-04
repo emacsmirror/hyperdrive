@@ -110,11 +110,16 @@ This function is intended to diff files, not directories."
   :group 'hyperdrive
   :interactive nil
   ;; Narrow the buffer to hide the diff command and "diff finished" lines.
-  ;; TODO: Check for "no differences" and just display that when there are none.
-  (narrow-to-region
-   (pos-bol 2) (save-excursion
-                 (goto-char (point-max))
-                 (pos-bol -1))))
+  (let ((inhibit-read-only t))
+    (save-excursion
+      (goto-char (point-min))
+      (delete-line)
+      (when (hyperdrive-diff-empty-diff-p (current-buffer))
+        (insert "No difference between %s and %s"
+                (hyperdrive-entry-description (car hyperdrive-diff-entries) (cdr hyperdrive-diff-entries))))
+      (goto-char (point-max))
+      (forward-line -2)
+      (delete-region (point) (point-max)))))
 
 ;;;; Footer
 
