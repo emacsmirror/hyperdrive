@@ -490,8 +490,7 @@ fill them. Once all requests return, call THEN with no arguments."
   (hyperdrive-fill-latest-version (hyperdrive-entry-hyperdrive entry))
   (let* ((ranges-no-gaps (hyperdrive-entry-version-ranges-no-gaps entry))
          (ranges-to-fill
-          ;; TODO: Destructively modify unknown-ranges?
-          (cl-remove-if-not
+          (cl-delete-if-not
            ;; Keep unknown ranges which are followed by an existent range
            (pcase-lambda (`(,_range-start . ,(map (:existsp existsp) (:range-end range-end))))
              (and (eq 'unknown existsp)
