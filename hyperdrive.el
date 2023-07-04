@@ -624,8 +624,7 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
                 (hyperdrive-message "Already at latest version of entry."))
             (pcase-let* ((next-range-start (1+ range-end))
                          ((map (:existsp next-range-existsp) (:range-end next-range-end))
-                          ;; FIXME: Use `hyperdrive-entry-version-ranges-no-gaps' here.
-                          (map-elt (hyperdrive-entry-version-ranges entry) next-range-start)))
+                          (map-elt (hyperdrive-entry-version-ranges-no-gaps entry) next-range-start)))
               (pcase next-range-existsp
                 ('t
                  ;; Known existent, open it:
