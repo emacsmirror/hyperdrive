@@ -522,8 +522,7 @@ fill them. Once all requests return, call THEN with no arguments."
                                   ;; FIXME: Do we need to distinguish `plz-curl-error' from `plz-http-error'?
                                   (pcase (plz-response-status (plz-error-response err))
                                     (404 nil)
-                                    ;; FIXME: Should we signal here?
-                                    (_ (hyperdrive-message (car err) (cdr err))))
+                                    (_ (signal (car err) (cdr err))))
                                   err)
                           :queue queue)))
             (pcase-dolist (`(,_range-start . ,(map (:range-end range-end))) ranges-to-fill)
