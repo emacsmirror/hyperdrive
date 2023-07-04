@@ -494,7 +494,11 @@ requests return, call THEN with no arguments."
            ;; Keep unknown ranges which are followed by an existent range
            (pcase-lambda (`(,_range-start . ,(map (:existsp existsp) (:range-end range-end))))
              (and (eq 'unknown existsp)
-                  (eq t (map-elt (map-elt ranges-no-gaps (1+ range-end)) :existsp))))
+                  (if-let ((next-range (map-elt ranges-no-gaps (1+ range-end))))
+                      ;; If next range exists, fill it.
+                      (eq t (map-elt next-range :existsp))
+                    ;; This is the final range: fill it.
+                    t)))
            ranges-no-gaps))
          queue)
     (if ranges-to-fill
