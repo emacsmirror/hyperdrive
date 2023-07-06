@@ -196,6 +196,20 @@ directory (if its URL ends in \"/\"), pass to
       (hyperdrive-handler-directory entry :then then)
     (hyperdrive-handler-default entry :then then)))
 
+(cl-defun hyperdrive-handler-html (entry &key then)
+  "Show ENTRY, where ENTRY is an HTML file.
+Renders HTML with `shr-insert-document', then calls THEN if
+given."
+  (hyperdrive-handler-default
+   entry :then (lambda ()
+                 (let ((dom (libxml-parse-html-region (point-min) (point-max)))
+                       (inhibit-read-only t))
+                   (erase-buffer)
+                   (shr-insert-document dom))
+                 (goto-char (point-min))
+                 (when then
+                   (funcall then)))))
+
 ;;;; Footer
 
 (provide 'hyperdrive-handlers)
