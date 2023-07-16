@@ -226,6 +226,9 @@ The return value of this function is the retrieval buffer."
                         expand-file-name url-default-expander)
          url-scheme-registry)
 
+;; FIXME: Incorporate existing value into new value
+(setf eww-use-browse-url (rx string-start (or "hyper://" "mailto:")))
+
 ;;;; Footer
 
 (provide 'hyperdrive-handlers)
