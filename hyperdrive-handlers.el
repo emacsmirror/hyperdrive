@@ -206,6 +206,7 @@ given."
                        (inhibit-read-only t))
                    (erase-buffer)
                    (shr-insert-document dom))
+                 (set-buffer-modified-p nil)
                  (goto-char (point-min))
                  (when then
                    (funcall then)))))
