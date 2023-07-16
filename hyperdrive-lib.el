@@ -689,7 +689,8 @@ case, when PREDICATE, only offer hyperdrives matching it."
   (unless predicate
     ;; cl-defun default value doesn't work when nil predicate value is passed in.
     (setf predicate #'always))
-  (let ((current-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+  (let ((current-hyperdrive (when hyperdrive-current-entry
+                              (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
     (if (and (not force-prompt)
              hyperdrive-current-entry
              (funcall predicate current-hyperdrive))
