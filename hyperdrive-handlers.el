@@ -206,31 +206,22 @@ given."
       (insert "Content-type: text/html; charset=utf-8\n\n")
       (eww url nil (current-buffer)))))
 
-(defun hyperdrive-url-loader (parsed-url callback cbargs &optional retry-buffer gateway-method)
-  "Retrieve URL asynchronously.
+(defun hyperdrive-url-loader (parsed-url)
+  "Retrieve URL synchronously.
 URL must be a parsed URL.  See `url-generic-parse-url' for details.
 
 The return value of this function is the retrieval buffer."
   (cl-check-type parsed-url url "Need a pre-parsed URL.")
   (let* ((url (url-recreate-url parsed-url))
          ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
-         (response-buffer (generate-new-buffer "*hyperdrive-url-response*"))
-         ;; render-buffer will contain the rendered HTML, and will not be deleted.
-         (render-buffer (hyperdrive--get-buffer-create (hyperdrive-url-entry url))))
-    ;; TODO: We need to return a buffer name/object from this function. Can
-    ;; we specify the buffer name that plz uses as its response buffer? If
-    ;; not, it is possible to return that buffer object synchronously?
-    (hyperdrive-api 'get url :as 'buffer
-      :then (lambda (_buffer)
-              (goto-char (point-min))
-              ;; Add "Content-type" to allow `eww-parse-headers' to recognize this buffer as HTML
-              (insert "Content-type: text/html; charset=utf-8\n\n")
-              (copy-to-buffer response-buffer (point-min) (point-max))
-              ;; FIXME: Use correct point?
-              (funcall callback nil url 1 render-buffer)))
-    response-buffer))
+         (response-buffer (hyperdrive-api 'get url :as 'buffer)))
+    (with-current-buffer response-buffer
+      (goto-char (point-min))
+      ;; Add "Content-type" to allow `eww-parse-headers' to recognize this buffer as HTML
+      (insert "Content-type: text/html; charset=utf-8\n\n")
+      (current-buffer))))
 
-(puthash "hyper" '(name "hyper" loader hyperdrive-url-loader asynchronous-p t
+(puthash "hyper" '(name "hyper" loader hyperdrive-url-loader
                         ;; Expand relative paths against host
                         expand-file-name url-default-expander)
          url-scheme-registry)
