@@ -177,6 +177,9 @@ petname, nickname, domains, writable, or other metadata, run
 ~hyperdrive-describe-hyperdrive~. For more on what this information
 means, [[*Naming]].
 
+It is possible to purge a hyperdrive from the ~hyperdrive-describe-mode~
+buffer ([[*Purge a hyperdrive]]).
+
 ** Bookmark a hyperdrive
 #+findex: hyperdrive-bookmark-jump
 #+findex: hyperdrive-bookmark-list
@@ -263,6 +266,15 @@ only those files in ~~/blog/~ which are smaller than 5MB:
                    :predicate (lambda (file) (> (* 5 1024 1024)
                                               (file-attribute-size (file-attributes file)))))
 #+end_src
+
+** Purge a hyperdrive
+#+findex: hyperdrive-purge
+
+To remove all data related to a hyperdrive, run ~hyperdrive-purge~. This
+command will first prompt for confirmation.
+
+*Remember that data which has been purged from your local machine may
+still be available on the network.*
 
 ** Non-interactive use
 #+findex: hyperdrive-by-slot
