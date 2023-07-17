@@ -212,9 +212,11 @@ The return value of this function is the retrieval buffer."
          ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
          (response-buffer (hyperdrive-api 'get url :as 'buffer)))
     (with-current-buffer response-buffer
+      (widen)
       (goto-char (point-min))
-      ;; Add "Content-type" to allow `eww-parse-headers' to recognize this buffer as HTML
-      (insert "Content-type: text/html; charset=utf-8\n\n")
+      (while (search-forward (string ?\C-m) nil t)
+        ;; Strip CRLF from headers so that `eww-parse-headers' works correctly.
+        (replace-match ""))
       (current-buffer))))
 
 (puthash "hyper" '(name "hyper" loader hyperdrive-url-loader
