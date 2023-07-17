@@ -40,7 +40,7 @@
 ;;;; Declarations
 
 (declare-function hyperdrive-mode "hyperdrive")
-(declare-function hyperdrive-dir-mode "hyperdrive")
+(declare-function hyperdrive-dir-mode "hyperdrive-dir")
 
 ;;;; Structs
 

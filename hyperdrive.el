@@ -1,4 +1,4 @@
-;;; hyperdrive.el --- P2P filesystem in Emacs  -*- lexical-binding: t; -*-
+;;; hyperdrive.el --- P2P filesystem  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2022 Joseph Turner <joseph@ushin.org>
 
