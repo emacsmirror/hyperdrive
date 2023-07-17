@@ -444,6 +444,8 @@ Returns the latest version number."
 HEADERS must from a HEAD/GET request to a directory, as only
 those requests return the correct ETag header.
 Returns the latest version number."
+  ;; TODO: Update relevant buffers when hyperdrive latest version
+  ;; updates, at the least describe-hyperdrive buffers.
   ;; TODO: Consider updating version range here. First check all the
   ;; places where this function is called. Better yet, update
   ;; `hyperdrive-version-ranges' (and `hyperdrive-hyperdrives'?) in a
