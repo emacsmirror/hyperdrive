@@ -78,12 +78,22 @@ Usage
 * Bookmark a hyperdrive::
 * Download hyperdrive files::
 * Upload files from your filesystem::
+* Purge a hyperdrive::
+* Non-interactive use::
+
+Open a hyperdrive
+
+* Directory view::
+* File view::
+
+View the hyperdrive version history
+
+* History buffer::
 
 Upload files from your filesystem
 
 * Mirror a whole directory::
 * Mirror files by tag or other attributes::
-* Non-interactive use::
 
 Concepts
 
@@ -169,6 +179,8 @@ them.
 * Bookmark a hyperdrive::
 * Download hyperdrive files::
 * Upload files from your filesystem::
+* Purge a hyperdrive::
+* Non-interactive use::
 @end menu
 
 @node Start/stop the gateway
@@ -211,6 +223,14 @@ remembers hyperdrives you have already created or visited. It will
 prompt you to select a known hyperdrive by its public key or seed and
 then enter a path inside that hyperdrive.
 
+@menu
+* Directory view::
+* File view::
+@end menu
+
+@node Directory view
+@subsection Directory view
+
 The following keybindings are available inside the directory view by
 default:
 
@@ -225,13 +245,15 @@ default:
 @item
 @code{RET} opens file or directory at point
 @end itemize
-
 @kindex hyperdrive-up
 @itemize
 @item
-@code{^} goes up to the parent directory @footnote{If you have bound @code{dired-jump} in the global keymap (people often
-choose @code{C-x C-j}), you can use the same binding to jump to the parent
-hyperdrive directory from any hyperdrive file or directory buffer.}
+@code{^} goes up to the parent directory
+@end itemize
+@kindex revert-buffer
+@itemize
+@item
+@code{g} refreshes the directory to display potential updates
 @end itemize
 @kindex hyperdrive-dir-download-file
 @itemize
@@ -253,6 +275,22 @@ hyperdrive directory from any hyperdrive file or directory buffer.}
 @item
 @code{?} opens a buffer describing the current hyperdrive
 @end itemize
+
+@node File view
+@subsection File view
+
+The following keybindings are available inside the directory view by
+default:
+
+@kindex revert-buffer-quick
+@itemize
+@item
+@code{C-x x g} refreshes the file to display potential updates
+@end itemize
+
+If you have bound @code{dired-jump} in the global keymap (people often choose
+@code{C-x C-j}), you can use the same binding to jump to the parent
+hyperdrive directory from any hyperdrive file or directory buffer.
 
 @node Write to a hyperdrive
 @section Write to a hyperdrive
@@ -288,8 +326,34 @@ Hyperdrives are versioned (@ref{Versioning}).  To view the previous version
 of a hyperdrive file, run @code{hyperdrive-previous-version} inside the
 file's buffer.
 
+@menu
+* History buffer::
+@end menu
+
+@node History buffer
+@subsection History buffer
+
 To view the entire known history of a file, use @code{hyperdrive-history}.
 For an explanation of the history buffer, @ref{Partial version data}.
+
+The following keybindings are available inside the directory view by
+default:
+
+@kindex hyperdrive-history-find-file
+@itemize
+@item
+@code{RET} opens the file at the start of the range at point
+@end itemize
+@kindex hyperdrive-history-copy-url
+@itemize
+@item
+@code{w} copies the URL of the file at the start of the range at point
+@end itemize
+@kindex hyperdrive-history-download-file)
+@itemize
+@item
+@code{d} downloads the file at the start of the range at point
+@end itemize
 
 @node Describe a hyperdrive
 @section Describe a hyperdrive
@@ -300,6 +364,9 @@ To see information about a hyperdrive, such as its public key, seed,
 petname, nickname, domains, writable, or other metadata, run
 @code{hyperdrive-describe-hyperdrive}. For more on what this information
 means, @ref{Naming}.
+
+It is possible to purge a hyperdrive from the @code{hyperdrive-describe-mode}
+buffer (@ref{Purge a hyperdrive}).
 
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
@@ -340,7 +407,6 @@ will be placed into the same TARGET-DIRECTORY@.
 @menu
 * Mirror a whole directory::
 * Mirror files by tag or other attributes::
-* Non-interactive use::
 @end menu
 
 @node Mirror a whole directory
@@ -403,8 +469,19 @@ only those files in @code{~/blog/} which are smaller than 5MB:
                                               (file-attribute-size (file-attributes file)))))
 @end lisp
 
+@node Purge a hyperdrive
+@section Purge a hyperdrive
+
+@findex hyperdrive-purge
+
+To remove all data related to a hyperdrive, run @code{hyperdrive-purge}. This
+command will first prompt for confirmation.
+
+@strong{Remember that data which has been purged from your local machine may
+still be available on the network.}
+
 @node Non-interactive use
-@subsection Non-interactive use
+@section Non-interactive use
 
 @findex hyperdrive-by-slot
 
