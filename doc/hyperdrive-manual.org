@@ -264,7 +264,7 @@ only those files in ~~/blog/~ which are smaller than 5MB:
                                               (file-attribute-size (file-attributes file)))))
 #+end_src
 
-*** Non-interactive use
+** Non-interactive use
 #+findex: hyperdrive-by-slot
 
 In writing your own functions to extend ~hyperdrive.el~, you can use
