@@ -200,11 +200,7 @@ directory (if its URL ends in \"/\"), pass to
   "Show ENTRY, where ENTRY is an HTML file.
 Renders HTML with `shr-insert-document', then calls THEN if
 given."
-  (let ((url (hyperdrive-entry-url entry)))
-    (with-current-buffer (hyperdrive-api 'get url :as 'buffer)
-      (goto-char (point-min))
-      (insert "Content-type: text/html; charset=utf-8\n\n")
-      (eww url nil (current-buffer)))))
+  (eww (hyperdrive-entry-url entry)))
 
 (defun hyperdrive-url-loader (parsed-url)
   "Retrieve URL synchronously.
