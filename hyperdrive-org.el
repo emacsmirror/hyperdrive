@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'org)
+(require 'org-element)
 
 (require 'hyperdrive-lib)
 
@@ -125,11 +126,35 @@ TARGET may be a CUSTOM_ID, an ID, or a headline."
                  (org-find-exact-headline-in-buffer target)
                  (hyperdrive-error "Unable to find entry in file: %S" target))))
 
+(defun hyperdrive--org-open-at-point ()
+  "Handle relative links in hyperdrive-mode org files.
+
+Added to `org-open-at-point-functions' in order to short-circuit
+the logic for handling links of \"fuzzy\" or \"file\" type.
+
+Uses `url-default-expander' to expand the relative link against
+the current location."
+  (when hyperdrive-mode
+    (let* ((context
+            ;; TODO: Double-check that this is the correct way to get context.
+            (org-element-lineage (org-element-context) '(link) t))
+           (type (org-element-type context))
+           (link-type (org-element-property :type context)))
+      (when (and (eq type 'link)
+                 (or
+                  ;; "fuzzy" is for relative links without ./ prefix.
+                  (equal "fuzzy" link-type)
+                  ;; "file is for absolute links and relative links with ./ prefix.
+                  (equal "file" link-type)))
+        (hyperdrive-org-link-follow (hyperdrive-expand-url (org-element-property :path context)))))))
+
 ;;;###autoload
 (with-eval-after-load 'org
   (org-link-set-parameters "hyper"
                            :store #'hyperdrive-org-link-store
-                           :follow #'hyperdrive-org-link-follow))
+                           :follow #'hyperdrive-org-link-follow)
+  ;; Handle links with no specified type in hyperdrive-mode buffers.
+  (cl-pushnew #'hyperdrive--org-open-at-point org-open-at-point-functions))
 
 ;;;; Footer
 
