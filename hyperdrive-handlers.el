@@ -216,6 +216,9 @@ The return value of this function is the retrieval buffer."
       (goto-char (point-min))
       (while (search-forward (string ?\C-m) nil t)
         ;; Strip CRLF from headers so that `eww-parse-headers' works correctly.
+        ;; TODO: As an alternative, look at buffer coding systems to
+        ;; make `eww-parse-headers' work with CRLFs (since according
+        ;; to the HTTP 1 spec, headers are supposed to end with CRLF)
         (replace-match ""))
       (current-buffer))))
 
