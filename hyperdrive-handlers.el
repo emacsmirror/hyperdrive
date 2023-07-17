@@ -27,6 +27,10 @@
 (require 'hyperdrive-dir)
 (require 'hyperdrive-lib)
 
+;;;; Variables
+
+(defvar eww-use-browse-url)
+
 ;;;; Handlers
 
 (defvar hyperdrive-type-handlers
@@ -200,7 +204,9 @@ directory (if its URL ends in \"/\"), pass to
   "Show ENTRY, where ENTRY is an HTML file.
 Renders HTML with `shr-insert-document', then calls THEN if
 given."
-  (eww (hyperdrive-entry-url entry)))
+  (eww (hyperdrive-entry-url entry))
+  (when then
+    (funcall then)))
 
 (defun hyperdrive-url-loader (parsed-url)
   "Retrieve URL synchronously.
@@ -222,13 +228,19 @@ The return value of this function is the retrieval buffer."
         (replace-match ""))
       (current-buffer))))
 
+;;;; Configure Emacs and EWW for hyper:// URLs.
+
 (puthash "hyper" '(name "hyper" loader hyperdrive-url-loader
                         ;; Expand relative paths against host
                         expand-file-name url-default-expander)
          url-scheme-registry)
 
-;; FIXME: Incorporate existing value into new value
-(setf eww-use-browse-url (rx string-start (or "hyper://" "mailto:")))
+(when (version<= "28.1" emacs-version)
+  (require 'eww)
+  (setf eww-use-browse-url
+        (if eww-use-browse-url
+            (rx-to-string `(or ,eww-use-browse-url (seq bos "hyper://")))
+          (rx bos "hyper://"))))
 
 ;;;; Footer
 
