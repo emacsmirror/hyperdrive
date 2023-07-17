@@ -906,6 +906,16 @@ both point to the same content."
   "Call `user-error' with FORMAT and ARGS, prefixing FORMAT with \"Hyperdrive:\"."
   (apply #'user-error (concat "Hyperdrive: " format) args))
 
+(defun hyperdrive-insert-button (text &rest properties)
+  "Insert button labeled TEXT with button PROPERTIES at point.
+PROPERTIES are passed to `insert-text-button', for which this
+function is a convenience wrapper used by `describe-package-1'."
+  ;; Inspired by package.el's `package-make-button'.
+  (let ((button-text (if (display-graphic-p) text (concat "[" text "]")))
+        (button-face (if (display-graphic-p) 'hyperdrive-button 'link)))
+    (apply #'insert-text-button button-text 'face button-face 'follow-link t
+           properties)))
+
 (defun hyperdrive-copy-tree (tree &optional vecp)
   "Like `copy-tree', but with VECP, works for records too."
   ;; TODO: Now that the new copy-tree behavior has been merged into Emacs,

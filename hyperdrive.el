@@ -163,7 +163,12 @@ for a hyperdrive."
                      (forward-line -1)
                      (org-table-align)
                      (buffer-string))
-                 "[none]"))))
+                 "[none]"))
+       "\n")
+      (hyperdrive-insert-button "=== PURGE DATA ==="
+                                'action (lambda (_button)
+                                          (hyperdrive-purge hyperdrive))
+                                'face 'hyperdrive-button-dangerous))
     (setq buffer-read-only t)
     (pop-to-buffer (current-buffer))))
 

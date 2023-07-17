@@ -25,7 +25,8 @@
 ;;; Code:
 
 (require 'persist)
-(require 'dired)  ; For faces.
+(require 'dired)     ; For faces.
+(require 'cus-edit)  ; For `custom-button' face.
 
 ;;;; Configuration:
 
@@ -217,6 +218,20 @@ buffers."
  `hyperdrive-history' buffers."
   :group 'hyperdrive-faces)
 
+(defface hyperdrive-button
+  ;; Inspired by cus-edit.el's `custom-button' face.
+  ;; NOTE: This face is not currently used, but
+  ;; `hyperdrive-button-dangerous' inherits from it.
+  '((t (:inherit custom-button)))
+  "Face for hyperdrive buttons."
+  :group 'hyperdrive-faces)
+
+(defface hyperdrive-button-dangerous
+  '((t (:inherit hyperdrive-button
+                 :box (:line-width 3)
+                 :background "red" :foreground "yellow")))
+  "Face for dangerous hyperdrive buttons."
+  :group 'hyperdrive-faces)
 
 ;;;;; Regular expressions
 
