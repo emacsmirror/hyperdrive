@@ -576,6 +576,14 @@ Call ELSE if request fails."
   (hyperdrive-api 'delete (hyperdrive-entry-url entry)
     :then then :else else))
 
+(cl-defun hyperdrive-purge-no-prompt (hyperdrive &key then else)
+  "Purge all data corresponding to HYPERDRIVE, then call THEN.
+Call ELSE if request fails."
+  (declare (indent defun))
+  (hyperdrive-api 'delete (hyperdrive-entry-url (hyperdrive-entry-create :hyperdrive hyperdrive))
+    :then then :else else)
+  (remhash (hyperdrive-public-key hyperdrive) hyperdrive-hyperdrives))
+
 (cl-defun hyperdrive-write (entry &key body then else queue)
   "Write BODY to hyperdrive ENTRY's URL."
   (declare (indent defun))

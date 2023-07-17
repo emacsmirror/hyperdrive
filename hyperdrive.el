@@ -242,6 +242,17 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
       (hyperdrive-persist hyperdrive)
       (hyperdrive-open (hyperdrive-url-entry url)))))
 
+(defun hyperdrive-purge (hyperdrive)
+  "Purge all data corresponding to HYPERDRIVE."
+  (interactive (list (hyperdrive-complete-hyperdrive)))
+  (when (yes-or-no-p (format "Purge all data for hyperdrive «%s»? "
+                             (hyperdrive--format-hyperdrive hyperdrive)))
+    (hyperdrive-purge-no-prompt hyperdrive
+      :then (lambda (_response)
+              (hyperdrive-message "Purged drive: %s" (hyperdrive--format-hyperdrive hyperdrive)))
+      :else (lambda (_plz-error)
+              (hyperdrive-error "Unable to purge drive: %s" (hyperdrive--format-hyperdrive hyperdrive))))))
+
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
 Entering an empty or blank string unsets PETNAME.
