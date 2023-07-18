@@ -111,6 +111,8 @@ raw URL, not an Org link."
     (setf (url-type urlobj) "hyper")
     (hyperdrive-open (hyperdrive-url-entry (url-recreate-url urlobj))
       :then (lambda ()
+              ;; TODO: Should we call this then handler elsewhere? Should
+              ;; links to targets inside org files work outside of org files?
               (when (and (eq 'org-mode major-mode) target)
                 (hyperdrive--org-link-goto target))))))
 
