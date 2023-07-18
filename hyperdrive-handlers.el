@@ -36,11 +36,10 @@
 (defvar hyperdrive-type-handlers
   `(
     ;; Directories are sent from the gateway as JSON arrays
-    ("application/json" :handler hyperdrive-handler-json)
-    (,(rx bos "audio/") :handler hyperdrive-handler-streamable)
-    (,(rx bos "video/") :handler hyperdrive-handler-streamable)
-    (,(rx (or "text/html" "application/xhtml+xml"))
-     :handler hyperdrive-handler-html :auto-mode-p nil))
+    ("application/json" . hyperdrive-handler-json)
+    (,(rx bos "audio/") . hyperdrive-handler-streamable)
+    (,(rx bos "video/") . hyperdrive-handler-streamable)
+    (,(rx (or "text/html" "application/xhtml+xml")) . hyperdrive-handler-html))
   "Alist mapping MIME types to handler functions.
 Keys are regexps matched against MIME types.")
 

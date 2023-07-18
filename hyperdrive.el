@@ -423,18 +423,13 @@ in the buffer opened by the handler."
     (hyperdrive-fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-                           ((and plist (map (:handler handler)))
-                            (alist-get type hyperdrive-type-handlers nil nil #'string-match-p)))
+                           (handler (alist-get type hyperdrive-type-handlers nil nil #'string-match-p)))
                 (unless (hyperdrive--entry-directory-p entry)
                   ;; No need to fill latest version for directories,
                   ;; since we do it in `hyperdrive--fill' already.
                   (hyperdrive-fill-latest-version hyperdrive))
                 (hyperdrive-persist hyperdrive)
-                (let ((hyperdrive-honor-auto-mode-alist
-                       (if (plist-member plist :auto-mode-p)
-                           (plist-get plist :auto-mode-p)
-                         hyperdrive-honor-auto-mode-alist)))
-                  (funcall (or handler #'hyperdrive-handler-default) entry :then then))))
+                (funcall (or handler #'hyperdrive-handler-default) entry :then then)))
       :else (lambda (plz-error)
               (cl-labels ((not-found-action
                             () (if recurse
