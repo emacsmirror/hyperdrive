@@ -61,7 +61,9 @@ column headers when `hyperdrive-column-headers' is non-nil."
   (declare (modes hyperdrive-ewoc-mode))
   (interactive "p")
   ;; TODO: Try using the intangible text property on headers to
-  ;; automatically skip over them without conditional code.
+  ;; automatically skip over them without conditional code. Setting
+  ;; `cursor-intangible' on the column header causes `hl-line-mode' to
+  ;; highlight the wrong line when crossing over the headers.
   (pcase (line-number-at-pos)
     (1
      ;; Point on header: move into first entry.
