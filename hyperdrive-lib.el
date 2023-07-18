@@ -984,5 +984,14 @@ When PATH is nil or blank, return \"/\"."
                         path)
                       "/")))
 
+(defun hyperdrive-expand-url (path &optional base)
+  "Return a URL string of PATH expanded against current entry.
+When BASE is non-nil, PATH will be expanded against BASE instead."
+  (let* ((urlobj (url-generic-parse-url path))
+         (defobj (url-generic-parse-url (or base (hyperdrive-entry-url hyperdrive-current-entry)))))
+    ;; Destructively modify the URL object to give it the correct host and path.
+    (url-default-expander urlobj defobj)
+    (url-recreate-url urlobj)))
+
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here
