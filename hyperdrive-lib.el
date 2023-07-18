@@ -423,9 +423,9 @@ The following ENTRY hyperdrive slots are filled:
         ;; technically have versions in hyperdrive).
         (hyperdrive--fill-latest-version hyperdrive headers)
       ;; File HEAD/GET request ETag header does not retrieve the
-      ;; hyperdrive's latest version, so `hyperdrive-update-version-ranges'
+      ;; hyperdrive's latest version, so `hyperdrive-update-existent-version-range'
       ;; will not necessarily fill in the entry's last range.
-      (hyperdrive-update-version-ranges entry (string-to-number etag)))
+      (hyperdrive-update-existent-version-range entry (string-to-number etag)))
     entry))
 
 (defun hyperdrive-fill-latest-version (hyperdrive)
@@ -454,10 +454,10 @@ Returns the latest version number."
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
-(cl-defun hyperdrive-update-version-ranges (entry range-start &key (existsp t))
-  "Update the version range for ENTRY.
-Sets the range keyed by RANGE-START to a plist whose :existsp
-value is EXISTSP and whose :range-end value is ENTRY's version.
+(defun hyperdrive-update-existent-version-range (entry range-start)
+  "Update the version range for ENTRY which exists at its version.
+Sets the range keyed by RANGE-START to a plist whose :range-end
+value is ENTRY's version.
 
 For the format of each version range, see `hyperdrive-version-ranges'.
 
@@ -471,12 +471,11 @@ Returns the ranges cons cell for ENTRY."
                  ((map (:range-end old-range-end)) range)
                  ((cl-struct hyperdrive-entry hyperdrive version) entry)
                  (range-end (or version (hyperdrive-latest-version hyperdrive))))
-      ;; TODO: Update range start for contiguous nonexistent entries
       (when (or (not old-range-end)
                 (< old-range-end range-end))
         (setf (plist-get range :range-end) range-end
               (map-elt ranges range-start) range))
-      (setf (plist-get range :existsp) existsp
+      (setf (plist-get range :existsp) t
             (map-elt ranges range-start) range
             ranges (cl-sort ranges #'< :key #'car))
       (setf (hyperdrive-entry-version-ranges entry) ranges))))
