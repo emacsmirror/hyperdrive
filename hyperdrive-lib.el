@@ -471,14 +471,13 @@ Returns the ranges cons cell for ENTRY."
                  ((map (:range-end old-range-end)) range)
                  ((cl-struct hyperdrive-entry hyperdrive version) entry)
                  (range-end (or version (hyperdrive-latest-version hyperdrive))))
-      (when (or (not old-range-end)
-                (< old-range-end range-end))
-        (setf (plist-get range :range-end) range-end
-              (map-elt ranges range-start) range))
-      (setf (plist-get range :existsp) t
-            (map-elt ranges range-start) range
-            ranges (cl-sort ranges #'< :key #'car))
-      (setf (hyperdrive-entry-version-ranges entry) ranges))))
+      (unless (and old-range-end (> old-range-end range-end))
+        ;; If there already exists a longer existent range in
+        ;; `hyperdrive-version-ranges', there's nothing to do.
+        (setf (plist-get range :existsp) t
+              (plist-get range :range-end) range-end
+              (map-elt ranges range-start) range
+              (hyperdrive-entry-version-ranges entry) (cl-sort ranges #'< :key #'car))))))
 
 (defun hyperdrive-update-nonexistent-version-range (entry)
   "Update the version range for ENTRY which doesn't exist at its version.
