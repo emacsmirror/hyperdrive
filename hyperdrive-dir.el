@@ -93,6 +93,7 @@ With point on header, returns directory entry."
   "d"   #'hyperdrive-dir-download-file
   "^"   #'hyperdrive-up
   "D"   #'hyperdrive-dir-delete
+  "H"   #'hyperdrive-dir-history
   "?"   #'hyperdrive-describe-hyperdrive)
 
 ;; TODO: Get rid of this?
@@ -171,6 +172,13 @@ Interactively, visit file or directory at point in
                                 (405 "Cannot write to old version")
                                 (_ plz-error))))
                   (hyperdrive-message "Unable to delete: %S: %S" name message)))))))
+
+(declare-function hyperdrive-history "hyperdrive-history")
+
+(defun hyperdrive-dir-history (entry)
+  "Display version history for ENTRY at point."
+  (interactive (list (hyperdrive-dir--entry-at-point)))
+  (hyperdrive-history entry))
 
 (provide 'hyperdrive-dir)
 ;;; hyperdrive-dir.el ends here
