@@ -265,6 +265,11 @@ default:
 @item
 @code{D} deletes the file or directory (recursively) at point
 @end itemize
+@kindex hyperdrive-dir-history
+@itemize
+@item
+@code{H} opens the version history of file at point
+@end itemize
 @kindex hyperdrive-dir-copy-url
 @itemize
 @item
