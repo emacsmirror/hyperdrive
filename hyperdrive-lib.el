@@ -360,7 +360,7 @@ the given `plz-queue'"
              (plz-http-error
               (pcase (plz-response-status (plz-error-response (caddr err)))
                 (404 ;; Entry doesn't exist at this version: update range data.
-                 (hyperdrive-update-version-ranges entry (hyperdrive-entry-version entry) :existsp nil)))
+                 (hyperdrive-update-nonexistent-version-range entry)))
               ;; Re-signal error for, e.g. `hyperdrive-entry-at'.
               (signal (car err) (cdr err)))))
     (_ (hyperdrive-api 'head (hyperdrive-entry-url entry)
@@ -371,7 +371,7 @@ the given `plz-queue'"
          :else (lambda (&rest args)
                  (when-let ((version (hyperdrive-entry-version entry)))
                    ;; If request is canceled, the entry may not have a version.
-                   (hyperdrive-update-version-ranges entry version :existsp nil))
+                   (hyperdrive-update-nonexistent-version-range entry))
                  (apply else args))
          :noquery t))))
 
@@ -464,7 +464,8 @@ For the format of each version range, see `hyperdrive-version-ranges'.
 Returns the ranges cons cell for ENTRY."
   (cl-check-type range-start integer)
   (unless (hyperdrive--entry-directory-p entry)
-    ;; TODO: Revisit whether we really want to not do anything for directories.
+    ;; TODO: Revisit whether we really want to not do anything for directories
+    ;; (look at `hyperdrive-update-nonexistent-version-range' also).
     (pcase-let* ((ranges (hyperdrive-entry-version-ranges entry))
                  (range (map-elt ranges range-start))
                  ((map (:range-end old-range-end)) range)
@@ -479,6 +480,41 @@ Returns the ranges cons cell for ENTRY."
             (map-elt ranges range-start) range
             ranges (cl-sort ranges #'< :key #'car))
       (setf (hyperdrive-entry-version-ranges entry) ranges))))
+
+(defun hyperdrive-update-nonexistent-version-range (entry)
+  "Update the version range for ENTRY which doesn't exist at its version.
+Checks for nonexistent previous or next ranges, to combine them
+into one contiguous nonexistent range.
+
+For the format of each version range, see `hyperdrive-version-ranges'.
+
+Returns the ranges cons cell for ENTRY."
+  (unless (or (hyperdrive--entry-directory-p entry)
+              ;; If there already exists a nonexistent range in
+              ;; `hyperdrive-version-ranges', there's nothing to do.
+              (hyperdrive-entry-version-range entry))
+    (pcase-let* ((ranges (hyperdrive-entry-version-ranges entry))
+                 ((cl-struct hyperdrive-entry hyperdrive path version) entry)
+                 (version (or version (hyperdrive-latest-version hyperdrive)))
+                 (previous-range (hyperdrive-entry-version-range
+                                  (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1- version))))
+                 (`(,previous-range-start . ,(map (:existsp previous-exists-p))) previous-range)
+                 (next-range (hyperdrive-entry-version-range
+                              (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1+ version))))
+                 (`(,next-range-start . ,(map (:existsp next-exists-p) (:range-end next-range-end))) next-range)
+                 (range-start (if (and previous-range (null previous-exists-p))
+                                  ;; Extend previous nonexistent range
+                                  previous-range-start
+                                version))
+                 (range-end (if (and next-range (null next-exists-p))
+                                ;; Extend next nonexistent range
+                                next-range-end
+                              version)))
+      ;; Delete next range if it's contiguous with current range.
+      (when (and next-range (null next-exists-p))
+        (setf ranges (map-delete ranges next-range-start)))
+      (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end)
+            (hyperdrive-entry-version-ranges entry) (cl-sort ranges #'< :key #'car)))))
 
 (cl-defun hyperdrive-fill-version-ranges (entry &key then)
   "Asynchronously fill in versions ranges for ENTRY and call THEN.
