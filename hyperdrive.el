@@ -658,9 +658,9 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
                  ;; Unknown existence, either warn or recurse:
                  (if no-recurse
                      (hyperdrive-message "Next version unknown. Try M-x hyperdrive-history")
+                   (hyperdrive-message "Loading history to find next version...")
                    (hyperdrive-fill-version-ranges entry
-                     :then (lambda () (hyperdrive-next-version entry t)))
-                   (hyperdrive-message "Loading history to find next version..."))))))))
+                     :then (lambda () (hyperdrive-next-version entry t))))))))))
     (hyperdrive-message
      (substitute-command-keys
       (format "Already at latest version of entry; consider reverting buffer with %s to check for newer versions"
