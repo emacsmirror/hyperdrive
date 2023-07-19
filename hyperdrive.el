@@ -676,6 +676,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
           (alist-get 'location bookmark) (hyperdrive-entry-url hyperdrive-current-entry))
     (cons (format "hyperdrive: %s" (hyperdrive-entry-description hyperdrive-current-entry)) bookmark)))
 
+;;;###autoload
 (defun hyperdrive-bookmark-handler (bookmark)
   "Handler for Hyperdrive BOOKMARK."
   (hyperdrive-open (hyperdrive-url-entry (alist-get 'location (cdr bookmark)))
