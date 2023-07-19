@@ -330,6 +330,12 @@ current file is an org-mode file, @code{org-store-link} will store a link to
 the hyperdrive file, and if point is inside a heading, its @code{CUSTOM_ID},
 @code{ID}, or heading text will be appended to the stored URL@.
 
+Relative links are supported, so within @code{hyper://PUBLIC-KEY/foo.org},
+links to @code{bar.org}, @code{./bar.org}, and @code{/bar.org} will all point to
+@code{hyper://PUBLIC-KEY/bar.org}. A version number can also be specified in
+relative links, so that @code{/$/version/42/bar.org} will point to
+@code{hyper://PUBLIC-KEY/$/version/42/bar.org}.
+
 @node View the hyperdrive version history
 @section View the hyperdrive version history
 
