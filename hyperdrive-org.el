@@ -141,13 +141,18 @@ the current location."
             ;; TODO: Double-check that this is the correct way to get context.
             (org-element-lineage (org-element-context) '(link) t))
            (type (org-element-type context))
-           (link-type (org-element-property :type context)))
+           (link-type (org-element-property :type context))
+           (raw-link-type (org-element-property :raw-link context)))
       (when (and (eq type 'link)
                  (or
                   ;; "fuzzy" is for relative links without ./ prefix.
                   (equal "fuzzy" link-type)
                   ;; "file is for absolute links and relative links with ./ prefix.
-                  (equal "file" link-type)))
+                  (equal "file" link-type))
+                 ;; Allow links to explicitly point to local files by
+                 ;; prefixing with "file:" (because Org assumes that links
+                 ;; without a specified protocol are "file:" links).
+                 (not (string-prefix-p "file:" raw-link-type)))
         (hyperdrive-org-link-follow (hyperdrive-expand-url (org-element-property :path context)))))))
 
 ;;;###autoload
