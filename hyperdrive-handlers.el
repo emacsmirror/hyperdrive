@@ -87,7 +87,10 @@ arguments."
   ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
   ;; in a couple of seconds (same in hyperdrive-handler-default)
   ;; (like new with-delayed-message ?)
-  ;; FIXME: Directory entries now have a `fill-queue' slot.
+  ;; FIXME: The `queue' which is stored inside the entry has a closure
+  ;; which cyclically references the entry itself. Elsewhere, we call
+  ;; `hyperdrive-copy-tree' on the entry, leading to the error about
+  ;; nesting exceeding `max-lisp-eval-depth'.
   (cl-symbol-macrolet ((queue (alist-get 'fill-queue (hyperdrive-entry-etc directory-entry))))
     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version)
                   directory-entry)
