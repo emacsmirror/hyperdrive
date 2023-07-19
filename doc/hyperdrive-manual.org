@@ -12,6 +12,11 @@
 
 This manual is for ~hyperdrive.el~ version {{{version}}}.
 
+- Homepage: https://ushin.org/hyperdrive-manual.html
+- Repository: https://git.sr.ht/~ushin/hyperdrive.el
+
+* Copying
+
 Copyright \copy 2023 USHIN, Inc.
 
 #+begin_quote
