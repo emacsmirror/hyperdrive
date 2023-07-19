@@ -509,7 +509,7 @@ For examples, @ref{Mirror a whole directory} and @ref{Mirror files by tag or oth
 @node Hyperdrive
 @section Hyperdrive
 
-Hyperdrive is a virtual filesystem which you can use to share files on
+@uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is a virtual filesystem which you can use to share files on
 the peer-to-peer (P2P) @code{hyper} network.  It's a special folder with a
 long, unique link starting with @code{hyper://} that you can put files into
 and other peers can pull files out of (if they have the link).
@@ -550,7 +550,7 @@ lost. @ref{Versioning} for more information.
 
 @cindex Sparse replication
 
-@uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is sparsely replicated, meaning that peers can download
+Hyperdrive is sparsely replicated, meaning that peers can download
 particular files from a hyperdrive without having to get the whole
 drive. This reduces both load times and disk usage.
 
