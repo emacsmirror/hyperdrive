@@ -57,7 +57,7 @@ Repository: @uref{https://git.sr.ht/~ushin/hyperdrive.el}
 
 Installation
 
-* @code{hyper-gateway}::
+* hyper-gateway::
 
 Usage
 
@@ -160,11 +160,11 @@ for managing hyperdrives.
 MELPA, you can run @code{M-x package-install RET hyperdrive RET}.
 
 @menu
-* @code{hyper-gateway}::
+* hyper-gateway::
 @end menu
 
-@node @code{hyper-gateway}
-@section @code{hyper-gateway}
+@node hyper-gateway
+@section hyper-gateway
 
 @code{hyperdrive.el} relies on
 @uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for

@@ -48,7 +48,7 @@ for managing hyperdrives.
 [[https://melpa.org/#/getting-started][MELPA]]. Once you've set up
 MELPA, you can run ~M-x package-install RET hyperdrive RET~.
 
-** ~hyper-gateway~
+** hyper-gateway
 
 ~hyperdrive.el~ relies on
 [[https://github.com/RangerMauve/hyper-gateway/][hyper-gateway]] for
