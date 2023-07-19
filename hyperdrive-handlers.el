@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+(require 'url)
+
 (require 'hyperdrive-dir)
 (require 'hyperdrive-lib)
 
