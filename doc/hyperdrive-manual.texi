@@ -342,11 +342,11 @@ relative links, so that @code{/$/version/42/bar.org} will point to
 @section View the hyperdrive version history
 
 @findex hyperdrive-previous-version
-@findex hyperdrive-history
+@findex hyperdrive-next-version
 
-Hyperdrives are versioned (@ref{Versioning}).  To view the previous version
-of a hyperdrive file, run @code{hyperdrive-previous-version} inside the
-file's buffer.
+Hyperdrives are versioned (@ref{Versioning}).  To view the previous/next
+version of a hyperdrive file, run @code{hyperdrive-previous-version} or
+@code{hyperdrive-next-version} inside the file's buffer.
 
 @menu
 * History buffer::
@@ -354,6 +354,8 @@ file's buffer.
 
 @node History buffer
 @subsection History buffer
+
+@findex hyperdrive-history
 
 To view the entire known history of a file, use @code{hyperdrive-history}.
 For an explanation of the history buffer, @ref{Partial version data}.
