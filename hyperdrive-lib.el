@@ -254,6 +254,8 @@ empty public-key slot."
 (defun hyperdrive-entry-version-range (entry)
   "Return the version range containing ENTRY.
 Returns nil when ENTRY is not known to exist at its version."
+  ;; TODO: Consider returning a range from and to
+  ;; (hyperdrive-entry-version entry) for directories.
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
                (version (or entry-version (hyperdrive-latest-version hyperdrive)))
                (ranges (hyperdrive-entry-version-ranges entry)))
