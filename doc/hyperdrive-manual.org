@@ -577,10 +577,6 @@ world of p2p as well as the development of ~hyper-gateway~.
 suggestion that we allow for a non-splitting approach for uploading
 files from the filesystem.
 
-* GNU Free Documentation License
-
-#+include: fdl.org
-
 * Indices
 
 ** Keystroke index
@@ -603,6 +599,9 @@ files from the filesystem.
 :INDEX: cp
 :END:
 
+* GNU Free Documentation License
+
+#+include: fdl.org
 
 # Local Variables:
 # sentence-end-double-space: t

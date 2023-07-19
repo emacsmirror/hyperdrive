@@ -49,8 +49,8 @@ Repository: @uref{https://git.sr.ht/~ushin/hyperdrive.el}
 * Troubleshooting::
 * Bugs and Patches::
 * Acknowledgments::
-* GNU Free Documentation License::
 * Indices::
+* GNU Free Documentation License::
 
 @detailmenu
 --- The Detailed Node Listing ---
@@ -870,6 +870,36 @@ world of p2p as well as the development of @code{hyper-gateway}.
 suggestion that we allow for a non-splitting approach for uploading
 files from the filesystem.
 
+@node Indices
+@chapter Indices
+
+@menu
+* Keystroke index::
+* Function index::
+* Variable index::
+* Concept index::
+@end menu
+
+@node Keystroke index
+@section Keystroke index
+
+@printindex ky
+
+@node Function index
+@section Function index
+
+@printindex fn
+
+@node Variable index
+@section Variable index
+
+@printindex vr
+
+@node Concept index
+@section Concept index
+
+@printindex cp
+
 @node GNU Free Documentation License
 @chapter GNU Free Documentation License
 
@@ -1385,35 +1415,5 @@ If your document contains nontrivial examples of program code, we
 recommend releasing these examples in parallel under your choice of
 free software license, such as the GNU General Public License, to
 permit their use in free software.
-
-@node Indices
-@chapter Indices
-
-@menu
-* Keystroke index::
-* Function index::
-* Variable index::
-* Concept index::
-@end menu
-
-@node Keystroke index
-@section Keystroke index
-
-@printindex ky
-
-@node Function index
-@section Function index
-
-@printindex fn
-
-@node Variable index
-@section Variable index
-
-@printindex vr
-
-@node Concept index
-@section Concept index
-
-@printindex cp
 
 @bye
