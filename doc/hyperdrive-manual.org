@@ -3,6 +3,7 @@
 #+author: Joseph Turner and Adam Porter
 #+language: en
 #+setupfile: doc-setup.org
+#+options: toc:nil
 
 # #+export_file_name: hyperdrive.texi
 

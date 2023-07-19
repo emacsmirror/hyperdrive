@@ -24,8 +24,6 @@
 @author Joseph Turner and Adam Porter
 @end titlepage
 
-@contents
-
 @ifnottex
 @node Top
 @top Hyperdrive.el User Manual
