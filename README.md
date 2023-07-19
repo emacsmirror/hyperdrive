@@ -22,7 +22,7 @@ MELPA, run `M-x package-install` then enter `hyperdrive`.
 
 ## Manual
 
-For more information, please see the manual.
+For more information, please see the [manual](https://ushin.org/hyperdrive-manual.html).
 
 
 ## Bugs and Patches
