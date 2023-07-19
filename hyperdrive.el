@@ -661,8 +661,12 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
                    (hyperdrive-fill-version-ranges entry
                      :then (lambda () (hyperdrive-next-version entry t)))
                    (hyperdrive-message "Loading history to find next version..."))))))))
-    ;; TODO: Use `substitute-command-keys' to suggest that the user revert the buffer.
-    (hyperdrive-message "Already at latest version of entry")))
+    (hyperdrive-message
+     (substitute-command-keys
+      (format "Already at latest version of entry; consider reverting buffer with %s to check for newer versions"
+              (if (fboundp 'revert-buffer-quick)
+                  "\\[revert-buffer-quick]"
+                "\\[revert-buffer]"))))))
 
 ;;;; Bookmark support
 
