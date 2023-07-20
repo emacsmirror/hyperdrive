@@ -37,6 +37,21 @@
   "EWOC for current hyperdrive buffer.")
 (put 'hyperdrive-ewoc 'permanent-local t)
 
+;;;; Functions
+
+(cl-defun hyperdrive-ewoc-node (ewoc data &key (predicate #'eq))
+  "Select EWOC node for DATA.
+Uses PREDICATE to find the matching node."
+  (ewoc--set-buffer-bind-dll-let* ewoc
+      ((header (ewoc--header ewoc))
+       (node (ewoc--node-nth dll -2)))
+    (catch 'node
+      (while (not (eq node header))
+        (if (funcall predicate data (ewoc--node-data node))
+	    (throw 'node node))
+        (setq node (ewoc--node-prev dll node)))
+      nil)))
+
 ;;;; Mode
 
 (defvar-keymap hyperdrive-ewoc-mode-map
