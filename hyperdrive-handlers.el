@@ -89,10 +89,6 @@ arguments."
   ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
   ;; in a couple of seconds (same in hyperdrive-handler-default)
   ;; (like new with-delayed-message ?)
-  ;; FIXME: The `queue' which is stored inside the entry has a closure
-  ;; which cyclically references the entry itself. Elsewhere, we call
-  ;; `hyperdrive-copy-tree' on the entry, leading to the error about
-  ;; nesting exceeding `max-lisp-eval-depth'.
   (cl-symbol-macrolet ((queue (alist-get 'fill-queue (hyperdrive-entry-etc directory-entry))))
     (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version)
                   directory-entry)
@@ -128,11 +124,6 @@ arguments."
       (setf directory-entry (hyperdrive--fill directory-entry headers))
       (hyperdrive-fill-metadata hyperdrive)
       (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
-        ;; (when (and (bound-and-true-p hyperdrive-ewoc)
-        ;;            (ewoc-nth hyperdrive-ewoc 0))
-        ;;   ;; When EWOC has nodes, remember the current node and line so
-        ;;   ;; we can try to keep point.
-        ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-ewoc)) ;;         prev-line (line-number-at-pos)))
         (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
         (ewoc-filter hyperdrive-ewoc #'ignore)
         (erase-buffer)
@@ -140,18 +131,6 @@ arguments."
         (mapc (lambda (entry)
                 (ewoc-enter-last hyperdrive-ewoc entry))
               entries)
-        ;; (when prev-node-data
-        ;;   ;; Try to return point to where it was before reverting the buffer.
-        ;;   ;; FIXME: This doesn't always work correctly, apparently due
-        ;;   ;; to the async filling of entries and refreshing of the EWOC.
-        ;;   ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
-        ;;   ;;                  (lambda (node-data)
-        ;;   ;;                    (hyperdrive-entry-equal prev-node-data node-data)))))
-        ;;   ;;     (goto-char (ewoc-location node))
-        ;;   ;;   (goto-char (point-min))
-        ;;   ;;   (forward-line (1- prev-line)))
-        ;;   (goto-char (point-min))
-        ;;   (forward-line (1- prev-line)))
         (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
         (when queue
           (plz-clear queue))
@@ -162,8 +141,6 @@ arguments."
                                          ;; if it has one.  (Workaround a possible bug in EWOC.)
                                          (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
                                              (with-selected-window buffer-window
-                                               ;; TODO: Use `ewoc-invalidate' on individual entries
-                                               ;; (maybe later, as performance comes to matter more).
                                                (ewoc-refresh hyperdrive-ewoc)
                                                (goto-char (point-min))
                                                (set-buffer-modified-p nil))
