@@ -338,6 +338,10 @@ to @code{bar.org}, @code{./bar.org}, and @code{/bar.org} will all point to
 @code{/$/version/42/bar.org} will point to
 @code{hyper://PUBLIC-KEY/$/version/42/bar.org}.
 
+To link from a hyperdrive-mode org buffer to a file on the local
+filesystem, explicitly add the @code{file:} link type prefix:
+@code{file:~/.emacs.d/init.el}.
+
 @node View the hyperdrive version history
 @section View the hyperdrive version history
 

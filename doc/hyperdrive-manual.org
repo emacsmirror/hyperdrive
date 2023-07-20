@@ -159,6 +159,10 @@ to ~bar.org~, ~./bar.org~, and ~/bar.org~ will all point to
 ~/$/version/42/bar.org~ will point to
 ~hyper://PUBLIC-KEY/$/version/42/bar.org~.
 
+To link from a hyperdrive-mode org buffer to a file on the local
+filesystem, explicitly add the ~file:~ link type prefix:
+~file:~/.emacs.d/init.el~.
+
 ** View the hyperdrive version history
 #+findex: hyperdrive-previous-version
 #+findex: hyperdrive-next-version
