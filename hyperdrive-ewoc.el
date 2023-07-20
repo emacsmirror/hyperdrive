@@ -35,6 +35,7 @@
 
 (defvar-local hyperdrive-ewoc nil
   "EWOC for current hyperdrive buffer.")
+(put 'hyperdrive-ewoc 'permanent-local t)
 
 ;;;; Mode
 

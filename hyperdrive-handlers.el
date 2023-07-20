@@ -124,6 +124,7 @@ arguments."
       (setf directory-entry (hyperdrive--fill directory-entry headers))
       (hyperdrive-fill-metadata hyperdrive)
       (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
+        (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp))
         (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
         (ewoc-filter hyperdrive-ewoc #'ignore)
         (erase-buffer)
