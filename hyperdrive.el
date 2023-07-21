@@ -378,13 +378,29 @@ for a hyperdrive."
       (progn
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer
                     bookmark-make-record-function #'hyperdrive-bookmark-make-record)
-        ;; FIXME: `write-contents-functions' is cleared when changing the
-        ;; major mode (add to local value of `after-change-major-mode-hook'.
-        (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
+        (add-hook 'change-major-mode-hook #'hyperdrive--hack-write-contents-functions nil 'local))
     (kill-local-variable 'bookmark-make-record-function)
     (kill-local-variable 'revert-buffer-function)
     (setq-local write-contents-functions
-                (remove #'hyperdrive--write-contents write-contents-functions))))
+                (remove #'hyperdrive--write-contents write-contents-functions))
+    (remove-hook 'change-major-mode-hook
+                 #'hyperdrive--hack-write-contents-functions 'local)))
+
+(defun hyperdrive--hack-write-contents-functions ()
+  "Hack `write-contents-functions' for `hyperdrive-mode' in current buffer.
+Runs an immediate timer which adds `hyperdrive--write-contents'
+to `write-contents-functions'.  Also adds self to
+`change-major-mode-hook' so that it will happen again if the
+major mode changes (which resets `write-contents-functions' by
+calling `kill-all-local-variables').  This is a bit of a hack,
+but it seems to be necessary, and to be the cleanest way."
+  (run-at-time 0 nil
+               (lambda (buffer)
+                 (with-current-buffer buffer
+                   (cl-pushnew #'hyperdrive--write-contents write-contents-functions)
+                   (add-hook 'change-major-mode-hook
+                             #'hyperdrive--hack-write-contents-functions nil 'local)))
+               (current-buffer)))
 
 ;;;###autoload
 (defun hyperdrive-find-file (entry)
