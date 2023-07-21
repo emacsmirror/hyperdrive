@@ -140,11 +140,11 @@ arguments."
             entries)
       ;; Put point back where it was.
       (goto-char
-       (if-let ((new-node (hyperdrive-ewoc-node ewoc (ewoc-data prev-node)
-                                                :predicate (lambda (a b)
-                                                             ;; TODO: This doesn't work.
-                                                             (equal (hyperdrive-entry-path a)
-                                                                    (hyperdrive-entry-path b))))))
+       (if-let ((new-node (hyperdrive-ewoc-find-node ewoc (ewoc-data prev-node)
+                            :predicate (lambda (a b)
+                                         ;; TODO: This doesn't work.
+                                         (equal (hyperdrive-entry-path a)
+                                                (hyperdrive-entry-path b))))))
            (ewoc-location new-node)
          prev-point))
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
@@ -153,7 +153,7 @@ arguments."
                 :then (lambda (_response)
                         (with-current-buffer (ewoc-buffer ewoc)
                           ;; TODO: Add queue back for sorting
-                          (ewoc-invalidate ewoc (hyperdrive-ewoc-node ewoc entry))))
+                          (ewoc-invalidate ewoc (hyperdrive-ewoc-find-node ewoc entry))))
                 ;; TODO: Handle failures?
                 :else (lambda (_error) (message "ERROR"))))
             entries)

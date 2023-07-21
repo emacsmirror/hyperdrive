@@ -39,18 +39,17 @@
 
 ;;;; Functions
 
-(cl-defun hyperdrive-ewoc-node (ewoc data &key (predicate #'eq))
-  "Select EWOC node for DATA.
-Uses PREDICATE to find the matching node."
-  (ewoc--set-buffer-bind-dll-let* ewoc
-      ((header (ewoc--header ewoc))
-       (node (ewoc--node-nth dll -2)))
-    (catch 'node
-      (while (not (eq node header))
-        (if (funcall predicate data (ewoc--node-data node))
-	    (throw 'node node))
-        (setq node (ewoc--node-prev dll node)))
-      nil)))
+(cl-defun hyperdrive-ewoc-find-node (ewoc data &key (predicate #'eq))
+  "Return the last node in EWOC whose DATA matches PREDICATE.
+PREDICATE is called with DATA and node's data.  Searches backward from
+last node."
+  (declare (indent defun))
+  ;; Intended to be like `ewoc-collect', but returning as soon as a match is found.
+  (cl-loop with node = (ewoc-nth ewoc -1)
+           while node
+           when (funcall predicate data (ewoc-data node))
+           return node
+           do (setf node (ewoc-prev ewoc node))))
 
 ;;;; Mode
 
