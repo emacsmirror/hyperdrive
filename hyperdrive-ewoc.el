@@ -102,5 +102,18 @@ column headers when `hyperdrive-column-headers' is non-nil."
     (when target-node
       (goto-char (ewoc-location target-node)))))
 
+;;;; Functions
+
+(defun hyperdrive-ewoc-collect-nodes (ewoc predicate)
+  "Collect all nodes in EWOC matching PREDICATE.
+PREDICATE is called with the full node."
+  ;; Intended to be like `ewoc-collect', but working with the full
+  ;; node instead of just the node's data.
+  (cl-loop with node = (ewoc-nth ewoc 0)
+           do (setf node (ewoc-next ewoc node))
+           while node
+           when (funcall predicate node)
+           collect node))
+
 (provide 'hyperdrive-ewoc)
 ;;; hyperdrive-ewoc.el ends here

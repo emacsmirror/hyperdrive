@@ -106,10 +106,10 @@ With point on header, returns directory entry."
   "Major mode for Hyperdrive directory buffers."
   :group 'hyperdrive
   :interactive nil
-  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)
-        ;; TODO(alphapapa): Imenu support.
-        ;; imenu-create-index-function #'ement-room--imenu-create-index-function
-        ))
+  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp))
+  (setq-local imenu-create-index-function #'hyperdrive-dir--imenu-create-index-function
+              imenu-auto-rescan t
+              imenu-space-replacement " "))
 
 ;;;; Commands
 
@@ -179,6 +179,16 @@ Interactively, visit file or directory at point in
   "Display version history for ENTRY at point."
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-history entry))
+
+;;;; Imenu support
+
+(defun hyperdrive-dir--imenu-create-index-function ()
+  "Return Imenu index for the current `hyperdrive-dir' buffer.
+For use as `imenu-create-index-function'."
+  (cl-loop for node in (hyperdrive-ewoc-collect-nodes hyperdrive-ewoc #'identity)
+           collect (save-excursion
+                     (goto-char (ewoc-location node))
+                     (cons (buffer-substring (point) (point-at-eol)) (ewoc-location node)))))
 
 (provide 'hyperdrive-dir)
 ;;; hyperdrive-dir.el ends here
