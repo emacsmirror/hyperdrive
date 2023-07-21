@@ -108,7 +108,7 @@ With point on header, returns directory entry."
   :interactive nil
   ;; TODO(alphapapa): Imenu support.
   ;; imenu-create-index-function #'ement-room--imenu-create-index-function
-  ))
+  )
 
 ;;;; Commands
 
