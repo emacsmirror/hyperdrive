@@ -89,6 +89,7 @@ With point on header, returns directory entry."
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
   "f"   #'hyperdrive-find-file ;; Alternatively, define new function which fills in name of entry at point.
+  "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
   "d"   #'hyperdrive-dir-download-file
   "^"   #'hyperdrive-up
