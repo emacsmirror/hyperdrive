@@ -378,7 +378,7 @@ for a hyperdrive."
       (progn
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer
                     bookmark-make-record-function #'hyperdrive-bookmark-make-record)
-        (add-hook 'change-major-mode-hook #'hyperdrive--hack-write-contents-functions nil 'local))
+        (hyperdrive--hack-write-contents-functions))
     (kill-local-variable 'bookmark-make-record-function)
     (kill-local-variable 'revert-buffer-function)
     (setq-local write-contents-functions
