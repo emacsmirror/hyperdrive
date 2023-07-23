@@ -93,8 +93,7 @@ seed cannot be changed.
 You can open a hyperdrive folder or file by pasting in a ~hyper://~ URL
 after ~M-x hyperdrive-open-url~. Alternatively, ~M-x hyperdrive-find-file~
 remembers hyperdrives you have already created or visited. It will
-prompt you to select a known hyperdrive by its public key or seed and
-then enter a path inside that hyperdrive.
+prompt you for a known hyperdrive and a path inside it.
 
 *** Directory view
 
