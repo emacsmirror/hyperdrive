@@ -188,7 +188,7 @@ Interactively, visit file or directory at point in
 For use as `imenu-create-index-function'."
   (cl-loop for node in (hyperdrive-ewoc-collect-nodes hyperdrive-ewoc #'identity)
            collect (let ((location (goto-char (ewoc-location node))))
-                     (cons (buffer-substring (point) (point-at-eol)) location))))
+                     (cons (buffer-substring (point) (pos-eol)) location))))
 
 (provide 'hyperdrive-dir)
 ;;; hyperdrive-dir.el ends here
