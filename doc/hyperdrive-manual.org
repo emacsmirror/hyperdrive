@@ -561,19 +561,21 @@ this issue by remembering which public key the DNS record resolved to,
 so that peers can use the stored public key itself for subsequent
 connections.
 
-** Hyperdrive entries
-#+cindex: Entries
+* Known limitations
+
+** Files and folders can have the same name
 
 Instead of files and folders, Hyperdrive technically has entries and
-entry prefixes. It's possible for a "file" entry and a "folder" entry
-prefix to have the same name, like ~hyper://PUBLIC-KEY/path/to/~ (a
-"directory") and ~hyper://PUBLIC-KEY/path/to~ (a "file"). In this
-case, the directory listing for ~hyper://PUBLIC-KEY/path/~ would
-display the ~to~ entry but not the ~to/~ entry prefix. Because entry
-prefixes only exist when they prefix an entry, deleting the last
-"file" in a "directory" causes the "directory" to disappear as well.
-When a hyperdrive "file" or "directory" is not found, ~hyperdrive.el~
-prompts to go to the parent "directory."
+entry prefixes. In other words, "folders" don't exist unless they
+contain files. It's possible for a "file" entry and a "folder" entry
+prefix to have the same name, like ~hyper://PUBLIC-KEY/foo/bar/~ (a
+"folder") and ~hyper://PUBLIC-KEY/foo/bar~ (a "file"). In this case, the
+folder listing for ~hyper://PUBLIC-KEY/path/~ would display the ~to~ entry
+but not the ~to/~ entry prefix. Because entry prefixes only exist when
+they prefix an entry, deleting the last "file" in a "folder" causes
+the "folder" to disappear as well.  When a hyperdrive "file" or
+"folder" is not found, ~hyperdrive.el~ prompts you for an action
+([[*Unknown paths]]).
 
 * Troubleshooting
 
