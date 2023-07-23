@@ -105,16 +105,7 @@ raw URL, not an Org link."
 (defun hyperdrive-org-link-follow (url &optional _prefix)
   ;; TODO: Do we need to do anything if prefix is used?
   "Follow hyperdrive URL."
-  (pcase-let* ((urlobj (url-generic-parse-url url))
-               ((cl-struct url target) urlobj))
-    (setf (url-target urlobj) nil)
-    (setf (url-type urlobj) "hyper")
-    (hyperdrive-open (hyperdrive-url-entry (url-recreate-url urlobj))
-      :then (lambda ()
-              ;; TODO: Should we call this then handler elsewhere? Should
-              ;; links to targets inside org files work outside of org files?
-              (when (and (eq 'org-mode major-mode) target)
-                (hyperdrive--org-link-goto target))))))
+  (hyperdrive-open (hyperdrive-url-entry url)))
 
 (defun hyperdrive--org-link-goto (target)
   "Go to TARGET in current Org buffer.
@@ -153,7 +144,7 @@ the current location."
                  ;; prefixing with "file:" (because Org assumes that links
                  ;; without a specified protocol are "file:" links).
                  (not (string-prefix-p "file:" raw-link-type)))
-        (hyperdrive-org-link-follow (hyperdrive-expand-url (org-element-property :path context)))))))
+        (hyperdrive-open (hyperdrive-expand-url (org-element-property :path context)))))))
 
 ;;;###autoload
 (with-eval-after-load 'org

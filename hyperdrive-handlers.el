@@ -45,20 +45,24 @@
   "Alist mapping MIME types to handler functions.
 Keys are regexps matched against MIME types.")
 
+(declare-function hyperdrive--org-link-goto "hyperdrive-org")
 (cl-defun hyperdrive-handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
   (hyperdrive-api 'get (hyperdrive-entry-url entry)
     :noquery t
     :as (lambda ()
-          (pcase-let (((cl-struct hyperdrive-entry hyperdrive version) entry)
-                      (response-buffer (current-buffer))
-                      (inhibit-read-only t))
+          (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
+                       ((map target) etc)
+                       (response-buffer (current-buffer))
+                       (inhibit-read-only t))
             ;; TODO: Revisit buffer naming/"visiting" (e.g. what
             ;; happens if the user opens a Hyperdrive file and then
             ;; saves another buffer to the same location?).  See
             ;; also: hyperdrive-save, etc.
             (with-current-buffer (hyperdrive--get-buffer-create entry)
+              ;; TODO: Don't reload if we're jumping to a link on the
+              ;; same page (but ensure that reverting still works).
               (if (buffer-modified-p)
                   (hyperdrive-message "Buffer modified: %S" (current-buffer))
                 (erase-buffer)
@@ -70,15 +74,19 @@ If then, then call THEN with no arguments.  Default handler."
                 (goto-char (point-min))
                 (when then
                   (funcall then)))
-              ;; FIXME: Do this in a wrapper.
-              ;; (when target
-              ;;   ;; FIXME: This is specific to Org files and doesn't
-              ;;   ;; quite belong here.  (OTOH we could use this
-              ;;   ;; function to find text in non-Org files, too, I
-              ;;   ;; think.)
-              ;;   (require 'ol)
-              ;;   (org-link-search target))
               ;; TODO: Option to defer showing buffer.
+              (when target
+                ;; TODO: Should the logic in this block go into its own function?
+                (pcase major-mode
+                  ('org-mode
+                   (require 'hyperdrive-org)
+                   (hyperdrive--org-link-goto target))
+                  ('markdown-mode
+                   ;; TODO: Handle markdown link
+                   )))
+              ;; FIXME: `pop-to-buffer' moves point to beginning of buffer
+              ;; when calling `browse-url' on a hyper URL to an org file
+              ;; with a link target. Instead, point should stay where it is.
               (pop-to-buffer (current-buffer)))))))
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
