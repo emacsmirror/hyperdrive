@@ -51,8 +51,9 @@ If then, then call THEN with no arguments.  Default handler."
   (hyperdrive-api 'get (hyperdrive-entry-url entry)
     :noquery t
     :as (lambda ()
-          (let ((response-buffer (current-buffer))
-                (inhibit-read-only t))
+          (pcase-let (((cl-struct hyperdrive-entry hyperdrive version) entry)
+                      (response-buffer (current-buffer))
+                      (inhibit-read-only t))
             ;; TODO: Revisit buffer naming/"visiting" (e.g. what
             ;; happens if the user opens a Hyperdrive file and then
             ;; saves another buffer to the same location?).  See
@@ -63,8 +64,7 @@ If then, then call THEN with no arguments.  Default handler."
               (erase-buffer)
               (insert-buffer-substring response-buffer)
               (setf buffer-undo-list nil
-                    buffer-read-only (or (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry)))
-                                         (hyperdrive-entry-version entry)))
+                    buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
               (set-buffer-modified-p nil)
               (set-visited-file-modtime (current-time))
               (goto-char (point-min)))
