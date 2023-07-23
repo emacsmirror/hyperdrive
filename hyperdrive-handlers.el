@@ -58,28 +58,28 @@ If then, then call THEN with no arguments.  Default handler."
             ;; happens if the user opens a Hyperdrive file and then
             ;; saves another buffer to the same location?).  See
             ;; also: hyperdrive-save, etc.
-            (switch-to-buffer (hyperdrive--get-buffer-create entry))
-            (if (buffer-modified-p)
-                (hyperdrive-message "Buffer modified: %S" (current-buffer))
-              (erase-buffer)
-              (insert-buffer-substring response-buffer)
-              (setf buffer-undo-list nil
-                    buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
-              (set-buffer-modified-p nil)
-              (set-visited-file-modtime (current-time))
-              (goto-char (point-min)))
-            ;; TODO: Option to defer showing buffer.
-            ;; FIXME: Do this in a wrapper.
-            ;; (when target
-            ;;   ;; FIXME: This is specific to Org files and doesn't
-            ;;   ;; quite belong here.  (OTOH we could use this
-            ;;   ;; function to find text in non-Org files, too, I
-            ;;   ;; think.)
-            ;;   (require 'ol)
-            ;;   (org-link-search target))
-            (pop-to-buffer (current-buffer))
-            (when then
-              (funcall then))))))
+            (with-current-buffer (hyperdrive--get-buffer-create entry)
+              (if (buffer-modified-p)
+                  (hyperdrive-message "Buffer modified: %S" (current-buffer))
+                (erase-buffer)
+                (insert-buffer-substring response-buffer)
+                (setf buffer-undo-list nil
+                      buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
+                (set-buffer-modified-p nil)
+                (set-visited-file-modtime (current-time))
+                (goto-char (point-min)))
+              ;; TODO: Option to defer showing buffer.
+              ;; FIXME: Do this in a wrapper.
+              ;; (when target
+              ;;   ;; FIXME: This is specific to Org files and doesn't
+              ;;   ;; quite belong here.  (OTOH we could use this
+              ;;   ;; function to find text in non-Org files, too, I
+              ;;   ;; think.)
+              ;;   (require 'ol)
+              ;;   (org-link-search target))
+              (pop-to-buffer (current-buffer))
+              (when then
+                (funcall then)))))))
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
