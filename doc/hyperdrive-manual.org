@@ -132,6 +132,26 @@ If you have bound ~dired-jump~ in the global keymap (people often choose
 ~C-x C-j~), you can use the same binding to jump to the parent
 hyperdrive directory from any hyperdrive file or directory buffer.
 
+*** Unknown paths
+
+When you attempt to load a file or folder that doesn't appear to
+exist, ~hyperdrive.el~ will prompt you to take action:
+
+- ~h~ (history) to open the version history for that file. (This only
+  works for files, not folders)
+- ~u~ (up) to open the parent directory containing that file or folder
+- ~r~ (recurse) to go up the directory tree until a directory is found
+  or until you get to the root directory.
+- ~q~ (exit) to exit,
+- ~?~ (help) to show a help message.
+
+If you attempt to load the root directory (~hyper://PUBLIC-KEY/~) of a
+for a hyperdrive with a valid-looking public key which you've never
+loaded before and for which no peers are currently found,
+~hyperdrive.el~ should warn you that no peers were found for that
+drive. This might mean that the drive doesn't exist or just that
+you're not connected to anyone who knows about it.
+
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
 
