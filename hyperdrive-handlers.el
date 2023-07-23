@@ -58,16 +58,16 @@ If then, then call THEN with no arguments.  Default handler."
             ;; saves another buffer to the same location?).  See
             ;; also: hyperdrive-save, etc.
             (switch-to-buffer (hyperdrive--get-buffer-create entry))
-            (when (buffer-modified-p)
-              (hyperdrive-error "Buffer modified: %S" (current-buffer)))
-            (erase-buffer)
-            (insert-buffer-substring response-buffer)
-            (setf buffer-undo-list nil
-                  buffer-read-only (or (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry)))
-                                       (hyperdrive-entry-version entry)))
-            (set-buffer-modified-p nil)
-            (set-visited-file-modtime (current-time))
-            (goto-char (point-min))
+            (if (buffer-modified-p)
+                (hyperdrive-message "Buffer modified: %S" (current-buffer))
+              (erase-buffer)
+              (insert-buffer-substring response-buffer)
+              (setf buffer-undo-list nil
+                    buffer-read-only (or (not (hyperdrive-writablep (hyperdrive-entry-hyperdrive entry)))
+                                         (hyperdrive-entry-version entry)))
+              (set-buffer-modified-p nil)
+              (set-visited-file-modtime (current-time))
+              (goto-char (point-min)))
             ;; TODO: Option to defer showing buffer.
             ;; FIXME: Do this in a wrapper.
             ;; (when target
