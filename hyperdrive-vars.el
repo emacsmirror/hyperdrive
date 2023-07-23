@@ -146,6 +146,11 @@ through a shell)."
   :type 'integer
   :group 'hyperdrive)
 
+(defcustom hyperdrive-render-html t
+  "Render HTML hyperdrive files with EWW."
+  :type 'boolean
+  :group 'hyperdrive)
+
 ;;;;; Faces
 
 (defgroup hyperdrive-faces nil

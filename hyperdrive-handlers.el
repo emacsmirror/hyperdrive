@@ -208,9 +208,12 @@ directory (if its URL ends in \"/\"), pass to
   "Show ENTRY, where ENTRY is an HTML file.
 Renders HTML with `shr-insert-document', then calls THEN if
 given."
-  (eww (hyperdrive-entry-url entry))
-  (when then
-    (funcall then)))
+  (if hyperdrive-render-html
+      (progn
+        (eww (hyperdrive-entry-url entry))
+        (when then
+          (funcall then)))
+    (hyperdrive-handler-default entry :then then)))
 
 (defun hyperdrive-url-loader (parsed-url)
   "Retrieve URL synchronously.
