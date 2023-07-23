@@ -916,12 +916,12 @@ In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
   (with-current-buffer (get-buffer-create (hyperdrive--entry-buffer-name entry))
-    (when hyperdrive-honor-auto-mode-alist
-      ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-      (let ((buffer-file-name (hyperdrive-entry-name entry)))
-        (set-auto-mode)))
-    (when (hyperdrive--entry-directory-p entry)
-      (hyperdrive-dir-mode))
+    (if (hyperdrive--entry-directory-p entry)
+        (hyperdrive-dir-mode)
+      (when hyperdrive-honor-auto-mode-alist
+        ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+        (let ((buffer-file-name (hyperdrive-entry-name entry)))
+          (set-auto-mode))))
     (hyperdrive-mode)
     (setq-local hyperdrive-current-entry entry)
     (current-buffer)))
