@@ -496,6 +496,9 @@ in the buffer opened by the handler."
                          (t
                           ;; Hyperdrive entry is not writable: prompt for action.
                           (not-found-action))))
+                       (500 ;; Generic error, likely a mistyped URL
+                        (hyperdrive-message "Generic hyper-gateway status 500 error. Is this URL correct? %s"
+                                            (hyperdrive-entry-url entry)))
                        (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
                                               (hyperdrive-entry-url entry) plz-error)))))))))))
 
