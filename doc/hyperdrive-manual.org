@@ -152,6 +152,10 @@ loaded before and for which no peers are currently found,
 drive. This might mean that the drive doesn't exist or just that
 you're not connected to anyone who knows about it.
 
+If you attempt to load a file or directory for a hyperdrive with a
+malformed public key, ~hyperdrive.el~ should ask you to double-check the
+URL.
+
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
 
