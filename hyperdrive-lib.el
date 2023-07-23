@@ -650,7 +650,7 @@ FORMAT-PATH is `name', use only last part of path, as in
 
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
-           (with-protocol t) (with-help-echo t))
+           (with-protocol t) (with-help-echo t) (with-target t))
   "Return ENTRY's URL.
 Returns URL formatted like:
 
@@ -659,7 +659,8 @@ Returns URL formatted like:
 HOST-FORMAT is passed to `hyperdrive--format-host', which see. If
 WITH-PROTOCOL, \"hyper://\" is prepended. If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL. When ENTRY has non-`nil' `version' slot, include
+full URL. If WITH-TARGET, append the ENTRY's target, stored in
+its :etc slot. When ENTRY has non-`nil' `version' slot, include
 version number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
@@ -668,19 +669,22 @@ URL."
   ;; NOTE: Entries may have only a domain, not a public key yet, so we
   ;; include `domain' in HOST-FORMAT's default value.  The public key
   ;; will be filled in later.
-  (pcase-let* (((cl-struct hyperdrive-entry path version)
+  (pcase-let* (((cl-struct hyperdrive-entry path version etc)
                 entry)
                (protocol (when with-protocol
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
                                               :format host-format))
                (version-part (and version (format "/$/version/%s" version)))
-               (url (concat protocol host version-part path)))
+               ((map target) etc)
+               (target-part (when (and with-target target)
+                              (concat "#" target)))
+               (url (concat protocol host version-part path target-part)))
     (if with-help-echo
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
                                 entry :with-protocol t :host-format '(public-key domain)
-                                :with-help-echo nil))
+                                :with-help-echo nil :with-target with-target))
       url)))
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format with-label)
