@@ -107,7 +107,6 @@ With point on header, returns directory entry."
   "Major mode for Hyperdrive directory buffers."
   :group 'hyperdrive
   :interactive nil
-  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp))
   (setq-local imenu-create-index-function #'hyperdrive-dir--imenu-create-index-function
               imenu-auto-rescan t
               imenu-space-replacement " "))

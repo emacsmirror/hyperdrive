@@ -96,97 +96,75 @@ arguments."
   ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
   ;; in a couple of seconds (same in hyperdrive-handler-default)
   ;; (like new with-delayed-message ?)
-  ;; FIXME: The `queue' which is stored inside the entry has a closure
-  ;; which cyclically references the entry itself. Elsewhere, we call
-  ;; `hyperdrive-copy-tree' on the entry, leading to the error about
-  ;; nesting exceeding `max-lisp-eval-depth'.
-  (cl-symbol-macrolet ((queue (alist-get 'fill-queue (hyperdrive-entry-etc directory-entry))))
-    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version)
-                  directory-entry)
-                 (url (hyperdrive-entry-url directory-entry))
-                 (inhibit-read-only t)
-                 ((cl-struct plz-response headers body)
-                  ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
-                  (hyperdrive-api 'get url :as 'response :noquery t))
-                 (entry-names (json-read-from-string body))
-                 (entries
-                  (mapcar (lambda (entry-name)
-                            (hyperdrive-entry-create
-                             :hyperdrive hyperdrive
-                             :path (concat (url-unhex-string path) entry-name)
-                             :version version
-                             :encode t))
-                          entry-names))
-                 (parent-entry (hyperdrive-parent directory-entry))
-                 (main-header (hyperdrive-entry-description directory-entry))
-                 (header
-                  (if hyperdrive-column-headers
-                      (concat main-header "\n"
-                              (format "%6s  %s  %s"
-                                      (propertize "Size" 'face 'hyperdrive-column-header)
-                                      (format hyperdrive-timestamp-format-string
-                                              (propertize "Last Modified" 'face 'hyperdrive-column-header))
-                                      (propertize "Name" 'face 'hyperdrive-column-header)))
-                    main-header))
-                 (ewoc))
-      (when parent-entry
-        (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
-        (push parent-entry entries))
-      (setf directory-entry (hyperdrive--fill directory-entry headers))
-      (hyperdrive-fill-metadata hyperdrive)
-      (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
-        ;; (when (and (bound-and-true-p hyperdrive-ewoc)
-        ;;            (ewoc-nth hyperdrive-ewoc 0))
-        ;;   ;; When EWOC has nodes, remember the current node and line so
-        ;;   ;; we can try to keep point.
-        ;;   (setf prev-node-data (ewoc-data (ewoc-locate hyperdrive-ewoc)) ;;         prev-line (line-number-at-pos)))
-        (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
-        (ewoc-filter hyperdrive-ewoc #'ignore)
-        (erase-buffer)
-        (ewoc-set-hf hyperdrive-ewoc header "")
-        (mapc (lambda (entry)
-                (ewoc-enter-last hyperdrive-ewoc entry))
-              entries)
-        ;; (when prev-node-data
-        ;;   ;; Try to return point to where it was before reverting the buffer.
-        ;;   ;; FIXME: This doesn't always work correctly, apparently due
-        ;;   ;; to the async filling of entries and refreshing of the EWOC.
-        ;;   ;; (if-let ((node (hyperdrive--ewoc-last-matching hyperdrive-ewoc
-        ;;   ;;                  (lambda (node-data)
-        ;;   ;;                    (hyperdrive-entry-equal prev-node-data node-data)))))
-        ;;   ;;     (goto-char (ewoc-location node))
-        ;;   ;;   (goto-char (point-min))
-        ;;   ;;   (forward-line (1- prev-line)))
-        ;;   (goto-char (point-min))
-        ;;   (forward-line (1- prev-line)))
-        (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
-        (when queue
-          (plz-clear queue))
-        (setf queue
-              (make-plz-queue :limit 8
-                              :finally (lambda ()
-                                         ;; NOTE: Ensure that the buffer's window is selected,
-                                         ;; if it has one.  (Workaround a possible bug in EWOC.)
-                                         (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                                             (with-selected-window buffer-window
-                                               ;; TODO: Use `ewoc-invalidate' on individual entries
-                                               ;; (maybe later, as performance comes to matter more).
-                                               (ewoc-refresh hyperdrive-ewoc)
-                                               (goto-char (point-min))
-                                               (set-buffer-modified-p nil))
-                                           (with-current-buffer (ewoc-buffer ewoc)
-                                             (ewoc-refresh hyperdrive-ewoc)
-                                             (goto-char (point-min))
-                                             (set-buffer-modified-p nil)))
-                                         (with-current-buffer (ewoc-buffer ewoc)
-                                           (when then
-                                             (funcall then))))))
-        (mapc (lambda (entry)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version)
+                directory-entry)
+               (url (hyperdrive-entry-url directory-entry))
+               (inhibit-read-only t)
+               ((cl-struct plz-response headers body)
+                ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
+                (hyperdrive-api 'get url :as 'response :noquery t))
+               (entry-names (json-read-from-string body))
+               (entries
+                (mapcar (lambda (entry-name)
+                          (hyperdrive-entry-create
+                           :hyperdrive hyperdrive
+                           :path (concat (url-unhex-string path) entry-name)
+                           :version version
+                           :encode t))
+                        entry-names))
+               (parent-entry (hyperdrive-parent directory-entry))
+               (main-header (hyperdrive-entry-description directory-entry))
+               (header
+                (if hyperdrive-column-headers
+                    (concat main-header "\n"
+                            (format "%6s  %s  %s"
+                                    (propertize "Size" 'face 'hyperdrive-column-header)
+                                    (format hyperdrive-timestamp-format-string
+                                            (propertize "Last Modified" 'face 'hyperdrive-column-header))
+                                    (propertize "Name" 'face 'hyperdrive-column-header)))
+                  main-header))
+               (ewoc) (prev-node) (prev-point))
+    (when parent-entry
+      (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
+      (push parent-entry entries))
+    (setf directory-entry (hyperdrive--fill directory-entry headers))
+    (hyperdrive-fill-metadata hyperdrive)
+    (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
+      (if hyperdrive-ewoc
+          (progn
+            ;; Store `prev-node' so we can jump to it later.
+            (setf prev-node (ewoc-locate hyperdrive-ewoc))
+            (setf prev-point (point))
+            ;; Then clear existing ewoc.
+            (ewoc-filter hyperdrive-ewoc #'ignore))
+        ;; Or make a new one.
+        (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
+      (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
+      (erase-buffer)
+      (ewoc-set-hf hyperdrive-ewoc header "")
+      (mapc (lambda (entry)
+              (ewoc-enter-last hyperdrive-ewoc entry))
+            entries)
+      ;; Put point back where it was.
+      (goto-char
+       (if-let ((new-node (hyperdrive-ewoc-find-node ewoc (ewoc-data prev-node)
+                            :predicate (lambda (a b)
+                                         ;; TODO: This doesn't work.
+                                         (equal (hyperdrive-entry-path a)
+                                                (hyperdrive-entry-path b))))))
+           (ewoc-location new-node)
+         prev-point))
+      (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
+      (mapc (lambda (entry)
+              (hyperdrive-fill entry
+                :then (lambda (_response)
+                        (with-current-buffer (ewoc-buffer ewoc)
+                          ;; TODO: Add queue back for sorting
+                          (ewoc-invalidate ewoc (hyperdrive-ewoc-find-node ewoc entry))))
                 ;; TODO: Handle failures?
-                (hyperdrive-fill entry :queue queue :then #'ignore))
-              entries)
-        (set-buffer-modified-p nil)
-        (goto-char (point-min))))))
+                :else (lambda (_error) (message "ERROR"))))
+            entries)
+      (set-buffer-modified-p nil))))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?

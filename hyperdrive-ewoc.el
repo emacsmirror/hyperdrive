@@ -35,6 +35,21 @@
 
 (defvar-local hyperdrive-ewoc nil
   "EWOC for current hyperdrive buffer.")
+(put 'hyperdrive-ewoc 'permanent-local t)
+
+;;;; Functions
+
+(cl-defun hyperdrive-ewoc-find-node (ewoc data &key (predicate #'eq))
+  "Return the last node in EWOC whose DATA matches PREDICATE.
+PREDICATE is called with DATA and node's data.  Searches backward from
+last node."
+  (declare (indent defun))
+  ;; Intended to be like `ewoc-collect', but returning as soon as a match is found.
+  (cl-loop with node = (ewoc-nth ewoc -1)
+           while node
+           when (funcall predicate data (ewoc-data node))
+           return node
+           do (setf node (ewoc-prev ewoc node))))
 
 ;;;; Mode
 
