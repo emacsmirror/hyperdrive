@@ -67,8 +67,9 @@ If then, then call THEN with no arguments.  Default handler."
                       buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
                 (set-buffer-modified-p nil)
                 (set-visited-file-modtime (current-time))
-                (goto-char (point-min)))
-              ;; TODO: Option to defer showing buffer.
+                (goto-char (point-min))
+                (when then
+                  (funcall then)))
               ;; FIXME: Do this in a wrapper.
               ;; (when target
               ;;   ;; FIXME: This is specific to Org files and doesn't
@@ -77,9 +78,8 @@ If then, then call THEN with no arguments.  Default handler."
               ;;   ;; think.)
               ;;   (require 'ol)
               ;;   (org-link-search target))
-              (pop-to-buffer (current-buffer))
-              (when then
-                (funcall then)))))))
+              ;; TODO: Option to defer showing buffer.
+              (pop-to-buffer (current-buffer)))))))
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
