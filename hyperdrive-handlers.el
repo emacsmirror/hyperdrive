@@ -71,12 +71,13 @@ If then, then call THEN with no arguments.  Default handler."
                       buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
                 (set-buffer-modified-p nil)
                 (set-visited-file-modtime (current-time))
-                (goto-char (point-min))
-                (when then
-                  (funcall then)))
+                (goto-char (point-min)))
               ;; TODO: Option to defer showing buffer.
+              ;; It seems that `pop-to-buffer' is moving point, even
+              ;; though it shouldn't, so we call it here, before going
+              ;; to a link target.
+              (pop-to-buffer (current-buffer))
               (when target
-                ;; TODO: Should the logic in this block go into its own function?
                 (pcase major-mode
                   ('org-mode
                    (require 'hyperdrive-org)
@@ -84,10 +85,8 @@ If then, then call THEN with no arguments.  Default handler."
                   ('markdown-mode
                    ;; TODO: Handle markdown link
                    )))
-              ;; FIXME: `pop-to-buffer' moves point to beginning of buffer
-              ;; when calling `browse-url' on a hyper URL to an org file
-              ;; with a link target. Instead, point should stay where it is.
-              (pop-to-buffer (current-buffer)))))))
+              (when then
+                (funcall then)))))))
 
 (cl-defun hyperdrive-handler-directory (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
