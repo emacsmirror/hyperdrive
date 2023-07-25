@@ -116,8 +116,8 @@ Gets latest metadata from hyperdrive."
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
   "Display various information about HYPERDRIVE.
 
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
+Universal prefix argument \\[universal-argument] forces
+`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
   ;; TODO: Display latest known version of hyperdrive? Should we
   ;; store/persist that info in the hyperdrive struct?
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
@@ -263,8 +263,8 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
 Entering an empty or blank string unsets PETNAME.
 Returns HYPERDRIVE.
 
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
+Universal prefix argument \\[universal-argument] forces
+`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg))
           (petname (hyperdrive-read-name
@@ -292,8 +292,8 @@ for a hyperdrive."
   "Set HYPERDRIVE's NICKNAME.
 Returns HYPERDRIVE.
 
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
+Universal prefix argument \\[universal-argument] forces
+`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
                                                       :force-prompt current-prefix-arg))
@@ -407,8 +407,9 @@ but it seems to be necessary, and to be the cleanest way."
   "Find hyperdrive ENTRY.
 Interactively, prompts for known hyperdrive and path.
 
-With prefix argument, prompts for more information. See
-`hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
+With universal prefix argument \\[universal-argument], prompts
+for more information. See `hyperdrive-read-entry' and
+`hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry))
 
@@ -508,8 +509,9 @@ Interactively, downloads current hyperdrive file.  If current
 buffer is not a hyperdrive file, prompts with
 `hyperdrive-read-entry'.
 
-With prefix argument, prompts for more information. See
-`hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
+With universal prefix argument \\[universal-argument], prompts
+for more information. See `hyperdrive-read-entry' and
+`hyperdrive-complete-hyperdrive'."
   (interactive
    (pcase-let* ((entry (if hyperdrive-mode
                            hyperdrive-current-entry
@@ -536,8 +538,9 @@ With prefix argument, prompts for more information. See
 If file already exists and OVERWRITEP is nil, prompt the user to
 overwrite.
 
-With prefix argument, prompts for more information. See
-`hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
+With universal prefix argument \\[universal-argument], prompts
+for more information. See `hyperdrive-read-entry' and
+`hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                             :force-prompt current-prefix-arg
                                             :default-path (when (and hyperdrive-current-entry
@@ -743,8 +746,9 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
 Interactively, read FILENAME and ENTRY from the user.  When
 QUEUE, use it.
 
-With prefix argument, prompts for more information. See
-`hyperdrive-read-entry' and `hyperdrive-complete-hyperdrive'."
+With universal prefix argument \\[universal-argument], prompts
+for more information. See `hyperdrive-read-entry' and
+`hyperdrive-complete-hyperdrive'."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: ")))
                  (list filename
@@ -781,9 +785,11 @@ be uploaded and the URL at which each file will be published.  See
 
 When NO-CONFIRM is non-nil, upload without prompting.
 
-Interactively, with one universal prefix, prompt for predicate,
-otherwise mirror all files.  With two universal prefixes, prompt
-for predicate and set NO-CONFIRM to t."
+Interactively, with one universal prefix argument
+\\[universal-argument], prompt for predicate, otherwise mirror
+all files. With two universal prefix arguments
+\\[universal-argument] \\[universal-argument], prompt for
+predicate and set NO-CONFIRM to t."
   (interactive
    (let ((source (read-directory-name "Mirror directory: " nil nil t))
          (hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
@@ -896,8 +902,8 @@ uploading files, open PARENT-ENTRY."
 (cl-defun hyperdrive-upload-files (files hyperdrive &key (target-directory "/"))
   "Upload FILES to TARGET-DIRECTORY in HYPERDRIVE.
 
-Prefix argument forces `hyperdrive-complete-hyperdrive' to prompt
-for a hyperdrive."
+Universal prefix argument \\[universal-argument] forces
+`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
                                                       :force-prompt current-prefix-arg))

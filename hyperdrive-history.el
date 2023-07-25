@@ -147,8 +147,8 @@ and ENTRY's version are nil."
 (defun hyperdrive-history (entry)
   "Display version history for current hyperdrive ENTRY.
 
-Prefix argument forces `hyperdrive-read-entry' to prompt for an
-entry."
+Universal prefix argument \\[universal-argument] forces
+`hyperdrive-read-entry' to prompt for an entry."
   (interactive (list (if (or current-prefix-arg (not hyperdrive-current-entry))
                          (hyperdrive-read-entry :force-prompt t :allow-version-p nil)
                        hyperdrive-current-entry)))
