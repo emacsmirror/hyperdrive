@@ -145,15 +145,16 @@ arguments."
       (mapc (lambda (entry)
               (ewoc-enter-last hyperdrive-ewoc entry))
             entries)
-      ;; Put point back where it was.
-      (goto-char
-       (if-let ((new-node (hyperdrive-ewoc-find-node ewoc (ewoc-data prev-node)
-                            :predicate (lambda (a b)
-                                         ;; TODO: This doesn't work.
-                                         (equal (hyperdrive-entry-path a)
-                                                (hyperdrive-entry-path b))))))
-           (ewoc-location new-node)
-         prev-point))
+      (when prev-node
+        ;; Put point back where it was.
+        (goto-char
+         (if-let ((new-node (hyperdrive-ewoc-find-node ewoc (ewoc-data prev-node)
+                              :predicate (lambda (a b)
+                                           ;; TODO: This doesn't work.
+                                           (equal (hyperdrive-entry-path a)
+                                                  (hyperdrive-entry-path b))))))
+             (ewoc-location new-node)
+           prev-point)))
       (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
       (mapc (lambda (entry)
               (hyperdrive-fill entry
