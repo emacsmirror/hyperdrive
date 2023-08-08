@@ -151,8 +151,12 @@ the current location."
   (org-link-set-parameters "hyper"
                            :store #'hyperdrive-org-link-store
                            :follow #'hyperdrive-org-link-follow)
-  ;; Handle links with no specified type in hyperdrive-mode buffers.
-  (cl-pushnew #'hyperdrive--org-open-at-point org-open-at-point-functions))
+  (with-eval-after-load 'hyperdrive
+    ;; Handle links with no specified type in `hyperdrive-mode'
+    ;; buffers as links to files within that hyperdrive.  Only add
+    ;; this function to the variable after `hyperdrive' is loaded so
+    ;; that `hyperdrive-mode' will be defined.
+    (cl-pushnew #'hyperdrive--org-open-at-point org-open-at-point-functions)))
 
 ;;;; Footer
 
