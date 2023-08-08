@@ -385,6 +385,10 @@ Universal prefix argument \\[universal-argument] forces
                 (remove #'hyperdrive--write-contents write-contents-functions))
     (remove-hook 'change-major-mode-hook
                  #'hyperdrive--hack-write-contents-functions 'local)))
+;; Making it permanent-local keeps the minor mode active even if the
+;; user changes the major mode, so the buffer can still be saved back
+;; to the hyperdrive.
+(put 'hyperdrive-mode 'permanent-local t)
 
 (defun hyperdrive--hack-write-contents-functions ()
   "Hack `write-contents-functions' for `hyperdrive-mode' in current buffer.
