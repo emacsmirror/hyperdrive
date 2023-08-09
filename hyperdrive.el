@@ -221,7 +221,7 @@ Gateway must be running."
     ;; TODO: Consolidate plz error handling
     (plz-curl-error
      (if (equal 7 (car (plz-error-curl-error (caddr err))))
-         (hyperdrive-message "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
+         (hyperdrive-user-error "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
        (signal (car err) (cdr err))))))
 
 ;;;###autoload
