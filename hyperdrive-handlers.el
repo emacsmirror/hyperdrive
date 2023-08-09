@@ -165,7 +165,8 @@ arguments."
                 ;; TODO: Handle failures?
                 :else (lambda (_error) (message "ERROR"))))
             entries)
-      (set-buffer-modified-p nil))))
+      (set-buffer-modified-p nil)
+      (funcall then))))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
