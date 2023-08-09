@@ -892,7 +892,7 @@ uploading files, open PARENT-ENTRY."
 
 (define-derived-mode hyperdrive-mirror-mode tabulated-list-mode
   "Hyperdrive-mirror"
-  "Major mode for buffers for describing hyperdrives."
+  "Major mode for buffers for mirror local directories to a hyperdrive."
   :group 'hyperdrive
   :interactive nil
   (setq tabulated-list-format [("From file" 60 t)
