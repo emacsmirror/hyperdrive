@@ -284,15 +284,6 @@ alists mapping version range starts to plists with `:existsp' and
   "Entry for current buffer.")
 (put 'hyperdrive-current-entry 'permanent-local t)
 
-(defvar-local hyperdrive-mirror-parent-entry nil
-  ;; TODO: Consider moving this and `hyperdrive-mirror-already-uploaded'
-  ;; into its own file for mirror buffer
-  "Parent entry for `hyperdrive-mirror-mode' buffer.")
-(put 'hyperdrive-mirror-parent-entry 'permanent-local t)
-
-(defvar-local hyperdrive-mirror-already-uploaded nil
-  "Non-nil if files in `hyperdrive-mirror-mode' buffer have already been uploaded.")
-
 ;;;; Footer
 
 (provide 'hyperdrive-vars)
