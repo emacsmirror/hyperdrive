@@ -94,8 +94,8 @@ Returns URL with hyperdrive's full public key."
 
 (cl-defun hyperdrive-entry-create (&key hyperdrive path version etc encode)
   "Return hyperdrive entry struct from args.
-HYPERDRIVE, VERSION, and ETC are used as-is. Entry NAME is
-generated from PATH. When ENCODE is non-`nil', encode PATH."
+HYPERDRIVE, VERSION, and ETC are used as-is.  Entry NAME is
+generated from PATH.  When ENCODE is non-nil, encode PATH."
   (setf path (hyperdrive--format-path path))
   (when encode
     (cl-callf url-hexify-string path (cons ?/ url-unreserved-chars)))
@@ -281,11 +281,11 @@ in `hyperdrive-version-ranges'."
 (defun hyperdrive-entry-version-ranges-no-gaps (entry)
   "Return ranges alist for ENTRY with no gaps in history.
 Returned newly-constructed alist where each range-end is always
-1- the following range-start. Each gap is filled with a cons cell
+1- the following range-start.  Each gap is filled with a cons cell
 whose car is the range start and whose cdr is a plist with a
 numerical :RANGE-END and :EXISTSP set to 'UNKNOWN:
 
-(RANGE-START . (:RANGE-END RANGE-END :EXISTS 'UNKNOWN))
+\(RANGE-START . (:RANGE-END RANGE-END :EXISTS 'UNKNOWN))
 
 When the final range's range-end is less than ENTRY's
 hyperdrive's latest-version slot, the final gap is filled."
@@ -315,7 +315,7 @@ hyperdrive's latest-version slot, the final gap is filled."
 
 (defun hyperdrive-entry-at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
-When VERSION is `nil', return latest version of ENTRY."
+When VERSION is nil, return latest version of ENTRY."
   ;; Use `hyperdrive-copy-tree', because `copy-tree' doesn't work on
   ;; records/structs, and `copy-hyperdrive-entry' doesn't copy deeply,
   ;; and we need to be able to modify the `etc' alist of the copied
@@ -518,8 +518,8 @@ Returns the ranges cons cell for ENTRY."
 
 (cl-defun hyperdrive-fill-version-ranges (entry &key then)
   "Asynchronously fill in versions ranges for ENTRY and call THEN.
-First fill latest version of ENTRY's hyperdrive. Then recurse
-backward through some unknown ranges and fill them. Once all
+First fill latest version of ENTRY's hyperdrive.  Then recurse
+backward through some unknown ranges and fill them.  Once all
 requests return, call THEN with no arguments."
   ;; TODO: Limit the number of recursive calls made.
   (declare (indent defun))
@@ -630,12 +630,12 @@ Call ELSE if request fails."
 
 (cl-defun hyperdrive-entry-description (entry &key (format-path 'path))
   "Return description for ENTRY.
-When ENTRY has a non-`nil' VERSION slot, include it. Returned
+When ENTRY has a non-nil VERSION slot, include it.  Returned
 string looks like:
 
   FORMAT-PATH [HOST] (version:VERSION)
 
-When FORMAT-PATH is `path', use full path to entry. When
+When FORMAT-PATH is `path', use full path to entry.  When
 FORMAT-PATH is `name', use only last part of path, as in
 `file-name-non-directory'."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path name) entry)
@@ -658,11 +658,11 @@ Returns URL formatted like:
 
   hyper://HOST-FORMAT/PATH/TO/FILE
 
-HOST-FORMAT is passed to `hyperdrive--format-host', which see. If
+HOST-FORMAT is passed to `hyperdrive--format-host', which see.  If
 WITH-PROTOCOL, \"hyper://\" is prepended. If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
 full URL. If WITH-TARGET, append the ENTRY's target, stored in
-its :etc slot. When ENTRY has non-`nil' `version' slot, include
+its :etc slot.  When ENTRY has non-nil `version' slot, include
 version number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
@@ -736,7 +736,7 @@ label for the kind of format used (e.g. \"petname:\")."
   "Return hyperdrive for current entry when it matches PREDICATE.
 
 With FORCE-PROMPT or when current hyperdrive does not match
-PREDICATE, return a hyperdrive selected with completion. In this
+PREDICATE, return a hyperdrive selected with completion.  In this
 case, when PREDICATE, only offer hyperdrives matching it."
   (unless predicate
     ;; cl-defun default value doesn't work when nil predicate value is passed in.
@@ -808,7 +808,7 @@ version number."
 Blank input returns nil.
 
 HYPERDRIVE is used to fill in PROMPT format %s sequence.
-INITIAL-INPUT is converted to a string and passed to
+INITIAL-INPUT-NUMBER is converted to a string and passed to
 `read-string', which see."
   (let* ((prompt (or prompt "Version number in «%s» (leave blank for latest version)"))
          ;; Don't use read-number since it cannot return nil.
@@ -842,7 +842,7 @@ DEFAULT-VALUE arguments."
 
 (cl-defun hyperdrive-read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
-Prompts with PROMPT. Defaults to current entry if it exists."
+Prompts with PROMPT.  Defaults to current entry if it exists."
   (let ((default (when hyperdrive-current-entry
                    (hyperdrive-entry-url hyperdrive-current-entry))))
     (string-trim (read-string (format-prompt prompt default) nil 'hyperdrive--url-history default))))
@@ -852,7 +852,8 @@ Prompts with PROMPT. Defaults to current entry if it exists."
 
 (cl-defun hyperdrive-read-name (&key prompt initial-input default)
   "Wrapper for `read-string' with common history.
-Prompts with PROMPT."
+Prompts with PROMPT and DEFAULT, according to `format-prompt'.
+DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
   (read-string (format-prompt prompt default) initial-input 'hyperdrive--name-history default))
 
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
@@ -887,7 +888,7 @@ hyperdrive."
 ;;;###autoload
 (defun hyperdrive-by-slot (slot value)
   "Return persisted hyperdrive struct whose SLOT matches VALUE.
-Otherwise, return `nil'.  SLOT may be one of
+Otherwise, return nil.  SLOT may be one of
 
 - seed
 - petname
@@ -959,7 +960,7 @@ function is a convenience wrapper used by `describe-package-1'."
            properties)))
 
 (defun hyperdrive-copy-tree (tree &optional vecp)
-  "Like `copy-tree', but with VECP, works for records too."
+  "Copy TREE like `copy-tree', but with VECP, works for records too."
   ;; TODO: Now that the new copy-tree behavior has been merged into Emacs,
   ;; remove this function once compat.el supports the new behavior.
   (if (consp tree)

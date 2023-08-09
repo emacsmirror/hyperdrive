@@ -43,7 +43,7 @@
   (declare (indent defun))
   (let ((name (intern (concat "hyperdrive-" (symbol-name name)))))
     `(cl-macrolet ((make-url
-                    (&rest args) `(concat "hyper://" test-hyperdrive-public-key ,@args))
+                     (&rest args) `(concat "hyper://" test-hyperdrive-public-key ,@args))
                    (hexify (string) `(url-hexify-string ,string (cons ?/ url-unreserved-chars))))
        (ert-deftest ,name () ,@args))))
 

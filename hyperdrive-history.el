@@ -100,7 +100,7 @@ and ENTRY's version are nil."
            range-entry-at-point))))
 
 (defun hyperdrive-range-entry-exists-p (range-entry)
-  "Return status of ENTRY-RANGE's existence at its version.
+  "Return status of RANGE-ENTRY's existence at its version.
 
 - t       :: ENTRY is known to exist.
 - nil     :: ENTRY is known to not exist.

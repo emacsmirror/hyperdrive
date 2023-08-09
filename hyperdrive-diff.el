@@ -42,7 +42,7 @@ A cons cell whose car is OLD-ENTRY and whose cdr is NEW-ENTRY.")
 ;;;; Functions
 
 (defun hyperdrive-diff-empty-diff-p (buffer)
-  "Return t if `hyperdrive-diff-mode' buffer contains no differences."
+  "Return t if `hyperdrive-diff-mode' BUFFER has no differences."
   (with-current-buffer buffer
     (save-excursion
       (save-restriction

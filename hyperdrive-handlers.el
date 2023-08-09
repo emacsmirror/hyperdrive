@@ -203,7 +203,8 @@ given."
 
 (defun hyperdrive-url-loader (parsed-url)
   "Retrieve URL synchronously.
-URL must be a parsed URL.  See `url-generic-parse-url' for details.
+PARSED-URL must be a URL-struct like the output of
+`url-generic-parse-url'.
 
 The return value of this function is the retrieval buffer."
   (cl-check-type parsed-url url "Need a pre-parsed URL.")

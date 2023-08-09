@@ -208,18 +208,15 @@ through a shell)."
   :group 'hyperdrive-faces)
 
 (defface hyperdrive-history-existent '((t (:foreground "black" :background "green")))
-  "Marker for known existent entries in `hyperdrive-history'
-buffers."
+  "Marker for known existent entries in `hyperdrive-history'buffers."
   :group 'hyperdrive-faces)
 
 (defface hyperdrive-history-nonexistent '((t (:foreground "black" :background "red")))
-  "Marker for known nonexistent entries in `hyperdrive-history'
-buffers."
+  "Marker for known nonexistent entries in `hyperdrive-history'buffers."
   :group 'hyperdrive-faces)
 
 (defface hyperdrive-history-unknown '((t (:foreground "black" :background "yellow")))
-  "Marker for entries whose existence is unknown in
- `hyperdrive-history' buffers."
+  "Marker for entries with unknown existence in `hyperdrive-history' buffers."
   :group 'hyperdrive-faces)
 
 (defface hyperdrive-button
@@ -272,8 +269,9 @@ Capture group matches version number.")
   (setf hyperdrive-hyperdrives (make-hash-table :test #'equal)))
 
 (defvar hyperdrive-version-ranges (make-hash-table :test 'equal)
-  "Hash table mapping a version-less hyperdrive entry URL to an
-alist mapping version range starts to plists with `:existsp' and
+  "Hash table of hyperdrive version ranges.
+Keys are version-less hyperdrive entry URLs, and values are
+alists mapping version range starts to plists with `:existsp' and
 `:range-end' keys.")
 
 ;; TODO: Flesh out the persist hook.

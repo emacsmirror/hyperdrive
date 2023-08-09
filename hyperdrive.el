@@ -28,7 +28,7 @@
 
 
 ;; Hyperdrive is a P2P, real-time, local-first, versioned filesystem
-;; designed for easy peer-to-peer file sharing. hyperdrive.el is an
+;; designed for easy peer-to-peer file sharing.  hyperdrive.el is an
 ;; independent project built by https://ushin.org which provides an
 ;; Emacs interface for managing hyperdrives.
 
@@ -221,7 +221,7 @@ Gateway must be running."
     ;; TODO: Consolidate plz error handling
     (plz-curl-error
      (if (equal 7 (car (plz-error-curl-error (caddr err))))
-         (hyperdrive-user-error "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
+         (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
        (signal (car err) (cdr err))))))
 
 ;;;###autoload
@@ -328,7 +328,9 @@ Universal prefix argument \\[universal-argument] forces
   hyperdrive)
 
 (defun hyperdrive-revert-buffer (&optional _ignore-auto noconfirm)
-  "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents."
+  "Revert `hyperdrive-mode' buffer by reloading hyperdrive contents.
+With NOCONFIRM or when current entry is a directory, revert
+without confirmation."
   (when (or (hyperdrive--entry-directory-p hyperdrive-current-entry)
             noconfirm
             ;; TODO: Add option hyperdrive-revert-without-query ?
@@ -412,7 +414,7 @@ but it seems to be necessary, and to be the cleanest way."
 Interactively, prompts for known hyperdrive and path.
 
 With universal prefix argument \\[universal-argument], prompts
-for more information. See `hyperdrive-read-entry' and
+for more information.  See `hyperdrive-read-entry' and
 `hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry))
@@ -514,7 +516,7 @@ buffer is not a hyperdrive file, prompts with
 `hyperdrive-read-entry'.
 
 With universal prefix argument \\[universal-argument], prompts
-for more information. See `hyperdrive-read-entry' and
+for more information.  See `hyperdrive-read-entry' and
 `hyperdrive-complete-hyperdrive'."
   (interactive
    (pcase-let* ((entry (if hyperdrive-mode
@@ -543,7 +545,7 @@ If file already exists and OVERWRITEP is nil, prompt the user to
 overwrite.
 
 With universal prefix argument \\[universal-argument], prompts
-for more information. See `hyperdrive-read-entry' and
+for more information.  See `hyperdrive-read-entry' and
 `hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                             :force-prompt current-prefix-arg
@@ -747,11 +749,11 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
                       (hyperdrive-open (hyperdrive-parent entry))
                       (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry)))))
   "Upload FILENAME to ENTRY.
-Interactively, read FILENAME and ENTRY from the user.  When
-QUEUE, use it.
+Interactively, read FILENAME and ENTRY from the user.
+After successful upload, call THEN.  When QUEUE, use it.
 
 With universal prefix argument \\[universal-argument], prompts
-for more information. See `hyperdrive-read-entry' and
+for more information.  See `hyperdrive-read-entry' and
 `hyperdrive-complete-hyperdrive'."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: ")))
@@ -777,7 +779,7 @@ for more information. See `hyperdrive-read-entry' and
 Only mirror paths within SOURCE for which PREDICATE returns
 non-nil.  PREDICATE may be a function, which receives the expanded
 filename path as its argument, or a regular expression, which is
-tested against each expanded filename path. SOURCE is a directory
+tested against each expanded filename path.  SOURCE is a directory
 name.
 
 When TARGET-DIR is nil, SOURCE is mirrored into the
@@ -879,9 +881,9 @@ uploading files, open PARENT-ENTRY."
   (declare (modes hyperdrive-mirror-mode))
   (interactive)
   (if (and tabulated-list-entries hyperdrive-mirror-parent-entry)
-      (when (or (not hyperdrive-mirror-already-uploaded) (yes-or-no-p "Already uploaded files. Upload again?"))
+      (when (or (not hyperdrive-mirror-already-uploaded) (yes-or-no-p "Already uploaded files.  Upload again?"))
         (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry))
-    (hyperdrive-user-error "Missing information about files to upload. Are you in a \"*hyperdrive-mirror*\" buffer?")))
+    (hyperdrive-user-error "Missing information about files to upload.  Are you in a \"*hyperdrive-mirror*\" buffer?")))
 
 (defvar-keymap hyperdrive-mirror-mode-map
   :parent  tabulated-list-mode-map
