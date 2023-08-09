@@ -98,80 +98,6 @@
 
 ;; TODO(A): Command to rename paths.
 
-(defun hyperdrive-describe-revert-buffer (&optional _ignore-auto _noconfirm)
-  "Revert `hyperdrive-describe-mode' buffer.
-Gets latest metadata from hyperdrive."
-  (hyperdrive-fill-metadata hyperdrive-describe-current-hyperdrive)
-  (hyperdrive-describe-hyperdrive hyperdrive-describe-current-hyperdrive))
-
-(define-derived-mode hyperdrive-describe-mode special-mode
-  `("Hyperdrive-describe"
-    ;; TODO: Add more to lighter, e.g. URL.
-    )
-  "Major mode for buffers for describing hyperdrives."
-  :group 'hyperdrive
-  :interactive nil
-  (setq-local revert-buffer-function #'hyperdrive-describe-revert-buffer))
-
-(defun hyperdrive-describe-hyperdrive (hyperdrive)
-  "Display various information about HYPERDRIVE.
-
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
-  ;; TODO: Display latest known version of hyperdrive? Should we
-  ;; store/persist that info in the hyperdrive struct?
-  (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
-  ;; TODO: Do we want to asynchronously fill the hyperdrive's latest version?
-  (hyperdrive-fill-latest-version hyperdrive)
-  (with-current-buffer (get-buffer-create
-                        (format "*Hyperdrive: %s*"
-                                (hyperdrive--format-host hyperdrive :format '(short-key)
-                                                         :with-label t)))
-    (hyperdrive-describe-mode)
-    (setq-local hyperdrive-describe-current-hyperdrive hyperdrive)
-    (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive)
-                (inhibit-read-only t))
-      (erase-buffer)
-      (insert
-       (propertize "Hyperdrive: \n" 'face 'bold)
-       (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
-       (format "Seed: %s\n" (or (hyperdrive--format-host hyperdrive :format '(seed))
-                                "[none]"))
-       (format "Petname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(petname))
-                                   "[none]"))
-       (format "Nickname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(nickname))
-                                    "[none]"))
-       (format "Domains: %s\n"
-               (if domains
-                   (string-join (mapcar (lambda (domain)
-                                          (propertize domain 'face 'hyperdrive-domain))
-                                        domains)
-                                ", ")
-                 "[none]"))
-       (format "Latest version: %s\n" (hyperdrive-latest-version hyperdrive))
-       (format "Writable: %s\n" (if writablep "yes" "no"))
-       ;; TODO: Consider removing metadata table since we already display nickname above
-       (format "Metadata: %s\n"
-               (if metadata
-                   (with-temp-buffer
-                     (require 'org)
-                     (org-mode)
-                     (insert "\n|-\n| Key | Value |\n|-\n")
-                     (cl-loop for (key . value) in metadata
-                              do (insert (format "| %s | %s |\n" key value)))
-                     (insert "|-\n")
-                     (forward-line -1)
-                     (org-table-align)
-                     (buffer-string))
-                 "[none]"))
-       "\n")
-      (hyperdrive-insert-button "=== PURGE DATA ==="
-                                'action (lambda (_button)
-                                          (hyperdrive-purge hyperdrive))
-                                'face 'hyperdrive-button-dangerous))
-    (setq buffer-read-only t)
-    (pop-to-buffer (current-buffer))))
-
 ;;;###autoload
 (defun hyperdrive-start ()
   "Start `hyper-gateway' systemd service if not already running."
@@ -247,6 +173,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
       (hyperdrive-persist hyperdrive)
       (hyperdrive-open (hyperdrive-url-entry url)))))
 
+;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
   "Purge all data corresponding to HYPERDRIVE."
   (interactive (list (hyperdrive-complete-hyperdrive)))

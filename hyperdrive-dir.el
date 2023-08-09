@@ -82,7 +82,7 @@ With point on header, returns directory entry."
 
 (declare-function hyperdrive-find-file "hyperdrive")
 (declare-function hyperdrive-up "hyperdrive")
-(declare-function hyperdrive-describe-hyperdrive "hyperdrive")
+(declare-function hyperdrive-describe-hyperdrive "hyperdrive-describe")
 
 (defvar-keymap hyperdrive-dir-mode-map
   :parent hyperdrive-ewoc-mode-map
