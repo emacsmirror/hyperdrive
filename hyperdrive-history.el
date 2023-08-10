@@ -240,7 +240,7 @@ Universal prefix argument \\[universal-argument] forces
 Interactively, diff range entry at point with previous entry."
   (declare (modes hyperdrive-history-mode))
   ;; TODO: Set entries based on marked ranges
-  ;; TODO: Signal user-error on nonexistent and unknown range-entries
+  ;; TODO: What to do for unknown range-entries?
   (interactive (let* ((new-entry (cdr (hyperdrive-history-range-entry-at-point)))
                       (old-entry (hyperdrive-entry-previous new-entry)))
                  (unless old-entry
