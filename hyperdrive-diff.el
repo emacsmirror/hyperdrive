@@ -88,7 +88,8 @@ This function is intended to diff files, not directories."
                                         (with-current-buffer diff-buffer
                                           (setf hyperdrive-diff-entries (cons old-entry new-entry))
                                           (hyperdrive-diff-mode)
-                                          (funcall then)))
+                                          (when then
+                                            (funcall then))))
                                     (error (kill-buffer diff-buffer)
                                            (signal (car err) (cdr err))))
                                 (kill-buffer old-buffer)
