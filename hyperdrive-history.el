@@ -198,8 +198,6 @@ Universal prefix argument \\[universal-argument] forces
           (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
           (ewoc-filter hyperdrive-ewoc #'ignore)
           (erase-buffer)
-          ;; TODO: Display hyperdrive's latest version, maybe in a footer?
-          ;; (footer (number-to-string (hyperdrive-latest-version hyperdrive)))
           (ewoc-set-hf hyperdrive-ewoc header "")
           (mapc (lambda (range-entry)
                   (ewoc-enter-last hyperdrive-ewoc range-entry))
