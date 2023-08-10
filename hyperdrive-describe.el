@@ -38,7 +38,7 @@
 
 ;;;; Commands
 
-(declare-function org-table-align "org")
+(declare-function org-table-align "org-table")
 (declare-function hyperdrive-purge "hyperdrive")
 
 ;;;###autoload
