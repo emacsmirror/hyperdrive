@@ -41,6 +41,7 @@
     ("application/json" . hyperdrive-handler-json)
     (,(rx bos "audio/") . hyperdrive-handler-streamable)
     (,(rx bos "video/") . hyperdrive-handler-streamable)
+    (,(rx bos "image/") . hyperdrive-handler-image)
     (,(rx (or "text/html" "application/xhtml+xml")) . hyperdrive-handler-html))
   "Alist mapping MIME types to handler functions.
 Keys are regexps matched against MIME types.")
@@ -203,6 +204,15 @@ given."
         (when then
           (funcall then)))
     (hyperdrive-handler-default entry :then then)))
+
+(cl-defun hyperdrive-handler-image (entry &key then)
+  "Show ENTRY, where ENTRY is an image file.
+Then calls THEN if given."
+  (hyperdrive-handler-default
+   entry :then (lambda ()
+		 (image-mode)
+		 (when then
+		   (funcall then)))))
 
 (defun hyperdrive-url-loader (parsed-url)
   "Retrieve URL synchronously.
