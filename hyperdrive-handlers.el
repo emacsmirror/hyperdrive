@@ -161,6 +161,7 @@ arguments."
                 :then (lambda (_response)
                         (with-current-buffer (ewoc-buffer ewoc)
                           ;; TODO: Add queue back for sorting
+                          ;; FIXME: Refreshing the buffer rapidly signals an error here
                           (ewoc-invalidate ewoc (hyperdrive-ewoc-find-node ewoc entry))))
                 ;; TODO: Handle failures?
                 :else (lambda (_error) (message "ERROR"))))
