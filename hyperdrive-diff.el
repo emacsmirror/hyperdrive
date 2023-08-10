@@ -51,6 +51,7 @@ A cons cell whose car is OLD-ENTRY and whose cdr is NEW-ENTRY.")
         (forward-line -1)
         (looking-at-p (rx line-start "Diff finished (no differences)."))))))
 
+;;;###autoload
 (cl-defun hyperdrive-diff-file-entries (old-entry new-entry &key then)
   "Diff OLD-ENTRY and NEW-ENTRY, then call THEN in diff buffer.
 Call ELSE if either request fails.
