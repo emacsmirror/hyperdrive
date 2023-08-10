@@ -592,9 +592,14 @@ HYPERDRIVE's public metadata file."
                        :version nil))
                (metadata (condition-case err
                              (hyperdrive-api 'get (hyperdrive-entry-url entry)
-                               ;; TODO: How to handle invalid JSON? Currently, we get this error:
-                               ;; error in process sentinel: JSON readtable error: 105
-                               :as #'json-read :noquery t)
+                               :as (lambda ()
+                                     (condition-case err
+                                         (json-read)
+                                       (json-error
+                                        (hyperdrive-message "Error parsing JSON metadata file: %s"
+                                                            (hyperdrive-entry-url entry)))
+                                       (_ (signal (car err) (cdr err)))))
+                               :noquery t)
                            (plz-http-error
                             (pcase (plz-response-status (plz-error-response (caddr err)))
                               (404 nil)
