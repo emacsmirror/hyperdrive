@@ -94,16 +94,14 @@ This function is intended to diff files, not directories."
                                            (signal (car err) (cdr err))))
                                 (kill-buffer old-buffer)
                                 (kill-buffer new-buffer)))))))
-    (when old-entry
-      (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
-        :queue queue :as 'response :else #'ignore
-        :then (lambda (response)
-                (setf old-response response))))
-    (when new-entry
-      (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
-        :queue queue :as 'response :else #'ignore
-        :then (lambda (response)
-                (setf new-response response))))))
+    (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
+      :queue queue :as 'response :else #'ignore
+      :then (lambda (response)
+              (setf old-response response)))
+    (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
+      :queue queue :as 'response :else #'ignore
+      :then (lambda (response)
+              (setf new-response response)))))
 
 ;;;; Mode
 
