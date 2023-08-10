@@ -250,8 +250,8 @@ Interactively, diff range entry at point with previous entry."
   (require 'hyperdrive-diff)
   ;; TODO: Only call `hyperdrive-diff-file-entries' when at least one entry exists.
   (hyperdrive-diff-file-entries old-entry new-entry
-    :then (lambda (diff-buffer)
-            (pop-to-buffer diff-buffer))))
+    :then (lambda ()
+            (pop-to-buffer (current-buffer)))))
 
 (declare-function hyperdrive-open "hyperdrive")
 

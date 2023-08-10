@@ -52,7 +52,7 @@ A cons cell whose car is OLD-ENTRY and whose cdr is NEW-ENTRY.")
         (looking-at-p (rx line-start "Diff finished (no differences)."))))))
 
 (cl-defun hyperdrive-diff-file-entries (old-entry new-entry &key then)
-  "Diff OLD-ENTRY and NEW-ENTRY, then call THEN on diff buffer.
+  "Diff OLD-ENTRY and NEW-ENTRY, then call THEN in diff buffer.
 Call ELSE if either request fails.
 This function is intended to diff files, not directories."
   (declare (indent defun))
@@ -85,9 +85,9 @@ This function is intended to diff files, not directories."
                                       (progn
                                         (diff-no-select old-buffer new-buffer nil t diff-buffer)
                                         (with-current-buffer diff-buffer
+                                          (setf hyperdrive-diff-entries (cons old-entry new-entry))
                                           (hyperdrive-diff-mode)
-                                          (setf hyperdrive-diff-entries (cons old-entry new-entry)))
-                                        (funcall then diff-buffer))
+                                          (funcall then)))
                                     (error (kill-buffer diff-buffer)
                                            (signal (car err) (cdr err))))
                                 (kill-buffer old-buffer)
@@ -115,10 +115,13 @@ This function is intended to diff files, not directories."
       (goto-char (point-min))
       (delete-line)
       (when (hyperdrive-diff-empty-diff-p (current-buffer))
-        (insert "No difference between %s and %s"
-                (hyperdrive-entry-description (car hyperdrive-diff-entries) (cdr hyperdrive-diff-entries))))
+        (insert (format "No difference between entries:
+%s
+%s"
+                        (hyperdrive-entry-description (car hyperdrive-diff-entries))
+                        (hyperdrive-entry-description (cdr hyperdrive-diff-entries)))))
       (goto-char (point-max))
-      (forward-line -2)
+      (forward-line -1)
       (delete-region (point) (point-max)))))
 
 ;;;; Footer
