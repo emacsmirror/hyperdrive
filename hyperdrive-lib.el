@@ -147,12 +147,33 @@ make the request."
      ;; index.html file inside that directory. See
      ;; <https://github.com/RangerMauve/hypercore-fetch#fetchhypernameexamplenoresolve-method-get>
      (setf url (concat url "?noResolve"))))
-  (if-let ((queue (prog1 (plist-get rest :queue)
-                    (setf rest (map-delete rest :queue)))))
-      (plz-run
-       (apply #'plz-queue
-              queue method (hyperdrive--httpify-url url) rest))
-    (apply #'plz method (hyperdrive--httpify-url url) rest)))
+  (pcase-let* ((else (pcase (plist-get rest :then)
+                       ((or `nil 'sync)
+                        ;; Ignore ELSE for sync requests.
+                        nil)
+                       (_ (plist-get rest :else))))
+               ;; We wrap the provided ELSE in our own lambda that
+               ;; checks for common errors.
+               (else*
+                (lambda (plz-error)
+                  (cond ((equal 7 (car (plz-error-curl-error plz-error)))
+                         (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
+                        (else (funcall else plz-error))
+                        (t (hyperdrive-error "%S" plz-error))))))
+    (plist-put rest :else else*)
+    (condition-case err
+        ;; The `condition-case' is only intended for synchronous
+        ;; requests.  Async requests should never signal a `plz-error'
+        ;; directly from `plz' or `plz-run'.
+        (if-let ((queue (prog1 (plist-get rest :queue)
+                          (setf rest (map-delete rest :queue)))))
+            (plz-run
+             (apply #'plz-queue
+                    queue method (hyperdrive--httpify-url url) rest))
+          (apply #'plz method (hyperdrive--httpify-url url) rest))
+      (plz-error
+       ;; We pass only the `plz-error' struct to the ELSE* function.
+       (funcall else* (caddr err))))))
 
 (defun hyperdrive--httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
