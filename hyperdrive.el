@@ -144,11 +144,7 @@ Gateway must be running."
       (let ((url (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/")))
         (hyperdrive-message "hyper-gateway version %s"
                             (alist-get 'version (plz 'get url :as #'json-read))))
-    ;; TODO: Consolidate plz error handling
-    (plz-curl-error
-     (if (equal 7 (car (plz-error-curl-error (caddr err))))
-         (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it")
-       (signal (car err) (cdr err))))))
+    (plz-error (hyperdrive-api-default-else nil (caddr err)))))
 
 ;;;###autoload
 (defun hyperdrive-new (seed)
