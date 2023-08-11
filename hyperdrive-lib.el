@@ -154,12 +154,7 @@ make the request."
                        (_ (plist-get rest :else))))
                ;; We wrap the provided ELSE in our own lambda that
                ;; checks for common errors.
-               (else*
-                (lambda (plz-error)
-                  (cond ((equal 7 (car (plz-error-curl-error plz-error)))
-                         (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
-                        (else (funcall else plz-error))
-                        (t (hyperdrive-error "%S" plz-error))))))
+               (else* (apply-partially #'hyperdrive-api-default-else else)))
     (plist-put rest :else else*)
     (condition-case err
         ;; The `condition-case' is only intended for synchronous
@@ -174,6 +169,16 @@ make the request."
       (plz-error
        ;; We pass only the `plz-error' struct to the ELSE* function.
        (funcall else* (caddr err))))))
+
+(defun hyperdrive-api-default-else (else plz-error)
+  "Handle PLZ-ERROR according to ELSE.
+Checks for common errors; if none are found, calls ELSE with
+PLZ-ERROR, if ELSE is non-nil; otherwise signals with
+`hyperdrive-error'."
+  (cond ((equal 7 (car (plz-error-curl-error plz-error)))
+         (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
+        (else (funcall else plz-error))
+        (t (hyperdrive-error "%S" plz-error))))
 
 (defun hyperdrive--httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
