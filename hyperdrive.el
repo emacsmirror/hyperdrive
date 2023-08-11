@@ -375,7 +375,7 @@ in the buffer opened by the handler."
                   (hyperdrive-fill-latest-version hyperdrive))
                 (hyperdrive-persist hyperdrive)
                 (funcall (or handler #'hyperdrive-handler-default) entry :then then)))
-      :else (lambda (plz-error)
+      :else (lambda (err)
               (cl-labels ((not-found-action
                             () (if recurse
                                    (hyperdrive-open (hyperdrive-parent entry) :recurse t)
@@ -394,42 +394,35 @@ in the buffer opened by the handler."
                                  ("up" 'up)
                                  ("recurse" 'recurse)
                                  ("exit" nil))))
-                (pcase-let (((cl-struct plz-error curl-error response) plz-error))
-                  (pcase curl-error
-                    (`(7 . ,_message) ;; Connection fails, most likely the gateway isn't started yet.
-                     (hyperdrive-message "hyper-gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
-                    (`(,curl-code . ,message) ;; Any other curl error.
-                     (hyperdrive-message "curl error: %s: %S" curl-code message))
-                    (_ ;; Any other error is an HTTP error.
-                     (pcase (plz-response-status response)
-                       (404 ;; Path not found.
-                        (cond
-                         ((equal (hyperdrive-entry-path entry) "/")
-                          ;; Root directory not found: Drive has not been
-                          ;; loaded locally, and no peers are found seeding it.
-                          (hyperdrive-message "No peers found for %s" (hyperdrive-entry-url entry)))
-                         ((and (not (hyperdrive--entry-directory-p entry))
-                               (hyperdrive-writablep hyperdrive)
-                               (not (hyperdrive-entry-version entry)))
-                          ;; Entry is a writable file: create a new buffer
-                          ;; that will be saved to its path.
-                          (if-let ((buffer (get-buffer (hyperdrive--entry-buffer-name entry))))
-                              ;; Buffer already exists: likely the user deleted the entry
-                              ;; without killing the buffer.  Switch to the buffer and
-                              ;; alert the user that the entry no longer exists.
-                              (progn
-                                (switch-to-buffer buffer)
-                                (message "Entry no longer exists!  %s" (hyperdrive-entry-description entry)))
-                            ;; Make and switch to new buffer.
-                            (switch-to-buffer (hyperdrive--get-buffer-create entry))))
-                         (t
-                          ;; Hyperdrive entry is not writable: prompt for action.
-                          (not-found-action))))
-                       (500 ;; Generic error, likely a mistyped URL
-                        (hyperdrive-message "Generic hyper-gateway status 500 error. Is this URL correct? %s"
-                                            (hyperdrive-entry-url entry)))
-                       (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
-                                              (hyperdrive-entry-url entry) plz-error)))))))))))
+                (pcase (plz-response-status (plz-error-response err))
+                  (404 ;; Path not found.
+                   (cond
+                    ((equal (hyperdrive-entry-path entry) "/")
+                     ;; Root directory not found: Drive has not been
+                     ;; loaded locally, and no peers are found seeding it.
+                     (hyperdrive-message "No peers found for %s" (hyperdrive-entry-url entry)))
+                    ((and (not (hyperdrive--entry-directory-p entry))
+                          (hyperdrive-writablep hyperdrive)
+                          (not (hyperdrive-entry-version entry)))
+                     ;; Entry is a writable file: create a new buffer
+                     ;; that will be saved to its path.
+                     (if-let ((buffer (get-buffer (hyperdrive--entry-buffer-name entry))))
+                         ;; Buffer already exists: likely the user deleted the entry
+                         ;; without killing the buffer.  Switch to the buffer and
+                         ;; alert the user that the entry no longer exists.
+                         (progn
+                           (switch-to-buffer buffer)
+                           (message "Entry no longer exists!  %s" (hyperdrive-entry-description entry)))
+                       ;; Make and switch to new buffer.
+                       (switch-to-buffer (hyperdrive--get-buffer-create entry))))
+                    (t
+                     ;; Hyperdrive entry is not writable: prompt for action.
+                     (not-found-action))))
+                  (500 ;; Generic error, likely a mistyped URL
+                   (hyperdrive-message "Generic hyper-gateway status 500 error. Is this URL correct? %s"
+                                       (hyperdrive-entry-url entry)))
+                  (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
+                                         (hyperdrive-entry-url entry) err))))))))
 
 ;;;###autoload
 (defun hyperdrive-download-entry (entry filename)
