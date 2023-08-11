@@ -350,7 +350,7 @@ When VERSION is nil, return latest version of ENTRY."
     (setf (hyperdrive-entry-version entry) version)
     (condition-case err
         (hyperdrive-fill entry :then 'sync)
-      (plz-http-error
+      (plz-error
        (pcase (plz-response-status (plz-error-response (caddr err)))
          (404 nil)
          (_ (signal (car err) (cdr err))))))))
@@ -385,7 +385,7 @@ the given `plz-queue'"
                                     :as 'response
                                     :then 'sync
                                     :noquery t)))
-             (plz-http-error
+             (plz-error
               (pcase (plz-response-status (plz-error-response (caddr err)))
                 (404 ;; Entry doesn't exist at this version: update range data.
                  (hyperdrive-update-nonexistent-version-range entry)))
@@ -593,7 +593,6 @@ requests return, call THEN with no arguments."
                                       ;; entries. Stop recursing at known nonexistent entry.
                                       (fill-recursively filled-entry))))
                           :else (lambda (err)
-                                  ;; FIXME: Do we need to distinguish `plz-curl-error' from `plz-http-error'?
                                   (pcase (plz-response-status (plz-error-response err))
                                     (404 nil)
                                     (_ (signal (car err) (cdr err))))
@@ -626,7 +625,7 @@ HYPERDRIVE's public metadata file."
                                                             (hyperdrive-entry-url entry)))
                                        (_ (signal (car err) (cdr err)))))
                                :noquery t)
-                           (plz-http-error
+                           (plz-error
                             (pcase (plz-response-status (plz-error-response (caddr err)))
                               (404 nil)
                               (_ (signal (car err) (cdr err))))))))
@@ -912,9 +911,9 @@ hyperdrive."
               response
               (guard (= 200 (plz-response-status response))))
          (plz-response-body response)))
-    (plz-http-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
-                        nil
-                      (signal 'plz-http-error err)))))
+    (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
+                   nil
+                 (signal 'plz-error err)))))
 
 ;;;###autoload
 (defun hyperdrive-by-slot (slot value)
