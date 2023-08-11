@@ -913,7 +913,7 @@ hyperdrive."
          (plz-response-body response)))
     (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
                    nil
-                 (signal 'plz-error err)))))
+                 (signal (car err) (cdr err))))))
 
 ;;;###autoload
 (defun hyperdrive-by-slot (slot value)
