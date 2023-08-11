@@ -444,8 +444,9 @@ The following ENTRY hyperdrive slots are filled:
             ;; the persisted hyperdrive if we had only a domain but no public-key.
             (cl-pushnew domain (hyperdrive-domains (hyperdrive-entry-hyperdrive entry)) :test #'equal)))
       (setf (hyperdrive-public-key hyperdrive) public-key))
-    (if (hyperdrive--entry-directory-p entry)
-        ;; Directory HEAD/GET request ETag header always have the
+    (if (and (hyperdrive--entry-directory-p entry)
+             (null (hyperdrive-entry-version entry)))
+        ;; Version-less directory HEAD/GET request ETag header always have the
         ;; hyperdrive's latest version. We don't currently store
         ;; version ranges for directories (since they don't
         ;; technically have versions in hyperdrive).
