@@ -966,7 +966,7 @@ both point to the same content."
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."
-  (string-suffix-p "/" (hyperdrive-entry-url entry)))
+  (string-suffix-p "/" (hyperdrive-entry-path entry)))
 
 (defun hyperdrive-message (message &rest args)
   "Call `message' with MESSAGE and ARGS, prefixing MESSAGE with \"Hyperdrive:\"."
