@@ -149,7 +149,7 @@ make the request."
      (setf url (concat url "?noResolve"))))
   (pcase-let* ((else (pcase (plist-get rest :then)
                        ((or `nil 'sync)
-                        ;; Ignore ELSE for sync requests.
+                        ;; In keeping with `plz', ignore ELSE for sync requests.
                         nil)
                        (_ (plist-get rest :else))))
                ;; We wrap the provided ELSE in our own lambda that
