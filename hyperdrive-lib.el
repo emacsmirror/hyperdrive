@@ -171,14 +171,14 @@ make the request."
        (funcall else* (caddr err))))))
 
 (defun hyperdrive-api-default-else (else plz-error)
-  "Handle PLZ-ERROR according to ELSE.
+  "Handle common errors, overriding ELSE.
 Checks for common errors; if none are found, calls ELSE with
-PLZ-ERROR, if ELSE is non-nil; otherwise signals with
-`hyperdrive-error'."
+PLZ-ERROR, if ELSE is non-nil; otherwise re-signals PLZ-ERROR.
+PLZ-ERROR should be a `plz-error' struct."
   (cond ((equal 7 (car (plz-error-curl-error plz-error)))
          (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
         (else (funcall else plz-error))
-        (t (hyperdrive-error "%S" plz-error))))
+        (t (signal 'plz-error (list "plz error" plz-error)))))
 
 (defun hyperdrive--httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
