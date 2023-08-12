@@ -38,7 +38,8 @@ designed for easy peer-to-peer file sharing.  ~hyperdrive.el~ is an
 independent project built by [[https://ushin.org][USHIN]] which provides an Emacs interface
 for managing hyperdrives.
 
-~hyperdrive.el~ is in early development. If something breaks, please [[*Troubleshooting]].
+~hyperdrive.el~ is in early development. If something breaks, please see
+[[*Troubleshooting]].
 
 * Installation
 
@@ -78,10 +79,10 @@ run ~hyper-gateway~ manually.
 #+findex: hyperdrive-new
 
 You can have multiple hyperdrives, each one containing its own set of
-files. Run ~M-x hyperdrive-new~ then type in a ~seed~ ([[*Seeds]]) to
+files. Run ~M-x hyperdrive-new~ then type in a ~seed~ (see [[*Seeds]]) to
 create a new hyperdrive. That seed will be combined with your secret
 master key, which is generated for you by ~hyper-gateway~, to produce a
-public key ([[*Public keys]]) that uniquely identifies that
+public key (see [[*Public keys]]) that uniquely identifies that
 hyperdrive. ~hyperdrive-new~ is idempotent since the same seed will
 always produce the same public key. For this reason, a hyperdrive's
 seed cannot be changed.
@@ -190,7 +191,7 @@ filesystem, explicitly add the ~file:~ link type prefix:
 #+findex: hyperdrive-previous-version
 #+findex: hyperdrive-next-version
 
-Hyperdrives are versioned ([[*Versioning]]).  To view the previous/next
+Hyperdrives are versioned (see [[*Versioning]]).  To view the previous/next
 version of a hyperdrive file, run ~hyperdrive-previous-version~ or
 ~hyperdrive-next-version~ inside the file's buffer.
 
@@ -198,7 +199,7 @@ version of a hyperdrive file, run ~hyperdrive-previous-version~ or
 #+findex: hyperdrive-history
 
 To view the entire known history of a file, use ~hyperdrive-history~.
-For an explanation of the history buffer, [[*Partial version data]].
+For an explanation of the history buffer, see [[*Partial version data]].
 
 The following keybindings are available inside the directory view by
 default:
@@ -216,10 +217,10 @@ default:
 To see information about a hyperdrive, such as its public key, seed,
 petname, nickname, domains, writable, or other metadata, run
 ~hyperdrive-describe-hyperdrive~. For more on what this information
-means, [[*Naming]].
+means, see [[*Naming]].
 
 It is possible to purge a hyperdrive from the ~hyperdrive-describe-mode~
-buffer ([[*Purge a hyperdrive]]).
+buffer (see [[*Purge a hyperdrive]]).
 
 ** Bookmark a hyperdrive
 #+findex: hyperdrive-bookmark-jump
@@ -324,7 +325,7 @@ In writing your own functions to extend ~hyperdrive.el~, you can use
 ~hyperdrive-by-slot~ to access a hyperdrive entry by its seed, petname,
 or public key.
 
-For examples, [[*Mirror a whole directory]] and [[*Mirror files by tag or
+For examples, see [[*Mirror a whole directory]] and [[*Mirror files by tag or
 other attributes]].
 
 * Concepts
@@ -360,7 +361,7 @@ Unlike BitTorrent, another protocol for sharing files, hyperdrives are
 mutable.  You can add, update, or delete files inside a hyperdrive,
 and peers will be able to access the latest version of the hyperdrive
 at the same link.  However, old versions of your hyperdrive are never
-lost. [[*Versioning]] for more information.
+lost. see [[*Versioning]] for more information.
 
 *** Sparse replication
 #+cindex: Sparse replication
@@ -427,10 +428,10 @@ is specified in a hyper URL.
 
 **** Partial version data
 
-Because hyperdrives are sparsely replicated ([[*Sparse replication]]), you
+Because hyperdrives are sparsely replicated (see [[*Sparse replication]]), you
 might not know the full version history of a file.  For example, when
 you load the most recent version of ~/bar.org~, the gateway
-([[*Hyper-gateway]]) will also return the start of the version range
+(see [[*Hyper-gateway]]) will also return the start of the version range
 containing the most recent version of ~/bar.org~.  Since we also know
 the latest version of the hyperdrive, the version ranges table with
 the same data from the prior section would look like this:
@@ -508,7 +509,7 @@ You can customize the default format for displaying hyperdrives with
 
 Public keys are 52-character-long, [[https://en.wikipedia.org/wiki/Base32#z-base-32][z-base-32]] encoded keys generated
 from your secret master key and a seed string. ~hyper-gateway~ generates
-the secret key for you, and you provide a seed ([[*Seeds]]) when
+the secret key for you, and you provide a seed (see [[*Seeds]]) when
 generating a new drive with ~hyperdrive-new~.
 
 Public keys allow for permanent links to hyperdrive content. When
@@ -536,7 +537,7 @@ created. Nicknames can be changed with ~hyperdrive-set-nickname~.
 Petnames are locally unique hyperdrive identifiers. You can give a
 petname to any hyperdrive you load, whether you created it or not.
 
-When creating a new drive, your chosen seed ([[*Seeds]]) is used as its
+When creating a new drive, your chosen seed (see [[*Seeds]]) is used as its
 petname by default. Petnames can be changed with
 ~hyperdrive-set-petname~, but drives cannot share a petname.
 
@@ -544,15 +545,15 @@ petname by default. Petnames can be changed with
 #+cindex: Seeds
 
 Along with your secret master key, seeds are used to generate public
-keys ([[*Public keys]]). A seed has a one-to-one relationship with a
+keys (see [[*Public keys]]). A seed has a one-to-one relationship with a
 drive. Seeds are local but not secret. To share a drive, you must use
-a public key or DNS domain ([[*DNS domains]]).
+a public key or DNS domain (see [[*DNS domains]]).
 
 *** DNS domains
 #+cindex: DNS domains
 
 It is possible to use [[https://dnslink.io/][DNSLink]] to link to a hyperdrive with a domain
-name instead of a public key ([[*Public keys]]), like
+name instead of a public key (see [[*Public keys]]), like
 ~hyper://example.org/path/to/file~. Create a TXT record at
 ~_dnslink.example.org~ with the contents ~/hyper/PUBLIC-KEY~ (no trailing
 slash). Note: relying on DNS adds another point of centralization,
@@ -575,7 +576,7 @@ but not the ~to/~ entry prefix. Because entry prefixes only exist when
 they prefix an entry, deleting the last "file" in a "folder" causes
 the "folder" to disappear as well.  When a hyperdrive "file" or
 "folder" is not found, ~hyperdrive.el~ prompts you for an action
-([[*Unknown paths]]).
+(see [[*Unknown paths]]).
 
 * Troubleshooting
 
