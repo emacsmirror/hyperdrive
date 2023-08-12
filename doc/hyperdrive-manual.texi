@@ -46,6 +46,7 @@ Repository: @uref{https://git.sr.ht/~ushin/hyperdrive.el}
 * Installation::
 * Usage::
 * Concepts::
+* Known limitations::
 * Troubleshooting::
 * Bugs and Patches::
 * Acknowledgments::
@@ -78,6 +79,7 @@ Open a hyperdrive
 
 * Directory view::
 * File view::
+* Unknown paths::
 
 View the hyperdrive version history
 
@@ -93,7 +95,6 @@ Concepts
 * Hyperdrive::
 * Hyper-gateway::
 * Naming::
-* Hyperdrive entries::
 
 Hyperdrive
 
@@ -111,6 +112,10 @@ Naming
 * Petnames::
 * Seeds::
 * DNS domains::
+
+Known limitations
+
+* Files and folders can have the same name::
 
 Indices
 
@@ -148,7 +153,8 @@ designed for easy peer-to-peer file sharing.  @code{hyperdrive.el} is an
 independent project built by @uref{https://ushin.org, USHIN} which provides an Emacs interface
 for managing hyperdrives.
 
-@code{hyperdrive.el} is in early development. If something breaks, please @ref{Troubleshooting}.
+@code{hyperdrive.el} is in early development. If something breaks, please see
+@ref{Troubleshooting}.
 
 @node Installation
 @chapter Installation
@@ -214,10 +220,10 @@ run @code{hyper-gateway} manually.
 @findex hyperdrive-new
 
 You can have multiple hyperdrives, each one containing its own set of
-files. Run @code{M-x hyperdrive-new} then type in a @code{seed} (@ref{Seeds}) to
+files. Run @code{M-x hyperdrive-new} then type in a @code{seed} (see @ref{Seeds}) to
 create a new hyperdrive. That seed will be combined with your secret
 master key, which is generated for you by @code{hyper-gateway}, to produce a
-public key (@ref{Public keys}) that uniquely identifies that
+public key (see @ref{Public keys}) that uniquely identifies that
 hyperdrive. @code{hyperdrive-new} is idempotent since the same seed will
 always produce the same public key. For this reason, a hyperdrive's
 seed cannot be changed.
@@ -231,12 +237,12 @@ seed cannot be changed.
 You can open a hyperdrive folder or file by pasting in a @code{hyper://} URL
 after @code{M-x hyperdrive-open-url}. Alternatively, @code{M-x hyperdrive-find-file}
 remembers hyperdrives you have already created or visited. It will
-prompt you to select a known hyperdrive by its public key or seed and
-then enter a path inside that hyperdrive.
+prompt you for a known hyperdrive and a path inside it.
 
 @menu
 * Directory view::
 * File view::
+* Unknown paths::
 @end menu
 
 @node Directory view
@@ -308,6 +314,38 @@ If you have bound @code{dired-jump} in the global keymap (people often choose
 @code{C-x C-j}), you can use the same binding to jump to the parent
 hyperdrive directory from any hyperdrive file or directory buffer.
 
+@node Unknown paths
+@subsection Unknown paths
+
+When you attempt to load a file or folder that doesn't appear to
+exist, @code{hyperdrive.el} will prompt you to take action:
+
+@itemize
+@item
+@code{h} (history) to open the version history for that file. (This only
+works for files, not folders)
+@item
+@code{u} (up) to open the parent directory containing that file or folder
+@item
+@code{r} (recurse) to go up the directory tree until a directory is found
+or until you get to the root directory.
+@item
+@code{q} (exit) to exit,
+@item
+@code{?} (help) to show a help message.
+@end itemize
+
+If you attempt to load the root directory (@code{hyper://PUBLIC-KEY/}) of a
+for a hyperdrive with a valid-looking public key which you've never
+loaded before and for which no peers are currently found,
+@code{hyperdrive.el} should warn you that no peers were found for that
+drive. This might mean that the drive doesn't exist or just that
+you're not connected to anyone who knows about it.
+
+If you attempt to load a file or directory for a hyperdrive with a
+malformed public key, @code{hyperdrive.el} should ask you to double-check the
+URL@.
+
 @node Write to a hyperdrive
 @section Write to a hyperdrive
 
@@ -348,7 +386,7 @@ filesystem, explicitly add the @code{file:} link type prefix:
 @findex hyperdrive-previous-version
 @findex hyperdrive-next-version
 
-Hyperdrives are versioned (@ref{Versioning}).  To view the previous/next
+Hyperdrives are versioned (see @ref{Versioning}).  To view the previous/next
 version of a hyperdrive file, run @code{hyperdrive-previous-version} or
 @code{hyperdrive-next-version} inside the file's buffer.
 
@@ -362,7 +400,7 @@ version of a hyperdrive file, run @code{hyperdrive-previous-version} or
 @findex hyperdrive-history
 
 To view the entire known history of a file, use @code{hyperdrive-history}.
-For an explanation of the history buffer, @ref{Partial version data}.
+For an explanation of the history buffer, see @ref{Partial version data}.
 
 The following keybindings are available inside the directory view by
 default:
@@ -391,10 +429,10 @@ default:
 To see information about a hyperdrive, such as its public key, seed,
 petname, nickname, domains, writable, or other metadata, run
 @code{hyperdrive-describe-hyperdrive}. For more on what this information
-means, @ref{Naming}.
+means, see @ref{Naming}.
 
 It is possible to purge a hyperdrive from the @code{hyperdrive-describe-mode}
-buffer (@ref{Purge a hyperdrive}).
+buffer (see @ref{Purge a hyperdrive}).
 
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
@@ -517,7 +555,7 @@ In writing your own functions to extend @code{hyperdrive.el}, you can use
 @code{hyperdrive-by-slot} to access a hyperdrive entry by its seed, petname,
 or public key.
 
-For examples, @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
+For examples, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
 
 @node Concepts
 @chapter Concepts
@@ -526,7 +564,6 @@ For examples, @ref{Mirror a whole directory} and @ref{Mirror files by tag or oth
 * Hyperdrive::
 * Hyper-gateway::
 * Naming::
-* Hyperdrive entries::
 @end menu
 
 @node Hyperdrive
@@ -561,7 +598,7 @@ Unlike BitTorrent, another protocol for sharing files, hyperdrives are
 mutable.  You can add, update, or delete files inside a hyperdrive,
 and peers will be able to access the latest version of the hyperdrive
 at the same link.  However, old versions of your hyperdrive are never
-lost. @ref{Versioning} for more information.
+lost. see @ref{Versioning} for more information.
 
 @menu
 * Sparse replication::
@@ -647,10 +684,10 @@ is specified in a hyper URL@.
 @node Partial version data
 @subsubsection Partial version data
 
-Because hyperdrives are sparsely replicated (@ref{Sparse replication}), you
+Because hyperdrives are sparsely replicated (see @ref{Sparse replication}), you
 might not know the full version history of a file.  For example, when
 you load the most recent version of @code{/bar.org}, the gateway
-(@ref{Hyper-gateway}) will also return the start of the version range
+(see @ref{Hyper-gateway}) will also return the start of the version range
 containing the most recent version of @code{/bar.org}.  Since we also know
 the latest version of the hyperdrive, the version ranges table with
 the same data from the prior section would look like this:
@@ -766,7 +803,7 @@ You can customize the default format for displaying hyperdrives with
 
 Public keys are 52-character-long, @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated
 from your secret master key and a seed string. @code{hyper-gateway} generates
-the secret key for you, and you provide a seed (@ref{Seeds}) when
+the secret key for you, and you provide a seed (see @ref{Seeds}) when
 generating a new drive with @code{hyperdrive-new}.
 
 Public keys allow for permanent links to hyperdrive content. When
@@ -798,7 +835,7 @@ created. Nicknames can be changed with @code{hyperdrive-set-nickname}.
 Petnames are locally unique hyperdrive identifiers. You can give a
 petname to any hyperdrive you load, whether you created it or not.
 
-When creating a new drive, your chosen seed (@ref{Seeds}) is used as its
+When creating a new drive, your chosen seed (see @ref{Seeds}) is used as its
 petname by default. Petnames can be changed with
 @code{hyperdrive-set-petname}, but drives cannot share a petname.
 
@@ -808,9 +845,9 @@ petname by default. Petnames can be changed with
 @cindex Seeds
 
 Along with your secret master key, seeds are used to generate public
-keys (@ref{Public keys}). A seed has a one-to-one relationship with a
+keys (see @ref{Public keys}). A seed has a one-to-one relationship with a
 drive. Seeds are local but not secret. To share a drive, you must use
-a public key or DNS domain (@ref{DNS domains}).
+a public key or DNS domain (see @ref{DNS domains}).
 
 @node DNS domains
 @subsection DNS domains
@@ -818,7 +855,7 @@ a public key or DNS domain (@ref{DNS domains}).
 @cindex DNS domains
 
 It is possible to use @uref{https://dnslink.io/, DNSLink} to link to a hyperdrive with a domain
-name instead of a public key (@ref{Public keys}), like
+name instead of a public key (see @ref{Public keys}), like
 @code{hyper://example.org/path/to/file}. Create a TXT record at
 @code{_dnslink.example.org} with the contents @code{/hyper/PUBLIC-KEY} (no trailing
 slash). Note: relying on DNS adds another point of centralization,
@@ -827,21 +864,27 @@ this issue by remembering which public key the DNS record resolved to,
 so that peers can use the stored public key itself for subsequent
 connections.
 
-@node Hyperdrive entries
-@section Hyperdrive entries
+@node Known limitations
+@chapter Known limitations
 
-@cindex Entries
+@menu
+* Files and folders can have the same name::
+@end menu
+
+@node Files and folders can have the same name
+@section Files and folders can have the same name
 
 Instead of files and folders, Hyperdrive technically has entries and
-entry prefixes. It's possible for a ``file'' entry and a ``folder'' entry
-prefix to have the same name, like @code{hyper://PUBLIC-KEY/path/to/} (a
-``directory'') and @code{hyper://PUBLIC-KEY/path/to} (a ``file''). In this
-case, the directory listing for @code{hyper://PUBLIC-KEY/path/} would
-display the @code{to} entry but not the @code{to/} entry prefix. Because entry
-prefixes only exist when they prefix an entry, deleting the last
-``file'' in a ``directory'' causes the ``directory'' to disappear as well.
-When a hyperdrive ``file'' or ``directory'' is not found, @code{hyperdrive.el}
-prompts to go to the parent ``directory.''
+entry prefixes. In other words, ``folders'' don't exist unless they
+contain files. It's possible for a ``file'' entry and a ``folder'' entry
+prefix to have the same name, like @code{hyper://PUBLIC-KEY/foo/bar/} (a
+``folder'') and @code{hyper://PUBLIC-KEY/foo/bar} (a ``file''). In this case, the
+folder listing for @code{hyper://PUBLIC-KEY/path/} would display the @code{to} entry
+but not the @code{to/} entry prefix. Because entry prefixes only exist when
+they prefix an entry, deleting the last ``file'' in a ``folder'' causes
+the ``folder'' to disappear as well.  When a hyperdrive ``file'' or
+``folder'' is not found, @code{hyperdrive.el} prompts you for an action
+(see @ref{Unknown paths}).
 
 @node Troubleshooting
 @chapter Troubleshooting
