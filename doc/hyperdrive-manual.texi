@@ -30,7 +30,13 @@
 @node Top
 @top Hyperdrive.el User Manual
 
-This manual is for @code{hyperdrive.el} version 0.0.
+@uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is a P2P, real-time, local-first, versioned filesystem
+designed for easy peer-to-peer file sharing.  @code{hyperdrive.el} is an
+independent project built by @uref{https://ushin.org, USHIN} which provides an Emacs interface
+for managing hyperdrives.
+
+@code{hyperdrive.el} is in early development. If something breaks, please see
+@ref{Troubleshooting}.
 
 @itemize
 @item
@@ -38,11 +44,12 @@ Homepage: @uref{https://ushin.org/hyperdrive-manual.html}
 @item
 Repository: @uref{https://git.sr.ht/~ushin/hyperdrive.el}
 @end itemize
+
+This manual is for @code{hyperdrive.el} version 0.0.
 @end ifnottex
 
 @menu
 * Copying::
-* Introduction::
 * Installation::
 * Usage::
 * Concepts::
@@ -144,17 +151,6 @@ is included in the section entitled ``GNU Free Documentation License.''
 modify this GNU manual.''
 
 @end quotation
-
-@node Introduction
-@chapter Introduction
-
-@uref{https://docs.holepunch.to/building-blocks/hyperdrive, Hyperdrive} is a P2P, real-time, local-first, versioned filesystem
-designed for easy peer-to-peer file sharing.  @code{hyperdrive.el} is an
-independent project built by @uref{https://ushin.org, USHIN} which provides an Emacs interface
-for managing hyperdrives.
-
-@code{hyperdrive.el} is in early development. If something breaks, please see
-@ref{Troubleshooting}.
 
 @node Installation
 @chapter Installation

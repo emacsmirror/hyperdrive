@@ -10,10 +10,18 @@
 #+texinfo_dir_title: Hyperdrive.el
 #+texinfo_dir_desc: P2P filesystem in Emacs
 
-This manual is for ~hyperdrive.el~ version {{{version}}}.
+[[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is a P2P, real-time, local-first, versioned filesystem
+designed for easy peer-to-peer file sharing.  ~hyperdrive.el~ is an
+independent project built by [[https://ushin.org][USHIN]] which provides an Emacs interface
+for managing hyperdrives.
+
+~hyperdrive.el~ is in early development. If something breaks, please see
+[[*Troubleshooting]].
 
 - Homepage: https://ushin.org/hyperdrive-manual.html
 - Repository: https://git.sr.ht/~ushin/hyperdrive.el
+
+This manual is for ~hyperdrive.el~ version {{{version}}}.
 
 * Copying
 
@@ -30,16 +38,6 @@ is included in the section entitled "GNU Free Documentation License."
 (a) The FSF's Back-Cover Text is: "You have the freedom to copy and
 modify this GNU manual."
 #+end_quote
-
-* Introduction
-
-[[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is a P2P, real-time, local-first, versioned filesystem
-designed for easy peer-to-peer file sharing.  ~hyperdrive.el~ is an
-independent project built by [[https://ushin.org][USHIN]] which provides an Emacs interface
-for managing hyperdrives.
-
-~hyperdrive.el~ is in early development. If something breaks, please see
-[[*Troubleshooting]].
 
 * Installation
 
