@@ -52,6 +52,7 @@ This manual is for @code{hyperdrive.el} version 0.2-pre.
 * Copying::
 * Installation::
 * Usage::
+* Customization::
 * Concepts::
 * Known limitations::
 * Troubleshooting::
@@ -558,6 +559,106 @@ or public key.
 
 For examples, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
 
+@node Customization
+@chapter Customization
+
+You can customize the following variables settings by running @code{M-x
+customize-group RET hyperdrive RET}:
+
+@vindex hyperdrive-storage-location
+@table @asis
+@item @code{hyperdrive-storage-location}
+Location to store Hypercore
+data. Defaults to @code{"~/.local/share/hyper-gateway-nodejs/"}.
+@end table
+
+@vindex hyperdrive-hyper-gateway-port
+@table @asis
+@item @code{hyperdrive-hyper-gateway-port}
+Port on which to run the
+hyper-gateway server. Defaults to @code{4973}.
+@end table
+
+@vindex hyperdrive-honor-auto-mode-alist
+@table @asis
+@item @code{hyperdrive-honor-auto-mode-alist}
+If non-nil, use file extension
+of hyperdrive file to set @code{major-mode}. Defaults to @code{t}.
+@end table
+
+@vindex hyperdrive-persist-location
+@table @asis
+@item @code{hyperdrive-persist-location}
+Location where @code{persist} will store
+data. By default, uses the default @code{persist} location.
+@end table
+
+@vindex hyperdrive-download-directory
+@table @asis
+@item @code{hyperdrive-download-directory}
+Location where
+@code{hyperdrive-download-url} will download files. Defaults to
+@code{eww-download-directory} or, if not bound, the home directory.
+@end table
+
+@vindex hyperdrive-timestamp-format
+@table @asis
+@item @code{hyperdrive-timestamp-format}
+Format string used for
+timestamps. Passed to @code{format-time-string}, which see.
+@end table
+
+@vindex hyperdrive-directory-display-buffer-action
+@table @asis
+@item @code{hyperdrive-directory-display-buffer-action}
+Display buffer action
+for hyperdrive directories. Passed to @code{display-buffer}, which see.
+@end table
+
+@vindex hyperdrive-column-headers
+@table @asis
+@item @code{hyperdrive-column-headers}
+Display column headers in
+@code{hyperdrive-dir} and @code{hyperdrive-history} buffers. Defaults to @code{t}.
+@end table
+
+@vindex hyperdrive-history-display-buffer-action
+@table @asis
+@item @code{hyperdrive-history-display-buffer-action}
+Display buffer action
+for hyperdrive history buffers. Passed to @code{display-buffer}, which see.
+@end table
+
+@vindex hyperdrive-default-host-format
+@table @asis
+@item @code{hyperdrive-default-host-format}
+Default format for displaying
+hyperdrive hostnames. See @ref{Naming} section for what this means.
+@end table
+
+@vindex hyperdrive-stream-player-command
+@table @asis
+@item @code{hyperdrive-stream-player-command}
+Command used to play streamable
+URLs externally. Default uses @uref{https://mpv.io/, mpv}. There also exists a preconfigured
+option for @uref{https://www.videolan.org/vlc/, VLC media player}.
+@end table
+
+@vindex hyperdrive-queue-size
+@table @asis
+@item @code{hyperdrive-queue-size}
+Default number of request sent to
+@code{hyper-gateway} at a time in a queues. Defaults to @code{2}.
+@end table
+
+@vindex hyperdrive-render-html
+@table @asis
+@item @code{hyperdrive-render-html}
+Control how HTML hyperdrive files are
+displayed. By default, HTML pages are rendered in Emacs with @ref{Top,EWW,,eww,}. If
+@code{nil}, raw HTML will be displayed.
+@end table
+
 @node Concepts
 @chapter Concepts
 
@@ -783,10 +884,6 @@ string used to generate public key
 @item DNS domain
 public, globally unique, human-memorable
 @end table
-
-@vindex hyperdrive-default-host-format
-You can customize the default format for displaying hyperdrives with
-@code{hyperdrive-default-host-format}.
 
 @menu
 * Public keys::
