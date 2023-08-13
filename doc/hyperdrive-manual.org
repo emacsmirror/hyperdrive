@@ -4,8 +4,6 @@
 #+language: en
 #+setupfile: doc-setup.org
 
-# #+export_file_name: hyperdrive.texi
-
 #+texinfo_dir_category: Communication
 #+texinfo_dir_title: Hyperdrive.el
 #+texinfo_dir_desc: P2P filesystem in Emacs
