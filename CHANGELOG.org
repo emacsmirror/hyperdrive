@@ -5,7 +5,9 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 * 0.2-pre
 
-Nothing new yet.
+** Fixed
+
+- Fixed imenu face
 
 * 0.1
 
