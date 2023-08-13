@@ -326,6 +326,66 @@ or public key.
 For examples, see [[*Mirror a whole directory]] and [[*Mirror files by tag or
 other attributes]].
 
+* Customization
+
+You can customize the following variables settings by running ~M-x
+customize-group RET hyperdrive RET~:
+
+#+vindex: hyperdrive-storage-location
+- ~hyperdrive-storage-location~ :: Location to store Hypercore
+  data. Defaults to ~"~/.local/share/hyper-gateway-nodejs/"~.
+
+#+vindex: hyperdrive-hyper-gateway-port
+- ~hyperdrive-hyper-gateway-port~ :: Port on which to run the
+  hyper-gateway server. Defaults to ~4973~.
+
+#+vindex: hyperdrive-honor-auto-mode-alist
+- ~hyperdrive-honor-auto-mode-alist~ :: If non-nil, use file extension
+  of hyperdrive file to set ~major-mode~. Defaults to ~t~.
+
+#+vindex: hyperdrive-persist-location
+- ~hyperdrive-persist-location~ :: Location where ~persist~ will store
+  data. By default, uses the default ~persist~ location.
+
+#+vindex: hyperdrive-download-directory
+- ~hyperdrive-download-directory~ :: Location where
+  ~hyperdrive-download-url~ will download files. Defaults to
+  ~eww-download-directory~ or, if not bound, the home directory.
+
+#+vindex: hyperdrive-timestamp-format
+- ~hyperdrive-timestamp-format~ :: Format string used for
+  timestamps. Passed to ~format-time-string~, which see.
+
+#+vindex: hyperdrive-directory-display-buffer-action
+- ~hyperdrive-directory-display-buffer-action~ :: Display buffer action
+  for hyperdrive directories. Passed to ~display-buffer~, which see.
+
+#+vindex: hyperdrive-column-headers
+- ~hyperdrive-column-headers~ :: Display column headers in
+  ~hyperdrive-dir~ and ~hyperdrive-history~ buffers. Defaults to ~t~.
+
+#+vindex: hyperdrive-history-display-buffer-action
+- ~hyperdrive-history-display-buffer-action~ :: Display buffer action
+  for hyperdrive history buffers. Passed to ~display-buffer~, which see.
+
+#+vindex: hyperdrive-default-host-format
+- ~hyperdrive-default-host-format~ :: Default format for displaying
+  hyperdrive hostnames. See [[*Naming][Naming]] section for what this means.
+
+#+vindex: hyperdrive-stream-player-command
+- ~hyperdrive-stream-player-command~ :: Command used to play streamable
+  URLs externally. Default uses [[https://mpv.io/][mpv]]. There also exists a preconfigured
+  option for [[https://www.videolan.org/vlc/][VLC media player]].
+
+#+vindex: hyperdrive-queue-size
+- ~hyperdrive-queue-size~ :: Default number of request sent to
+  ~hyper-gateway~ at a time in a queues. Defaults to ~2~.
+
+#+vindex: hyperdrive-render-html
+- ~hyperdrive-render-html~ :: Control how HTML hyperdrive files are
+  displayed. By default, HTML pages are rendered in Emacs with [[info:eww#Top][EWW]]. If
+  ~nil~, raw HTML will be displayed.
+
 * Concepts
 
 ** Hyperdrive
@@ -496,10 +556,6 @@ Each drive may also have one or both of the following attributes:
 
 - Seed       :: string used to generate public key
 - DNS domain :: public, globally unique, human-memorable
-
-#+vindex: hyperdrive-default-host-format
-You can customize the default format for displaying hyperdrives with
-~hyperdrive-default-host-format~.
 
 *** Public keys
 #+cindex: Public keys
