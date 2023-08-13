@@ -47,11 +47,6 @@
   :type 'natnum
   :group 'hyperdrive)
 
-(defcustom hyperdrive-hyper-gateway-p2p-port 4977
-  "Port on which to run the p2p network."
-  :type 'natnum
-  :group 'hyperdrive)
-
 (defcustom hyperdrive-honor-auto-mode-alist t
   "If non-nil, use file extension of hyperdrive file to set `major-mode'."
   :type 'boolean
