@@ -9,6 +9,6 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 - Fixed imenu face
 
-* 0.1
+* 0.1 [2023-08-12 Sat]
 
 - Initial release
