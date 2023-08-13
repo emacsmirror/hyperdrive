@@ -114,6 +114,8 @@ default:
 - ~H~ opens the version history of file at point
 #+kindex: hyperdrive-dir-copy-url
 - ~w~ copies the URL of the file or directory at point
+#+kindex: imenu
+- ~j~ opens ~imenu~ to quickly jump to a file in the current directory
 #+kindex: hyperdrive-describe-hyperdrive
 - ~?~ opens a buffer describing the current hyperdrive
 
