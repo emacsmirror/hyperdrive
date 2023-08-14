@@ -360,6 +360,7 @@ When VERSION is nil, return latest version of ENTRY."
         (hyperdrive-fill entry :then 'sync)
       (plz-error
        (pcase (plz-response-status (plz-error-response (caddr err)))
+         ;; FIXME: If plz-error is a curl-error, this block will fail.
          (404 nil)
          (_ (signal (car err) (cdr err))))))))
 
@@ -395,6 +396,7 @@ the given `plz-queue'"
                                     :noquery t)))
              (plz-error
               (pcase (plz-response-status (plz-error-response (caddr err)))
+                ;; FIXME: If plz-error is a curl-error, this block will fail.
                 (404 ;; Entry doesn't exist at this version: update range data.
                  (hyperdrive-update-nonexistent-version-range entry)))
               ;; Re-signal error for, e.g. `hyperdrive-entry-at'.
@@ -603,6 +605,7 @@ requests return, call THEN with no arguments."
                                       (fill-recursively filled-entry))))
                           :else (lambda (err)
                                   (pcase (plz-response-status (plz-error-response err))
+                                    ;; FIXME: If plz-error is a curl-error, this block will fail.
                                     (404 nil)
                                     (_ (signal (car err) (cdr err))))
                                   err)
@@ -636,6 +639,7 @@ HYPERDRIVE's public metadata file."
                                :noquery t)
                            (plz-error
                             (pcase (plz-response-status (plz-error-response (caddr err)))
+                              ;; FIXME: If plz-error is a curl-error, this block will fail.
                               (404 nil)
                               (_ (signal (car err) (cdr err))))))))
     (setf (hyperdrive-metadata hyperdrive) metadata)
@@ -921,6 +925,7 @@ hyperdrive."
               (guard (= 200 (plz-response-status response))))
          (plz-response-body response)))
     (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
+                   ;; FIXME: If plz-error is a curl-error, this block will fail.
                    nil
                  (signal (car err) (cdr err))))))
 

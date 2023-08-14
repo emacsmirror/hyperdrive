@@ -395,6 +395,7 @@ in the buffer opened by the handler."
                                  ("recurse" 'recurse)
                                  ("exit" nil))))
                 (pcase (plz-response-status (plz-error-response err))
+                  ;; FIXME: If plz-error is a curl-error, this block will fail.
                   (404 ;; Path not found.
                    (cond
                     ((equal (hyperdrive-entry-path entry) "/")
