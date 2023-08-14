@@ -164,14 +164,7 @@ Interactively, visit file or directory at point in
                     (revert-buffer)))
                 (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
         :else (lambda (plz-error)
-                (pcase-let* (((cl-struct plz-error response) plz-error)
-                             ((cl-struct plz-response status) response)
-                             (message
-                              (pcase status
-                                (403 "Hyperdrive not writable")
-                                (405 "Cannot write to old version")
-                                (_ plz-error))))
-                  (hyperdrive-message "Unable to delete: %S: %S" name message)))))))
+                (hyperdrive-message "Unable to delete: %S: %S" name plz-error))))))
 
 (declare-function hyperdrive-history "hyperdrive-history")
 

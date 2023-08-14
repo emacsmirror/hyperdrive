@@ -507,16 +507,9 @@ for more information.  See `hyperdrive-read-entry' and
                   (set-visited-file-modtime (current-time))))
               (hyperdrive-message "Wrote: %S to \"%s\"" name url))
       :else (lambda (plz-error)
-              (pcase-let* (((cl-struct plz-error response) plz-error)
-                           ((cl-struct plz-response status) response)
-                           (message
-                            (pcase status
-                              (403 "Hyperdrive not writable")
-                              (405 "Cannot write to old version")
-                              (_ plz-error))))
-                (hyperdrive-message "Unable to write: %S: %S" name message)
-                (with-current-buffer buffer
-                  (set-buffer-modified-p t)))))
+              (hyperdrive-message "Unable to write: %S: %S" name plz-error)
+              (with-current-buffer buffer
+                (set-buffer-modified-p t))))
     (hyperdrive-message "Saving to \"%s\"..." url)
     ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display version, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
