@@ -167,6 +167,8 @@ arguments."
                 ;; TODO: Handle failures?
                 :else (lambda (_error) (message "ERROR"))))
             entries)
+      ;; FIXME: After `ewoc-invalidate' is called asynchronously, the
+      ;; buffer ends up with `buffer-modified-p' t.
       (set-buffer-modified-p nil)
       (when then
         (funcall then)))))
