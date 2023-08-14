@@ -210,20 +210,6 @@ If already at top-level directory, return nil."
     (when-let ((parent-path (file-name-parent-directory path)))
       (hyperdrive-entry-create :hyperdrive hyperdrive :path parent-path :version version))))
 
-;; (defun hyperdrive--readable-p (url)
-;;   "Return non-nil if URL is readable.
-;; That is, it is known to exist and its contents are readable.  A
-;; nil return value does not necessarily mean that the hyperdrive
-;; does not exist: it may be non-existent, or its contents may be
-;; currently inaccessible."
-;;   (when-let ((response (hyperdrive-api 'head url :as 'response :else #'ignore)))
-;;     (pcase-let* (((cl-struct plz-response headers) response)
-;;                  ((map etag) headers))
-;;       ;; TODO: If hyperdrive-gateway is changed to return HTTP 204 for
-;;       ;; hyperdrive that's never had content, update this.  See:
-;;       ;; <https://github.com/RangerMauve/hypercore-fetch/issues/57>.
-;;       (>= (string-to-number etag) 1))))
-
 (defun hyperdrive-url-entry (url)
   "Return entry for URL.
 Set entry's hyperdrive slot to persisted hyperdrive if it exists.
@@ -241,7 +227,6 @@ empty public-key slot."
                              (_  ;; Assume host is a public-key
                               (or (gethash host hyperdrive-hyperdrives)
                                   (hyperdrive-create :public-key host)))))
-               ;; TODO: Target inside etc is currently unused, consider removing or adding support inside `hyperdrive-handler-default'
                (etc (when target
                       (list (cons 'target target))))
                (version (pcase path
@@ -503,8 +488,6 @@ For the format of each version range, see `hyperdrive-version-ranges'.
 Returns the ranges cons cell for ENTRY."
   (cl-check-type range-start integer)
   (unless (hyperdrive--entry-directory-p entry)
-    ;; TODO: Revisit whether we really want to not do anything for directories
-    ;; (look at `hyperdrive-update-nonexistent-version-range' also).
     (pcase-let* ((ranges (hyperdrive-entry-version-ranges entry))
                  (range (map-elt ranges range-start))
                  ((map (:range-end old-range-end)) range)
