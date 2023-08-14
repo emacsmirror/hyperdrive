@@ -178,8 +178,8 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
     (hyperdrive-purge-no-prompt hyperdrive
       :then (lambda (_response)
               (hyperdrive-message "Purged drive: %s" (hyperdrive--format-hyperdrive hyperdrive)))
-      :else (lambda (_plz-error)
-              (hyperdrive-error "Unable to purge drive: %s" (hyperdrive--format-hyperdrive hyperdrive))))))
+      :else (lambda (plz-error)
+              (hyperdrive-error "Unable to purge drive: %s %S" (hyperdrive--format-hyperdrive hyperdrive) plz-error)))))
 
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
