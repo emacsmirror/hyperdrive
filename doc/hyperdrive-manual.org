@@ -529,6 +529,20 @@ again at version 8.  The only way to determine that a file is
 nonexistent for some version range is to query the network for that
 file at every single version in the range.
 
+**** No directory version history
+
+Version history for directories is not implemented for a design reason
+and technical reason:
+
+- Directories have neither mtime nor size metadata, so a history view
+  for directories wouldn't be that useful.
+- Implementation of directory history would be somewhat ugly, since it
+  requires either
+  1. storing an entry for each directory in ~hyperdrive-version-ranges~,
+     which doesn't optimally normalize version history data, or
+  2. generating directory history based on the history of the files it
+     contains, which can never prove that a directory doesn't exist.
+
 ** Hyper-gateway
 #+cindex: Hyper-gateway
 
