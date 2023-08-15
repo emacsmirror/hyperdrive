@@ -495,6 +495,7 @@ for more information.  See `hyperdrive-read-entry' and
                   ;; value than hyper-gateway's Content-Length header.
                   (setf (hyperdrive-entry-size entry) (buffer-size))
                   ;; FIXME: Will entry type ever be anything besides text/plain?
+                  ;;        /.well-known/host-meta.json ?
                   (setf (hyperdrive-entry-type entry) "text/plain; charset=utf-8")
                   (setq-local hyperdrive-current-entry entry)
                   (setf buffer-file-name nil)
