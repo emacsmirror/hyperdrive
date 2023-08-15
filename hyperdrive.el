@@ -303,12 +303,14 @@ without confirmation."
       (progn
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer
                     bookmark-make-record-function #'hyperdrive-bookmark-make-record)
-        (hyperdrive--hack-write-contents-functions))
+        (cl-pushnew #'hyperdrive--write-contents write-contents-functions)
+        (add-hook 'after-change-major-mode-hook
+                  #'hyperdrive--hack-write-contents-functions nil 'local))
     (kill-local-variable 'bookmark-make-record-function)
     (kill-local-variable 'revert-buffer-function)
     (setq-local write-contents-functions
                 (remove #'hyperdrive--write-contents write-contents-functions))
-    (remove-hook 'change-major-mode-hook
+    (remove-hook 'after-change-major-mode-hook
                  #'hyperdrive--hack-write-contents-functions 'local)))
 ;; Making it permanent-local keeps the minor mode active even if the
 ;; user changes the major mode, so the buffer can still be saved back
@@ -317,19 +319,11 @@ without confirmation."
 
 (defun hyperdrive--hack-write-contents-functions ()
   "Hack `write-contents-functions' for `hyperdrive-mode' in current buffer.
-Runs an immediate timer which adds `hyperdrive--write-contents'
-to `write-contents-functions'.  Also adds self to
-`change-major-mode-hook' so that it will happen again if the
+Ensures that hyperdrive buffers can still be saved after the
 major mode changes (which resets `write-contents-functions' by
-calling `kill-all-local-variables').  This is a bit of a hack,
-but it seems to be necessary, and to be the cleanest way."
-  (run-at-time 0 nil
-               (lambda (buffer)
-                 (with-current-buffer buffer
-                   (cl-pushnew #'hyperdrive--write-contents write-contents-functions)
-                   (add-hook 'change-major-mode-hook
-                             #'hyperdrive--hack-write-contents-functions nil 'local)))
-               (current-buffer)))
+calling `kill-all-local-variables')."
+  (cl-pushnew #'hyperdrive--write-contents write-contents-functions))
+(put 'hyperdrive--hack-write-contents-functions 'permanent-local-hook t)
 
 ;;;###autoload
 (defun hyperdrive-find-file (entry)
