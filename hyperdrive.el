@@ -483,9 +483,8 @@ for more information.  See `hyperdrive-read-entry' and
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
                   (unless hyperdrive-mode
-                    ;; TODO: Remove faces/overlays that might be applied to current buffer.
-                    ;; I can confirm that overlays are not removed when
-                    ;; `hyperdrive-write-buffer' is called from a magit log buffer.
+                    ;; Remove overlays/text properties that might be in effect.
+                    (clean-mode)
                     (hyperdrive-mode))
                   (hyperdrive--fill entry (plz-response-headers response))
                   (hyperdrive-fill-latest-version hyperdrive)
