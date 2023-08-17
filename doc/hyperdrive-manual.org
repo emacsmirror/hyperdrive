@@ -169,8 +169,9 @@ silently update the current hyperdrive entry with the new content.
 #+findex: hyperdrive-dir-copy-url
 
 In the directory view, you can copy the URL at point with
-~hyperdrive-dir-copy-url~. Additionally, you can run ~hyperdrive-copy-url~
-to copy the URL of the current hyperdrive file or directory.
+~hyperdrive-dir-copy-url~ (see [[*Directory view]]). Additionally, you can
+run ~hyperdrive-copy-url~ to copy the URL of the current hyperdrive
+file or directory.
 
 *** Org mode links
 
