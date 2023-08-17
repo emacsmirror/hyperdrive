@@ -170,10 +170,13 @@ silently update the current hyperdrive entry with the new content.
 
 In the directory view, you can copy the URL at point with
 ~hyperdrive-dir-copy-url~. Additionally, you can run ~hyperdrive-copy-url~
-to copy the URL of the current hyperdrive file or directory. If the
-current file is an org-mode file, ~org-store-link~ will store a link to
-the hyperdrive file, and if point is inside a heading, its ~CUSTOM_ID~,
-~ID~, or heading text will be appended to the stored URL.
+to copy the URL of the current hyperdrive file or directory.
+
+*** Org mode links
+
+If the current file is an org-mode file, ~org-store-link~ will store a
+link to the hyperdrive file, and if point is inside a heading, its
+~CUSTOM_ID~, ~ID~, or heading text will be appended to the stored URL.
 
 Relative links are supported; within ~hyper://PUBLIC-KEY/foo.org~, links
 to ~bar.org~, ~./bar.org~, and ~/bar.org~ will all point to
