@@ -119,6 +119,11 @@ TARGET may be a CUSTOM_ID, an ID, or a headline."
                  (org-find-exact-headline-in-buffer target)
                  (hyperdrive-error "Unable to find entry in file: %S" target))))
 
+(defun hyperdrive-org-link-complete ()
+  "Create a hyperdrive org link."
+  ;; TODO: Support other hyper:// links like diffs when implemented.
+  (hyperdrive-entry-url (hyperdrive-read-entry :force-prompt t)))
+
 (defun hyperdrive--org-open-at-point ()
   "Handle relative links in hyperdrive-mode org files.
 
@@ -150,7 +155,8 @@ the current location."
 (with-eval-after-load 'org
   (org-link-set-parameters "hyper"
                            :store #'hyperdrive-org-link-store
-                           :follow #'hyperdrive-org-link-follow)
+                           :follow #'hyperdrive-org-link-follow
+			   :complete #'hyperdrive-org-link-complete)
   (with-eval-after-load 'hyperdrive
     ;; Handle links with no specified type in `hyperdrive-mode'
     ;; buffers as links to files within that hyperdrive.  Only add
