@@ -157,6 +157,7 @@ URL.
 
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
+#+findex: save-buffer
 
 You can write a buffer to a hyperdrive with ~hyperdrive-write-buffer~,
 which will prompt you for one of hyperdrives you have created as well
