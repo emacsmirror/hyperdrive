@@ -619,6 +619,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
              ;; the record invalid, which would cause
              ;; `bookmark-default-handler' to signal an error.
              (append bookmark `((buffer . ,(current-buffer))))))))
+(put 'hyperdrive-bookmark-handler 'bookmark-handler-type "hyperdrive")
 
 (defun hyperdrive-bookmark-jump (bookmark)
   "Jump to a Hyperdrive BOOKMARK."
