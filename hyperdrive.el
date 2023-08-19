@@ -468,8 +468,7 @@ for more information.  See `hyperdrive-read-entry' and
               (url (hyperdrive-entry-url entry))
               (buffer (current-buffer)))
     (hyperdrive-write entry
-      :body (save-restriction
-              (widen)
+      :body (without-restriction
               (buffer-substring-no-properties (point-min) (point-max)))
       :then (lambda (response)
               (when (buffer-live-p buffer)

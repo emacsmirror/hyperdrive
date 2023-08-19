@@ -45,8 +45,7 @@ A cons cell whose car is OLD-ENTRY and whose cdr is NEW-ENTRY.")
   "Return t if `hyperdrive-diff-mode' BUFFER has no differences."
   (with-current-buffer buffer
     (save-excursion
-      (save-restriction
-        (widen)
+      (without-restriction
         (goto-char (point-max))
         (forward-line -1)
         (looking-at-p (rx line-start "Diff finished (no differences)."))))))
