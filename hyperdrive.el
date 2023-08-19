@@ -53,6 +53,7 @@
 ;; reduce how many times we have to type "hyperdrive".
 
 (require 'cl-lib)
+(require 'seq)
 
 (require 'bookmark)
 (require 'json)
@@ -91,6 +92,32 @@
   (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-browse-url)
               browse-url-handlers :test #'equal)
   (cl-pushnew "hyper://" thing-at-point-uri-schemes :test #'equal))
+
+;;;; `save-some-buffers' integration
+
+(declare-function hyperdrive--save-some-buffers "hyperdrive") ;; Appease linter
+(when (version<= "29.1" emacs-version)
+  (defun hyperdrive--save-some-buffers (query &optional arg)
+    "Save some hyperdrive buffers.
+QUERY and ARGS are passed in from `save-some-buffers-functions', which see."
+    (let ((bufs (seq-filter
+                 (lambda (buf) (and (buffer-local-value 'hyperdrive-current-entry buf)
+                                    ;; TODO: Do we need to check for `hyperdrive-mode'?
+                                    (buffer-modified-p buf)))
+                 (buffer-list))))
+      (if (eq query 'query)
+          ;; Query: Return non-nil if there are unsaved hyperdrive buffers.
+          bufs
+        ;; Save abbrevs according to ARG.
+        (while-let ((buf (car bufs)))
+          (cl-callf cdr bufs)
+          (with-current-buffer buf
+            (when (or arg
+                      (y-or-n-p (format "Hyperdrive: Save file «%s»? "
+                                        (hyperdrive-entry-description hyperdrive-current-entry))))
+              (hyperdrive-write-buffer hyperdrive-current-entry)))))))
+
+  (add-hook 'save-some-buffers-functions #'hyperdrive--save-some-buffers))
 
 ;;;; Commands
 

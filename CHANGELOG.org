@@ -7,6 +7,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 ** Added
 
+- ~save-some-buffers~ integration (on Emacs >29.1)
 - Org-mode link completion
 
 ** Fixed

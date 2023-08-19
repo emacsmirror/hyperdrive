@@ -158,12 +158,16 @@ URL.
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
 #+findex: save-buffer
+#+findex: save-some-buffers
 
 You can write a buffer to a hyperdrive with ~hyperdrive-write-buffer~,
 which will prompt you for one of hyperdrives you have created as well
 as the path in that hyperdrive where you want to store the file. If
 you are editing an existing hyperdrive file, ~save-buffer~ will
 silently update the current hyperdrive entry with the new content.
+
+On Emacs version 29.1 or later, ~save-some-buffers~ will save hyperdrive
+files in addition to regular files.
 
 ** Link to a hyperdrive
 #+findex: hyperdrive-copy-url
