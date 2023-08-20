@@ -101,6 +101,8 @@ arguments."
                 directory-entry)
                (url (hyperdrive-entry-url directory-entry))
                (inhibit-read-only t)
+               (buffer-undo-list t)
+               (inhibit-modification-hooks t)
                ((cl-struct plz-response headers body)
                 ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
                 (hyperdrive-api 'get url :as 'response :noquery t))
