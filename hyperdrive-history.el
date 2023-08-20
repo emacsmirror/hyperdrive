@@ -187,6 +187,8 @@ Universal prefix argument \\[universal-argument] forces
                                                        (propertize "Last Modified" 'face 'hyperdrive-column-header))))
                              main-header))
                    (inhibit-read-only t)
+                   (buffer-undo-list t)
+                   (inhibit-modification-hooks t)
                    (queue) (ewoc))
         (with-current-buffer (get-buffer-create
                               (format "*Hyperdrive-history: %s %s*"
