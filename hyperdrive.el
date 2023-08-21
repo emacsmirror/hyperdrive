@@ -320,10 +320,8 @@ without confirmation."
   :interactive nil
   :group 'hyperdrive
   :lighter " hyperdrive"
-  :keymap (let ((map (make-sparse-keymap)))
-            (define-key map [remap revert-buffer-quick] #'hyperdrive-revert-buffer-quick)
-            (define-key map [remap dired-jump]  #'hyperdrive-up)
-            map)
+  :keymap '(([remap revert-buffer-quick] . hyperdrive-revert-buffer-quick)
+            ([remap dired-jump] .  hyperdrive-up))
   (if hyperdrive-mode
       (progn
         (setq-local revert-buffer-function #'hyperdrive-revert-buffer
