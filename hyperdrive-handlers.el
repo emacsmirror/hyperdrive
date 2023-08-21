@@ -56,7 +56,9 @@ If then, then call THEN with no arguments.  Default handler."
           (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
                        ((map target) etc)
                        (response-buffer (current-buffer))
-                       (inhibit-read-only t))
+                       (inhibit-read-only t)
+                       (inhibit-modification-hooks t)
+                       (buffer-undo-list t))
             ;; TODO: Revisit buffer naming/"visiting" (e.g. what
             ;; happens if the user opens a Hyperdrive file and then
             ;; saves another buffer to the same location?).  See
