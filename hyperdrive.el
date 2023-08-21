@@ -53,7 +53,6 @@
 ;; reduce how many times we have to type "hyperdrive".
 
 (require 'cl-lib)
-(require 'seq)
 
 (require 'bookmark)
 (require 'json)
@@ -100,11 +99,10 @@
   (defun hyperdrive--save-some-buffers (query &optional arg)
     "Save some hyperdrive buffers.
 QUERY and ARGS are passed in from `save-some-buffers-functions', which see."
-    (let ((bufs (seq-filter
+    (let ((bufs (match-buffers
                  (lambda (buf) (and (buffer-local-value 'hyperdrive-current-entry buf)
                                     ;; TODO: Do we need to check for `hyperdrive-mode'?
-                                    (buffer-modified-p buf)))
-                 (buffer-list))))
+                                    (buffer-modified-p buf))))))
       (if (eq query 'query)
           ;; Query: Return non-nil if there are unsaved hyperdrive buffers.
           bufs
