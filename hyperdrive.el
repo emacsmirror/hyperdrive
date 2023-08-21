@@ -308,6 +308,10 @@ without confirmation."
 ;; TODO: Investigate possibility of not having `hyperdrive-mode', of
 ;; just using `hyperdrive-current-entry'.
 
+(defvar-local hyperdrive-mode--state nil
+  "Previous state of buffer before `hyperdrive-mode' was activated.
+Intended to be passed to `buffer-local-restore-state'.")
+
 (define-minor-mode hyperdrive-mode
   "Minor mode for buffers opened from hyperdrives."
   ;; TODO: When users change the major-mode inside a buffer visiting hyperdrive file,
@@ -322,15 +326,16 @@ without confirmation."
             ([remap dired-jump] .  hyperdrive-up))
   (if hyperdrive-mode
       (progn
-        (setq-local revert-buffer-function #'hyperdrive-revert-buffer
-                    bookmark-make-record-function #'hyperdrive-bookmark-make-record)
-        (cl-pushnew #'hyperdrive--write-contents write-contents-functions)
+        (setq-local hyperdrive-mode--state
+                    (buffer-local-set-state
+                     revert-buffer-function #'hyperdrive-revert-buffer
+                     bookmark-make-record-function #'hyperdrive-bookmark-make-record
+                     write-contents-functions (if (memq #'hyperdrive--write-contents write-contents-functions)
+                                                  write-contents-functions
+                                                (cons #'hyperdrive--write-contents write-contents-functions))))
         (add-hook 'after-change-major-mode-hook
                   #'hyperdrive--hack-write-contents-functions nil 'local))
-    (kill-local-variable 'bookmark-make-record-function)
-    (kill-local-variable 'revert-buffer-function)
-    (setq-local write-contents-functions
-                (remove #'hyperdrive--write-contents write-contents-functions))
+    (buffer-local-restore-state hyperdrive-mode--state)
     (remove-hook 'after-change-major-mode-hook
                  #'hyperdrive--hack-write-contents-functions 'local)))
 ;; Making it permanent-local keeps the minor mode active even if the
