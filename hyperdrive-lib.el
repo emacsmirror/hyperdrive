@@ -48,7 +48,6 @@
                                 (:copier nil))
   "Represents an entry in a hyperdrive."
   (hyperdrive nil :documentation "The entry's hyperdrive.")
-  ;; (url nil :documentation "Canonical URL to entry.")
   ;; Rather than storing just the path and making a function to return
   ;; the name, we store the name as-is because, for one thing, the name
   ;; could theoretically contain a slash, and `file-name-nondirectory'
