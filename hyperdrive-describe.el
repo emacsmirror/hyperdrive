@@ -57,7 +57,9 @@ Universal prefix argument \\[universal-argument] forces
     (hyperdrive-describe-mode)
     (setq-local hyperdrive-describe-current-hyperdrive hyperdrive)
     (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive)
-                (inhibit-read-only t))
+                (inhibit-read-only t)
+                (inhibit-modification-hooks t)
+                (buffer-undo-list t))
       (erase-buffer)
       (insert
        (propertize "Hyperdrive: \n" 'face 'bold)
