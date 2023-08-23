@@ -254,19 +254,23 @@ empty public-key slot."
   "Return ENTRY at its hyperdrive's latest version, or nil."
   (hyperdrive-entry-at nil entry))
 
+(defun hyperdrive--entry-version-range-key (entry)
+  "Return URI-encoded URL for ENTRY without protocol, version, target, or face.
+Intended to be used as hash table key in `hyperdrive-version-ranges'."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
+               (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path :encode t)))
+    (hyperdrive--format-entry-url version-less :host-format '(public-key) :with-protocol nil
+                                  :with-help-echo nil :with-target nil :with-faces nil)))
+
 ;; TODO: Add tests for version range functions
 (defun hyperdrive-entry-version-ranges (entry)
   "Return version ranges for ENTRY."
-  (let ((copy (hyperdrive-copy-tree entry t)))
-    (setf (hyperdrive-entry-version copy) nil)
-    ;; Table is keyed by version-less entry URL
-    (gethash (hyperdrive-entry-url copy) hyperdrive-version-ranges)))
+  (gethash (hyperdrive--entry-version-range-key entry) hyperdrive-version-ranges))
 
 (gv-define-setter hyperdrive-entry-version-ranges (ranges entry)
-  `(let ((copy (hyperdrive-copy-tree ,entry t)))
-     (setf (hyperdrive-entry-version copy) nil)
-     ;; Table is keyed by version-less entry URL
-     (setf (gethash (hyperdrive-entry-url copy) hyperdrive-version-ranges) ,ranges)))
+  `(progn
+     (setf (gethash (hyperdrive--entry-version-range-key ,entry) hyperdrive-version-ranges) ,ranges)
+     (persist-save 'hyperdrive-version-ranges)))
 
 (defun hyperdrive-entry-version-range (entry)
   "Return the version range containing ENTRY.
