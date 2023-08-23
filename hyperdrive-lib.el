@@ -713,45 +713,58 @@ URL."
                                 :with-help-echo nil :with-target with-target))
       url)))
 
-(cl-defun hyperdrive--format-host (hyperdrive &key format with-label)
+(cl-defun hyperdrive--format-host (hyperdrive &key format with-label (with-faces t))
   "Return HYPERDRIVE's formatted hostname, or nil.
 FORMAT should be a list of symbols; see
 `hyperdrive-default-host-format' for choices.  If the specified
 FORMAT is not available, returns nil.  If WITH-LABEL, prepend a
-label for the kind of format used (e.g. \"petname:\")."
+label for the kind of format used (e.g. \"petname:\").
+When WITH-FACES is nil, don't add face text properties."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
     (cl-loop for f in format
              when (pcase f
+                    ;; TODO: Generalize this logic for conciseness.
                     ((and 'petname (guard petname))
                      (concat (when with-label
                                "petname:")
-                             (propertize petname 'face 'hyperdrive-petname)))
+                             (if with-faces
+                                 (propertize petname 'face 'hyperdrive-petname)
+                               petname)))
                     ((and 'nickname (guard name))
                      (concat (when with-label
                                "nickname:")
-                             (propertize name
-                                         'face 'hyperdrive-nickname)))
+                             (if with-faces
+                                 (propertize name 'face 'hyperdrive-nickname)
+                               name)))
                     ((and 'domain (guard (car domains)))
                      ;; TODO: Handle the unlikely case that a drive has multiple domains.
                      (concat (when with-label
                                "domain:")
-                             (propertize (car domains) 'face 'hyperdrive-domain)))
+                             (if with-faces
+                                 (propertize (car domains) 'face 'hyperdrive-domain)
+                               (car domains))))
                     ((and 'seed (guard seed))
                      (concat (when with-label
                                "seed:")
-                             (propertize seed 'face 'hyperdrive-seed)))
+                             (if with-faces
+                                 (propertize seed 'face 'hyperdrive-seed)
+                               seed)))
                     ((and 'short-key (guard public-key))
                      ;; TODO: Consider adding a help-echo with the full key.
                      (concat (when with-label
                                "public-key:")
-                             (propertize (concat (substring public-key 0 6) "…")
-                                         'face 'hyperdrive-public-key)))
+                             (if with-faces
+                                 (propertize (concat (substring public-key 0 6) "…")
+                                             'face 'hyperdrive-public-key)
+                               (concat (substring public-key 0 6) "…"))))
                     ((and 'public-key (guard public-key))
                      (concat (when with-label
                                "public-key:")
-                             (propertize public-key 'face 'hyperdrive-public-key))))
+                             (if with-faces
+                                 (propertize public-key 'face 'hyperdrive-public-key)
+                               public-key))))
              return it)))
 
 ;;;; Reading from the user
