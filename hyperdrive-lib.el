@@ -174,18 +174,17 @@ make the request."
 Checks for common errors; if none are found, calls ELSE with
 PLZ-ERR, if ELSE is non-nil; otherwise re-signals PLZ-ERR.
 PLZ-ERR should be a `plz-error' struct."
-  (pcase-let (((cl-struct plz-error curl-error response) plz-err))
-    (cond ((equal 7 (car curl-error))
-           ;; Curl error 7 is "Failed to connect to host."
-           (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
-          ;; TODO: How to destructure `status' and `body'? A top-level
-          ;; pcase-let* form won't work, since `response' might be nil.
-          ((and response (or (eq 403 (plz-response-status response))
-                             (eq 405 (plz-response-status response))))
-           ;; 403 Forbidden or 405 Method Not Allowed: Display message from hyper-gateway.
-           (hyperdrive-error "%s" (plz-response-body response)))
-          (else (funcall else plz-err))
-          (t (signal 'plz-error (list "plz error" plz-err))))))
+  (pcase plz-err
+    ((app plz-error-curl-error `(7 . ,_message))
+     ;; Curl error 7 is "Failed to connect to host."
+     (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
+    ((app plz-error-response (cl-struct plz-response (status (or 403 405)) body))
+     ;; 403 Forbidden or 405 Method Not Allowed: Display message from hyper-gateway.
+     (hyperdrive-error "%s" body))
+    ((guard else)
+     (funcall else plz-err))
+    (_
+     (signal 'plz-error (list "plz error" plz-err)))))
 
 (defun hyperdrive--httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
