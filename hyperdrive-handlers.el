@@ -167,12 +167,11 @@ arguments."
                         (with-current-buffer (ewoc-buffer ewoc)
                           ;; TODO: Add queue back for sorting
                           ;; FIXME: Refreshing the buffer rapidly signals an error here
-                          (ewoc-invalidate ewoc (hyperdrive-ewoc-find-node ewoc entry))))
+                          (with-silent-modifications
+                            (ewoc-invalidate ewoc (hyperdrive-ewoc-find-node ewoc entry)))))
                 ;; TODO: Handle failures?
                 :else (lambda (_error) (message "ERROR"))))
             entries)
-      ;; FIXME: After `ewoc-invalidate' is called asynchronously, the
-      ;; buffer ends up with `buffer-modified-p' t.
       (set-buffer-modified-p nil)
       (when then
         (funcall then)))))
