@@ -502,6 +502,9 @@ for more information.  See `hyperdrive-read-entry' and
                   (unless hyperdrive-mode
                     ;; Remove overlays/text properties that might be in effect.
                     (clean-mode)
+                    (when hyperdrive-honor-auto-mode-alist
+                      (let ((buffer-file-name (hyperdrive-entry-name entry)))
+                        (set-auto-mode)))
                     (hyperdrive-mode))
                   (hyperdrive--fill entry (plz-response-headers response))
                   (hyperdrive-fill-latest-version hyperdrive)
