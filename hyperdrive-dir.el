@@ -109,7 +109,8 @@ With point on header, returns directory entry."
   :interactive nil
   (setq-local imenu-create-index-function #'hyperdrive-dir--imenu-create-index-function
               imenu-auto-rescan t
-              imenu-space-replacement " "))
+              imenu-space-replacement " ")
+  (yank-media-handler "image/.*" #'hyperdrive-dir--yank-media-image-handler))
 
 ;;;; Commands
 
@@ -186,6 +187,30 @@ For use as `imenu-create-index-function'."
                      (cons (propertize (hyperdrive-entry-name entry)
                                        'face face)
                            location))))
+
+;;;; Yank media support
+
+(defun hyperdrive-dir--yank-media-image-handler (_type image)
+  "Upload IMAGE to current buffer's hyperdrive directory.
+Prompts for a filename before uploading.  For more information,
+see Info node `(elisp)Yanking Media'."
+  ;; TODO: Extend this to other media types?
+  (cl-assert (and hyperdrive-current-entry
+                  (hyperdrive--entry-directory-p hyperdrive-current-entry)))
+  (let ((parent hyperdrive-current-entry)
+        (entry (hyperdrive-read-entry :predicate #'hyperdrive-writablep
+                                      :default-path (hyperdrive-entry-path hyperdrive-current-entry)
+                                      :allow-version-p nil)))
+    (hyperdrive-api 'put (hyperdrive-entry-url entry)
+      :body-type 'binary
+      ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
+      :body image :as 'response
+      :then (lambda (_res)
+              ;; TODO: Jump to the new file in the parent directory.
+              (hyperdrive-open parent)
+              (hyperdrive-open entry))
+      :else (lambda (plz-error)
+              (hyperdrive-message "Unable to yank media: %S" plz-error)))))
 
 (provide 'hyperdrive-dir)
 ;;; hyperdrive-dir.el ends here
