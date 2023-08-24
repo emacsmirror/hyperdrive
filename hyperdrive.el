@@ -330,9 +330,7 @@ Intended to be passed to `buffer-local-restore-state'.")
                     (buffer-local-set-state
                      revert-buffer-function #'hyperdrive-revert-buffer
                      bookmark-make-record-function #'hyperdrive-bookmark-make-record
-                     write-contents-functions (if (memq #'hyperdrive--write-contents write-contents-functions)
-                                                  write-contents-functions
-                                                (cons #'hyperdrive--write-contents write-contents-functions))))
+                     write-contents-functions (cl-adjoin #'hyperdrive--write-contents write-contents-functions)))
         (add-hook 'after-change-major-mode-hook
                   #'hyperdrive--hack-write-contents-functions nil 'local))
     (buffer-local-restore-state hyperdrive-mode--state)
