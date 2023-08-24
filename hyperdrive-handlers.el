@@ -135,46 +135,46 @@ arguments."
     (setf directory-entry (hyperdrive--fill directory-entry headers))
     (hyperdrive-fill-metadata hyperdrive)
     (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
-      (if hyperdrive-ewoc
-          (progn
-            ;; Store `prev-node' so we can jump to it later.
-            (setf prev-node (ewoc-locate hyperdrive-ewoc))
-            (setf prev-point (point))
-            ;; Then clear existing ewoc.
-            (ewoc-filter hyperdrive-ewoc #'ignore))
-        ;; Or make a new one.
-        (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
-      (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
-      (erase-buffer)
-      (ewoc-set-hf hyperdrive-ewoc header "")
-      (mapc (lambda (entry)
-              (ewoc-enter-last hyperdrive-ewoc entry))
-            entries)
-      (when prev-node
-        ;; Put point back where it was.
-        (goto-char
-         (if-let ((new-node (hyperdrive-ewoc-find-node ewoc (ewoc-data prev-node)
-                              :predicate (lambda (a b)
-                                           ;; TODO: This doesn't work.
-                                           (equal (hyperdrive-entry-path a)
-                                                  (hyperdrive-entry-path b))))))
-             (ewoc-location new-node)
-           prev-point)))
-      (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
-      (mapc (lambda (entry)
-              (hyperdrive-fill entry
-                :then (lambda (_response)
-                        (with-current-buffer (ewoc-buffer ewoc)
-                          ;; TODO: Add queue back for sorting
-                          ;; FIXME: Refreshing the buffer rapidly signals an error here
-                          (with-silent-modifications
-                            (ewoc-invalidate ewoc (hyperdrive-ewoc-find-node ewoc entry)))))
-                ;; TODO: Handle failures?
-                :else (lambda (_error) (message "ERROR"))))
-            entries)
-      (set-buffer-modified-p nil)
-      (when then
-        (funcall then)))))
+      (with-silent-modifications
+        (if hyperdrive-ewoc
+            (progn
+              ;; Store `prev-node' so we can jump to it later.
+              (setf prev-node (ewoc-locate hyperdrive-ewoc))
+              (setf prev-point (point))
+              ;; Then clear existing ewoc.
+              (ewoc-filter hyperdrive-ewoc #'ignore))
+          ;; Or make a new one.
+          (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
+        (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
+        (erase-buffer)
+        (ewoc-set-hf hyperdrive-ewoc header "")
+        (mapc (lambda (entry)
+                (ewoc-enter-last hyperdrive-ewoc entry))
+              entries)
+        (when prev-node
+          ;; Put point back where it was.
+          (goto-char
+           (if-let ((new-node (hyperdrive-ewoc-find-node ewoc (ewoc-data prev-node)
+                                :predicate (lambda (a b)
+                                             ;; TODO: This doesn't work.
+                                             (equal (hyperdrive-entry-path a)
+                                                    (hyperdrive-entry-path b))))))
+               (ewoc-location new-node)
+             prev-point)))
+        (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
+        (mapc (lambda (entry)
+                (hyperdrive-fill entry
+                  :then (lambda (_response)
+                          (with-current-buffer (ewoc-buffer ewoc)
+                            ;; TODO: Add queue back for sorting
+                            ;; FIXME: Refreshing the buffer rapidly signals an error here
+                            (with-silent-modifications
+                              (ewoc-invalidate ewoc (hyperdrive-ewoc-find-node ewoc entry)))))
+                  ;; TODO: Handle failures?
+                  :else (lambda (_error) (message "ERROR"))))
+              entries)
+        (when then
+          (funcall then))))))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
