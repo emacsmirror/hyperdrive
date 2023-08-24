@@ -197,18 +197,29 @@ see Info node `(elisp)Yanking Media'."
   ;; TODO: Extend this to other media types?
   (cl-assert (and hyperdrive-current-entry
                   (hyperdrive--entry-directory-p hyperdrive-current-entry)))
-  (let ((parent hyperdrive-current-entry)
-        (entry (hyperdrive-read-entry :predicate #'hyperdrive-writablep
+  (let ((entry (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                       :default-path (hyperdrive-entry-path hyperdrive-current-entry)
-                                      :allow-version-p nil)))
+                                      :allow-version-p nil))
+        ;; `parent' and `ewoc' are bound for the callback.
+        (parent hyperdrive-current-entry)
+        (ewoc hyperdrive-ewoc))
     (hyperdrive-api 'put (hyperdrive-entry-url entry)
       :body-type 'binary
       ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
       :body image :as 'response
       :then (lambda (_res)
-              ;; TODO: Jump to the new file in the parent directory.
-              (hyperdrive-open parent)
-              (hyperdrive-open entry))
+              (hyperdrive-open parent
+                :then (lambda ()
+                        (ewoc-goto-node ewoc
+                                        (hyperdrive-ewoc-find-node ewoc entry
+                                          :predicate (lambda (a b)
+                                                       (equal (hyperdrive-entry-path a)
+                                                              (hyperdrive-entry-path b)))))
+                        (recenter)
+                        ;; FIXME: Newly-added file is not highlit. Calling
+                        ;; the `then' callback in a queue finalizer inside
+                        ;; `hyperdrive-handler-directory' should fix this.
+                        )))
       :else (lambda (plz-error)
               (hyperdrive-message "Unable to yank media: %S" plz-error)))))
 
