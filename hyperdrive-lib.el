@@ -254,19 +254,23 @@ empty public-key slot."
   "Return ENTRY at its hyperdrive's latest version, or nil."
   (hyperdrive-entry-at nil entry))
 
+(defun hyperdrive--entry-version-range-key (entry)
+  "Return URI-encoded URL for ENTRY without protocol, version, target, or face.
+Intended to be used as hash table key in `hyperdrive-version-ranges'."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
+               (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path :encode t)))
+    (hyperdrive--format-entry-url version-less :host-format '(public-key) :with-protocol nil
+                                  :with-help-echo nil :with-target nil :with-faces nil)))
+
 ;; TODO: Add tests for version range functions
 (defun hyperdrive-entry-version-ranges (entry)
   "Return version ranges for ENTRY."
-  (let ((copy (hyperdrive-copy-tree entry t)))
-    (setf (hyperdrive-entry-version copy) nil)
-    ;; Table is keyed by version-less entry URL
-    (gethash (hyperdrive-entry-url copy) hyperdrive-version-ranges)))
+  (gethash (hyperdrive--entry-version-range-key entry) hyperdrive-version-ranges))
 
 (gv-define-setter hyperdrive-entry-version-ranges (ranges entry)
-  `(let ((copy (hyperdrive-copy-tree ,entry t)))
-     (setf (hyperdrive-entry-version copy) nil)
-     ;; Table is keyed by version-less entry URL
-     (setf (gethash (hyperdrive-entry-url copy) hyperdrive-version-ranges) ,ranges)))
+  `(progn
+     (setf (gethash (hyperdrive--entry-version-range-key ,entry) hyperdrive-version-ranges) ,ranges)
+     (persist-save 'hyperdrive-version-ranges)))
 
 (defun hyperdrive-entry-version-range (entry)
   "Return the version range containing ENTRY.
@@ -676,18 +680,19 @@ FORMAT-PATH is `name', use only last part of path, as in
 
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
-           (with-protocol t) (with-help-echo t) (with-target t))
+           (with-protocol t) (with-help-echo t) (with-target t) (with-faces t))
   "Return ENTRY's URL.
 Returns URL formatted like:
 
   hyper://HOST-FORMAT/PATH/TO/FILE
 
 HOST-FORMAT is passed to `hyperdrive--format-host', which see.  If
-WITH-PROTOCOL, \"hyper://\" is prepended. If WITH-HELP-ECHO,
+WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL. If WITH-TARGET, append the ENTRY's target, stored in
-its :etc slot.  When ENTRY has non-nil `version' slot, include
-version number in URL.
+full URL.  When WITH-FACES is nil, don't add face text properties.
+If WITH-TARGET, append the ENTRY's target, stored in its :etc
+slot.  When ENTRY has non-nil `version' slot, include version
+number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
 and `domain', the resulting URL may not be a valid hyperdrive
@@ -700,7 +705,7 @@ URL."
                (protocol (when with-protocol
                            "hyper://"))
                (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                              :format host-format))
+                                              :format host-format :with-faces with-faces))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)
@@ -710,48 +715,61 @@ URL."
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
                                 entry :with-protocol t :host-format '(public-key domain)
-                                :with-help-echo nil :with-target with-target))
+                                :with-help-echo nil :with-target with-target :with-faces with-faces))
       url)))
 
-(cl-defun hyperdrive--format-host (hyperdrive &key format with-label)
+(cl-defun hyperdrive--format-host (hyperdrive &key format with-label (with-faces t))
   "Return HYPERDRIVE's formatted hostname, or nil.
 FORMAT should be a list of symbols; see
 `hyperdrive-default-host-format' for choices.  If the specified
 FORMAT is not available, returns nil.  If WITH-LABEL, prepend a
-label for the kind of format used (e.g. \"petname:\")."
+label for the kind of format used (e.g. \"petname:\").
+When WITH-FACES is nil, don't add face text properties."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
     (cl-loop for f in format
              when (pcase f
+                    ;; TODO: Generalize this logic for conciseness.
                     ((and 'petname (guard petname))
                      (concat (when with-label
                                "petname:")
-                             (propertize petname 'face 'hyperdrive-petname)))
+                             (if with-faces
+                                 (propertize petname 'face 'hyperdrive-petname)
+                               petname)))
                     ((and 'nickname (guard name))
                      (concat (when with-label
                                "nickname:")
-                             (propertize name
-                                         'face 'hyperdrive-nickname)))
+                             (if with-faces
+                                 (propertize name 'face 'hyperdrive-nickname)
+                               name)))
                     ((and 'domain (guard (car domains)))
                      ;; TODO: Handle the unlikely case that a drive has multiple domains.
                      (concat (when with-label
                                "domain:")
-                             (propertize (car domains) 'face 'hyperdrive-domain)))
+                             (if with-faces
+                                 (propertize (car domains) 'face 'hyperdrive-domain)
+                               (car domains))))
                     ((and 'seed (guard seed))
                      (concat (when with-label
                                "seed:")
-                             (propertize seed 'face 'hyperdrive-seed)))
+                             (if with-faces
+                                 (propertize seed 'face 'hyperdrive-seed)
+                               seed)))
                     ((and 'short-key (guard public-key))
                      ;; TODO: Consider adding a help-echo with the full key.
                      (concat (when with-label
                                "public-key:")
-                             (propertize (concat (substring public-key 0 6) "…")
-                                         'face 'hyperdrive-public-key)))
+                             (if with-faces
+                                 (propertize (concat (substring public-key 0 6) "…")
+                                             'face 'hyperdrive-public-key)
+                               (concat (substring public-key 0 6) "…"))))
                     ((and 'public-key (guard public-key))
                      (concat (when with-label
                                "public-key:")
-                             (propertize public-key 'face 'hyperdrive-public-key))))
+                             (if with-faces
+                                 (propertize public-key 'face 'hyperdrive-public-key)
+                               public-key))))
              return it)))
 
 ;;;; Reading from the user
