@@ -109,8 +109,7 @@ With point on header, returns directory entry."
   :interactive nil
   (setq-local imenu-create-index-function #'hyperdrive-dir--imenu-create-index-function
               imenu-auto-rescan t
-              imenu-space-replacement " ")
-  (yank-media-handler "image/.*" #'hyperdrive-dir--yank-media-image-handler))
+              imenu-space-replacement " "))
 
 ;;;; Commands
 
@@ -190,38 +189,47 @@ For use as `imenu-create-index-function'."
 
 ;;;; Yank media support
 
-(defun hyperdrive-dir--yank-media-image-handler (_type image)
-  "Upload IMAGE to current buffer's hyperdrive directory.
+(when (version<= "29.1" emacs-version)
+  (defun hyperdrive-dir--yank-media-image-handler (_type image)
+    "Upload IMAGE to current buffer's hyperdrive directory.
 Prompts for a filename before uploading.  For more information,
 see Info node `(elisp)Yanking Media'."
-  ;; TODO: Extend this to other media types?
-  (cl-assert (and hyperdrive-current-entry
-                  (hyperdrive--entry-directory-p hyperdrive-current-entry)))
-  (let ((entry (hyperdrive-read-entry :predicate #'hyperdrive-writablep
-                                      :default-path (hyperdrive-entry-path hyperdrive-current-entry)
-                                      :allow-version-p nil))
-        ;; `parent' and `ewoc' are bound for the callback.
-        (parent hyperdrive-current-entry)
-        (ewoc hyperdrive-ewoc))
-    (hyperdrive-api 'put (hyperdrive-entry-url entry)
-      :body-type 'binary
-      ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
-      :body image :as 'response
-      :then (lambda (_res)
-              (hyperdrive-open parent
-                :then (lambda ()
-                        (ewoc-goto-node ewoc
-                                        (hyperdrive-ewoc-find-node ewoc entry
-                                          :predicate (lambda (a b)
-                                                       (equal (hyperdrive-entry-path a)
-                                                              (hyperdrive-entry-path b)))))
-                        (recenter)
-                        ;; FIXME: Newly-added file is not highlit. Calling
-                        ;; the `then' callback in a queue finalizer inside
-                        ;; `hyperdrive-handler-directory' should fix this.
-                        )))
-      :else (lambda (plz-error)
-              (hyperdrive-message "Unable to yank media: %S" plz-error)))))
+    ;; TODO: Extend this to other media types?
+    (cl-assert (and hyperdrive-current-entry
+                    (hyperdrive--entry-directory-p hyperdrive-current-entry)))
+    (let ((entry (hyperdrive-read-entry :predicate #'hyperdrive-writablep
+                                        :default-path (hyperdrive-entry-path hyperdrive-current-entry)
+                                        :allow-version-p nil))
+          ;; `parent' and `ewoc' are bound for the callback.
+          (parent hyperdrive-current-entry)
+          (ewoc hyperdrive-ewoc))
+      (hyperdrive-api 'put (hyperdrive-entry-url entry)
+        :body-type 'binary
+        ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
+        :body image :as 'response
+        :then (lambda (_res)
+                (hyperdrive-open parent
+                  :then (lambda ()
+                          (ewoc-goto-node ewoc
+                                          (hyperdrive-ewoc-find-node ewoc entry
+                                            :predicate (lambda (a b)
+                                                         (equal (hyperdrive-entry-path a)
+                                                                (hyperdrive-entry-path b)))))
+                          (recenter)
+                          ;; FIXME: Newly-added file is not highlit. Calling
+                          ;; the `then' callback in a queue finalizer inside
+                          ;; `hyperdrive-handler-directory' should fix this.
+                          )))
+        :else (lambda (plz-error)
+                (hyperdrive-message "Unable to yank media: %S" plz-error)))))
+
+  (add-hook 'hyperdrive-dir-mode-hook
+            (lambda ()
+              (yank-media-handler
+               "image/.*" (with-no-warnings
+                            ;; Silence byte-compiler warning about the
+                            ;; function not being known.
+                            #'hyperdrive-dir--yank-media-image-handler)))))
 
 (provide 'hyperdrive-dir)
 ;;; hyperdrive-dir.el ends here
