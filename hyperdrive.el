@@ -94,7 +94,6 @@
 
 ;;;; `save-some-buffers' integration
 
-(declare-function hyperdrive--save-some-buffers "hyperdrive") ;; Appease linter
 (when (version<= "29.1" emacs-version)
   (defun hyperdrive--save-some-buffers (query &optional arg)
     "Save some hyperdrive buffers.
@@ -115,7 +114,9 @@ QUERY and ARGS are passed in from `save-some-buffers-functions', which see."
                                         (hyperdrive-entry-description hyperdrive-current-entry))))
               (hyperdrive-write-buffer hyperdrive-current-entry)))))))
 
-  (add-hook 'save-some-buffers-functions #'hyperdrive--save-some-buffers))
+  (add-hook 'save-some-buffers-functions (with-no-warnings
+                                           ;; Appease linter.
+                                           #'hyperdrive--save-some-buffers)))
 
 ;;;; Commands
 
