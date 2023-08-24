@@ -94,11 +94,6 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other"))
   :group 'hyperdrive)
 
-(defcustom hyperdrive-column-headers 't
-  "Display column headers in `hyperdrive-dir' and `hyperdrive-history' buffers."
-  :type 'boolean
-  :group 'hyperdrive)
-
 (defcustom hyperdrive-history-display-buffer-action
   '(display-buffer-same-window)
   "Display buffer action for hyperdrive history buffers.
@@ -106,6 +101,11 @@ Passed to `display-buffer', which see."
   :type '(choice (const :tag "Same window" (display-buffer-same-window))
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other"))
+  :group 'hyperdrive)
+
+(defcustom hyperdrive-column-headers 't
+  "Display column headers in `hyperdrive-dir' and `hyperdrive-history' buffers."
+  :type 'boolean
   :group 'hyperdrive)
 
 (defcustom hyperdrive-default-host-format
