@@ -253,6 +253,7 @@ in a ~hyper://~ URL after ~hyperdrive-download-url~.
 ** Upload files from your filesystem
 #+findex: hyperdrive-upload-file
 #+findex: hyperdrive-upload-files
+#+findex: yank-media
 
 To upload a single file from your filesystem, use
 ~hyperdrive-upload-file~. By default, the selected file will be placed
@@ -262,6 +263,9 @@ before uploading.
 ~hyperdrive-upload-files~ lets you upload multiple files from your
 filesystem to a hyperdrive. As with the ~cp~ command, uploaded files
 will be placed into the same TARGET-DIRECTORY.
+
+On Emacs 29 or later, you can upload an image which you previously
+copied to your clipboard from an external program with ~yank-media~.
 
 *** Mirror a whole directory
 #+findex: hyperdrive-mirror
