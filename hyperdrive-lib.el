@@ -239,16 +239,17 @@ empty public-key slot."
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
-;; (defun hyperdrive-entry-equal (a b)
-;;   "Return non-nil if hyperdrive entries A and B are equal."
-;;   (pcase-let (((cl-struct hyperdrive-entry (path a-path)
-;;                           (hyperdrive (cl-struct hyperdrive (public-key a-key))))
-;;                a)
-;;               ((cl-struct hyperdrive-entry (path b-path)
-;;                           (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
-;;                b))
-;;     (and (equal a-path b-path)
-;;          (equal a-key b-key))))
+(defun hyperdrive-entry-equal (a b)
+  "Return non-nil if hyperdrive entries A and B are equal.
+Compares only public key and path."
+  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key a-key))))
+               a)
+              ((cl-struct hyperdrive-entry (path b-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
+               b))
+    (and (equal a-path b-path)
+         (equal a-key b-key))))
 
 (defun hyperdrive-entry-latest (entry)
   "Return ENTRY at its hyperdrive's latest version, or nil."
