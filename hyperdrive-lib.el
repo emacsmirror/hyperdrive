@@ -950,8 +950,12 @@ Otherwise, return nil.  SLOT may be one of
 
 ;;;; Misc.
 
-(defun hyperdrive--get-buffer-create (entry)
+(cl-defun hyperdrive--get-buffer-create (entry &key (reusep t))
   "Return buffer for ENTRY.
+If REUSEP, try to reuse a buffer showing ENTRY at any version;
+otherwise, try to reuse a buffer showing ENTRY at the same
+version, or make a new buffer.
+
 In the buffer, `hyperdrive-mode' is activated and
 `hyperdrive-current-entry' is set.
 
@@ -962,16 +966,27 @@ corresponding to URL if possible.
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
 both point to the same content."
-  (with-current-buffer (get-buffer-create (hyperdrive--entry-buffer-name entry))
-    (if (hyperdrive--entry-directory-p entry)
-        (hyperdrive-dir-mode)
-      (when hyperdrive-honor-auto-mode-alist
-        ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-        (let ((buffer-file-name (hyperdrive-entry-name entry)))
-          (set-auto-mode))))
-    (hyperdrive-mode)
-    (setq-local hyperdrive-current-entry entry)
-    (current-buffer)))
+  (let ((buffer
+         (or (when reusep
+               (cl-loop for buffer in (buffer-list)
+                        when (and (buffer-local-value 'hyperdrive-mode buffer)
+                                  (buffer-local-value 'hyperdrive-current-entry buffer)
+                                  (hyperdrive-entry-equal entry
+                                                          (buffer-local-value 'hyperdrive-current-entry buffer)))
+                        return buffer))
+             (get-buffer-create (hyperdrive--entry-buffer-name entry)))))
+    (with-current-buffer buffer
+      ;; NOTE: We do not erase the buffer because, e.g. the directory
+      ;; handler needs to record point before it erases the buffer.
+      (if (hyperdrive--entry-directory-p entry)
+          (hyperdrive-dir-mode)
+        (when hyperdrive-honor-auto-mode-alist
+          ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+          (let ((buffer-file-name (hyperdrive-entry-name entry)))
+            (set-auto-mode))))
+      (hyperdrive-mode)
+      (setq-local hyperdrive-current-entry entry)
+      (current-buffer))))
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
