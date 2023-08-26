@@ -11,6 +11,11 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - ~save-some-buffers~ integration (on Emacs 29 or later)
 - Org-mode link completion
 
+** Changed
+
+- ~hyperdrive-version-ranges~ is now persisted, speeding up ~hyperdrive-history~
+- Fewer buffers are created by default (see ~hyperdrive-reuse-buffers~)
+
 ** Fixed
 
 - Fixed ~imenu~ face
