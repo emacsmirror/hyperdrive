@@ -406,6 +406,12 @@ customize-group RET hyperdrive RET~:
   displayed. By default, HTML pages are rendered in Emacs with [[info:eww#Top][EWW]]. If
   ~nil~, raw HTML will be displayed.
 
+#+vindex: hyperdrive-reuse-buffers
+- ~hyperdrive-reuse-buffers~ :: How to reuse buffers when showing entries.
+  When ~any-version~, try to reuse an existing buffer showing
+  the same entry at any version.  When ~same-version~, try to reuse an
+  existing buffer at the same version, or make a new buffer.
+
 * Concepts
 
 ** Hyperdrive
