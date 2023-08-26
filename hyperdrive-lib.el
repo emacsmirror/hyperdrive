@@ -874,7 +874,7 @@ INITIAL-INPUT-NUMBER is converted to a string and passed to
          (version (read-string
                    (format-prompt prompt nil (hyperdrive--format-hyperdrive hyperdrive))
                    (when initial-input-number (number-to-string initial-input-number))
-                   'hyperdrive-read-version)))
+                   'hyperdrive--version-history)))
     (unless (string-blank-p version)
       (string-to-number version))))
 
