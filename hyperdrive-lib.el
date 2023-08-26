@@ -239,16 +239,17 @@ empty public-key slot."
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
-;; (defun hyperdrive-entry-equal (a b)
-;;   "Return non-nil if hyperdrive entries A and B are equal."
-;;   (pcase-let (((cl-struct hyperdrive-entry (path a-path)
-;;                           (hyperdrive (cl-struct hyperdrive (public-key a-key))))
-;;                a)
-;;               ((cl-struct hyperdrive-entry (path b-path)
-;;                           (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
-;;                b))
-;;     (and (equal a-path b-path)
-;;          (equal a-key b-key))))
+(defun hyperdrive-entry-equal (a b)
+  "Return non-nil if hyperdrive entries A and B are equal.
+Compares only public key and path."
+  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key a-key))))
+               a)
+              ((cl-struct hyperdrive-entry (path b-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
+               b))
+    (and (equal a-path b-path)
+         (equal a-key b-key))))
 
 (defun hyperdrive-entry-latest (entry)
   "Return ENTRY at its hyperdrive's latest version, or nil."
@@ -960,17 +961,32 @@ corresponding to URL if possible.
 
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
-both point to the same content."
-  (with-current-buffer (get-buffer-create (hyperdrive--entry-buffer-name entry))
-    (if (hyperdrive--entry-directory-p entry)
-        (hyperdrive-dir-mode)
-      (when hyperdrive-honor-auto-mode-alist
-        ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-        (let ((buffer-file-name (hyperdrive-entry-name entry)))
-          (set-auto-mode))))
-    (hyperdrive-mode)
-    (setq-local hyperdrive-current-entry entry)
-    (current-buffer)))
+both point to the same content.
+
+Affected by option `hyperdrive-reuse-buffers', which see."
+  (let* ((buffer-name (hyperdrive--entry-buffer-name entry))
+         (buffer
+          (or (when (eq 'any-version hyperdrive-reuse-buffers)
+                (cl-loop for buffer in (buffer-list)
+                         when (and (buffer-local-value 'hyperdrive-mode buffer)
+                                   (buffer-local-value 'hyperdrive-current-entry buffer)
+                                   (hyperdrive-entry-equal entry
+                                                           (buffer-local-value 'hyperdrive-current-entry buffer)))
+                         return buffer))
+              (get-buffer-create buffer-name))))
+    (with-current-buffer buffer
+      (rename-buffer buffer-name)
+      ;; NOTE: We do not erase the buffer because, e.g. the directory
+      ;; handler needs to record point before it erases the buffer.
+      (if (hyperdrive--entry-directory-p entry)
+          (hyperdrive-dir-mode)
+        (when hyperdrive-honor-auto-mode-alist
+          ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+          (let ((buffer-file-name (hyperdrive-entry-name entry)))
+            (set-auto-mode))))
+      (hyperdrive-mode)
+      (setq-local hyperdrive-current-entry entry)
+      (current-buffer))))
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."

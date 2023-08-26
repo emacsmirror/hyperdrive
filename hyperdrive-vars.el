@@ -146,6 +146,14 @@ through a shell)."
   :type 'boolean
   :group 'hyperdrive)
 
+(defcustom hyperdrive-reuse-buffers 'any-version
+  "How to reuse buffers when showing entries.
+When \\+`any-version' try to reuse an existing buffer showing the
+same entry at any version.  When \\+`same-version', try to reuse
+an existing buffer at the same version, or make a new buffer."
+  :type '(choice (const :tag "Use an existing buffer at any version" any-version)
+                 (const :tag "Use an existing buffer at the same version" same-version)))
+
 ;;;;; Faces
 
 (defgroup hyperdrive-faces nil
