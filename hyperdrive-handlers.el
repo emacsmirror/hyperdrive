@@ -55,10 +55,7 @@ If then, then call THEN with no arguments.  Default handler."
     :as (lambda ()
           (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
                        ((map target) etc)
-                       (response-buffer (current-buffer))
-                       (inhibit-read-only t)
-                       (inhibit-modification-hooks t)
-                       (buffer-undo-list t))
+                       (response-buffer (current-buffer)))
             ;; TODO: Revisit buffer naming/"visiting" (e.g. what
             ;; happens if the user opens a Hyperdrive file and then
             ;; saves another buffer to the same location?).  See
@@ -68,8 +65,9 @@ If then, then call THEN with no arguments.  Default handler."
               ;; same page (but ensure that reverting still works).
               (if (buffer-modified-p)
                   (hyperdrive-message "Buffer modified: %S" (current-buffer))
-                (erase-buffer)
-                (insert-buffer-substring response-buffer)
+                (with-silent-modifications
+                  (erase-buffer)
+                  (insert-buffer-substring response-buffer))
                 (setf buffer-undo-list nil
                       buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
                 (set-buffer-modified-p nil)
@@ -102,9 +100,6 @@ arguments."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version)
                 directory-entry)
                (url (hyperdrive-entry-url directory-entry))
-               (inhibit-read-only t)
-               (buffer-undo-list t)
-               (inhibit-modification-hooks t)
                ((cl-struct plz-response headers body)
                 ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
                 (hyperdrive-api 'get url :as 'response :noquery t))

@@ -109,9 +109,7 @@ This function is intended to diff files, not directories."
   :group 'hyperdrive
   :interactive nil
   ;; Narrow the buffer to hide the diff command and "diff finished" lines.
-  (let ((inhibit-read-only t)
-        (inhibit-modification-hooks t)
-        (buffer-undo-list t))
+  (with-silent-modifications
     (save-excursion
       (goto-char (point-min))
       (delete-line)

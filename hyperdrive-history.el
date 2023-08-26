@@ -186,24 +186,22 @@ Universal prefix argument \\[universal-argument] forces
                                                (format hyperdrive-timestamp-format-string
                                                        (propertize "Last Modified" 'face 'hyperdrive-column-header))))
                              main-header))
-                   (inhibit-read-only t)
-                   (buffer-undo-list t)
-                   (inhibit-modification-hooks t)
                    (queue) (ewoc))
         (with-current-buffer (get-buffer-create
                               (format "*Hyperdrive-history: %s %s*"
                                       (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
                                                                :with-label t)
                                       (url-unhex-string path)))
-          (hyperdrive-history-mode)
-          (setq-local hyperdrive-current-entry entry)
-          (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
-          (ewoc-filter hyperdrive-ewoc #'ignore)
-          (erase-buffer)
-          (ewoc-set-hf hyperdrive-ewoc header "")
-          (mapc (lambda (range-entry)
-                  (ewoc-enter-last hyperdrive-ewoc range-entry))
-                range-entries)
+          (with-silent-modifications
+            (hyperdrive-history-mode)
+            (setq-local hyperdrive-current-entry entry)
+            (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
+            (ewoc-filter hyperdrive-ewoc #'ignore)
+            (erase-buffer)
+            (ewoc-set-hf hyperdrive-ewoc header "")
+            (mapc (lambda (range-entry)
+                    (ewoc-enter-last hyperdrive-ewoc range-entry))
+                  range-entries))
           ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
           (display-buffer (current-buffer) hyperdrive-history-display-buffer-action)
           (setf queue (make-plz-queue :limit 8
@@ -214,13 +212,11 @@ Universal prefix argument \\[universal-argument] forces
                                                      (with-selected-window buffer-window
                                                        ;; TODO: Use `ewoc-invalidate' on individual entries
                                                        ;; (maybe later, as performance comes to matter more).
-                                                       (ewoc-refresh hyperdrive-ewoc)
-                                                       (goto-char (point-min))
-                                                       (set-buffer-modified-p nil))
+                                                       (with-silent-modifications (ewoc-refresh hyperdrive-ewoc))
+                                                       (goto-char (point-min)))
                                                    (with-current-buffer (ewoc-buffer ewoc)
-                                                     (ewoc-refresh hyperdrive-ewoc)
-                                                     (goto-char (point-min))
-                                                     (set-buffer-modified-p nil)))
+                                                     (with-silent-modifications (ewoc-refresh hyperdrive-ewoc))
+                                                     (goto-char (point-min))))
                                                  ;; TODO: Accept then argument?
                                                  ;; (with-current-buffer (ewoc-buffer ewoc)
                                                  ;;   (when then
