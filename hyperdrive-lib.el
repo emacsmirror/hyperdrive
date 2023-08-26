@@ -662,6 +662,7 @@ Call ELSE if request fails."
   (hyperdrive-api 'delete (hyperdrive-entry-url (hyperdrive-entry-create :hyperdrive hyperdrive))
     :then (lambda (_response)
             (hyperdrive-persist hyperdrive :purge t)
+            (hyperdrive-purge-version-ranges hyperdrive)
             (funcall then))
     :else else))
 
