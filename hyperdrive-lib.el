@@ -908,9 +908,12 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
       :then then)
     hyperdrive))
 
-(defun hyperdrive-persist (hyperdrive)
-  "Persist HYPERDRIVE in `hyperdrive-hyperdrives'."
-  (puthash (hyperdrive-public-key hyperdrive) hyperdrive hyperdrive-hyperdrives)
+(cl-defun hyperdrive-persist (hyperdrive &key purge)
+  "Persist HYPERDRIVE in `hyperdrive-hyperdrives'.
+With PURGE, delete hash table entry for HYPERDRIVE."
+  (if purge
+      (remhash (hyperdrive-public-key hyperdrive) hyperdrive-hyperdrives)
+    (puthash (hyperdrive-public-key hyperdrive) hyperdrive hyperdrive-hyperdrives))
   (persist-save 'hyperdrive-hyperdrives))
 
 (defun hyperdrive-seed-url (seed)
