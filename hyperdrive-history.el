@@ -173,10 +173,7 @@ Universal prefix argument \\[universal-argument] forces
                                      :version (car range))))
                             ;; Display in reverse chronological order
                             (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
-                   (main-header (hyperdrive-entry-description
-                                 ;; Pass entry without version to
-                                 ;; `hyperdrive-entry-description' so header has no version.
-                                 (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
+                   (main-header (hyperdrive-entry-description :with-version nil))
                    (header (if hyperdrive-column-headers
                                (concat main-header "\n"
                                        (format "%7s  %13s  %6s  %s"
