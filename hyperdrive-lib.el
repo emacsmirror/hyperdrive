@@ -673,7 +673,7 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else :queue queue))
 
-(cl-defun hyperdrive-entry-description (entry &key (format-path 'path))
+(cl-defun hyperdrive-entry-description (entry &key (format-path 'path) (with-version t))
   "Return description for ENTRY.
 When ENTRY has a non-nil VERSION slot, include it.  Returned
 string looks like:
@@ -682,7 +682,9 @@ string looks like:
 
 When FORMAT-PATH is `path', use full path to entry.  When
 FORMAT-PATH is `name', use only last part of path, as in
-`file-name-non-directory'."
+`file-name-non-directory'.
+
+When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path name) entry)
                (handle (hyperdrive--format-host hyperdrive
                                                 :format hyperdrive-default-host-format
@@ -691,7 +693,7 @@ FORMAT-PATH is `name', use only last part of path, as in
                         (pcase format-path
                           ('path (url-unhex-string path))
                           ('name name))
-                        (when version
+                        (when (and version with-version)
                           (format " (version:%s)" version)))
                 'help-echo (hyperdrive-entry-url entry))))
 
