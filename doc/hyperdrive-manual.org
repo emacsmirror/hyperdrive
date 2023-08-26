@@ -328,7 +328,9 @@ only those files in ~~/blog/~ which are smaller than 5MB:
 #+findex: hyperdrive-purge
 
 To remove all data related to a hyperdrive, run ~hyperdrive-purge~. This
-command will first prompt for confirmation.
+command will first prompt for confirmation.  In addition to the
+hyperdrive's file content and metadata, ~hyperdrive-purge~ also removes
+relevant data inside ~hyperdrive-hyperdrives~ and ~hyperdrive-version-ranges~.
 
 *Data which has been purged from your local machine may still be
 available on the network.*
