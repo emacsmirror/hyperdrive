@@ -950,12 +950,8 @@ Otherwise, return nil.  SLOT may be one of
 
 ;;;; Misc.
 
-(cl-defun hyperdrive--get-buffer-create (entry &key (reusep t))
+(defun hyperdrive--get-buffer-create (entry)
   "Return buffer for ENTRY.
-If REUSEP, try to reuse a buffer showing ENTRY at any version;
-otherwise, try to reuse a buffer showing ENTRY at the same
-version, or make a new buffer.
-
 In the buffer, `hyperdrive-mode' is activated and
 `hyperdrive-current-entry' is set.
 
@@ -965,17 +961,21 @@ corresponding to URL if possible.
 
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
-both point to the same content."
-  (let ((buffer
-         (or (when reusep
-               (cl-loop for buffer in (buffer-list)
-                        when (and (buffer-local-value 'hyperdrive-mode buffer)
-                                  (buffer-local-value 'hyperdrive-current-entry buffer)
-                                  (hyperdrive-entry-equal entry
-                                                          (buffer-local-value 'hyperdrive-current-entry buffer)))
-                        return buffer))
-             (get-buffer-create (hyperdrive--entry-buffer-name entry)))))
+both point to the same content.
+
+Affected by option `hyperdrive-reuse-buffers', which see."
+  (let* ((buffer-name (hyperdrive--entry-buffer-name entry))
+         (buffer
+          (or (when (eq 'any-version hyperdrive-reuse-buffers)
+                (cl-loop for buffer in (buffer-list)
+                         when (and (buffer-local-value 'hyperdrive-mode buffer)
+                                   (buffer-local-value 'hyperdrive-current-entry buffer)
+                                   (hyperdrive-entry-equal entry
+                                                           (buffer-local-value 'hyperdrive-current-entry buffer)))
+                         return buffer))
+              (get-buffer-create buffer-name))))
     (with-current-buffer buffer
+      (rename-buffer buffer-name)
       ;; NOTE: We do not erase the buffer because, e.g. the directory
       ;; handler needs to record point before it erases the buffer.
       (if (hyperdrive--entry-directory-p entry)
