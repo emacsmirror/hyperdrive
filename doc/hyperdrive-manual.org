@@ -408,9 +408,10 @@ customize-group RET hyperdrive RET~:
 
 #+vindex: hyperdrive-reuse-buffers
 - ~hyperdrive-reuse-buffers~ :: How to reuse buffers when showing entries.
-  When ~any-version~, try to reuse an existing buffer showing
-  the same entry at any version.  When ~same-version~, try to reuse an
-  existing buffer at the same version, or make a new buffer.
+  By default (~any-version~), opening a hyperdrive file or directory
+  reuses a buffer that is already visiting it, regardless of
+  version. To have separate buffers for each version of a
+  file/directory, use ~same-version~.
 
 * Concepts
 
