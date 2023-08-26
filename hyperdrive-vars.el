@@ -53,7 +53,10 @@
   :group 'hyperdrive)
 
 (defcustom hyperdrive-persist-location nil
-  "Location where `persist' will store data."
+  "Location where `persist' will store data.
+
+- `hyperdrive-hyperdrives'
+- `hyperdrive-version-ranges'"
   :type '(choice (const :tag "Use default persist location" nil)
                  (file :tag "Custom location"))
   :group 'hyperdrive)

@@ -362,7 +362,8 @@ customize-group RET hyperdrive RET~:
 
 #+vindex: hyperdrive-persist-location
 - ~hyperdrive-persist-location~ :: Location where ~persist~ will store
-  data. By default, uses the default ~persist~ location.
+  data, currently ~hyperdrive-hyperdrives~ and ~hyperdrive-version-ranges~.
+  By default, uses the default ~persist~ location.
 
 #+vindex: hyperdrive-download-directory
 - ~hyperdrive-download-directory~ :: Location where
