@@ -337,11 +337,17 @@ hyperdrive's latest-version slot, the final gap is filled."
     (nreverse ranges)))
 
 (defun hyperdrive-entry-previous (entry)
-  "Return ENTRY at its hyperdrive's previous version, or nil."
-  (when-let ((previous-entry (hyperdrive-entry-at (1- (car (hyperdrive-entry-version-range entry))) entry)))
-    ;; Entry version is currently its range end, but it should be its version range start.
-    (setf (hyperdrive-entry-version previous-entry) (car (hyperdrive-entry-version-range previous-entry)))
-    previous-entry))
+  "Return ENTRY at its hyperdrive's previous version, or nil.
+If ENTRY is a directory, just decrement ENTRY's version."
+  (if (hyperdrive--entry-directory-p entry)
+      (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
+                   (version (or version (hyperdrive-latest-version hyperdrive))))
+        (when (> version 1)
+          (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1- version))))
+    (when-let ((previous-entry (hyperdrive-entry-at (1- (car (hyperdrive-entry-version-range entry))) entry)))
+      ;; Entry version is currently its range end, but it should be its version range start.
+      (setf (hyperdrive-entry-version previous-entry) (car (hyperdrive-entry-version-range previous-entry)))
+      previous-entry)))
 
 (defun hyperdrive-entry-at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
