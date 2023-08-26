@@ -273,6 +273,14 @@ Intended to be used as hash table key in `hyperdrive-version-ranges'."
      (setf (gethash (hyperdrive--entry-version-range-key ,entry) hyperdrive-version-ranges) ,ranges)
      (persist-save 'hyperdrive-version-ranges)))
 
+(defun hyperdrive-purge-version-ranges (hyperdrive)
+  "Purge all version range data for HYPERDRIVE."
+  (maphash (lambda (key _val)
+             (when (string-prefix-p (hyperdrive-public-key hyperdrive) key)
+               (remhash key hyperdrive-version-ranges)))
+           hyperdrive-version-ranges)
+  (persist-save 'hyperdrive-version-ranges))
+
 (defun hyperdrive-entry-version-range (entry)
   "Return the version range containing ENTRY.
 Returns nil when ENTRY is not known to exist at its version."
