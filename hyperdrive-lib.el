@@ -643,11 +643,17 @@ Call ELSE if request fails."
 
 (cl-defun hyperdrive-purge-no-prompt (hyperdrive &key then else)
   "Purge all data corresponding to HYPERDRIVE, then call THEN.
+
+- HYPERDRIVE file content and metadata managed by hyper-gateway
+  in `hyperdrive-storage-location'
+- hash table entry for HYPERDRIVE in `hyperdrive-hyperdrives'
+- hash table entries for HYPERDRIVE in `hyperdrive-version-ranges'
+
 Call ELSE if request fails."
   (declare (indent defun))
   (hyperdrive-api 'delete (hyperdrive-entry-url (hyperdrive-entry-create :hyperdrive hyperdrive))
     :then (lambda (_response)
-            (remhash (hyperdrive-public-key hyperdrive) hyperdrive-hyperdrives)
+            (hyperdrive-persist hyperdrive :purge t)
             (funcall then))
     :else else))
 
