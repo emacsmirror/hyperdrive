@@ -177,7 +177,8 @@ PLZ-ERR should be a `plz-error' struct."
   (pcase plz-err
     ((app plz-error-curl-error `(7 . ,_message))
      ;; Curl error 7 is "Failed to connect to host."
-     (hyperdrive-user-error "Gateway not running.  Use \"M-x hyperdrive-start RET\" to start it"))
+     (hyperdrive-user-error (substitute-command-keys
+                             "Gateway not running.  Use \\[hyperdrive-start] to start it")))
     ((app plz-error-response (cl-struct plz-response (status (or 403 405)) body))
      ;; 403 Forbidden or 405 Method Not Allowed: Display message from hyper-gateway.
      (hyperdrive-error "%s" body))
