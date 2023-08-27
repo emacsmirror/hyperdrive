@@ -579,50 +579,49 @@ value is unknown, call `hyperdrive-fill-version-ranges' and
 recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
   (declare (modes hyperdrive-mode))
   (interactive (list hyperdrive-current-entry))
-  ;; TODO: Consider using `hyperdrive-user-error' to reduce nesting.
-  (if (hyperdrive-entry-version entry)
-      (if (hyperdrive--entry-directory-p entry)
-          ;; For directories, increment the version number by one.
-          (let ((copy (hyperdrive-copy-tree entry t)))
-            (cl-incf (hyperdrive-entry-version copy))
-            (hyperdrive-open copy))
-        (pcase-let ((latest-version (hyperdrive-fill-latest-version (hyperdrive-entry-hyperdrive entry)))
-                    (`(,_range-start . ,(map (:range-end range-end))) (hyperdrive-entry-version-range entry)))
-          (if (eq latest-version range-end)
-              (let ((copy (hyperdrive-copy-tree entry t)))
-                ;; NOTE: There is an unlikely race condition here. It's possible that after
-                ;; the `hyperdrive-fill-latest-version' call, this entry was updated.
-                (setf (hyperdrive-entry-version copy) nil)
-                (hyperdrive-open copy)
-                (hyperdrive-message "Already at latest version of entry."))
-            (pcase-let* ((next-range-start (1+ range-end))
-                         ((map (:existsp next-range-existsp) (:range-end next-range-end))
-                          (map-elt (hyperdrive-entry-version-ranges-no-gaps entry) next-range-start)))
-              (pcase next-range-existsp
-                ('t
-                 ;; Known existent, open it:
-                 (let ((copy (hyperdrive-copy-tree entry t)))
-                   (if (eq next-range-end latest-version)
-                       ;; This is the latest version: remove version number
-                       (setf (hyperdrive-entry-version copy) nil)
-                     (setf (hyperdrive-entry-version copy) next-range-start))
-                   (hyperdrive-open copy)))
-                ('nil
-                 ;; Known nonexistent, warn:
-                 (hyperdrive-message "Entry deleted after this version. Try M-x hyperdrive-history"))
-                ('unknown
-                 ;; Unknown existence, either warn or recurse:
-                 (if no-recurse
-                     (hyperdrive-message "Next version unknown. Try M-x hyperdrive-history")
-                   (hyperdrive-message "Loading history to find next version...")
-                   (hyperdrive-fill-version-ranges entry
-                     :then (lambda () (hyperdrive-next-version entry t))))))))))
-    (hyperdrive-message
+  (unless (hyperdrive-entry-version entry)
+    (hyperdrive-user-error
+     "Already at latest version of entry; consider reverting buffer with %s to check for newer versions"
      (substitute-command-keys
-      (format "Already at latest version of entry; consider reverting buffer with %s to check for newer versions"
-              (if (fboundp 'revert-buffer-quick)
-                  "\\[revert-buffer-quick]"
-                "\\[revert-buffer]"))))))
+      (if (fboundp 'revert-buffer-quick)
+          "\\[revert-buffer-quick]"
+        "\\[revert-buffer]"))))
+  (if (hyperdrive--entry-directory-p entry)
+      ;; For directories, increment the version number by one.
+      (let ((copy (hyperdrive-copy-tree entry t)))
+        (cl-incf (hyperdrive-entry-version copy))
+        (hyperdrive-open copy))
+    (pcase-let ((latest-version (hyperdrive-fill-latest-version (hyperdrive-entry-hyperdrive entry)))
+                (`(,_range-start . ,(map (:range-end range-end))) (hyperdrive-entry-version-range entry)))
+      (if (eq latest-version range-end)
+          (let ((copy (hyperdrive-copy-tree entry t)))
+            ;; NOTE: There is an unlikely race condition here. It's possible that after
+            ;; the `hyperdrive-fill-latest-version' call, this entry was updated.
+            (setf (hyperdrive-entry-version copy) nil)
+            (hyperdrive-open copy)
+            (hyperdrive-message "Already at latest version of entry."))
+        (pcase-let* ((next-range-start (1+ range-end))
+                     ((map (:existsp next-range-existsp) (:range-end next-range-end))
+                      (map-elt (hyperdrive-entry-version-ranges-no-gaps entry) next-range-start)))
+          (pcase next-range-existsp
+            ('t
+             ;; Known existent, open it:
+             (let ((copy (hyperdrive-copy-tree entry t)))
+               (if (eq next-range-end latest-version)
+                   ;; This is the latest version: remove version number
+                   (setf (hyperdrive-entry-version copy) nil)
+                 (setf (hyperdrive-entry-version copy) next-range-start))
+               (hyperdrive-open copy)))
+            ('nil
+             ;; Known nonexistent, warn:
+             (hyperdrive-message "Entry deleted after this version. Try M-x hyperdrive-history"))
+            ('unknown
+             ;; Unknown existence, either warn or recurse:
+             (if no-recurse
+                 (hyperdrive-message "Next version unknown. Try M-x hyperdrive-history")
+               (hyperdrive-message "Loading history to find next version...")
+               (hyperdrive-fill-version-ranges entry
+                 :then (lambda () (hyperdrive-next-version entry t)))))))))))
 
 ;;;; Bookmark support
 
