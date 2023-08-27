@@ -139,7 +139,6 @@ predicate and set NO-CONFIRM to t."
                                  :hyperdrive hyperdrive
                                  :path (expand-file-name (file-relative-name file source) target-dir)
                                  :encode t))))
-                      ;; TODO: Wrap the first url in `substring-no-properties' to reduce memory usage?
                       (list url (vector file url))))
                   files)))
     (unless files
