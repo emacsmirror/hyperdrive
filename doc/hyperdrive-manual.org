@@ -145,11 +145,11 @@ exist, ~hyperdrive.el~ will prompt you to take action:
 - ~?~ (help) to show a help message.
 
 If you attempt to load the root directory (~hyper://PUBLIC-KEY/~) of a
-for a hyperdrive with a valid-looking public key which you've never
-loaded before and for which no peers are currently found,
-~hyperdrive.el~ should warn you that no peers were found for that
-drive. This might mean that the drive doesn't exist or just that
-you're not connected to anyone who knows about it.
+hyperdrive with a valid-looking public key which you've never loaded
+before and for which no peers are currently found, ~hyperdrive.el~
+should warn you that no peers were found for that drive.  This might
+mean that the drive doesn't exist or just that you're not connected to
+anyone who knows about it.
 
 If you attempt to load a file or directory for a hyperdrive with a
 malformed public key, ~hyperdrive.el~ should ask you to double-check the
@@ -435,7 +435,7 @@ offline.
 Hyperdrive is single-writer, since only one peer (one machine) can
 make changes to a hyperdrive.  No one can pretend to be you, since
 files in a hyperdrive are cryptographically signed to ensure their
-integrity and authenticity
+integrity and authenticity.
 
 You can make as many hyperdrives as you like; the only limitation is
 your own disk space.
