@@ -201,6 +201,10 @@ given."
   (if hyperdrive-render-html
       (progn
         (eww (hyperdrive-entry-url entry))
+        ;; Set `hyperdrive-current-entry' and use `hyperdrive-mode'
+        ;; for remapped keybindings for, e.g., `hyperdrive-up'.
+        (setq-local hyperdrive-current-entry entry)
+        (hyperdrive-mode)
         (when then
           (funcall then)))
     (hyperdrive-handler-default entry :then then)))
