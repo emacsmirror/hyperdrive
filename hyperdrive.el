@@ -579,6 +579,7 @@ value is unknown, call `hyperdrive-fill-version-ranges' and
 recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
   (declare (modes hyperdrive-mode))
   (interactive (list hyperdrive-current-entry))
+  ;; TODO: Consider splitting this logic into `hyperdrive-entry-next'.
   (cl-flet ((open-at-version (version &optional message)
               (let ((copy (hyperdrive-copy-tree entry t)))
                 (setf (hyperdrive-entry-version copy) version)
