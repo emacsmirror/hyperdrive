@@ -569,7 +569,7 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   (declare (modes hyperdrive-mode))
   (interactive (list hyperdrive-current-entry))
   (if-let ((previous-entry (hyperdrive-entry-previous entry)))
-      (hyperdrive-find-file previous-entry)
+      (hyperdrive-open previous-entry)
     (hyperdrive-message "At earliest known version of %s" (hyperdrive-entry-description entry :with-version nil))))
 
 (defun hyperdrive-next-version (entry &optional no-recurse)
@@ -585,7 +585,7 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
           ;; For directories, increment the version number by one.
           (let ((copy (hyperdrive-copy-tree entry t)))
             (cl-incf (hyperdrive-entry-version copy))
-            (hyperdrive-find-file copy))
+            (hyperdrive-open copy))
         (pcase-let ((latest-version (hyperdrive-fill-latest-version (hyperdrive-entry-hyperdrive entry)))
                     (`(,_range-start . ,(map (:range-end range-end))) (hyperdrive-entry-version-range entry)))
           (if (eq latest-version range-end)
@@ -593,7 +593,7 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
                 ;; NOTE: There is an unlikely race condition here. It's possible that after
                 ;; the `hyperdrive-fill-latest-version' call, this entry was updated.
                 (setf (hyperdrive-entry-version copy) nil)
-                (hyperdrive-find-file copy)
+                (hyperdrive-open copy)
                 (hyperdrive-message "Already at latest version of entry."))
             (pcase-let* ((next-range-start (1+ range-end))
                          ((map (:existsp next-range-existsp) (:range-end next-range-end))
@@ -606,7 +606,7 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
                        ;; This is the latest version: remove version number
                        (setf (hyperdrive-entry-version copy) nil)
                      (setf (hyperdrive-entry-version copy) next-range-start))
-                   (hyperdrive-find-file copy)))
+                   (hyperdrive-open copy)))
                 ('nil
                  ;; Known nonexistent, warn:
                  (hyperdrive-message "Entry deleted after this version. Try M-x hyperdrive-history"))
