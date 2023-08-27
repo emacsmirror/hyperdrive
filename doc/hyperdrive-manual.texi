@@ -89,6 +89,10 @@ Open a hyperdrive
 * File view::
 * Unknown paths::
 
+Link to a hyperdrive
+
+* Org mode links::
+
 View the hyperdrive version history
 
 * History buffer::
@@ -112,6 +116,7 @@ Hyperdrive
 Versioning
 
 * Partial version data::
+* No directory version history::
 
 Naming
 
@@ -282,7 +287,7 @@ default:
 @kindex hyperdrive-dir-history
 @itemize
 @item
-@code{H} opens the version history of file at point
+@code{H} opens the @ref{View the hyperdrive version history, , version history} of file at point
 @end itemize
 @kindex hyperdrive-dir-copy-url
 @itemize
@@ -324,7 +329,7 @@ exist, @code{hyperdrive.el} will prompt you to take action:
 
 @itemize
 @item
-@code{h} (history) to open the version history for that file. (This only
+@code{h} (history) to open the @ref{View the hyperdrive version history, , version history} for that file. (This only
 works for files, not folders)
 @item
 @code{u} (up) to open the parent directory containing that file or folder
@@ -352,12 +357,17 @@ URL@.
 @section Write to a hyperdrive
 
 @findex hyperdrive-write-buffer
+@findex save-buffer
+@findex save-some-buffers
 
 You can write a buffer to a hyperdrive with @code{hyperdrive-write-buffer},
 which will prompt you for one of hyperdrives you have created as well
 as the path in that hyperdrive where you want to store the file. If
 you are editing an existing hyperdrive file, @code{save-buffer} will
 silently update the current hyperdrive entry with the new content.
+
+On Emacs version 29.1 or later, @code{save-some-buffers} will save hyperdrive
+files in addition to regular files.
 
 @node Link to a hyperdrive
 @section Link to a hyperdrive
@@ -366,11 +376,20 @@ silently update the current hyperdrive entry with the new content.
 @findex hyperdrive-dir-copy-url
 
 In the directory view, you can copy the URL at point with
-@code{hyperdrive-dir-copy-url}. Additionally, you can run @code{hyperdrive-copy-url}
-to copy the URL of the current hyperdrive file or directory. If the
-current file is an org-mode file, @code{org-store-link} will store a link to
-the hyperdrive file, and if point is inside a heading, its @code{CUSTOM_ID},
-@code{ID}, or heading text will be appended to the stored URL@.
+@code{hyperdrive-dir-copy-url} (see @ref{Directory view}). Additionally, you can
+run @code{hyperdrive-copy-url} to copy the URL of the current hyperdrive
+file or directory.
+
+@menu
+* Org mode links::
+@end menu
+
+@node Org mode links
+@subsection Org mode links
+
+If the current file is an org-mode file, @code{org-store-link} will store a
+link to the hyperdrive file, and if point is inside a heading, its
+@code{CUSTOM_ID}, @code{ID}, or heading text will be appended to the stored URL@.
 
 Relative links are supported; within @code{hyper://PUBLIC-KEY/foo.org}, links
 to @code{bar.org}, @code{./bar.org}, and @code{/bar.org} will all point to
@@ -381,6 +400,10 @@ to @code{bar.org}, @code{./bar.org}, and @code{/bar.org} will all point to
 To link from a hyperdrive-mode org buffer to a file on the local
 filesystem, explicitly add the @code{file:} link type prefix:
 @code{file:~/.emacs.d/init.el}.
+
+Org-mode hyperdrive link completion allows you to interactively link
+to a hyperdrive file/folder by running @code{M-x org-insert-link} (or @code{C-c
+C-l} in org-mode), then typing @code{hyper:} and @code{RET}.
 
 @node View the hyperdrive version history
 @section View the hyperdrive version history
@@ -423,6 +446,9 @@ default:
 @code{d} downloads the file at the start of the range at point
 @end itemize
 
+To act on the latest known version of the file, use these keybindings
+on the header line displaying the file description.
+
 @node Describe a hyperdrive
 @section Describe a hyperdrive
 
@@ -462,6 +488,7 @@ in a @code{hyper://} URL after @code{hyperdrive-download-url}.
 
 @findex hyperdrive-upload-file
 @findex hyperdrive-upload-files
+@findex yank-media
 
 To upload a single file from your filesystem, use
 @code{hyperdrive-upload-file}. By default, the selected file will be placed
@@ -471,6 +498,9 @@ before uploading.
 @code{hyperdrive-upload-files} lets you upload multiple files from your
 filesystem to a hyperdrive. As with the @code{cp} command, uploaded files
 will be placed into the same TARGET-DIRECTORY@.
+
+On Emacs 29 or later, you can upload an image which you previously
+copied to your clipboard from an external program with @code{yank-media}.
 
 @menu
 * Mirror a whole directory::
@@ -543,7 +573,9 @@ only those files in @code{~/blog/} which are smaller than 5MB:
 @findex hyperdrive-purge
 
 To remove all data related to a hyperdrive, run @code{hyperdrive-purge}. This
-command will first prompt for confirmation.
+command will first prompt for confirmation.  In addition to the
+hyperdrive's file content and metadata, @code{hyperdrive-purge} also removes
+relevant data inside @code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}.
 
 @strong{Data which has been purged from your local machine may still be
 available on the network.}
@@ -590,7 +622,8 @@ of hyperdrive file to set @code{major-mode}. Defaults to @code{t}.
 @table @asis
 @item @code{hyperdrive-persist-location}
 Location where @code{persist} will store
-data. By default, uses the default @code{persist} location.
+data, currently @code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}.
+By default, uses the default @code{persist} location.
 @end table
 
 @vindex hyperdrive-download-directory
@@ -657,6 +690,16 @@ Default number of request sent to
 Control how HTML hyperdrive files are
 displayed. By default, HTML pages are rendered in Emacs with @ref{Top,EWW,,eww,}. If
 @code{nil}, raw HTML will be displayed.
+@end table
+
+@vindex hyperdrive-reuse-buffers
+@table @asis
+@item @code{hyperdrive-reuse-buffers}
+How to reuse buffers when showing entries.
+By default (@code{any-version}), opening a hyperdrive file or directory
+reuses a buffer that is already visiting it, regardless of
+version. To have separate buffers for each version of a
+file/directory, use @code{same-version}.
 @end table
 
 @node Concepts
@@ -781,6 +824,7 @@ is specified in a hyper URL@.
 
 @menu
 * Partial version data::
+* No directory version history::
 @end menu
 
 @node Partial version data
@@ -843,6 +887,29 @@ theory, @code{/bar.org} could have been created at version 6 and deleted
 again at version 8.  The only way to determine that a file is
 nonexistent for some version range is to query the network for that
 file at every single version in the range.
+
+@node No directory version history
+@subsubsection No directory version history
+
+Version history for directories is not implemented for a design reason
+and technical reason:
+
+@itemize
+@item
+Directories have neither mtime nor size metadata, so a history view
+for directories wouldn't be that useful.
+@item
+Implementation of directory history would be somewhat ugly, since it
+requires either
+@enumerate
+@item
+storing an entry for each directory in @code{hyperdrive-version-ranges},
+which doesn't optimally normalize version history data, or
+@item
+generating directory history based on the history of the files it
+contains, which can never prove that a directory doesn't exist.
+@end enumerate
+@end itemize
 
 @node Hyper-gateway
 @section Hyper-gateway
