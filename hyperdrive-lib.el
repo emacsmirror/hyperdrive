@@ -401,6 +401,7 @@ the given `plz-queue'"
               (pcase (plz-response-status (plz-error-response (caddr err)))
                 ;; FIXME: If plz-error is a curl-error, this block will fail.
                 (404 ;; Entry doesn't exist at this version: update range data.
+                 ;; FIXME: Don't keep version range data for entries which have never existed.
                  (hyperdrive-update-nonexistent-version-range entry)))
               ;; Re-signal error for, e.g. `hyperdrive-entry-at'.
               (signal (car err) (cdr err)))))
