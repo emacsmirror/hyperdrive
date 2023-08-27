@@ -111,7 +111,7 @@ default:
 #+kindex: hyperdrive-dir-delete
 - ~D~ deletes the file or directory (recursively) at point
 #+kindex: hyperdrive-dir-history
-- ~H~ opens the version history of file at point
+- ~H~ opens the [[*View the hyperdrive version history][version history]] of file at point
 #+kindex: hyperdrive-dir-copy-url
 - ~w~ copies the URL of the file or directory at point
 #+kindex: imenu
@@ -136,7 +136,7 @@ hyperdrive directory from any hyperdrive file or directory buffer.
 When you attempt to load a file or folder that doesn't appear to
 exist, ~hyperdrive.el~ will prompt you to take action:
 
-- ~h~ (history) to open the version history for that file. (This only
+- ~h~ (history) to open the [[*View the hyperdrive version history][version history]] for that file. (This only
   works for files, not folders)
 - ~u~ (up) to open the parent directory containing that file or folder
 - ~r~ (recurse) to go up the directory tree until a directory is found
