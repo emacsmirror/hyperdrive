@@ -15,6 +15,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 - ~hyperdrive-version-ranges~ is now persisted, speeding up ~hyperdrive-history~
 - Fewer buffers are created by default (see ~hyperdrive-reuse-buffers~)
+- ~hyperdrive-mode~ keybindings now work when viewing =hyper://= files in EWW
 
 ** Fixed
 
