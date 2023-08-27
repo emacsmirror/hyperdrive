@@ -47,8 +47,12 @@
 FILES-AND-URLS is structured like `tabulated-list-entries'.  After
 uploading files, open PARENT-ENTRY."
   (let* ((count 0)
+         (upload-files-and-urls (cl-remove-if (pcase-lambda (`(,_id [,status ,_file ,_url]))
+                                                ;; Exclude files which have not been changed.
+                                                (equal status "same"))
+                                              files-and-urls))
          (progress-reporter
-          (make-progress-reporter (format "Uploading %s files: " (length files-and-urls)) 0 (length files-and-urls)))
+          (make-progress-reporter (format "Uploading %s files: " (length upload-files-and-urls)) 0 (length upload-files-and-urls)))
          (queue (make-plz-queue
                  :limit hyperdrive-queue-size
                  :finally (lambda ()
@@ -56,7 +60,7 @@ uploading files, open PARENT-ENTRY."
                             (hyperdrive-open parent-entry)
                             (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
                               (setq-local hyperdrive-mirror-already-uploaded t))))))
-    (pcase-dolist (`(,_id [,file ,url]) files-and-urls)
+    (pcase-dolist (`(,_id [,status ,file ,url]) upload-files-and-urls)
       (hyperdrive-upload-file file (hyperdrive-url-entry url)
         :queue queue
         ;; TODO: Error handling (e.g. in case one or more files fails to upload).
@@ -64,9 +68,6 @@ uploading files, open PARENT-ENTRY."
                 (progress-reporter-update progress-reporter (cl-incf count)))))))
 
 ;;;; Commands
-
-;; TODO: Don't overwrite a hyperdrive file with the same
-;; contents. Should we keep a cache of uploaded files and mtimes?
 
 ;;;###autoload
 (cl-defun hyperdrive-mirror
@@ -135,12 +136,27 @@ predicate and set NO-CONFIRM to t."
          (files-and-urls
           ;; Structured according to `tabulated-list-entries'
           (mapcar (lambda (file)
-                    (let ((url (hyperdrive-entry-url
-                                (hyperdrive-entry-create
-                                 :hyperdrive hyperdrive
-                                 :path (expand-file-name (file-relative-name file source) target-dir)
-                                 :encode t))))
-                      (list url (vector file url))))
+                    (let* ((entry (hyperdrive-entry-create
+                                   :hyperdrive hyperdrive
+                                   :path (expand-file-name (file-relative-name file source) target-dir)
+                                   :encode t))
+                           (status (condition-case err
+                                       (if (time-less-p (hyperdrive-entry-modified (hyperdrive-fill entry :then 'sync))
+                                                        (file-attribute-modification-time (file-attributes file)))
+                                           ;; TODO: Propertize status strings.
+                                           "changed"
+                                         "same")
+                                     (plz-error
+                                      (pcase (caddr err)
+                                        ((app plz-error-response (cl-struct plz-response (status 404) body))
+                                         ;; Entry doesn't exist: Set `status' to `new'.
+                                         (hyperdrive-update-nonexistent-version-range entry)
+                                         "new")
+                                        (_
+                                         ;; Re-signal error.
+                                         (signal (car err) (cdr err)))))))
+                           (url (hyperdrive-entry-url entry)))
+                      (list url (vector status file url))))
                   files)))
     (unless files
       (hyperdrive-user-error "No files selected for mirroring (double-check predicate)"))
@@ -175,7 +191,8 @@ predicate and set NO-CONFIRM to t."
   :group 'hyperdrive
   :interactive nil
   ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29)
-  (setq tabulated-list-format [("From file" 60 t)
+  (setq tabulated-list-format [("Status" 7 t)
+                               ("From file" 60 t)
                                ("To URL" 60 t)])
   (tabulated-list-init-header))
 
