@@ -256,14 +256,14 @@ Interactively, visit entry at point in `hyperdrive-history'
 buffer."
   (declare (modes hyperdrive-history-mode))
   (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
-    ((t quote)
+  (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
+    ('t
      ;; Known to exist: open it.
      (hyperdrive-open (cdr range-entry)))
-    ((nil quote)
+    ('nil
      ;; Known to not exist: warn user.
      (hyperdrive-user-error "File does not exist!"))
-    ((unknown quote)
+    ('unknown
      ;; Not known to exist: prompt user
      ;; TODO: Design options
      (hyperdrive-message "File not known to exist. What do you want to do?"))))
@@ -274,14 +274,14 @@ buffer."
   "Copy URL of entry in RANGE-ENTRY into the kill ring."
   (declare (modes hyperdrive-history-mode))
   (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
-    ((t quote)
+  (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
+    ('t
      ;; Known to exist: copy it.
      (hyperdrive-copy-url (cdr range-entry)))
-    ((nil quote)
+    ('nil
      ;; Known to not exist: warn user.
      (hyperdrive-user-error "File does not exist!"))
-    ((unknown quote)
+    ('unknown
      ;; Not known to exist: warn user.
      (hyperdrive-user-error "File not known to exist!"))))
 
@@ -304,14 +304,14 @@ buffer."
                                  (read-file-name "Filename: "
                                                  (expand-file-name name hyperdrive-download-directory)))))
      (list range-entry read-filename)))
-  (cl-ecase (hyperdrive-range-entry-exists-p range-entry)
-    ((t quote)
+  (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
+    ('t
      ;; Known to exist: download it.
      (hyperdrive-download-entry (cdr range-entry) filename))
-    ((nil quote)
+    ('nil
      ;; Known to not exist: warn user.
      (hyperdrive-user-error "File does not exist!"))
-    ((unknown quote)
+    ('unknown
      ;; Not known to exist: warn user.
      (hyperdrive-user-error "File not known to exist!"))))
 
