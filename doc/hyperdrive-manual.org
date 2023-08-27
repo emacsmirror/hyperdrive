@@ -448,8 +448,8 @@ LAN even without an internet connection.
 Unlike BitTorrent, another protocol for sharing files, hyperdrives are
 mutable.  You can add, update, or delete files inside a hyperdrive,
 and peers will be able to access the latest version of the hyperdrive
-at the same link.  However, old versions of your hyperdrive are never
-lost. see [[*Versioning]] for more information.
+at the same link.  However, old versions of your hyperdrive can still
+be accessed.  See [[*Versioning]] for more information.
 
 *** Sparse replication
 #+cindex: Sparse replication
