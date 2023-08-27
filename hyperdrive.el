@@ -603,32 +603,32 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
       (if (hyperdrive--entry-directory-p entry)
           ;; For directories, increment the version number by one.
           (open-at-version (1+ (hyperdrive-entry-version entry)))
-        (pcase-let ((`(,_range-start . ,(map (:range-end range-end))) (hyperdrive-entry-version-range entry)))
+        (pcase-let* ((`(,_range-start . ,(map (:range-end range-end))) (hyperdrive-entry-version-range entry))
+                     (next-range-start (1+ range-end))
+                     ((map (:existsp next-range-existsp) (:range-end next-range-end))
+                      (map-elt (hyperdrive-entry-version-ranges-no-gaps entry) next-range-start)))
           (when (eq latest-version range-end)
             ;; NOTE: There is an unlikely race condition here. It's possible that after
             ;; the `hyperdrive-fill-latest-version' call, this entry was updated.
             (open-at-version nil)
             (already-latest-error))
-          (pcase-let* ((next-range-start (1+ range-end))
-                       ((map (:existsp next-range-existsp) (:range-end next-range-end))
-                        (map-elt (hyperdrive-entry-version-ranges-no-gaps entry) next-range-start)))
-            (pcase next-range-existsp
-              ('t
-               ;; Known existent, open it:
-               (if (eq next-range-end latest-version)
-                   ;; This is the latest version: remove version number
-                   (open-at-version nil)
-                 (open-at-version next-range-start)))
-              ('nil
-               ;; Known nonexistent, warn:
-               (hyperdrive-message "Entry deleted after this version. Try M-x hyperdrive-history"))
-              ('unknown
-               ;; Unknown existence, either warn or recurse:
-               (if no-recurse
-                   (hyperdrive-message "Next version unknown. Try M-x hyperdrive-history")
-                 (hyperdrive-message "Loading history to find next version...")
-                 (hyperdrive-fill-version-ranges entry
-                   :then (lambda () (hyperdrive-next-version entry t))))))))))))
+          (pcase next-range-existsp
+            ('t
+             ;; Known existent, open it:
+             (if (eq next-range-end latest-version)
+                 ;; This is the latest version: remove version number
+                 (open-at-version nil)
+               (open-at-version next-range-start)))
+            ('nil
+             ;; Known nonexistent, warn:
+             (hyperdrive-message "Entry deleted after this version. Try M-x hyperdrive-history"))
+            ('unknown
+             ;; Unknown existence, either warn or recurse:
+             (if no-recurse
+                 (hyperdrive-message "Next version unknown. Try M-x hyperdrive-history")
+               (hyperdrive-message "Loading history to find next version...")
+               (hyperdrive-fill-version-ranges entry
+                 :then (lambda () (hyperdrive-next-version entry t)))))))))))
 
 ;;;; Bookmark support
 
