@@ -222,6 +222,9 @@ default:
 #+kindex: hyperdrive-history-download-file)
 - ~d~ downloads the file at the start of the range at point
 
+To act on the latest known version of the file, use these keybindings
+on the header line displaying the file description.
+
 ** Describe a hyperdrive
 #+findex: hyperdrive-describe-hyperdrive
 
