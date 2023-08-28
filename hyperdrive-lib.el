@@ -223,6 +223,7 @@ empty public-key slot."
                ;; `hyperdrive-create', but perhaps it would be good to add a function which wraps
                ;; `hyperdrive-create' and returns either an existing hyperdrive or a new one?
                (hyperdrive (pcase host
+                             ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
                              ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
                               (hyperdrive-create :domains (list host)))
                              (_  ;; Assume host is a public-key
