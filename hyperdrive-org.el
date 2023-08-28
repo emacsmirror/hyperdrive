@@ -149,7 +149,7 @@ the current location."
                  ;; prefixing with "file:" (because Org assumes that links
                  ;; without a specified protocol are "file:" links).
                  (not (string-prefix-p "file:" raw-link-type)))
-        (hyperdrive-open (hyperdrive-expand-url (org-element-property :path context)))))))
+        (hyperdrive-open-url (hyperdrive-expand-url (org-element-property :path context)))))))
 
 ;;;###autoload
 (with-eval-after-load 'org
