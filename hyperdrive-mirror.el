@@ -32,6 +32,7 @@
 
 ;;;; Variables
 
+;; TODO: Consolidate these two local variables into one?
 (defvar-local hyperdrive-mirror-parent-entry nil
   "Parent entry for `hyperdrive-mirror-mode' buffer.")
 (put 'hyperdrive-mirror-parent-entry 'permanent-local t)
