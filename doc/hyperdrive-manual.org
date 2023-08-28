@@ -16,7 +16,7 @@ for managing hyperdrives.
 ~hyperdrive.el~ is in early development. If something breaks, please see
 [[*Troubleshooting]].
 
-- Homepage: https://ushin.org/hyperdrive-manual.html
+- Homepage: https://ushin.org/hyperdrive/hyperdrive-manual.html
 - Repository: https://git.sr.ht/~ushin/hyperdrive.el
 
 This manual is for ~hyperdrive.el~ version {{{version}}}.
