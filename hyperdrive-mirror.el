@@ -60,6 +60,8 @@ uploading files, open PARENT-ENTRY."
                             (hyperdrive-open parent-entry)
                             (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
                               (revert-buffer nil t))))))
+    (unless upload-files-and-urls
+      (hyperdrive-user-error "No new/newer files to upload"))
     (pcase-dolist (`(,_id [,status ,file ,url]) upload-files-and-urls)
       (hyperdrive-upload-file file (hyperdrive-url-entry url)
         :queue queue
