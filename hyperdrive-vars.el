@@ -218,6 +218,18 @@ an existing buffer at the same version, or make a new buffer."
 (defface hyperdrive-history-unknown '((t (:foreground "black" :background "yellow")))
   "Marker for entries with unknown existence in `hyperdrive-history' buffers.")
 
+(defface hyperdrive-mirror-new '((t (:foreground "black" :background "green")))
+  "Face for files with \"new\" status in `hyperdrive-mirror' buffers."
+  :group 'hyperdrive-faces)
+
+(defface hyperdrive-mirror-same '((t (:foreground "black" :background "red")))
+  "Face for files with \"same\" status in `hyperdrive-mirror' buffers."
+  :group 'hyperdrive-faces)
+
+(defface hyperdrive-mirror-changed '((t (:foreground "black" :background "yellow")))
+  "Face for files with \"changed\" status in `hyperdrive-mirror' buffers."
+  :group 'hyperdrive-faces)
+
 (defface hyperdrive-button
   ;; Inspired by cus-edit.el's `custom-button' face.
   ;; NOTE: This face is not currently used, but

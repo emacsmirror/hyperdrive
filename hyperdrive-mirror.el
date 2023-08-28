@@ -49,7 +49,7 @@ uploading files, open PARENT-ENTRY."
   (let* ((count 0)
          (upload-files-and-urls (cl-remove-if (pcase-lambda (`(,_id [,status ,_file ,_url]))
                                                 ;; Exclude files which have not been changed.
-                                                (equal status "same"))
+                                                (string-match-p "same" status))
                                               files-and-urls))
          (progress-reporter
           (make-progress-reporter (format "Uploading %s files: " (length upload-files-and-urls)) 0 (length upload-files-and-urls)))
@@ -140,21 +140,27 @@ predicate and set NO-CONFIRM to t."
                                    :hyperdrive hyperdrive
                                    :path (expand-file-name (file-relative-name file source) target-dir)
                                    :encode t))
-                           (status (condition-case err
-                                       (if (time-less-p (hyperdrive-entry-modified (hyperdrive-fill entry :then 'sync))
-                                                        (file-attribute-modification-time (file-attributes file)))
-                                           ;; TODO: Propertize status strings.
-                                           "changed"
-                                         "same")
-                                     (plz-error
-                                      (pcase (caddr err)
-                                        ((app plz-error-response (cl-struct plz-response (status 404) body))
-                                         ;; Entry doesn't exist: Set `status' to `new'.
-                                         (hyperdrive-update-nonexistent-version-range entry)
-                                         "new")
-                                        (_
-                                         ;; Re-signal error.
-                                         (signal (car err) (cdr err)))))))
+                           (status-no-properties
+                            (condition-case err
+                                (if (time-less-p (hyperdrive-entry-modified (hyperdrive-fill entry :then 'sync))
+                                                 (file-attribute-modification-time (file-attributes file)))
+                                    "changed"
+                                  "same")
+                              (plz-error
+                               (pcase (caddr err)
+                                 ((app plz-error-response (cl-struct plz-response (status 404) body))
+                                  ;; Entry doesn't exist: Set `status' to `new'.
+                                  (hyperdrive-update-nonexistent-version-range entry)
+                                  "new")
+                                 (_
+                                  ;; Re-signal error.
+                                  (signal (car err) (cdr err)))))))
+                           (status
+                            (propertize (format "%-7s" status-no-properties)
+                                        'face (pcase-exhaustive status-no-properties
+                                                ("new" 'hyperdrive-mirror-new)
+                                                ("changed" 'hyperdrive-mirror-changed)
+                                                ("same" 'hyperdrive-mirror-same))))
                            (url (hyperdrive-entry-url entry)))
                       (list url (vector status file url))))
                   files)))
