@@ -401,7 +401,6 @@ the given `plz-queue'"
               (pcase (plz-response-status (plz-error-response (caddr err)))
                 ;; FIXME: If plz-error is a curl-error, this block will fail.
                 (404 ;; Entry doesn't exist at this version: update range data.
-                 ;; FIXME: Don't keep version range data for entries which have never existed.
                  (hyperdrive-update-nonexistent-version-range entry)))
               ;; Re-signal error for, e.g. `hyperdrive-entry-at'.
               (signal (car err) (cdr err)))))
@@ -531,7 +530,9 @@ Returns the ranges cons cell for ENTRY."
   (unless (or (hyperdrive--entry-directory-p entry)
               ;; If there already exists a nonexistent range in
               ;; `hyperdrive-version-ranges', there's nothing to do.
-              (hyperdrive-entry-version-range entry))
+              (hyperdrive-entry-version-range entry)
+              ;; Don't store ranges for entries which have never existed.
+              (not (hyperdrive-entry-version-ranges entry)))
     (pcase-let* ((ranges (hyperdrive-entry-version-ranges entry))
                  ((cl-struct hyperdrive-entry hyperdrive path version) entry)
                  (version (or version (hyperdrive-latest-version hyperdrive)))
