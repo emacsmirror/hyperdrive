@@ -226,8 +226,12 @@ an existing buffer at the same version, or make a new buffer."
   "Face for files with \"same\" status in `hyperdrive-mirror' buffers."
   :group 'hyperdrive-faces)
 
-(defface hyperdrive-mirror-changed '((t (:foreground "black" :background "yellow")))
-  "Face for files with \"changed\" status in `hyperdrive-mirror' buffers."
+(defface hyperdrive-mirror-newer '((t (:foreground "black" :background "yellow")))
+  "Face for files with \"newer\" status in `hyperdrive-mirror' buffers."
+  :group 'hyperdrive-faces)
+
+(defface hyperdrive-mirror-older '((t (:foreground "black" :background "purple")))
+  "Face for files with \"older\" status in `hyperdrive-mirror' buffers."
   :group 'hyperdrive-faces)
 
 (defface hyperdrive-button

@@ -47,10 +47,9 @@
 FILES-AND-URLS is structured like `tabulated-list-entries'.  After
 uploading files, open PARENT-ENTRY."
   (let* ((count 0)
-         (upload-files-and-urls (cl-remove-if (pcase-lambda (`(,_id [,status ,_file ,_url]))
-                                                ;; Exclude files which have not been changed.
-                                                (string-match-p "same" status))
-                                              files-and-urls))
+         (upload-files-and-urls (cl-remove-if-not (pcase-lambda (`(,_id [,status ,_file ,_url]))
+                                                    (string-match-p (rx (or "new" "newer")) status))
+                                                  files-and-urls))
          (progress-reporter
           (make-progress-reporter (format "Uploading %s files: " (length upload-files-and-urls)) 0 (length upload-files-and-urls)))
          (queue (make-plz-queue
@@ -147,10 +146,12 @@ predicate and set NO-CONFIRM to t."
                                    :encode t))
                            (status-no-properties
                             (condition-case err
-                                (if (time-less-p (hyperdrive-entry-modified (hyperdrive-fill entry :then 'sync))
-                                                 (file-attribute-modification-time (file-attributes file)))
-                                    "changed"
-                                  "same")
+                                (let ((drive-mod-time (hyperdrive-entry-modified (hyperdrive-fill entry :then 'sync)))
+                                      (local-mod-time (file-attribute-modification-time (file-attributes file))))
+                                  (cond
+                                   ((time-equal-p drive-mod-time local-mod-time) "same")
+                                   ((time-less-p drive-mod-time local-mod-time) "newer")
+                                   (t "older")))
                               (plz-error
                                (pcase (caddr err)
                                  ((app plz-error-response (cl-struct plz-response (status 404) body))
@@ -164,7 +165,8 @@ predicate and set NO-CONFIRM to t."
                             (propertize (format "%-7s" status-no-properties)
                                         'face (pcase-exhaustive status-no-properties
                                                 ("new" 'hyperdrive-mirror-new)
-                                                ("changed" 'hyperdrive-mirror-changed)
+                                                ("newer" 'hyperdrive-mirror-newer)
+                                                ("older" 'hyperdrive-mirror-older)
                                                 ("same" 'hyperdrive-mirror-same))))
                            (url (hyperdrive-entry-url entry)))
                       (list url (vector status file url))))
