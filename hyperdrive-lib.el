@@ -1037,6 +1037,7 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
 (cl-defun hyperdrive-persist (hyperdrive &key purge)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'.
 With PURGE, delete hash table entry for HYPERDRIVE."
+  ;; TODO: Make separate function for purging persisted data.
   (if purge
       (remhash (hyperdrive-public-key hyperdrive) hyperdrive-hyperdrives)
     (puthash (hyperdrive-public-key hyperdrive) hyperdrive hyperdrive-hyperdrives))
