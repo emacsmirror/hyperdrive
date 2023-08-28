@@ -206,7 +206,7 @@ predicate and set NO-CONFIRM to t."
   "Major mode for buffers for mirror local directories to a hyperdrive."
   :group 'hyperdrive
   :interactive nil
-  ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29)
+  ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29) (or maybe taxy-magit-section)
   (setq tabulated-list-format [("Status" 7 t)
                                ("From file" 60 t)
                                ("To URL" 60 t)]
