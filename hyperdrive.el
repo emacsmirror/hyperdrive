@@ -543,9 +543,8 @@ recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
       (if (hyperdrive--entry-directory-p entry)
           ;; For directories, increment the version number by one.
           (let ((next-version (1+ (hyperdrive-entry-version entry))))
-            (if (eq next-version latest-version)
-                (open-at-version nil)
-              (open-at-version next-version)))
+            (open-at-version (pcase next-version
+                               (latest-version nil) (_ next-version))))
         (pcase-let* ((`(,_range-start . ,(map (:range-end range-end))) (hyperdrive-entry-version-range entry))
                      (next-range-start (1+ range-end))
                      ((map (:existsp next-range-existsp) (:range-end next-range-end))
