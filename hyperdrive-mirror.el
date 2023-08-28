@@ -99,6 +99,8 @@ predicate and set NO-CONFIRM to t."
          (hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
                                                      :force-prompt t)))
      (list source hyperdrive
+           ;; TODO: Get path from any visible hyperdrive-dir buffer and
+           ;; auto-fill (or add as "future history") in target-dir prompt.
            :target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in «%s»" :default "/")
            :no-confirm (equal '(16) current-prefix-arg)
            :predicate (if current-prefix-arg

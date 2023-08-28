@@ -132,6 +132,7 @@ REST is passed to `plz', which see.
 
 REST may include the argument `:queue', a `plz-queue' in which to
 make the request."
+  ;; TODO: Document that the request/queue is returned.
   ;; TODO: Should we create a wrapper for `hyperdrive-api' which calls
   ;;  `hyperdrive--fill-latest-version' for requests to
   ;;  directories/requests which modify the drive (and therefore
