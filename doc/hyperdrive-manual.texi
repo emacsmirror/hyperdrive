@@ -343,11 +343,11 @@ or until you get to the root directory.
 @end itemize
 
 If you attempt to load the root directory (@code{hyper://PUBLIC-KEY/}) of a
-for a hyperdrive with a valid-looking public key which you've never
-loaded before and for which no peers are currently found,
-@code{hyperdrive.el} should warn you that no peers were found for that
-drive. This might mean that the drive doesn't exist or just that
-you're not connected to anyone who knows about it.
+hyperdrive with a valid-looking public key which you've never loaded
+before and for which no peers are currently found, @code{hyperdrive.el}
+should warn you that no peers were found for that drive.  This might
+mean that the drive doesn't exist or just that you're not connected to
+anyone who knows about it.
 
 If you attempt to load a file or directory for a hyperdrive with a
 malformed public key, @code{hyperdrive.el} should ask you to double-check the
@@ -729,7 +729,7 @@ offline.
 Hyperdrive is single-writer, since only one peer (one machine) can
 make changes to a hyperdrive.  No one can pretend to be you, since
 files in a hyperdrive are cryptographically signed to ensure their
-integrity and authenticity
+integrity and authenticity.
 
 You can make as many hyperdrives as you like; the only limitation is
 your own disk space.
@@ -742,8 +742,8 @@ LAN even without an internet connection.
 Unlike BitTorrent, another protocol for sharing files, hyperdrives are
 mutable.  You can add, update, or delete files inside a hyperdrive,
 and peers will be able to access the latest version of the hyperdrive
-at the same link.  However, old versions of your hyperdrive are never
-lost. see @ref{Versioning} for more information.
+at the same link.  However, old versions of your hyperdrive can still
+be accessed.  See @ref{Versioning} for more information.
 
 @menu
 * Sparse replication::
