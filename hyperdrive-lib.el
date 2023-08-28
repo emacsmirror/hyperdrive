@@ -314,6 +314,7 @@ Intended to be used as hash table key in `hyperdrive-version-ranges'."
 (defun hyperdrive-purge-version-ranges (hyperdrive)
   "Purge all version range data for HYPERDRIVE."
   (maphash (lambda (key _val)
+             ;; NOTE: The KEY starts with the key and ends with a path, so we compare as prefix.
              (when (string-prefix-p (hyperdrive-public-key hyperdrive) key)
                (remhash key hyperdrive-version-ranges)))
            hyperdrive-version-ranges)
