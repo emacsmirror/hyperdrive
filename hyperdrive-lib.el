@@ -215,6 +215,8 @@ Set entry's hyperdrive slot to persisted hyperdrive if it exists.
 
 If URL host is a DNSLink domain, returned entry will have an
 empty public-key slot."
+  (unless (string-prefix-p "hyper://" url)
+    (setf url (concat "hyper://" url)))
   (pcase-let* (((cl-struct url host (filename path) target)
                 (url-generic-parse-url url))
                ;; TODO: For now, no other function besides `hyperdrive-url-entry' calls
