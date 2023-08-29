@@ -248,6 +248,13 @@ You can use the built-in ~bookmark-set~, ~bookmark-jump~, and
 directory. To jump to or view only hyperdrive bookmarks, use
 ~hyperdrive-bookmark-jump~ and ~hyperdrive-bookmark-list~.
 
+** Stream audio and video
+
+When you use ~hyperdrive-find-file~ or some other command to open a
+streamable audio/video file, Emacs will use an external program to
+stream that video from the network.  After the stream finishes, the
+audio/video file is stored locally.
+
 ** Download hyperdrive files
 #+findex: hyperdrive-download-entry
 #+findex: hyperdrive-download-url
