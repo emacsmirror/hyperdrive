@@ -8,12 +8,9 @@ provides an Emacs interface for managing hyperdrives.
 
 ## Installation
 
-`hyperdrive.el` requires [Emacs](https://www.gnu.org/software/emacs/) version 27.1 or later.
-
-`hyperdrive.el` is available on
-[MELPA](https://melpa.org/#/getting-started). Once you've set up
-MELPA, run `M-x package-install` then enter `hyperdrive`.
-
+See [the
+manual](https://ushin.org/hyperdrive/hyperdrive-manual.html#Installation)
+for installation instructions.
 
 ### `hyper-gateway`
 
