@@ -39,4 +39,4 @@ You're welcome to join our public XMPP chat
 room!
 
 - `xmpp:discuss@conference.ushin.org` ([Join anonymously from your browser](https://anonymous.cheogram.com/discuss@conference.ushin.org))
-- `#xmpp_discuss_conference.ushin.org:matrix.org` (Matrix bridge)
+- `#_bifrost_discuss_conference.ushin.org:aria-net.org` (Matrix bridge)
