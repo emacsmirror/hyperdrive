@@ -753,6 +753,29 @@ Universal prefix argument \\[universal-argument] forces
         (hyperdrive-upload-file file entry :queue queue :then #'ignore)))
     (plz-run queue)))
 
+;;; Info lookup
+
+(with-eval-after-load 'info-look
+  (info-lookup-maybe-add-help
+   :mode '(emacs-lisp-mode . "hyperdrive")
+   :regexp (rx word-boundary "hyperdrive-" (1+ (not (any "	\n \"'(),[]`‘’"))))
+   :doc-spec '((;; INFO-NODE
+	        "(hyperdrive)Function Index"
+	        ;; TRANS-FUNC
+	        nil
+	        ;; PREFIX
+	        "^ -+ .*: "
+	        ;; SUFFIX
+	        "\\( \\|$\\)")
+	       (;; INFO-NODE
+	        "(hyperdrive)Variable Index"
+	        ;; TRANS-FUNC
+	        nil
+	        ;; PREFIX
+	        "^ -+ .*: "
+	        ;; SUFFIX
+	        "\\( \\|$\\)"))))
+
 ;;;; Footer
 
 (provide 'hyperdrive)
