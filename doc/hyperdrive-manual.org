@@ -219,7 +219,7 @@ default:
 - ~RET~ opens the file at the start of the range at point
 #+kindex: hyperdrive-history-copy-url
 - ~w~ copies the URL of the file at the start of the range at point
-#+kindex: hyperdrive-history-download-file)
+#+kindex: hyperdrive-history-download-file
 - ~d~ downloads the file at the start of the range at point
 
 To act on the latest known version of the file, use these keybindings
