@@ -1,0 +1,146 @@
+#+TITLE: Hyperdrive Org link tests
+
+This file helps us understand and test the different kinds of Org links and whether and how they should work in various contexts.
+
+NOTE: This file should be loaded from a hyperdrive in order to verify that these links work correctly for an Org file loaded from a hyperdrive.
+
+To decode these links with Org, use ~(org-element-context)~ with point on the link.  The resulting element/plist is used in function ~hyperdrive--org-open-at-point~.
+
+* Link types
+
+Here are various link types which we want to test.
+
+** ~hyper://~-prefixed, with or without brackets
+
+*** Links without targets
+
++ [[hyper://PUBLIC_KEY/links.org]]
++ hyper://PUBLIC_KEY/links.org
+
+*** Links with targets
+
+*NOTE:* While in Org mode, these anchored links can only point to headings with matching ~CUSTOM_ID~ properties, in hyperdrive we first check for matching ~CUSTOM_ID~, then ~ID~, then exact heading title content matches.  (The anchor part is URL-decoded and the leading ~#~ is discarded.)
+
++ [[hyper://PUBLIC_KEY/links.org#Heading%20A]]
++ hyper://PUBLIC_KEY/links.org#Heading%20A
+
+** Non-~hyper://~-prefixed links (inside brackets)
+
+
+*** Links without targets
+
+/Link to a file, without specifying a heading within it./
+
+**** Links to hyperdrive files
+
+/Note the lack of ~file:~ prefix, which would indicate a link to a local file./
+
++ [[./links.org]]
++ [[/links.org]] :: For non-hyperdrive files, this actually links to a file in the root directory of the filesystem.  For hyperdrives, we want this to point to a file in the hyperdrive's root.
+
+***** TODO Fix functionality for links like ~[[links.org]]~
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 16:40]
+:END:
+
+Org doesn't support this for local files (this syntax would point to a heading by that name), so we should follow Org here.  This is actually a bug.
+
+**** Links to local files
+
+/The ~file:~ prefix indicates that the link points to a local file (not one on a hyperdrive relative to the current hyperdrive file)/.
+
++ [[file:./links.org]]
++ [[file:links.org]]
+
+*** Links with targets
+
+/Links to headings within a file, rather than links to the file./
+
+**** ~*~-prefixed heading names
+:LOGBOOK:
+- Note taken on [2023-08-29 Tue 15:53] \\
+  This does not currently work in hyperdrive-mode.
+- State "TODO"       from              [2023-08-29 Tue 15:53]
+:END:
+
+***** TODO Unspecified file (same file)
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 15:58]
+:END:
+
+/Links to headings within the file containing the link.  The filename is not specified./
+
++ [[*Heading A]]
+
+***** TODO Specified file
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 15:58]
+:END:
+
+/Links to headings in a specified file, potentially a different one./
+
++ [[./links.org::*Heading A]]
++ [[/links.org::*Heading A]]
+
+**** Unprefixed heading names
+
+/Without a ~*~ or ~./~, the link is intended to point to a heading within the same document./
+
+***** Unspecified file (same file)
+
++ [[Heading A]]
+
+***** Specified file
+
++ [[./links.org::Heading A]]
++ [[/links.org::Heading A]]
+
+**** Custom IDs: HTML-style, ~#~-anchor-suffixed links
+
+***** TODO Unspecified file (same file)
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 15:58]
+:END:
+
++ [[#Heading%20A]]
+
+  + This is currently looking for a heading with the ~#~ as part of its actual entry; it should be removing the ~#~ before calling ~org-find-exact-headline-in-buffer~.
+
+      #+begin_src elisp
+      (hyperdrive--org-link-goto "#Heading%20A")
+      #+end_src
+
+***** TODO Specified file
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 15:58]
+:END:
+
++ [[./links.org#Heading%20A]]
++ [[/links.org#Heading%20A]]
+
+**** Regexp searches for file content
+
+We do not currently support this.
+
+* Test data
+
+Below this line is a series of headings we use to link to for testing purposes.
+
+** Heading A
+
+/Heading without IDs (link to heading text)./
+
+** Heading A
+
+/This intentionally duplicates the previous heading for testing purposes./
+
+** Heading with CUSTOM_ID
+:PROPERTIES:
+:CUSTOM_ID: hyperdrive-foo
+:END:
+
+** Heading with ID
+:PROPERTIES:
+:ID:       hyperdrive-bar
+:END:
+
