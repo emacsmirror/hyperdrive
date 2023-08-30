@@ -766,6 +766,8 @@ Universal prefix argument \\[universal-argument] forces
 
 ;;; Info lookup
 
+(declare-function info-lookup-maybe-add-help "info-look")
+
 (with-eval-after-load 'info-look
   (info-lookup-maybe-add-help
    :mode '(emacs-lisp-mode . "hyperdrive")
