@@ -68,8 +68,8 @@ This manual is for @code{hyperdrive.el} version 0.2-pre.
 Installation
 
 * Emacs::
-* hyperdrive.el: hyperdriveel. 
 * hyper-gateway::
+* hyperdrive.el: hyperdriveel. 
 
 hyperdrive.el
 
@@ -176,14 +176,23 @@ modify this GNU manual.''
 
 @menu
 * Emacs::
-* hyperdrive.el: hyperdriveel. 
 * hyper-gateway::
+* hyperdrive.el: hyperdriveel. 
 @end menu
 
 @node Emacs
 @section Emacs
 
 @code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, Emacs} version 27.1 or later.
+
+@node hyper-gateway
+@section hyper-gateway
+
+@code{hyperdrive.el} relies on
+@uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for
+talking to the hypercore network
+(@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation
+instructions}).
 
 @node hyperdriveel
 @section hyperdrive.el
@@ -258,15 +267,6 @@ also be installed.
 After installing with `package-vc`, you can later upgrade to a newer
 version of @code{hyperdrive.el} by running @code{M-x package-vc-upgrade RET
 hyperdrive RET}.
-
-@node hyper-gateway
-@section hyper-gateway
-
-@code{hyperdrive.el} relies on
-@uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for
-talking to the hypercore network
-(@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation
-instructions}).
 
 @node Usage
 @chapter Usage

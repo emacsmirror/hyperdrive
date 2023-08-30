@@ -43,6 +43,14 @@ modify this GNU manual."
 
 ~hyperdrive.el~ requires [[https://www.gnu.org/software/emacs/][Emacs]] version 27.1 or later.
 
+** hyper-gateway
+
+~hyperdrive.el~ relies on
+[[https://github.com/RangerMauve/hyper-gateway/][hyper-gateway]] for
+talking to the hypercore network
+([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway][installation
+instructions]]).
+
 ** hyperdrive.el
 
 There are two recommended options for installing ~hyperdrive.el~: MELPA
@@ -106,14 +114,6 @@ also be installed.
 After installing with `package-vc`, you can later upgrade to a newer
 version of ~hyperdrive.el~ by running ~M-x package-vc-upgrade RET
 hyperdrive RET~.
-
-** hyper-gateway
-
-~hyperdrive.el~ relies on
-[[https://github.com/RangerMauve/hyper-gateway/][hyper-gateway]] for
-talking to the hypercore network
-([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway][installation
-instructions]]).
 
 * Usage
 
