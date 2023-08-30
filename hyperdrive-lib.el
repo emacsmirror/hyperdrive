@@ -119,6 +119,11 @@ generated from PATH.  When ENCODE is non-nil, encode PATH."
    :version version
    :etc etc))
 
+(cl-defun hyperdrive-sort-entries (entries &key (by hyperdrive-directory-sort))
+  ;; FIXME: Docstring.  Sorry.  :)
+  "Return ENTRIES sorted by BY."
+  (cl-sort entries (cdr by) :key (car by)))
+
 ;;;; API
 
 ;; These functions take a URL argument, not a hyperdrive-entry struct.

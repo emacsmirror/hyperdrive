@@ -95,6 +95,18 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other"))
   :group 'hyperdrive)
 
+(defcustom hyperdrive-directory-sort '(hyperdrive-entry-name . string<)
+  "Column by which directory entries are sorted.
+Internally, a cons cell of (KEY . PREDICATE), the KEY being the
+`hyperdrive-entry' accessor function and the PREDICATE being the
+appropriate function (e.g. `time-less-p' for
+`hyperdrive-entry-modified', `<' for `hyperdrive-entry-size',
+etc)."
+  :type '(choice (const :tag "By name" (hyperdrive-entry-name . string<))
+                 (const :tag "By size" (hyperdrive-entry-size . <))
+                 (const :tag "By date" (hyperdrive-entry-modified . time-less-p)))
+  :group 'hyperdrive)
+
 (defcustom hyperdrive-history-display-buffer-action
   '(display-buffer-same-window)
   "Display buffer action for hyperdrive history buffers.

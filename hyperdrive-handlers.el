@@ -99,79 +99,68 @@ arguments."
   ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
   ;; in a couple of seconds (same in hyperdrive-handler-default)
   ;; (like new with-delayed-message ?)
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version)
-                directory-entry)
-               (url (hyperdrive-entry-url directory-entry))
-               ((cl-struct plz-response headers body)
-                ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
-                (hyperdrive-api 'get url :as 'response :noquery t))
-               (entry-names (json-read-from-string body))
-               (entries
-                (mapcar (lambda (entry-name)
-                          (hyperdrive-entry-create
-                           :hyperdrive hyperdrive
-                           :path (concat (url-unhex-string path) entry-name)
-                           :version version
-                           :encode t))
-                        entry-names))
-               (parent-entry (hyperdrive-parent directory-entry))
-               (main-header (hyperdrive-entry-description directory-entry))
-               (header
-                (if hyperdrive-column-headers
-                    (concat main-header "\n"
-                            (format "%6s  %s  %s"
-                                    (propertize "Size" 'face 'hyperdrive-column-header)
-                                    (format hyperdrive-timestamp-format-string
-                                            (propertize "Last Modified" 'face 'hyperdrive-column-header))
-                                    (propertize "Name" 'face 'hyperdrive-column-header)))
-                  main-header))
-               (ewoc) (prev-node) (prev-point))
-    (when parent-entry
-      (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
-      (push parent-entry entries))
-    (setf directory-entry (hyperdrive--fill directory-entry headers))
-    (hyperdrive-fill-metadata hyperdrive)
-    (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
-      (with-silent-modifications
-        (if hyperdrive-ewoc
-            (progn
-              ;; Store `prev-node' so we can jump to it later.
-              (setf prev-node (ewoc-locate hyperdrive-ewoc))
-              (setf prev-point (point))
-              ;; Then clear existing ewoc.
-              (ewoc-filter hyperdrive-ewoc #'ignore))
-          ;; Or make a new one.
-          (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
-        (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
-        (erase-buffer)
-        (ewoc-set-hf hyperdrive-ewoc header "")
-        (mapc (lambda (entry)
-                (ewoc-enter-last hyperdrive-ewoc entry))
-              entries)
-        (when prev-node
-          ;; Put point back where it was.
-          (goto-char
-           (if-let ((new-node (hyperdrive-ewoc-find-node ewoc (ewoc-data prev-node)
-                                :predicate (lambda (a b)
-                                             ;; TODO: This doesn't work.
-                                             (equal (hyperdrive-entry-path a)
-                                                    (hyperdrive-entry-path b))))))
-               (ewoc-location new-node)
-             prev-point)))
-        (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
-        (mapc (lambda (entry)
-                (hyperdrive-fill entry
-                  :then (lambda (_response)
-                          (with-current-buffer (ewoc-buffer ewoc)
-                            ;; TODO: Add queue back for sorting
-                            ;; FIXME: Refreshing the buffer rapidly signals an error here
-                            (with-silent-modifications
-                              (ewoc-invalidate ewoc (hyperdrive-ewoc-find-node ewoc entry)))))
-                  ;; TODO: Handle failures?
-                  :else (lambda (_error) (message "ERROR"))))
-              entries)
-        (when then
-          (funcall then))))))
+  (cl-labels ((goto-entry (entry ewoc)
+                (when-let ((node (hyperdrive-ewoc-find-node ewoc entry
+                                   :predicate #'hyperdrive-entry-equal)))
+                  (goto-char (ewoc-location node)))))
+    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) directory-entry)
+                 (url (hyperdrive-entry-url directory-entry))
+                 ((cl-struct plz-response headers body)
+                  ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
+                  (hyperdrive-api 'get url :as 'response :noquery t))
+                 (entry-names (json-read-from-string body))
+                 (entries (mapcar (lambda (entry-name)
+                                    (hyperdrive-entry-create
+                                     :hyperdrive hyperdrive
+                                     :path (concat (url-unhex-string path) entry-name)
+                                     :version version
+                                     :encode t))
+                                  entry-names))
+                 (parent-entry (hyperdrive-parent directory-entry))
+                 (main-header (hyperdrive-entry-description directory-entry))
+                 (header (if hyperdrive-column-headers
+                             (concat main-header "\n"
+                                     (format "%6s  %s  %s"
+                                             (propertize "Size" 'face 'hyperdrive-column-header)
+                                             (format hyperdrive-timestamp-format-string
+                                                     (propertize "Last Modified" 'face 'hyperdrive-column-header))
+                                             (propertize "Name" 'face 'hyperdrive-column-header)))
+                           main-header))
+                 (metadata-queue) (ewoc) (prev-entry) (prev-point))
+      (hyperdrive-fill-metadata hyperdrive)
+      (setf directory-entry (hyperdrive--fill directory-entry headers))
+      (when parent-entry
+        (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
+        (push parent-entry entries))
+      (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
+        (with-silent-modifications
+          (if hyperdrive-ewoc
+              (progn
+                (setf prev-entry (ewoc-data (ewoc-locate hyperdrive-ewoc))
+                      prev-point (point))
+                (ewoc-filter hyperdrive-ewoc #'ignore))
+            (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
+          (setf ewoc hyperdrive-ewoc    ; Bind this for lambdas.
+                metadata-queue (make-plz-queue
+                                :limit 20
+                                :finally (lambda ()
+                                           (with-current-buffer (ewoc-buffer ewoc)
+                                             (ewoc-set-hf ewoc header "")
+                                             (setf entries (hyperdrive-sort-entries entries))
+                                             (dolist (entry entries)
+                                               (ewoc-enter-last ewoc entry))
+                                             (or (when prev-entry
+                                                   (goto-entry prev-entry ewoc))
+                                                 (goto-char prev-point)))))) 
+          (ewoc-set-hf ewoc header "Loading...")
+          (dolist (entry entries)
+            ;; TODO: Update header with progress.
+            (hyperdrive-fill entry :queue metadata-queue))
+          (plz-run metadata-queue)
+          (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
+          ;; TODO: Should we display the buffer before or after calling THEN?
+          (when then
+            (funcall then)))))))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
