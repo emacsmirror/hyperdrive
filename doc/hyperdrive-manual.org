@@ -347,7 +347,8 @@ copied to your clipboard from an external program with ~yank-media~.
 #+findex: hyperdrive-mirror-do-upload
 
 ~hyperdrive-mirror~ uploads a directory, mirroring its subdirectory
-structure in your hyperdrive.
+structure in your hyperdrive. It is an interactive command, but the
+following example shows its non-interactive use.
 
 Let's say you have some files on your filesystem in the ~~/blog/~
 directory, and you want to upload them all into a hyperdrive you
@@ -362,12 +363,14 @@ run ~hyperdrive-mirror-do-upload~ (bound to ~C-c C-c~ by default) in the
                    :target-dir "/blog/")
 #+end_src
 
-To upload the same files without confirming, add ~:no-confirm t~.
+To upload the same files without confirming, add ~:no-confirm
+t~.  Interactively, use two universal prefix arguments ~C-u C-u~.
 
 *** Mirror files by tag or other attributes
 
-~hyperdrive-mirror~ can accept a ~PREDICATE~ argument, which you can use
-to upload only certain files.
+~hyperdrive-mirror~ can accept a ~PREDICATE~ argument, which you can
+use to upload only certain files.  Interactively, one universal prefix
+argument ~C-u~ make this command prompt you for ~PREDICATE~.
 
 Let's say that you have some files on your filesystem in the ~~/blog/~
 directory, but you only want to upload those files which have been

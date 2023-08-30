@@ -617,7 +617,8 @@ copied to your clipboard from an external program with @code{yank-media}.
 @findex hyperdrive-mirror-do-upload
 
 @code{hyperdrive-mirror} uploads a directory, mirroring its subdirectory
-structure in your hyperdrive.
+structure in your hyperdrive. It is an interactive command, but the
+following example shows its non-interactive use.
 
 Let's say you have some files on your filesystem in the @code{~/blog/}
 directory, and you want to upload them all into a hyperdrive you
@@ -632,13 +633,15 @@ run @code{hyperdrive-mirror-do-upload} (bound to @code{C-c C-c} by default) in t
                    :target-dir "/blog/")
 @end lisp
 
-To upload the same files without confirming, add @code{:no-confirm t}.
+To upload the same files without confirming, add @code{:no-confirm
+t}.  Interactively, use two universal prefix arguments @code{C-u C-u}.
 
 @node Mirror files by tag or other attributes
 @subsection Mirror files by tag or other attributes
 
-@code{hyperdrive-mirror} can accept a @code{PREDICATE} argument, which you can use
-to upload only certain files.
+@code{hyperdrive-mirror} can accept a @code{PREDICATE} argument, which you can
+use to upload only certain files.  Interactively, one universal prefix
+argument @code{C-u} make this command prompt you for @code{PREDICATE}.
 
 Let's say that you have some files on your filesystem in the @code{~/blog/}
 directory, but you only want to upload those files which have been
