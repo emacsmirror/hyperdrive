@@ -194,6 +194,7 @@ directory (if its URL ends in \"/\"), pass to
       (hyperdrive-handler-directory entry :then then)
     (hyperdrive-handler-default entry :then then)))
 
+(declare-function hyperdrive-mode "hyperdrive")
 (cl-defun hyperdrive-handler-html (entry &key then)
   "Show ENTRY, where ENTRY is an HTML file.
 Renders HTML with `shr-insert-document', then calls THEN if
