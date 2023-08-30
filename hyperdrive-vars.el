@@ -102,9 +102,16 @@ Internally, a cons cell of (KEY . PREDICATE), the KEY being the
 appropriate function (e.g. `time-less-p' for
 `hyperdrive-entry-modified', `<' for `hyperdrive-entry-size',
 etc)."
-  :type '(choice (const :tag "By name" (hyperdrive-entry-name . string<))
-                 (const :tag "By size" (hyperdrive-entry-size . <))
-                 (const :tag "By date" (hyperdrive-entry-modified . time-less-p)))
+  :type '(choice (cons :tag "By name" (const hyperdrive-entry-name)
+                       (choice (const :tag "Ascending" string<)
+                               (const :tag "Descending" string>)))
+                 (cons :tag "By size" (const hyperdrive-entry-size)
+                       (choice (const :tag "Ascending" <)
+                               (const :tag "Descending" >)))
+                 (cons :tag "By date" (const hyperdrive-entry-modified)
+                       (choice (const :tag "Ascending" time-less-p)
+                               (const :tag "Descending" (lambda (a b)
+                                                          (not (time-less-p a b)))))))
   :group 'hyperdrive)
 
 (defcustom hyperdrive-history-display-buffer-action
