@@ -134,13 +134,8 @@ arguments."
         (push parent-entry entries))
       (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
         (with-silent-modifications
-          (if hyperdrive-ewoc
-              (progn
-                (setf prev-entry (ewoc-data (ewoc-locate hyperdrive-ewoc))
-                      prev-point (point))
-                (ewoc-filter hyperdrive-ewoc #'ignore))
-            (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
-          (setf ewoc hyperdrive-ewoc    ; Bind this for lambdas.
+          (setf ewoc (or hyperdrive-ewoc     ; Bind this for lambdas.
+                         (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
                 metadata-queue (make-plz-queue
                                 :limit 20
                                 :finally (lambda ()
@@ -151,11 +146,15 @@ arguments."
                                                (ewoc-enter-last ewoc entry))
                                              (or (when prev-entry
                                                    (goto-entry prev-entry ewoc))
-                                                 (goto-char prev-point)))))) 
+                                                 (goto-char prev-point))))))
+          (setf prev-entry (ewoc-data (ewoc-locate hyperdrive-ewoc))
+                prev-point (point))
+          (ewoc-filter hyperdrive-ewoc #'ignore) 
           (ewoc-set-hf ewoc header "Loading...")
           (dolist (entry entries)
             ;; TODO: Update header with progress.
-            (hyperdrive-fill entry :queue metadata-queue))
+            (hyperdrive-fill entry :queue metadata-queue
+              :then #'ignore))
           (plz-run metadata-queue)
           (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
           ;; TODO: Should we display the buffer before or after calling THEN?
