@@ -748,6 +748,15 @@ the "folder" to disappear as well.  When a hyperdrive "file" or
 "folder" is not found, ~hyperdrive.el~ prompts you for an action
 (see [[*Unknown paths]]).
 
+* Tips
+
+** Quick documentation access
+
+To view documentation for ~hyperdrive.el~ commands, functions, and
+variables, press ~C-h o~ (~describe-symbol~). Inside the ~*Help*~
+buffer that pops open, you can press ~i~ (~help-goto-info~) to jump to
+the relevant section in the ~hyperdrive.el~ manual.
+
 * Troubleshooting
 
 If you run into issues, please first try resetting the value of
