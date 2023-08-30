@@ -39,11 +39,63 @@ modify this GNU manual."
 
 * Installation
 
+** Emacs
+
 ~hyperdrive.el~ requires [[https://www.gnu.org/software/emacs/][Emacs]] version 27.1 or later.
+
+** hyperdrive.el
+
+There are two recommended options for installing ~hyperdrive.el~: MELPA
+and ~package-vc~.
+
+*** MELPA
 
 ~hyperdrive.el~ is available on
 [[https://melpa.org/#/getting-started][MELPA]]. Once you've set up
 MELPA, you can run ~M-x package-install RET hyperdrive RET~.
+
+*** package-vc
+
+/package-vc is only available on Emacs 29.1 or later./
+
+1. Ensure you have ~git~, ~makeinfo~ (part of the ~texinfo~ package), and
+   Emacs 29.1 or newer.
+
+2. Add the following lines to your ~init.el~ startup file:
+
+#+begin_src emacs-lisp
+  (unless (package-installed-p 'hyperdrive)
+    (require 'package-vc)
+    ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
+    (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
+    (package-vc-install '(hyperdrive
+                          :url "https://git.sr.ht/~ushin/hyperdrive.el"
+                          :doc "doc/hyperdrive-manual.org")))
+#+end_src
+
+Alternatively, if you have already cloned the ~hyperdrive.el~ repository,
+you can use the following snippet to install from that repository:
+
+#+begin_src emacs-lisp
+  (unless (package-installed-p 'hyperdrive)
+    (require 'package-vc)
+    ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
+    (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
+    (add-to-list 'package-vc-selected-packages
+                 '(hyperdrive
+                          :url "https://git.sr.ht/~ushin/hyperdrive.el"
+                          :doc "doc/hyperdrive-manual.org"))
+    ;; Change the path below to the location of your local hyperdrive.el repository.
+    (package-vc-install-from-checkout "~/.local/src/hyperdrive.el" "hyperdrive"))
+#+end_src
+
+In your ~init.el~, type ~M-x eval-buffer RET~.
+
+# TODO: Change "commands like ..." to reference easy menu
+# functionality once implemented.
+If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-start~
+should now be available.  The documentation for ~hyperdrive.el~ should
+also be installed.
 
 ** hyper-gateway
 
