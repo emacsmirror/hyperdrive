@@ -134,7 +134,7 @@ arguments."
         (push parent-entry entries))
       (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
         (with-silent-modifications
-          (setf ewoc (or hyperdrive-ewoc     ; Bind this for lambdas.
+          (setf ewoc (or hyperdrive-ewoc ; Bind this for lambdas.
                          (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
                 metadata-queue (make-plz-queue
                                 :limit 20
@@ -146,8 +146,9 @@ arguments."
                                                (ewoc-enter-last ewoc entry))
                                              (or (when prev-entry
                                                    (goto-entry prev-entry ewoc))
-                                                 (goto-char prev-point))))))
-          (setf prev-entry (ewoc-data (ewoc-locate hyperdrive-ewoc))
+                                                 (goto-char prev-point)))))
+                prev-entry (when-let ((node (ewoc-locate hyperdrive-ewoc)))
+                             (ewoc-data node))
                 prev-point (point))
           (ewoc-filter hyperdrive-ewoc #'ignore) 
           (ewoc-set-hf ewoc header "Loading...")
