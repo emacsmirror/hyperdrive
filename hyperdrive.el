@@ -370,6 +370,8 @@ for more information.  See `hyperdrive-read-entry' and
   (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry))
 
+;; TODO: Consider moving `hyperdrive-open' and `hyperdrive-open-url' to hyperdrive-lib.el.
+
 ;;;###autoload
 (defun hyperdrive-open-url (url)
   "Open hyperdrive URL."
