@@ -1,0 +1,184 @@
+:PROPERTIES:
+:ID:       c04133ec-99fc-4c87-aa50-5e1f45b63285
+:END:
++ Note: This file's name contains a space on purpose, to ensure we handle correctly filenames with spaces.
+
+* Org link tests
+
+This subtree helps us understand and test the different kinds of Org links and whether and how they should work in various contexts.
+
+NOTE: This file should be loaded from a hyperdrive in order to verify that these links work correctly for an Org file loaded from a hyperdrive.
+
+To decode these links with Org, use ~(org-element-context)~ with point on the link.  The resulting element/plist is used in function ~hyperdrive--org-open-at-point~.
+
+** Link types
+
+Here are various link types which we want to test.
+
+*** ~hyper://~-prefixed, with or without brackets
+
++ *Notes:*
+
+  + Spaces and such should be URL-encoded :: We decline to automatically convert, e.g. spaces to ~%20~ when opening links; they should already be encoded.
+    + [ ] Consider giving an error when unencoded e.g. spaces are detected.
+
+**** TODO Links without targets
+:LOGBOOK:
+- State "TODO"       from              [2023-08-30 Wed 14:43]
+:END:
+
++ [[hyper://PUBLIC_KEY/links%20test.org]]
++ hyper://PUBLIC_KEY/links%20test.org
+
++ [2023-08-30 Wed 14:43] Getting this error (with the public key changed to the real one), for both the bracketed and unbracketed links: ~Hyperdrive: Generic hyper-gateway status 500 error. Is this URL correct? hyper:////wnqpdr9xdy1p9wofqbj7e7csueg7aynqbot8gt53ueunezry6any/links%20test.org~
+
+  + There are FOUR SLASHES.
+    
+**** Links with targets
+
+*NOTE:* While in Org mode, these anchored links can only point to headings with matching ~CUSTOM_ID~ properties, in hyperdrive we first check for matching ~CUSTOM_ID~, then ~ID~, then exact heading title content matches.  (The anchor part is URL-decoded and the leading ~#~ is discarded.)
+
++ [[hyper://PUBLIC_KEY/links%20test.org#Heading%20A]]
++ hyper://PUBLIC_KEY/links%20test.org#Heading%20A
+
++ There are FOUR SLASHES.
+
+*** Non-~hyper://~-prefixed links (inside brackets)
+
++ *Notes:*
+
+  + Spaces and such are required to NOT be encoded :: Spaces in bracketed, Org-style links must /not/ have spaces, etc. URL-encoded.
+    + We do this so that existing repositories of Org files can be mirrored to a hyperdrive as-is and the relative links between them will still work.
+
+**** Links without targets
+
+/Link to a file, without specifying a heading within it./
+
+***** Links to hyperdrive files
+
+/Note the lack of ~file:~ prefix, which would indicate a link to a local file./
+
++ [[./links test.org]]
++ [[/links test.org]] :: For non-hyperdrive files, this actually links to a file in the root directory of the filesystem.  For hyperdrives, we want this to point to a file in the hyperdrive's root.
+
+****** TODO Fix functionality for links like ~[[links test.org]]~
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 16:40]
+:END:
+
+Org doesn't support this for local files (this syntax would point to a heading by that name), so we should follow Org here.  This is actually a bug.
+
+***** Links to local files
+
+/The ~file:~ prefix indicates that the link points to a local file (not one on a hyperdrive relative to the current hyperdrive file)/.
+
++ [[file:./links test.org]]
++ [[file:links test.org]]
+
+**** Links with targets
+
+/Links to headings within a file, rather than links to the file./
+
+***** ~*~-prefixed heading names
+:LOGBOOK:
+- Note taken on [2023-08-29 Tue 15:53] \\
+  This does not currently work in hyperdrive-mode.
+- State "TODO"       from              [2023-08-29 Tue 15:53]
+:END:
+
+****** TODO Unspecified file (same file)
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 15:58]
+:END:
+
+/Links to headings within the file containing the link.  The filename is not specified./
+
++ [[*Heading A]]
+  + Does not work, includes target part in URL sent to server.
+
+
+****** TODO Specified file
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 15:58]
+:END:
+
+/Links to headings in a specified file, potentially a different one./
+
++ [[./links test.org::*Heading A]]
++ [[/links test.org::*Heading A]]
+
++ These both go to the file but not the heading.
+
+***** Unprefixed heading names
+
+/Without a ~*~ or ~./~, the link is intended to point to a heading within the same document./
+
+****** Unspecified file (same file)
+
++ [[Heading A]]
+
+****** Specified file
+
++ [[./links test.org::Heading A]]
++ [[/links test.org::Heading A]]
+
+***** Custom IDs: HTML-style, ~#~-anchor-suffixed links
+
+****** TODO Unspecified file (same file)
+:LOGBOOK:
+- State "TODO"       from              [2023-08-29 Tue 15:58]
+:END:
+
++ [[#Heading%20A]]
+
+  + This is currently looking for a heading with the ~#~ as part of its actual entry; it should be removing the ~#~ before calling ~org-find-exact-headline-in-buffer~.
+
+      #+begin_src elisp
+      (hyperdrive--org-link-goto "#Heading%20A")
+      #+end_src
+
+****** DONE Specified file
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2023-08-30 Wed 14:48] \\
+  Both of these work.
+- State "TODO"       from              [2023-08-29 Tue 15:58]
+:END:
+
++ [[./links test.org::#Heading%20A]]
++ [[/links test.org#Heading%20A]]
+
+***** Regexp searches for file content
+
+We do not currently support this.
+
+** Test data
+
+See [[file:tests/org links.org][tests/org links.org]]
+
+
+
+* Test data
+
+Below this line is a series of headings we use to link to for testing purposes.
+
+** Heading A
+
+/Heading without IDs (link to heading text)./
+
+** Heading A
+
+/This intentionally duplicates the previous heading for testing purposes./
+
+** Heading with CUSTOM_ID
+:PROPERTIES:
+:CUSTOM_ID: hyperdrive foo
+:END:
+
+We intentionally put a space in the custom ID so we can test for that.
+
+** Heading with ID
+:PROPERTIES:
+:ID:       hyperdrive bar
+:END:
+
+We intentionally put a space in the ID so we can test for that.
