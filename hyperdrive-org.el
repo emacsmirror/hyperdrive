@@ -32,6 +32,7 @@
 (defvar hyperdrive-mode)
 
 (declare-function hyperdrive-open "hyperdrive")
+(declare-function hyperdrive-open-url "hyperdrive")
 (declare-function hyperdrive-entry-url "hyperdrive-lib")
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
