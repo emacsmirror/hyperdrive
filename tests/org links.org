@@ -5,11 +5,11 @@
 
 * Org link tests
 
-This subtree helps us understand and test the different kinds of Org links and whether and how they should work in various contexts.
+/This subtree helps us understand and test the different kinds of Org links and whether and how they should work in various contexts./
 
-NOTE: This file should be loaded from a hyperdrive in order to verify that these links work correctly for an Org file loaded from a hyperdrive.
-
-To decode these links with Org, use ~(org-element-context)~ with point on the link.  The resulting element/plist is used in function ~hyperdrive--org-open-at-point~.
++ *Notes*
+  + This file should be loaded from a hyperdrive in order to verify that these links work correctly for an Org file loaded from a hyperdrive.
+  + To decode these links with Org, use ~(org-element-context)~ with point on the link.  The resulting element/plist is used in function ~hyperdrive--org-open-at-point~.
 
 ** Link types
 
@@ -159,7 +159,7 @@ See [[file:tests/org links.org][tests/org links.org]]
 
 * Test data
 
-Below this line is a series of headings we use to link to for testing purposes.
+/Below this line is a series of headings we use to link to for testing purposes./
 
 ** Heading A
 
@@ -174,11 +174,11 @@ Below this line is a series of headings we use to link to for testing purposes.
 :CUSTOM_ID: hyperdrive foo
 :END:
 
-We intentionally put a space in the custom ID so we can test for that.
+/We intentionally put a space in the custom ID so we can test for that./
 
 ** Heading with ID
 :PROPERTIES:
 :ID:       hyperdrive bar
 :END:
 
-We intentionally put a space in the ID so we can test for that.
+/We intentionally put a space in the ID so we can test for that./
