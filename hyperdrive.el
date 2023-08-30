@@ -321,6 +321,8 @@ without confirmation."
 Intended to be passed to `buffer-local-restore-state'.")
 
 (define-minor-mode hyperdrive-mode
+  ;; TODO: Consider moving hyperdrive-mode definition to
+  ;; hyperdrive-lib.el.  (Since it's used in multiple files.)
   "Minor mode for buffers opened from hyperdrives."
   ;; TODO: When users change the major-mode inside a buffer visiting hyperdrive file,
   ;; `hyperdrive-mode' is disabled. We check for `hyperdrive-mode' inside a number of
