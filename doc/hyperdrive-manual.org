@@ -772,12 +772,15 @@ Please ensure that your version of ~hyper-gateway~ (~M-x
 hyperdrive-hyper-gateway-version~) is the latest version
 ([[https://github.com/RangerMauve/hyper-gateway/releases/][releases]]).
 
-* Bugs and Patches
+* Contributing/Getting help
 
-Bugs can be submitted to the [[https://todo.sr.ht/~ushin/ushin][ushin issue
-tracker]]. Patches,
-comments or questions can be submitted to the [[https://lists.sr.ht/~ushin/ushin][ushin public
-inbox]].
+You're welcome to join our public XMPP chat room!
+
+- ~xmpp:discuss@conference.ushin.org~ ([[https://anonymous.cheogram.com/discuss@conference.ushin.org][Join anonymously from your browser]])
+- ~#_bifrost_discuss_conference.ushin.org:aria-net.org~ (Matrix bridge)
+
+Bugs can be submitted to the [[https://todo.sr.ht/~ushin/ushin][ushin issue tracker]]. Patches, comments or
+questions can be submitted to the [[https://lists.sr.ht/~ushin/ushin][ushin public inbox]].
 
 * Acknowledgments
 
