@@ -122,6 +122,12 @@ QUERY and ARGS are passed in from `save-some-buffers-functions', which see."
 
 ;; TODO(A): Command to rename paths.
 
+(defun hyperdrive-info-manual ()
+  ;; TODO(doc): Document in manual.
+  "Show the hyperdrive Info manual."
+  (interactive)
+  (info "(hyperdrive)"))
+
 ;;;###autoload
 (defun hyperdrive-start ()
   "Start `hyper-gateway' systemd service if not already running."
