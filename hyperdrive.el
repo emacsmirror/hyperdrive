@@ -774,6 +774,14 @@ Universal prefix argument \\[universal-argument] forces
 	        ;; PREFIX
 	        "^ -+ .*: "
 	        ;; SUFFIX
+	        "\\( \\|$\\)")
+               (;; INFO-NODE
+	        "(hyperdrive)Keystroke Index"
+	        ;; TRANS-FUNC
+	        nil
+	        ;; PREFIX
+	        "^ -+ .*: "
+	        ;; SUFFIX
 	        "\\( \\|$\\)"))))
 
 ;;;; Footer
