@@ -54,6 +54,12 @@ and ~package-vc~.
 [[https://melpa.org/#/getting-started][MELPA]]. Once you've set up
 MELPA, you can run ~M-x package-install RET hyperdrive RET~.
 
+After installing with MELPA, you can later upgrade to a newer version
+of ~hyperdrive.el~ by running ~M-x package-refresh-contents~ then ~M-x
+package-upgrade RET hyperdrive~. If ~package-upgrade~ is not available
+as a command, display the list of packages with ~M-x list-packages~,
+select ~hyperdrive~, and click the `Install` button.
+
 *** package-vc
 
 /package-vc is only available on Emacs 29.1 or later./
@@ -96,6 +102,10 @@ In your ~init.el~, type ~M-x eval-buffer RET~.
 If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-start~
 should now be available.  The documentation for ~hyperdrive.el~ should
 also be installed.
+
+After installing with `package-vc`, you can later upgrade to a newer
+version of ~hyperdrive.el~ by running ~M-x package-vc-upgrade RET
+hyperdrive RET~.
 
 ** hyper-gateway
 
