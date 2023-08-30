@@ -55,8 +55,9 @@ This manual is for @code{hyperdrive.el} version 0.2-pre.
 * Customization::
 * Concepts::
 * Known limitations::
+* Tips::
 * Troubleshooting::
-* Bugs and Patches::
+* Contributing/Getting help::
 * Acknowledgments::
 * Indices::
 * GNU Free Documentation License::
@@ -66,7 +67,14 @@ This manual is for @code{hyperdrive.el} version 0.2-pre.
 
 Installation
 
+* Emacs::
+* hyperdrive.el: hyperdriveel. 
 * hyper-gateway::
+
+hyperdrive.el
+
+* MELPA::
+* package-vc::
 
 Usage
 
@@ -78,6 +86,7 @@ Usage
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Bookmark a hyperdrive::
+* Stream audio and video::
 * Download hyperdrive files::
 * Upload files from your filesystem::
 * Purge a hyperdrive::
@@ -130,6 +139,10 @@ Known limitations
 
 * Files and folders can have the same name::
 
+Tips
+
+* Quick documentation access::
+
 Indices
 
 * Keystroke index::
@@ -161,15 +174,90 @@ modify this GNU manual.''
 @node Installation
 @chapter Installation
 
+@menu
+* Emacs::
+* hyperdrive.el: hyperdriveel. 
+* hyper-gateway::
+@end menu
+
+@node Emacs
+@section Emacs
+
 @code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, Emacs} version 27.1 or later.
+
+@node hyperdriveel
+@section hyperdrive.el
+
+There are two recommended options for installing @code{hyperdrive.el}: MELPA
+and @code{package-vc}.
+
+@menu
+* MELPA::
+* package-vc::
+@end menu
+
+@node MELPA
+@subsection MELPA
 
 @code{hyperdrive.el} is available on
 @uref{https://melpa.org/#/getting-started, MELPA}. Once you've set up
 MELPA, you can run @code{M-x package-install RET hyperdrive RET}.
 
-@menu
-* hyper-gateway::
-@end menu
+After installing with MELPA, you can later upgrade to a newer version
+of @code{hyperdrive.el} by running @code{M-x package-refresh-contents} then @code{M-x
+package-upgrade RET hyperdrive}. If @code{package-upgrade} is not available
+as a command, display the list of packages with @code{M-x list-packages},
+select @code{hyperdrive}, and click the `Install` button.
+
+@node package-vc
+@subsection package-vc
+
+@emph{package-vc is only available on Emacs 29.1 or later.}
+
+@enumerate
+@item
+Ensure you have @code{git}, @code{makeinfo} (part of the @code{texinfo} package), and
+Emacs 29.1 or newer.
+
+@item
+Add the following lines to your @code{init.el} startup file:
+@end enumerate
+
+@lisp
+(unless (package-installed-p 'hyperdrive)
+  (require 'package-vc)
+  ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
+  (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
+  (package-vc-install '(hyperdrive
+                        :url "https://git.sr.ht/~ushin/hyperdrive.el"
+                        :doc "doc/hyperdrive-manual.org")))
+@end lisp
+
+Alternatively, if you have already cloned the @code{hyperdrive.el} repository,
+you can use the following snippet to install from that repository:
+
+@lisp
+(unless (package-installed-p 'hyperdrive)
+  (require 'package-vc)
+  ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
+  (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
+  (add-to-list 'package-vc-selected-packages
+               '(hyperdrive
+                        :url "https://git.sr.ht/~ushin/hyperdrive.el"
+                        :doc "doc/hyperdrive-manual.org"))
+  ;; Change the path below to the location of your local hyperdrive.el repository.
+  (package-vc-install-from-checkout "~/.local/src/hyperdrive.el" "hyperdrive"))
+@end lisp
+
+In your @code{init.el}, type @code{M-x eval-buffer RET}.
+
+If all goes well, @code{hyperdrive.el} commands like @code{M-x hyperdrive-start}
+should now be available.  The documentation for @code{hyperdrive.el} should
+also be installed.
+
+After installing with `package-vc`, you can later upgrade to a newer
+version of @code{hyperdrive.el} by running @code{M-x package-vc-upgrade RET
+hyperdrive RET}.
 
 @node hyper-gateway
 @section hyper-gateway
@@ -196,6 +284,7 @@ them.
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Bookmark a hyperdrive::
+* Stream audio and video::
 * Download hyperdrive files::
 * Upload files from your filesystem::
 * Purge a hyperdrive::
@@ -440,10 +529,16 @@ default:
 @item
 @code{w} copies the URL of the file at the start of the range at point
 @end itemize
-@kindex hyperdrive-history-download-file)
+@kindex hyperdrive-history-download-file
 @itemize
 @item
 @code{d} downloads the file at the start of the range at point
+@end itemize
+@kindex hyperdrive-history-diff
+@itemize
+@item
+@code{=} displays the differences between the version at point and the
+prior version
 @end itemize
 
 To act on the latest known version of the file, use these keybindings
@@ -472,6 +567,14 @@ You can use the built-in @code{bookmark-set}, @code{bookmark-jump}, and
 @code{bookmark-list} functions to store and jump to a hyperdrive file or
 directory. To jump to or view only hyperdrive bookmarks, use
 @code{hyperdrive-bookmark-jump} and @code{hyperdrive-bookmark-list}.
+
+@node Stream audio and video
+@section Stream audio and video
+
+When you use @code{hyperdrive-find-file} or some other command to open a
+streamable audio/video file, Emacs will use an external program to
+stream that video from the network.  After the stream finishes, the
+audio/video file is stored locally.
 
 @node Download hyperdrive files
 @section Download hyperdrive files
@@ -1051,6 +1154,21 @@ the ``folder'' to disappear as well.  When a hyperdrive ``file'' or
 ``folder'' is not found, @code{hyperdrive.el} prompts you for an action
 (see @ref{Unknown paths}).
 
+@node Tips
+@chapter Tips
+
+@menu
+* Quick documentation access::
+@end menu
+
+@node Quick documentation access
+@section Quick documentation access
+
+To view documentation for @code{hyperdrive.el} commands, functions, and
+variables, press @code{C-h o} (@code{describe-symbol}). Inside the @code{*Help*}
+buffer that pops open, you can press @code{i} (@code{help-goto-info}) to jump to
+the relevant section in the @code{hyperdrive.el} manual.
+
 @node Troubleshooting
 @chapter Troubleshooting
 
@@ -1067,13 +1185,20 @@ Please ensure that your version of @code{hyper-gateway} (@code{M-x
 hyperdrive-hyper-gateway-version}) is the latest version
 (@uref{https://github.com/RangerMauve/hyper-gateway/releases/, releases}).
 
-@node Bugs and Patches
-@chapter Bugs and Patches
+@node Contributing/Getting help
+@chapter Contributing/Getting help
 
-Bugs can be submitted to the @uref{https://todo.sr.ht/~ushin/ushin, ushin issue
-tracker}. Patches,
-comments or questions can be submitted to the @uref{https://lists.sr.ht/~ushin/ushin, ushin public
-inbox}.
+You're welcome to join our public XMPP chat room!
+
+@itemize
+@item
+@code{xmpp:discuss@@conference.ushin.org} (@uref{https://anonymous.cheogram.com/discuss@@conference.ushin.org, Join anonymously from your browser})
+@item
+@code{#_bifrost_discuss_conference.ushin.org:aria-net.org} (Matrix bridge)
+@end itemize
+
+Bugs can be submitted to the @uref{https://todo.sr.ht/~ushin/ushin, ushin issue tracker}. Patches, comments or
+questions can be submitted to the @uref{https://lists.sr.ht/~ushin/ushin, ushin public inbox}.
 
 @node Acknowledgments
 @chapter Acknowledgments
