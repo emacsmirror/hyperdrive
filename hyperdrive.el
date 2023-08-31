@@ -124,7 +124,6 @@ QUERY and ARGS are passed in from `save-some-buffers-functions', which see."
 
 ;;;###autoload
 (defun hyperdrive-info-manual ()
-  ;; TODO(doc): Document in manual.
   "Show the hyperdrive Info manual."
   (interactive)
   (info "(hyperdrive)"))

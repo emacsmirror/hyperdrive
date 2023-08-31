@@ -755,6 +755,10 @@ the "folder" to disappear as well.  When a hyperdrive "file" or
 
 ** Quick documentation access
 
+#+findex: hyperdrive-info-manual
+You can open the ~hyperdrive.el~ manual with ~M-x
+hyperdrive-info-manual~.
+
 To view documentation for ~hyperdrive.el~ commands, functions, and
 variables, press ~C-h o~ (~describe-symbol~). Inside the ~*Help*~
 buffer that pops open, you can press ~i~ (~help-goto-info~) to jump to
