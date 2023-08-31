@@ -171,6 +171,8 @@ default:
 - ~^~ goes up to the parent directory
 #+kindex: revert-buffer
 - ~g~ refreshes the directory to display potential updates
+#+kindex: hyperdrive-dir-sort
+- ~o~ sorts directory contents by column
 #+kindex: hyperdrive-dir-download-file
 - ~d~ downloads the file at point to disk
 #+kindex: hyperdrive-dir-delete
@@ -463,6 +465,13 @@ customize-group RET hyperdrive RET~:
 #+vindex: hyperdrive-directory-display-buffer-action
 - ~hyperdrive-directory-display-buffer-action~ :: Display buffer action
   for hyperdrive directories. Passed to ~display-buffer~, which see.
+
+#+vindex: hyperdrive-directory-sort
+- ~hyperdrive-directory-sort~ :: Column by which directory entries are
+  sorted.  Internally, a cons cell of (KEY . PREDICATE), the KEY being
+  the `hyperdrive-entry' accessor function and the PREDICATE being the
+  appropriate function (e.g. `time-less-p' for
+  `hyperdrive-entry-modified', `<' for `hyperdrive-entry-size', etc).
 
 #+vindex: hyperdrive-column-headers
 - ~hyperdrive-column-headers~ :: Display column headers in

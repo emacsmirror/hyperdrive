@@ -175,7 +175,6 @@ Interactively, visit file or directory at point in
   (hyperdrive-history entry))
 
 (defun hyperdrive-dir-sort (directory-sort)
-  ;; TODO(doc): hyperdrive-dir-sort.
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
 DIRECTORY-SORT should be a valid value of
 `hyperdrive-directory-sort'."
