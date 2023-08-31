@@ -124,6 +124,8 @@ generated from PATH.  When ENCODE is non-nil, encode PATH."
 See `hyperdrive-directory-sort' for the type of BY."
   (cl-sort entries (lambda (a b)
                      (cond ((and a b) (funcall (cdr by) a b))
+                           ;; When an entry lacks appropriate metadata
+                           ;; for sorting with BY, put it at the end.
                            (a t)))
            :key (car by)))
 
