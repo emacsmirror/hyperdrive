@@ -170,7 +170,6 @@ arguments."
           (update-footer num-filled num-entries)
           (dolist (entry entries)
             (hyperdrive-fill entry :queue metadata-queue
-              ;; TODO: Mention in `hyperdrive-fill' docstring that THEN is called with an argument.
               :then (lambda (&rest _)
                       (update-footer (cl-incf num-filled) num-entries))))
           (plz-run metadata-queue)
