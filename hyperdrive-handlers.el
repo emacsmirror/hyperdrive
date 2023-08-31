@@ -174,7 +174,7 @@ arguments."
                       (update-footer (cl-incf num-filled) num-entries))))
           (plz-run metadata-queue)
           (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
-          ;; TODO: Should we display the buffer before or after calling THEN?
+          ;; TODO: Should we display the buffer before or after calling THEN? (test with yank-media handler)
           (when then
             (funcall then)))))))
 
