@@ -955,14 +955,14 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
                                  collect (cons name (list key tag))))
                (column-choice (read-answer "Sort by column: " choices))
                (`(,accessor ,ascending-predicate ,descending-predicate)
-                (map-elt columns (concat "By " column-choice)))
+                (alist-get (concat "By " column-choice) columns nil nil #'equal))
                (direction-choice (read-answer "Sort in direction: "
                                               (list (cons "ascending" (list ?a "Ascending"))
                                                     (cons "descending" (list ?d "Descending")))))
                (predicate (pcase direction-choice
                             ("ascending" ascending-predicate)
                             ("descending" descending-predicate))))
-    (list accessor predicate)))
+    (cons accessor predicate)))
 
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
