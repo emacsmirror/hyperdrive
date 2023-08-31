@@ -102,7 +102,7 @@ Internally, a cons cell of (KEY . PREDICATE), the KEY being the
 appropriate function (e.g. `time-less-p' for
 `hyperdrive-entry-modified', `<' for `hyperdrive-entry-size',
 etc)."
-  :type '(radio (cons :tag "By name" (const :format "" hyperdrive-entry-name )
+  :type '(radio (cons :tag "By name" (const :format "" hyperdrive-entry-name)
                       (choice :tag "Direction" :value string<
                               (const :tag "Ascending" string<)
                               (const :tag "Descending" string>)))

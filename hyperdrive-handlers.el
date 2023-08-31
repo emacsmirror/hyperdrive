@@ -165,7 +165,7 @@ arguments."
                 prev-entry (when-let ((node (ewoc-locate hyperdrive-ewoc)))
                              (ewoc-data node))
                 prev-point (point))
-          (ewoc-filter hyperdrive-ewoc #'ignore) 
+          (ewoc-filter hyperdrive-ewoc #'ignore)
           (update-footer num-filled num-entries)
           (dolist (entry entries)
             ;; TODO: Update header with progress.
