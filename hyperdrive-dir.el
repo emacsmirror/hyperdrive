@@ -182,9 +182,8 @@ DIRECTORY-SORT should be a valid value of
   (interactive (list (hyperdrive-complete-sort)))
   (setq-local hyperdrive-directory-sort directory-sort)
   (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
-    (setf entries (hyperdrive-sort-entries entries))
     (ewoc-filter hyperdrive-ewoc #'ignore)
-    (dolist (entry entries)
+    (dolist (entry (hyperdrive-sort-entries entries))
       (ewoc-enter-last hyperdrive-ewoc entry))))
 
 ;;;; Imenu support
