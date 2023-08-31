@@ -155,7 +155,8 @@ arguments."
                                                (ewoc-enter-last ewoc entry))
                                              (or (when prev-entry
                                                    (goto-entry prev-entry ewoc))
-                                                 (goto-char prev-point)))
+                                                 (goto-char prev-point))
+                                             (set-buffer-modified-p nil))
                                            ;; TODO: Remove this and the commented out `debug-start-time'
                                            ;; binding when we're done experimenting.
                                            ;; (message "Elapsed: %s"
