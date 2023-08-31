@@ -948,7 +948,7 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
                                          (choice :tag "Direction" :value ,_default-direction
                                                  (const :tag "Ascending" ,ascending-predicate)
                                                  (const :tag "Descending" ,descending-predicate))))
-                     (cons tag (list accessor ascending-predicate descending-predicate))))
+                     (list tag accessor ascending-predicate descending-predicate)))
                (columns (mapcar fn (cdr (get 'hyperdrive-directory-sort 'custom-type))))
                (read-answer-short t)
                (choices (cl-loop for (tag . _) in columns
