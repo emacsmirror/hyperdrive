@@ -120,8 +120,8 @@ generated from PATH.  When ENCODE is non-nil, encode PATH."
    :etc etc))
 
 (cl-defun hyperdrive-sort-entries (entries &key (by hyperdrive-directory-sort))
-  ;; FIXME: Docstring.  Sorry.  :)
-  "Return ENTRIES sorted by BY."
+  "Return ENTRIES sorted by BY.
+See `hyperdrive-directory-sort' for the type of BY."
   (cl-sort entries (lambda (a b)
                      (cond ((and a b) (funcall (cdr by) a b))
                            (a t)))
