@@ -95,6 +95,7 @@ With point on header, returns directory entry."
   "^"   #'hyperdrive-up
   "D"   #'hyperdrive-dir-delete
   "H"   #'hyperdrive-dir-history
+  "o"   #'hyperdrive-dir-sort
   "?"   #'hyperdrive-describe-hyperdrive)
 
 ;; TODO: Get rid of this?
@@ -172,6 +173,18 @@ Interactively, visit file or directory at point in
   "Display version history for ENTRY at point."
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-history entry))
+
+(defun hyperdrive-dir-sort (directory-sort)
+  "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
+DIRECTORY-SORT should be a valid value of
+`hyperdrive-directory-sort'."
+  (interactive (list (hyperdrive-complete-sort)))
+  (setq-local hyperdrive-directory-sort directory-sort)
+  (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
+    (setf entries (hyperdrive-sort-entries entries))
+    (ewoc-filter hyperdrive-ewoc #'ignore)
+    (dolist (entry entries)
+      (ewoc-enter-last hyperdrive-ewoc entry))))
 
 ;;;; Imenu support
 

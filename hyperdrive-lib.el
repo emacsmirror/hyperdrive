@@ -940,6 +940,30 @@ Prompts with PROMPT and DEFAULT, according to `format-prompt'.
 DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
   (read-string (format-prompt prompt default) initial-input 'hyperdrive--name-history default))
 
+(defun hyperdrive-complete-sort ()
+  "Return a value for `hyperdrive-directory-sort' selected with completion."
+  (pcase-let* ((fn (pcase-lambda (`(cons :tag ,tag (const :format "" ,accessor)
+                                         (choice :tag "Direction" :value ,_default-direction
+                                                 (const :tag "Ascending" ,ascending-predicate)
+                                                 (const :tag "Descending" ,descending-predicate))))
+                     (cons tag (list accessor ascending-predicate descending-predicate))))
+               (columns (mapcar fn (cdr (get 'hyperdrive-directory-sort 'custom-type))))
+               (read-answer-short t)
+               (choices (cl-loop for (tag . _) in columns
+                                 for name = (substring tag 3)
+                                 for key = (aref name 0)
+                                 collect (cons name (list key tag))))
+               (column-choice (read-answer "Sort by column: " choices))
+               (`(,accessor ,ascending-predicate ,descending-predicate)
+                (map-elt columns (concat "By " column-choice)))
+               (direction-choice (read-answer "Sort in direction: "
+                                              (list (cons "ascending" (list ?a "Ascending"))
+                                                    (cons "descending" (list ?d "Descending")))))
+               (predicate (pcase direction-choice
+                            ("ascending" ascending-predicate)
+                            ("descending" descending-predicate))))
+    (list accessor predicate)))
+
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
