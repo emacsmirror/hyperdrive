@@ -169,7 +169,6 @@ arguments."
           (ewoc-filter hyperdrive-ewoc #'ignore)
           (update-footer num-filled num-entries)
           (dolist (entry entries)
-            ;; TODO: Update header with progress.
             (hyperdrive-fill entry :queue metadata-queue
               ;; TODO: Mention in `hyperdrive-fill' docstring that THEN is called with an argument.
               :then (lambda (&rest _)
