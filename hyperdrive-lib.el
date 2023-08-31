@@ -605,7 +605,7 @@ requests return, call THEN with no arguments."
     (if ranges-to-fill
         (progn
           ;; TODO: When `plz' lets us handle errors in the queue finalizer, add that here.
-          (setf queue (make-plz-queue :limit 8 :finally then))
+          (setf queue (make-plz-queue :limit hyperdrive-queue-size :finally then))
           (cl-labels ((fill-recursively (unknown-entry)
                         ;; NOTE: `fill-recursively' is recursive logically but
                         ;; not technically, because each call is in the async callback.

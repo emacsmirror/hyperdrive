@@ -146,7 +146,7 @@ arguments."
                 metadata-queue (make-plz-queue
 				;; Experimentation seems to show that a
 				;; queue size of about 20 performs best.
-                                :limit 20
+                                :limit hyperdrive-queue-size
                                 :finally (lambda ()
                                            (with-current-buffer (ewoc-buffer ewoc)
                                              (ewoc-set-hf ewoc header "")
