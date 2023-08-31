@@ -114,8 +114,6 @@ With point on header, returns directory entry."
 
 ;;;; Commands
 
-;; TODO: Implement sorting by size, type, etc.
-
 (declare-function hyperdrive-open "hyperdrive")
 
 (defun hyperdrive-dir-find-file (entry)
