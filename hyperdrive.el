@@ -369,7 +369,9 @@ for more information.  See `hyperdrive-read-entry' and
   (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry))
 
-;; TODO: Consider moving `hyperdrive-open' and `hyperdrive-open-url' to hyperdrive-lib.el.
+;; TODO: Consider moving `hyperdrive-open' and `hyperdrive-open-url'
+;; to hyperdrive-lib.el. We'd need to avoid a circular dependency,
+;; since `hyperdrive-open' calls `hyperdrive-history'.
 
 ;;;###autoload
 (defun hyperdrive-open-url (url)
