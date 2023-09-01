@@ -66,7 +66,7 @@ After installing with MELPA, you can later upgrade to a newer version
 of ~hyperdrive.el~ by running ~M-x package-refresh-contents~ then ~M-x
 package-upgrade RET hyperdrive~. If ~package-upgrade~ is not available
 as a command, display the list of packages with ~M-x list-packages~,
-select ~hyperdrive~, and click the `Install` button.
+select ~hyperdrive~, and click the ~Install~ button.
 
 *** package-vc
 
@@ -111,7 +111,7 @@ If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-start~
 should now be available.  The documentation for ~hyperdrive.el~ should
 also be installed.
 
-After installing with `package-vc`, you can later upgrade to a newer
+After installing with ~package-vc~, you can later upgrade to a newer
 version of ~hyperdrive.el~ by running ~M-x package-vc-upgrade RET
 hyperdrive RET~.
 
