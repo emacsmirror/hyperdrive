@@ -216,7 +216,7 @@ After installing with MELPA, you can later upgrade to a newer version
 of @code{hyperdrive.el} by running @code{M-x package-refresh-contents} then @code{M-x
 package-upgrade RET hyperdrive}. If @code{package-upgrade} is not available
 as a command, display the list of packages with @code{M-x list-packages},
-select @code{hyperdrive}, and click the `Install` button.
+select @code{hyperdrive}, and click the @code{Install} button.
 
 @node package-vc
 @subsection package-vc
@@ -264,7 +264,7 @@ If all goes well, @code{hyperdrive.el} commands like @code{M-x hyperdrive-start}
 should now be available.  The documentation for @code{hyperdrive.el} should
 also be installed.
 
-After installing with `package-vc`, you can later upgrade to a newer
+After installing with @code{package-vc}, you can later upgrade to a newer
 version of @code{hyperdrive.el} by running @code{M-x package-vc-upgrade RET
 hyperdrive RET}.
 
@@ -1166,6 +1166,10 @@ the ``folder'' to disappear as well.  When a hyperdrive ``file'' or
 
 @node Quick documentation access
 @section Quick documentation access
+
+@findex hyperdrive-info-manual
+You can open the @code{hyperdrive.el} manual with @code{M-x
+hyperdrive-info-manual}.
 
 To view documentation for @code{hyperdrive.el} commands, functions, and
 variables, press @code{C-h o} (@code{describe-symbol}). Inside the @code{*Help*}
