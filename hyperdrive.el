@@ -371,7 +371,8 @@ for more information.  See `hyperdrive-read-entry' and
 
 ;; TODO: Consider moving `hyperdrive-open' and `hyperdrive-open-url'
 ;; to hyperdrive-lib.el. We'd need to avoid a circular dependency,
-;; since `hyperdrive-open' calls `hyperdrive-history'.
+;; since `hyperdrive-open' refers `hyperdrive-type-handlers' (defined
+;; in hyperdrive-handlers.el).
 
 ;;;###autoload
 (defun hyperdrive-open-url (url)
