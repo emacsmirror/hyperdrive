@@ -50,20 +50,26 @@ network ([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-g
 
 ** hyperdrive.el
 
-There are two recommended options for installing ~hyperdrive.el~: MELPA
-and ~package-vc~.
+There are two recommended options for installing ~hyperdrive.el~:
+NonGNU ELPA and ~package-vc~.
 
-*** MELPA
+*** NonGNU ELPA
 
-~hyperdrive.el~ is available on
-[[https://melpa.org/#/getting-started][MELPA]]. Once you've set up
-MELPA, you can run ~M-x package-install RET hyperdrive RET~.
+~hyperdrive.el~ is available on [[https://elpa.nongnu.org/][NonGNU ELPA]]. On Emacs 28 or later,
+installation is as simple as ~M-x package-install RET hyperdrive RET~.
 
-After installing with MELPA, you can later upgrade to a newer version
-of ~hyperdrive.el~ by running ~M-x package-refresh-contents~ then ~M-x
-package-upgrade RET hyperdrive~. If ~package-upgrade~ is not available
-as a command, display the list of packages with ~M-x list-packages~,
-select ~hyperdrive~, and click the ~Install~ button.
+On Emacs 27, you'll first have to add the NonGNU ELPA repository:
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'package
+    (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+#+end_src
+
+After installing with NonGNU ELPA, you can later upgrade to a newer
+version of ~hyperdrive.el~ by running ~M-x package-refresh-contents~
+then ~M-x package-upgrade RET hyperdrive~. If ~package-upgrade~ is not
+available as a command, display the list of packages with ~M-x
+list-packages~, select ~hyperdrive~, and click the ~Install~ button.
 
 *** package-vc
 
