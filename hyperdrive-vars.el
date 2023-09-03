@@ -41,18 +41,15 @@
 (defcustom hyperdrive-storage-location
   (expand-file-name "~/.local/share/hyper-gateway-nodejs/")
   "Location to store Hypercore data."
-  :type '(file :must-match t)
-  :group 'hyperdrive)
+  :type '(file :must-match t))
 
 (defcustom hyperdrive-hyper-gateway-port 4973
   "Port on which to run the hyper-gateway server."
-  :type 'natnum
-  :group 'hyperdrive)
+  :type 'natnum)
 
 (defcustom hyperdrive-honor-auto-mode-alist t
   "If non-nil, use file extension of hyperdrive file to set `major-mode'."
-  :type 'boolean
-  :group 'hyperdrive)
+  :type 'boolean)
 
 (defcustom hyperdrive-persist-location nil
   "Location where `persist' will store data.
@@ -60,19 +57,18 @@
 - `hyperdrive-hyperdrives'
 - `hyperdrive-version-ranges'"
   :type '(choice (const :tag "Use default persist location" nil)
-                 (file :tag "Custom location"))
-  :group 'hyperdrive)
+                 (file :tag "Custom location")))
 
-(defcustom hyperdrive-download-directory (expand-file-name
-                                          (if (bound-and-true-p eww-download-directory)
-                                              (if (stringp eww-download-directory)
-                                                  eww-download-directory
-                                                (funcall eww-download-directory))
-                                            "~/"))
+(defcustom hyperdrive-download-directory
+  (expand-file-name
+   (if (bound-and-true-p eww-download-directory)
+       (if (stringp eww-download-directory)
+           eww-download-directory
+         (funcall eww-download-directory))
+     "~/"))
   "Location where `hyperdrive-download-url' will download files.
 Defaults to `eww-download-directory'."
-  :type '(file :must-match t)
-  :group 'hyperdrive)
+  :type '(file :must-match t))
 
 (defvar hyperdrive-timestamp-format-string)
 (defcustom hyperdrive-timestamp-format "%x %X"
@@ -80,20 +76,20 @@ Defaults to `eww-download-directory'."
 Passed to `format-time-string', which see."
   :type 'string
   :set (lambda (option value)
-         (set option value)
+         (set-default option value)
          (setf hyperdrive-timestamp-format-string
                (format "%%%ds"
                        ;; FIXME: This value varies based on current
                        ;;        time. (format-time-string "%-I") will
                        ;;        be one or two characters long
                        ;;        depending on the time of day
-                       (string-width (format-time-string value)))))
-  :group 'hyperdrive)
+                       (string-width (format-time-string value))))))
 
 (defcustom hyperdrive-directory-display-buffer-action
   '(display-buffer-same-window)
   "Display buffer action for hyperdrive directories.
 Passed to `display-buffer', which see."
+  ;; TODO: Perhaps use `display-buffer--action-custom-type'?
   :type '(choice (const :tag "Same window" (display-buffer-same-window))
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other"))
@@ -105,13 +101,11 @@ Passed to `display-buffer', which see."
 Passed to `display-buffer', which see."
   :type '(choice (const :tag "Same window" (display-buffer-same-window))
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
-                 (sexp :tag "Other"))
-  :group 'hyperdrive)
+                 (sexp :tag "Other")))
 
-(defcustom hyperdrive-column-headers 't
+(defcustom hyperdrive-column-headers t
   "Display column headers in `hyperdrive-dir' and `hyperdrive-history' buffers."
-  :type 'boolean
-  :group 'hyperdrive)
+  :type 'boolean)
 
 (defcustom hyperdrive-default-host-format
   '(petname nickname domain seed short-key public-key)
@@ -127,8 +121,7 @@ used."
                   (const :tag "DNSLink domain" domain)
                   (const :tag "Seed" seed)
                   (const :tag "Shortened public key" short-key)
-                  (const :tag "Full public key" public-key)))
-  :group 'hyperdrive)
+                  (const :tag "Full public key" public-key))))
 
 (defcustom hyperdrive-stream-player-command "mpv --force-window=immediate %s"
   "Command used to play streamable URLs externally.
@@ -137,19 +130,16 @@ quoted, because the arguments are passed directly rather than
 through a shell)."
   :type '(choice (const :tag "MPV" "mpv --force-window=immediate %s")
                  (const :tag "VLC" "vlc %s")
-                 (string :tag "Other command"))
-  :group 'hyperdrive)
+                 (string :tag "Other command")))
 
 (defcustom hyperdrive-queue-size 2
   "Default size of request queues."
   ;; TODO: Use this elsewhere also.
-  :type 'integer
-  :group 'hyperdrive)
+  :type 'natnum)
 
 (defcustom hyperdrive-render-html t
   "Render HTML hyperdrive files with EWW."
-  :type 'boolean
-  :group 'hyperdrive)
+  :type 'boolean)
 
 (defcustom hyperdrive-reuse-buffers 'any-version
   "How to reuse buffers when showing entries.
