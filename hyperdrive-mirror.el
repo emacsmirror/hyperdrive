@@ -166,7 +166,7 @@ predicate and set NO-CONFIRM to t."
 ;;;; Mode
 
 (defvar-keymap hyperdrive-mirror-mode-map
-  :parent  tabulated-list-mode-map
+  :parent tabulated-list-mode-map
   :doc "Local keymap for `hyperdrive-mirror-mode' buffers."
   "C-c C-c"   #'hyperdrive-mirror-do-upload)
 
