@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+;;;; Requirements
+
 (require 'persist)
 (require 'dired)     ; For faces.
 (require 'cus-edit)  ; For `custom-button' face.

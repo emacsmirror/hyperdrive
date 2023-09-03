@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+;;;; Requirements
+
 (require 'cl-lib)
 (require 'map)
 (require 'pcase)

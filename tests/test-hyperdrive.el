@@ -29,6 +29,8 @@
 
 ;;; Code:
 
+;;;; Requirements
+
 (require 'cl-lib)
 (require 'ert)
 (require 'pcase)
@@ -36,8 +38,12 @@
 
 (require 'hyperdrive)
 
+;;;; Magic constants
+
 (defconst test-hyperdrive-public-key
   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
+;;;; Utilities
 
 (defmacro hyperdrive-deftest (name &rest args)
   (declare (indent defun))
@@ -46,6 +52,8 @@
                      (&rest args) `(concat "hyper://" test-hyperdrive-public-key ,@args))
                    (hexify (string) `(url-hexify-string ,string (cons ?/ url-unreserved-chars))))
        (ert-deftest ,name () ,@args))))
+
+;;;; Tests
 
 (hyperdrive-deftest url-entry--names-and-paths ()
   (pcase-let (((cl-struct hyperdrive-entry name path)

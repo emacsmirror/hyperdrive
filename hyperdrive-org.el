@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+;;;; Requirements
+
 (require 'org)
 (require 'org-element)
 

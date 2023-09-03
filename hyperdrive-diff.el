@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+;;; Requirements
+
 (require 'hyperdrive-lib)
 (require 'hyperdrive-vars)
 
