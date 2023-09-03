@@ -94,32 +94,6 @@
               browse-url-handlers :test #'equal)
   (cl-pushnew "hyper://" thing-at-point-uri-schemes :test #'equal))
 
-;;;; `save-some-buffers' integration
-
-(when (version<= "29.1" emacs-version)
-  (defun hyperdrive--save-some-buffers (query &optional arg)
-    "Save some hyperdrive buffers.
-QUERY and ARGS are passed in from `save-some-buffers-functions', which see."
-    (let ((bufs (match-buffers
-                 (lambda (buf) (and (buffer-local-value 'hyperdrive-current-entry buf)
-                                    ;; TODO: Do we need to check for `hyperdrive-mode'?
-                                    (buffer-modified-p buf))))))
-      (if (eq query 'query)
-          ;; Query: Return non-nil if there are unsaved hyperdrive buffers.
-          bufs
-        ;; Save abbrevs according to ARG.
-        (while-let ((buf (car bufs)))
-          (cl-callf cdr bufs)
-          (with-current-buffer buf
-            (when (or arg
-                      (y-or-n-p (format "Hyperdrive: Save file «%s»? "
-                                        (hyperdrive-entry-description hyperdrive-current-entry))))
-              (hyperdrive-write-buffer hyperdrive-current-entry)))))))
-
-  (add-hook 'save-some-buffers-functions (with-no-warnings
-                                           ;; Appease linter.
-                                           #'hyperdrive--save-some-buffers)))
-
 ;;;; Commands
 
 ;; TODO(A): Command to rename paths.
@@ -341,7 +315,10 @@ Intended to be passed to `buffer-local-restore-state'.")
                     (buffer-local-set-state
                      revert-buffer-function #'hyperdrive-revert-buffer
                      bookmark-make-record-function #'hyperdrive-bookmark-make-record
-                     write-contents-functions (cl-adjoin #'hyperdrive--write-contents write-contents-functions)))
+                     write-contents-functions (cl-adjoin #'hyperdrive--write-contents write-contents-functions)
+                     ;; TODO: Modify buffer-local value of `save-some-buffers-action-alist'
+                     ;; to allow diffing modified buffer with hyperdrive file
+                     buffer-offer-save t))
         (add-hook 'after-change-major-mode-hook
                   #'hyperdrive--hack-write-contents-functions nil 'local))
     (buffer-local-restore-state hyperdrive-mode--state)
