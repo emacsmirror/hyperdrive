@@ -2,9 +2,9 @@
 
 ;; Copyright (C) 2022 Joseph Turner <joseph@ushin.org>
 
-;; Author: Joseph Turner
+;; Author: Joseph Turner <joseph@ushin.org>
 ;; Author: Adam Porter <adam@alphapapa.net>
-;; Maintainer: Joseph Turner <joseph@ushin.org>
+;; Maintainer: Joseph Turner <~ushin/ushin@lists.sr.ht>
 ;; Created: 2022
 ;; Version: 0.2-pre
 ;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5"))
