@@ -33,6 +33,117 @@
 
 ;;;; Functions
 
+;;;###autoload
+(cl-defun hyperdrive-dir-handler (directory-entry &key then)
+  "Show DIRECTORY-ENTRY.
+If THEN, then call THEN in the directory buffer with no
+arguments."
+  ;; NOTE: ENTRY is not necessarily "filled" yet.
+  ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
+  ;; in a couple of seconds (same in hyperdrive-handler-default)
+  ;; (like new with-delayed-message ?)
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) directory-entry)
+               (url (hyperdrive-entry-url directory-entry))
+               ((cl-struct plz-response headers body)
+                ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
+                (hyperdrive-api 'get url :as 'response :noquery t))
+               (entry-names (json-read-from-string body))
+               (entries (mapcar (lambda (entry-name)
+                                  (hyperdrive-entry-create
+                                   :hyperdrive hyperdrive
+                                   :path (concat (url-unhex-string path) entry-name)
+                                   :version version
+                                   :encode t))
+                                entry-names))
+               (parent-entry (hyperdrive-parent directory-entry))
+               (header (hyperdrive-dir-column-headers (hyperdrive-entry-description directory-entry)))
+               (num-entries (length entries)) (num-filled 0)
+	       ;; (debug-start-time (current-time))
+               (metadata-queue) (ewoc) (prev-entry) (prev-point))
+    (cl-labels ((goto-entry (entry ewoc)
+                  (when-let ((node (hyperdrive-ewoc-find-node ewoc entry
+                                     :predicate #'hyperdrive-entry-equal)))
+                    (goto-char (ewoc-location node))))
+                (update-footer (num-filled num-of)
+                  (when (zerop (mod num-filled 5))
+                    (ewoc-set-hf ewoc header
+                                 (propertize (format "Loading (%s/%s)..." num-filled num-of)
+					     'face 'font-lock-comment-face)))))
+      (hyperdrive-fill-metadata hyperdrive)
+      (setf directory-entry (hyperdrive--fill directory-entry headers))
+      (when parent-entry
+        (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
+        (push parent-entry entries))
+      (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
+        (with-silent-modifications
+          (setf ewoc (or hyperdrive-ewoc ; Bind this for lambdas.
+                         (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
+                metadata-queue (make-plz-queue
+				;; Experimentation seems to show that a
+				;; queue size of about 20 performs best.
+                                :limit hyperdrive-queue-size
+                                :finally (lambda ()
+                                           (with-current-buffer (ewoc-buffer ewoc)
+                                             (with-silent-modifications
+                                               ;; `with-silent-modifications' increases performance,
+                                               ;; but we still need `set-buffer-modified-p' below.
+                                               (ewoc-set-hf ewoc header "")
+                                               (setf entries (hyperdrive-sort-entries entries))
+                                               (dolist (entry entries)
+                                                 (ewoc-enter-last ewoc entry))
+                                               (or (when prev-entry
+                                                     (goto-entry prev-entry ewoc))
+                                                   (goto-char prev-point)))
+                                             (set-buffer-modified-p nil))
+                                           ;; TODO: Remove this and the commented out `debug-start-time'
+                                           ;; binding when we're done experimenting.
+                                           ;; (message "Elapsed: %s"
+                                           ;;          (float-time (time-subtract (current-time)
+                                           ;;                                     debug-start-time)))
+                                           ))
+                prev-entry (when-let ((node (ewoc-locate hyperdrive-ewoc)))
+                             (ewoc-data node))
+                prev-point (point))
+          (ewoc-filter hyperdrive-ewoc #'ignore)
+          (update-footer num-filled num-entries)
+          (dolist (entry entries)
+            (hyperdrive-fill entry :queue metadata-queue
+              :then (lambda (&rest _)
+                      (update-footer (cl-incf num-filled) num-entries))))
+          (plz-run metadata-queue)
+          (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
+          ;; TODO: Should we display the buffer before or after calling THEN? (test with yank-media handler)
+          (when then
+            (funcall then)))))))
+
+(defun hyperdrive-dir-column-headers (prefix)
+  "Return column headers as a string with PREFIX.
+Columns are suffixed with up/down arrows according to
+`hyperdrive-sort-entries'."
+  (let (name-arrow size-arrow date-arrow)
+    (pcase-exhaustive hyperdrive-directory-sort
+      (`(hyperdrive-entry-name . ,predicate)
+       (setf name-arrow (pcase-exhaustive predicate
+                          ('string< "▲")
+                          ('string> "▼"))))
+      (`(hyperdrive-entry-size . ,predicate)
+       (setf size-arrow (pcase-exhaustive predicate
+                          ('< "▲")
+                          ('> "▼"))))
+      (`(hyperdrive-entry-modified . ,predicate)
+       (setf date-arrow (pcase-exhaustive predicate
+                          ('time-less-p "▲")
+                          ((pred functionp) "▼")))))
+    (concat prefix "\n"
+            (format "%6s  %s  %s"
+                    (concat size-arrow
+                            (propertize "Size" 'face 'hyperdrive-column-header))
+                    (format hyperdrive-timestamp-format-string
+			    (concat date-arrow
+				    (propertize "Last Modified" 'face 'hyperdrive-column-header)))
+                    (concat (propertize "Name" 'face 'hyperdrive-column-header)
+                            name-arrow)))))
+
 (defun hyperdrive-dir-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."
@@ -184,7 +295,7 @@ DIRECTORY-SORT should be a valid value of
     (dolist (entry (hyperdrive-sort-entries entries))
       (ewoc-enter-last hyperdrive-ewoc entry))
     (ewoc-set-hf hyperdrive-ewoc
-                 (hyperdrive-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
+                 (hyperdrive-dir-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
                  "")))
 
 ;;;; Imenu support
@@ -232,7 +343,7 @@ see Info node `(elisp)Yanking Media'."
                           (recenter)
                           ;; FIXME: Newly-added file is not highlit. Calling
                           ;; the `then' callback in a queue finalizer inside
-                          ;; `hyperdrive-handler-directory' should fix this.
+                          ;; `hyperdrive-dir-handler' should fix this.
                           )))
         :else (lambda (plz-error)
                 (hyperdrive-message "Unable to yank media: %S" plz-error)))))

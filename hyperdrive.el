@@ -780,6 +780,41 @@ Universal prefix argument \\[universal-argument] forces
 	        ;; SUFFIX
 	        "\\( \\|$\\)"))))
 
+;;;; Configure Emacs and EWW for hyper:// URLs.
+
+(defun hyperdrive-url-loader (parsed-url)
+  "Retrieve URL synchronously.
+PARSED-URL must be a URL-struct like the output of
+`url-generic-parse-url'.
+
+The return value of this function is the retrieval buffer."
+  (cl-check-type parsed-url url "Need a pre-parsed URL.")
+  (let* ((url (url-recreate-url parsed-url))
+         ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
+         (response-buffer (hyperdrive-api 'get url :as 'buffer)))
+    (with-current-buffer response-buffer
+      (widen)
+      (goto-char (point-min))
+      (while (search-forward (string ?\C-m) nil t)
+        ;; Strip CRLF from headers so that `eww-parse-headers' works correctly.
+        ;; MAYBE: As an alternative, look at buffer coding systems to
+        ;; make `eww-parse-headers' work with CRLFs (since according
+        ;; to the HTTP 1 spec, headers are supposed to end with CRLF)
+        (replace-match ""))
+      (current-buffer))))
+
+(puthash "hyper" '(name "hyper" loader hyperdrive-url-loader
+                        ;; Expand relative paths against host
+                        expand-file-name url-default-expander)
+         url-scheme-registry)
+
+(when (version<= "28.1" emacs-version)
+  (require 'eww)
+  (setf eww-use-browse-url
+        (if eww-use-browse-url
+            (rx-to-string `(or ,eww-use-browse-url (seq bos "hyper://")))
+          (rx bos "hyper://"))))
+
 ;;;; Footer
 
 (provide 'hyperdrive)

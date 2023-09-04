@@ -1018,6 +1018,99 @@ Otherwise, return nil.  SLOT may be one of
                hyperdrive-hyperdrives)
       nil)))
 
+;;;; Handlers
+
+(declare-function hyperdrive--org-link-goto "hyperdrive-org")
+(cl-defun hyperdrive-handler-default (entry &key then)
+  "Load ENTRY's file into an Emacs buffer.
+If then, then call THEN with no arguments.  Default handler."
+  (hyperdrive-api 'get (hyperdrive-entry-url entry)
+    :noquery t
+    :as (lambda ()
+          (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
+                       ((map target) etc)
+                       (response-buffer (current-buffer)))
+            ;; TODO: Revisit buffer naming/"visiting" (e.g. what
+            ;; happens if the user opens a Hyperdrive file and then
+            ;; saves another buffer to the same location?).  See
+            ;; also: hyperdrive-save, etc.
+            (with-current-buffer (hyperdrive--get-buffer-create entry)
+              ;; TODO: Don't reload if we're jumping to a link on the
+              ;; same page (but ensure that reverting still works).
+              (if (buffer-modified-p)
+                  (hyperdrive-message "Buffer modified: %S" (current-buffer))
+                (with-silent-modifications
+                  (erase-buffer)
+                  (insert-buffer-substring response-buffer))
+                (setf buffer-undo-list nil
+                      buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
+                (set-buffer-modified-p nil)
+                (set-visited-file-modtime (current-time))
+                (goto-char (point-min)))
+              ;; TODO: Option to defer showing buffer.
+              ;; It seems that `pop-to-buffer' is moving point, even
+              ;; though it shouldn't, so we call it here, before going
+              ;; to a link target.
+              (pop-to-buffer (current-buffer))
+              (when target
+                (pcase major-mode
+                  ('org-mode
+                   (require 'hyperdrive-org)
+                   (hyperdrive--org-link-goto target))
+                  ('markdown-mode
+                   ;; TODO: Handle markdown link
+                   )))
+              (when then
+                (funcall then)))))))
+
+(cl-defun hyperdrive-handler-streamable (entry &key _then)
+  ;; TODO: Is there any reason to not pass THEN through?
+  ;; FIXME: Opening a streamable entry from a hyperdrive-dir buffer
+  ;; buries the -dir buffer.
+  "Stream ENTRY."
+  (hyperdrive-message (format "Streaming %s..." (hyperdrive--format-entry-url entry)))
+  (pcase-let ((`(,command . ,args)
+               (split-string hyperdrive-stream-player-command)))
+    (apply #'start-process "hyperdrive-stream-player"
+           nil command (cl-substitute (hyperdrive--httpify-url
+                                       (hyperdrive-entry-url entry))
+                                      "%s" args :test #'equal))))
+
+(declare-function hyperdrive-dir-handler "hyperdrive-dir")
+(cl-defun hyperdrive-handler-json (entry &key then)
+  "Show ENTRY.
+THEN is passed to other handlers, which see.  If ENTRY is a
+directory (if its URL ends in \"/\"), pass to
+`hyperdrive-dir-handler'.  Otherwise, open with
+`hyperdrive-handler-default'."
+  (if (hyperdrive--entry-directory-p entry)
+      (hyperdrive-dir-handler entry :then then)
+    (hyperdrive-handler-default entry :then then)))
+
+(cl-defun hyperdrive-handler-html (entry &key then)
+  "Show ENTRY, where ENTRY is an HTML file.
+Renders HTML with `shr-insert-document', then calls THEN if
+given."
+  (if hyperdrive-render-html
+      (progn
+        (eww (hyperdrive-entry-url entry))
+        ;; Set `hyperdrive-current-entry' and use `hyperdrive-mode'
+        ;; for remapped keybindings for, e.g., `hyperdrive-up'.
+        (setq-local hyperdrive-current-entry entry)
+        (hyperdrive-mode)
+        (when then
+          (funcall then)))
+    (hyperdrive-handler-default entry :then then)))
+
+(cl-defun hyperdrive-handler-image (entry &key then)
+  "Show ENTRY, where ENTRY is an image file.
+Then calls THEN if given."
+  (hyperdrive-handler-default
+   entry :then (lambda ()
+		 (image-mode)
+		 (when then
+		   (funcall then)))))
+
 ;;;; Misc.
 
 (defun hyperdrive--get-buffer-create (entry)

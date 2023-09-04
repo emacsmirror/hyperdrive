@@ -303,6 +303,17 @@ values are alists mapping version range starts to plists with
   "Entry for current buffer.")
 (put 'hyperdrive-current-entry 'permanent-local t)
 
+(defvar hyperdrive-type-handlers
+  `(
+    ;; Directories are sent from the gateway as JSON arrays
+    ("application/json" . hyperdrive-handler-json)
+    (,(rx bos "audio/") . hyperdrive-handler-streamable)
+    (,(rx bos "video/") . hyperdrive-handler-streamable)
+    (,(rx bos "image/") . hyperdrive-handler-image)
+    (,(rx (or "text/html" "application/xhtml+xml")) . hyperdrive-handler-html))
+  "Alist mapping MIME types to handler functions.
+Keys are regexps matched against MIME types.")
+
 ;;;; Footer
 
 (provide 'hyperdrive-vars)
