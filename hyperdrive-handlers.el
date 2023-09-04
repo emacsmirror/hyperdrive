@@ -113,13 +113,7 @@ arguments."
                                    :encode t))
                                 entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
-               (main-header (hyperdrive-entry-description directory-entry))
-               (header (concat main-header "\n"
-                               (format "%6s  %s  %s"
-                                       (propertize "Size" 'face 'hyperdrive-column-header)
-                                       (format hyperdrive-timestamp-format-string
-                                               (propertize "Last Modified" 'face 'hyperdrive-column-header))
-                                       (propertize "Name" 'face 'hyperdrive-column-header))))
+               (header (hyperdrive-column-headers (hyperdrive-entry-description directory-entry)))
                (num-entries (length entries)) (num-filled 0)
 	       ;; (debug-start-time (current-time))
                (metadata-queue) (ewoc) (prev-entry) (prev-point))
@@ -178,6 +172,34 @@ arguments."
           ;; TODO: Should we display the buffer before or after calling THEN? (test with yank-media handler)
           (when then
             (funcall then)))))))
+
+(defun hyperdrive-column-headers (prefix)
+  "Return column headers as a string with PREFIX.
+Columns are suffixed with up/down arrows according to
+`hyperdrive-sort-entries'."
+  (let ((name-arrow "") (size-arrow "") (date-arrow ""))
+    (pcase-exhaustive hyperdrive-directory-sort
+      (`(hyperdrive-entry-name . ,predicate)
+       (setf name-arrow (pcase-exhaustive predicate
+                          ('string< "▲")
+                          ('string> "▼"))))
+      (`(hyperdrive-entry-size . ,predicate)
+       (setf size-arrow (pcase-exhaustive predicate
+                          ('< "▲")
+                          ('> "▼"))))
+      (`(hyperdrive-entry-date . ,predicate)
+       (setf date-arrow (pcase-exhaustive predicate
+                          ('time-less-p< "▲")
+                          ((pred functionp) "▼")))))
+    (concat prefix "\n"
+            (format "%6s%s  %s%s  %s%s"
+                    (propertize "Size" 'face 'hyperdrive-column-header)
+                    size-arrow
+                    (format hyperdrive-timestamp-format-string
+                            (propertize "Last Modified" 'face 'hyperdrive-column-header))
+                    date-arrow
+                    (propertize "Name" 'face 'hyperdrive-column-header)
+                    name-arrow))))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
