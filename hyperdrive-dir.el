@@ -183,7 +183,10 @@ DIRECTORY-SORT should be a valid value of
   (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
     (ewoc-filter hyperdrive-ewoc #'ignore)
     (dolist (entry (hyperdrive-sort-entries entries))
-      (ewoc-enter-last hyperdrive-ewoc entry))))
+      (ewoc-enter-last hyperdrive-ewoc entry))
+    (ewoc-set-hf hyperdrive-ewoc
+                 (hyperdrive-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
+                 "")))
 
 ;;;; Imenu support
 
