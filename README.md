@@ -5,13 +5,11 @@ filesystem designed for easy peer-to-peer file sharing.
 `hyperdrive.el` is an independent project built by [USHIN](https://ushin.org) which
 provides an Emacs interface for managing hyperdrives.
 
-
 ## Installation
 
 See [the
 manual](https://ushin.org/hyperdrive/hyperdrive-manual.html#Installation)
 for installation instructions.
-
 
 ## Manual
 
@@ -19,12 +17,10 @@ For more information, please see the
 [manual](https://ushin.org/hyperdrive/hyperdrive-manual.html). For recent
 changes, see the [changelog](CHANGELOG.org).
 
-
 ## Bugs and Patches
 
 Bugs can be submitted to the [ushin issue tracker](https://todo.sr.ht/~ushin/ushin). Patches, comments or
 questions can be submitted to the [ushin public inbox](https://lists.sr.ht/~ushin/ushin).
-
 
 ## Chat Room
 
