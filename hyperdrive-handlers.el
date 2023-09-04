@@ -149,13 +149,16 @@ arguments."
                                 :limit hyperdrive-queue-size
                                 :finally (lambda ()
                                            (with-current-buffer (ewoc-buffer ewoc)
-                                             (ewoc-set-hf ewoc header "")
-                                             (setf entries (hyperdrive-sort-entries entries))
-                                             (dolist (entry entries)
-                                               (ewoc-enter-last ewoc entry))
-                                             (or (when prev-entry
-                                                   (goto-entry prev-entry ewoc))
-                                                 (goto-char prev-point))
+                                             (with-silent-modifications
+                                               ;; `with-silent-modifications' increases performance,
+                                               ;; but we still need `set-buffer-modified-p' below.
+                                               (ewoc-set-hf ewoc header "")
+                                               (setf entries (hyperdrive-sort-entries entries))
+                                               (dolist (entry entries)
+                                                 (ewoc-enter-last ewoc entry))
+                                               (or (when prev-entry
+                                                     (goto-entry prev-entry ewoc))
+                                                   (goto-char prev-point)))
                                              (set-buffer-modified-p nil))
                                            ;; TODO: Remove this and the commented out `debug-start-time'
                                            ;; binding when we're done experimenting.
