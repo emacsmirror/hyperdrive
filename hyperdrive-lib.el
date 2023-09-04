@@ -44,6 +44,15 @@
 (declare-function hyperdrive-mode "hyperdrive")
 (declare-function hyperdrive-dir-mode "hyperdrive-dir")
 
+;;;; Errors
+
+(define-error 'hyperdrive-error "hyperdrive error")
+
+(defun hyperdrive-error (&rest args)
+  "Like `error', but signals `hyperdrive-error'.
+Passes ARGS to `format-message'."
+  (signal 'hyperdrive-error (list (apply #'format-message args))))
+
 ;;;; Structs
 
 (cl-defstruct (hyperdrive-entry (:constructor hyperdrive-entry--create)
@@ -1162,10 +1171,6 @@ Affected by option `hyperdrive-reuse-buffers', which see."
 (defun hyperdrive-message (message &rest args)
   "Call `message' with MESSAGE and ARGS, prefixing MESSAGE with \"Hyperdrive:\"."
   (apply #'message (concat "Hyperdrive: " message) args))
-
-(defun hyperdrive-error (string &rest args)
-  "Call `error' with STRING and ARGS, prefixing STRING with \"Hyperdrive:\"."
-  (apply #'error (concat "Hyperdrive: " string) args))
 
 (defun hyperdrive-user-error (format &rest args)
   "Call `user-error' with FORMAT and ARGS, prefixing FORMAT with \"Hyperdrive:\"."
