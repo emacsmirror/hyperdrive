@@ -152,7 +152,8 @@ through a shell)."
 
 (defcustom hyperdrive-queue-size 2
   "Default size of request queues."
-  ;; TODO: Use this elsewhere also.
+  ;; TODO: Consider a separate option for metadata queue size (e.g. used in the dir handler).
+  ;; TODO: Consider a separate option for upload queue size, etc.
   :type 'natnum)
 
 (defcustom hyperdrive-render-html t
