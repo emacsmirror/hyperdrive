@@ -172,6 +172,8 @@ Interactively, visit file or directory at point in
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-history entry))
 
+;; TODO: Sort by clicking on column headers, and display up/down arrow in sorted column.
+
 (defun hyperdrive-dir-sort (directory-sort)
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
 DIRECTORY-SORT should be a valid value of
