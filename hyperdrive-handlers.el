@@ -177,7 +177,7 @@ arguments."
   "Return column headers as a string with PREFIX.
 Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
-  (let ((name-arrow "") (size-arrow "") (date-arrow ""))
+  (let (name-arrow size-arrow date-arrow)
     (pcase-exhaustive hyperdrive-directory-sort
       (`(hyperdrive-entry-name . ,predicate)
        (setf name-arrow (pcase-exhaustive predicate
@@ -187,19 +187,19 @@ Columns are suffixed with up/down arrows according to
        (setf size-arrow (pcase-exhaustive predicate
                           ('< "▲")
                           ('> "▼"))))
-      (`(hyperdrive-entry-date . ,predicate)
+      (`(hyperdrive-entry-modified . ,predicate)
        (setf date-arrow (pcase-exhaustive predicate
-                          ('time-less-p< "▲")
+                          ('time-less-p "▲")
                           ((pred functionp) "▼")))))
     (concat prefix "\n"
-            (format "%6s%s  %s%s  %s%s"
-                    (propertize "Size" 'face 'hyperdrive-column-header)
-                    size-arrow
+            (format "%6s  %s  %s"
+                    (concat size-arrow
+                            (propertize "Size" 'face 'hyperdrive-column-header))
                     (format hyperdrive-timestamp-format-string
-                            (propertize "Last Modified" 'face 'hyperdrive-column-header))
-                    date-arrow
-                    (propertize "Name" 'face 'hyperdrive-column-header)
-                    name-arrow))))
+			    (concat date-arrow
+				    (propertize "Last Modified" 'face 'hyperdrive-column-header)))
+                    (concat (propertize "Name" 'face 'hyperdrive-column-header)
+                            name-arrow)))))
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
