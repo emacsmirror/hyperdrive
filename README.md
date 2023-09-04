@@ -12,10 +12,6 @@ See [the
 manual](https://ushin.org/hyperdrive/hyperdrive-manual.html#Installation)
 for installation instructions.
 
-### `hyper-gateway`
-
-`hyperdrive.el` relies on [hyper-gateway](https://github.com/RangerMauve/hyper-gateway/) for connecting to the P2P network ([installation instructions](https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway)).
-
 
 ## Manual
 
