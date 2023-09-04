@@ -179,7 +179,6 @@ DIRECTORY-SORT should be a valid value of
 `hyperdrive-directory-sort'."
   (interactive (list (hyperdrive-complete-sort)))
   (setq-local hyperdrive-directory-sort directory-sort)
-  ;; TODO: Pass `always' as predicate instead of `hyperdrive-entry-p'?
   (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
     (ewoc-filter hyperdrive-ewoc #'ignore)
     (dolist (entry (hyperdrive-sort-entries entries))
