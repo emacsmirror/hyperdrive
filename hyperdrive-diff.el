@@ -66,7 +66,7 @@ This function is intended to diff files, not directories."
   (let* (old-response
          new-response
          (queue (make-plz-queue
-                 :limit 2
+                 :limit hyperdrive-queue-size
                  :finally (lambda ()
                             (unless (or old-response new-response)
                               (hyperdrive-error "Files non-existent"))

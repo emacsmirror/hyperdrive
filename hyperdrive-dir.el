@@ -70,8 +70,7 @@ With point on header, returns directory entry."
     (cond ((= 1 current-line)
            ;; Point on header: return directory's entry.
            hyperdrive-current-entry)
-          ((or (> current-line last-line)
-               (and hyperdrive-column-headers (= 2 current-line)))
+          ((or (> current-line last-line) (= 2 current-line))
            ;; Point is below the last entry or on column headers: signal error.
            (hyperdrive-user-error "No file on this line"))
           (t
@@ -95,6 +94,7 @@ With point on header, returns directory entry."
   "^"   #'hyperdrive-up
   "D"   #'hyperdrive-dir-delete
   "H"   #'hyperdrive-dir-history
+  "o"   #'hyperdrive-dir-sort
   "?"   #'hyperdrive-describe-hyperdrive)
 
 ;; TODO: Get rid of this?
@@ -112,8 +112,6 @@ With point on header, returns directory entry."
               imenu-space-replacement " "))
 
 ;;;; Commands
-
-;; TODO: Implement sorting by size, type, etc.
 
 (declare-function hyperdrive-open "hyperdrive")
 
@@ -172,6 +170,22 @@ Interactively, visit file or directory at point in
   "Display version history for ENTRY at point."
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-history entry))
+
+;; TODO: Sort by clicking on column headers, and display up/down arrow in sorted column.
+
+(defun hyperdrive-dir-sort (directory-sort)
+  "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
+DIRECTORY-SORT should be a valid value of
+`hyperdrive-directory-sort'."
+  (interactive (list (hyperdrive-complete-sort)))
+  (setq-local hyperdrive-directory-sort directory-sort)
+  (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
+    (ewoc-filter hyperdrive-ewoc #'ignore)
+    (dolist (entry (hyperdrive-sort-entries entries))
+      (ewoc-enter-last hyperdrive-ewoc entry))
+    (ewoc-set-hf hyperdrive-ewoc
+                 (hyperdrive-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
+                 "")))
 
 ;;;; Imenu support
 

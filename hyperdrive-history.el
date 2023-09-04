@@ -91,8 +91,7 @@ and ENTRY's version are nil."
              (setf (map-elt (cdr range) :range-end) nil)
              (setf (hyperdrive-entry-version entry) nil)
              (cons range entry)))
-          ((or (> current-line last-line)
-               (and hyperdrive-column-headers (= 2 current-line)))
+          ((or (> current-line last-line) (= 2 current-line))
            ;; Point is below the last entry or on column headers: signal error.
            (hyperdrive-user-error "No file on this line"))
           (t
@@ -174,15 +173,13 @@ Universal prefix argument \\[universal-argument] forces
                             ;; Display in reverse chronological order
                             (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
                    (main-header (hyperdrive-entry-description entry :with-version nil))
-                   (header (if hyperdrive-column-headers
-                               (concat main-header "\n"
-                                       (format "%7s  %13s  %6s  %s"
-                                               (propertize "Exists?" 'face 'hyperdrive-column-header)
-                                               (propertize "Version Range" 'face 'hyperdrive-column-header)
-                                               (propertize "Size" 'face 'hyperdrive-column-header)
-                                               (format hyperdrive-timestamp-format-string
-                                                       (propertize "Last Modified" 'face 'hyperdrive-column-header))))
-                             main-header))
+                   (header (concat main-header "\n"
+                                   (format "%7s  %13s  %6s  %s"
+                                           (propertize "Exists?" 'face 'hyperdrive-column-header)
+                                           (propertize "Version Range" 'face 'hyperdrive-column-header)
+                                           (propertize "Size" 'face 'hyperdrive-column-header)
+                                           (format hyperdrive-timestamp-format-string
+                                                   (propertize "Last Modified" 'face 'hyperdrive-column-header)))))
                    (queue) (ewoc))
         (with-current-buffer (get-buffer-create
                               (format "*Hyperdrive-history: %s %s*"
@@ -201,7 +198,7 @@ Universal prefix argument \\[universal-argument] forces
                   range-entries))
           ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
           (display-buffer (current-buffer) hyperdrive-history-display-buffer-action)
-          (setf queue (make-plz-queue :limit 8
+          (setf queue (make-plz-queue :limit hyperdrive-queue-size
                                       :finally (lambda ()
                                                  ;; NOTE: Ensure that the buffer's window is selected,
                                                  ;; if it has one.  (Workaround a possible bug in EWOC.)

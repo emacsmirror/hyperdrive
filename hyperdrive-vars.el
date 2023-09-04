@@ -95,6 +95,28 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other"))
   :group 'hyperdrive)
 
+(defcustom hyperdrive-directory-sort '(hyperdrive-entry-name . string<)
+  "Column by which directory entries are sorted.
+Internally, a cons cell of (KEY . PREDICATE), the KEY being the
+`hyperdrive-entry' accessor function and the PREDICATE being the
+appropriate function (e.g. `time-less-p' for
+`hyperdrive-entry-modified', `<' for `hyperdrive-entry-size',
+etc)."
+  :type '(radio (cons :tag "By name" (const :format "" hyperdrive-entry-name)
+                      (choice :tag "Direction" :value string<
+                              (const :tag "Ascending" string<)
+                              (const :tag "Descending" string>)))
+                (cons :tag "By size" (const :format "" hyperdrive-entry-size)
+                      (choice :tag "Direction" :value <
+                              (const :tag "Ascending" <)
+                              (const :tag "Descending" >)))
+                (cons :tag "By date" (const :format "" hyperdrive-entry-modified)
+                      (choice :tag "Direction" :value time-less-p
+                              (const :tag "Ascending" time-less-p)
+                              (const :tag "Descending" (lambda (a b)
+                                                         (not (time-less-p a b)))))))
+  :group 'hyperdrive)
+
 (defcustom hyperdrive-history-display-buffer-action
   '(display-buffer-same-window)
   "Display buffer action for hyperdrive history buffers.
@@ -102,10 +124,6 @@ Passed to `display-buffer', which see."
   :type '(choice (const :tag "Same window" (display-buffer-same-window))
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
-
-(defcustom hyperdrive-column-headers t
-  "Display column headers in `hyperdrive-dir' and `hyperdrive-history' buffers."
-  :type 'boolean)
 
 (defcustom hyperdrive-default-host-format
   '(petname nickname domain seed short-key public-key)

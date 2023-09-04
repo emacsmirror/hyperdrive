@@ -51,7 +51,7 @@ uploading files, open PARENT-ENTRY."
          (progress-reporter
           (make-progress-reporter (format "Uploading %s files: " (length files-and-urls)) 0 (length files-and-urls)))
          (queue (make-plz-queue
-                 :limit 2
+                 :limit hyperdrive-queue-size
                  :finally (lambda ()
                             (progress-reporter-done progress-reporter)
                             (hyperdrive-open parent-entry)
