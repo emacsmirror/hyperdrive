@@ -318,7 +318,7 @@ Intended to be passed to `buffer-local-restore-state'.")
                      write-contents-functions (cl-adjoin #'hyperdrive--write-contents write-contents-functions)
                      ;; TODO: Modify buffer-local value of `save-some-buffers-action-alist'
                      ;; to allow diffing modified buffer with hyperdrive file
-                     ;; TODO: Add to `kill-buffer-query-functions' to
+                     ;; TODO(A): Add to `kill-buffer-query-functions' to
                      ;; query before killing hyperdrive buffers.
                      buffer-offer-save t))
         (add-hook 'after-change-major-mode-hook
