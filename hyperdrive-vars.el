@@ -125,10 +125,6 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
-(defcustom hyperdrive-column-headers t
-  "Display column headers in `hyperdrive-dir' and `hyperdrive-history' buffers."
-  :type 'boolean)
-
 (defcustom hyperdrive-default-host-format
   '(petname nickname domain seed short-key public-key)
   "Default format for displaying hyperdrive hostnames.

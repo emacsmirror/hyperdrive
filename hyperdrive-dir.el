@@ -70,8 +70,7 @@ With point on header, returns directory entry."
     (cond ((= 1 current-line)
            ;; Point on header: return directory's entry.
            hyperdrive-current-entry)
-          ((or (> current-line last-line)
-               (and hyperdrive-column-headers (= 2 current-line)))
+          ((or (> current-line last-line) (= 2 current-line))
            ;; Point is below the last entry or on column headers: signal error.
            (hyperdrive-user-error "No file on this line"))
           (t

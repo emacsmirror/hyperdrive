@@ -473,10 +473,6 @@ customize-group RET hyperdrive RET~:
   appropriate function (e.g. `time-less-p' for
   `hyperdrive-entry-modified', `<' for `hyperdrive-entry-size', etc).
 
-#+vindex: hyperdrive-column-headers
-- ~hyperdrive-column-headers~ :: Display column headers in
-  ~hyperdrive-dir~ and ~hyperdrive-history~ buffers. Defaults to ~t~.
-
 #+vindex: hyperdrive-history-display-buffer-action
 - ~hyperdrive-history-display-buffer-action~ :: Display buffer action
   for hyperdrive history buffers. Passed to ~display-buffer~, which see.

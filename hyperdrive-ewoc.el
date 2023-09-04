@@ -72,15 +72,14 @@ last node."
 (cl-defun hyperdrive-ewoc-next (&optional (n 1))
   "Move forward N entries.
 When on header line, moves point to first entry, skipping over
-column headers when `hyperdrive-column-headers' is non-nil."
+column headers."
   (declare (modes hyperdrive-ewoc-mode))
   (interactive "p")
   ;; TODO: Try using the intangible text property on headers to
   ;; automatically skip over them without conditional code. Setting
   ;; `cursor-intangible' on the column header causes `hl-line-mode' to
   ;; highlight the wrong line when crossing over the headers.
-  (let ((lines-below-header (- (line-number-at-pos)
-                               (if hyperdrive-column-headers 2 1))))
+  (let ((lines-below-header (- (line-number-at-pos) 2)))
     (if (cl-plusp lines-below-header)
         (hyperdrive-ewoc-move n)
       ;; Point on first line or column header: jump to first ewoc entry and then maybe move.
@@ -90,11 +89,10 @@ column headers when `hyperdrive-column-headers' is non-nil."
 (cl-defun hyperdrive-ewoc-previous (&optional (n 1))
   "Move backward N entries.
 When on first entry, moves point to header line, skipping over
-column headers when `hyperdrive-column-headers' is non-nil."
+column headers."
   (declare (modes hyperdrive-ewoc-mode))
   (interactive "p")
-  (let ((lines-below-header (- (line-number-at-pos)
-                               (if hyperdrive-column-headers 2 1))))
+  (let ((lines-below-header (- (line-number-at-pos) 2)))
     (if (and (cl-plusp lines-below-header)
              (< n lines-below-header))
         (hyperdrive-ewoc-move (- n))
