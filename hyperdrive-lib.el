@@ -1035,21 +1035,6 @@ Prompts with PROMPT and DEFAULT, according to `format-prompt'.
 DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
   (read-string (format-prompt prompt default) initial-input 'hyperdrive--name-history default))
 
-(defun hyperdrive-complete-sort ()
-  "Return a value for `hyperdrive-directory-sort' selected with completion."
-  (pcase-let* ((read-answer-short t)
-               (choices (mapcar (lambda (field)
-                                  (let ((desc (symbol-name (car field))))
-                                    (list desc (aref desc 0) (format "Sort by %s" desc))))
-                                hyperdrive-dir-sort-fields))
-               (column (intern (read-answer "Sort by column: " choices)))
-               (`(,current-column . ,current-direction) hyperdrive-directory-sort)
-               (direction (if (and (eq column current-column)
-                                   (eq current-direction :ascending))
-                              :descending
-                            :ascending)))
-    (cons column direction)))
-
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))

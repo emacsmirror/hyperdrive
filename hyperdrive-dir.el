@@ -137,6 +137,27 @@ Columns are suffixed with up/down arrows according to
 			    (propertize mtime-header 'face 'hyperdrive-column-header))
                     (propertize name-header 'face 'hyperdrive-column-header)))))
 
+(defun hyperdrive-dir-complete-sort ()
+  "Return a value for `hyperdrive-directory-sort' selected with completion."
+  (pcase-let* ((read-answer-short t)
+               (choices (mapcar (lambda (field)
+                                  (let ((desc (symbol-name (car field))))
+                                    (list desc (aref desc 0) (format "Sort by %s" desc))))
+                                hyperdrive-dir-sort-fields))
+               (column (intern (read-answer "Sort by column: " choices))))
+    (hyperdrive-dir-toggle-sort-direction column hyperdrive-directory-sort)))
+
+(defun hyperdrive-dir-toggle-sort-direction (column sort)
+  "Return `hyperdrive-directory-sort' cons cell for COLUMN.
+If SORT is already sorted using COLUMN, toggle direction.
+Otherwise, set direction to \\+`:descending'."
+  (pcase-let* ((`(,current-column . ,current-direction) sort)
+               (direction (if (and (eq column current-column)
+                                   (eq current-direction :ascending))
+                              :descending
+                            :ascending)))
+    (cons column direction)))
+
 (defun hyperdrive-dir-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."
@@ -286,7 +307,7 @@ Interactively, opens file or directory at point in
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
 DIRECTORY-SORT should be a valid value of
 `hyperdrive-directory-sort'."
-  (interactive (list (hyperdrive-complete-sort)))
+  (interactive (list (hyperdrive-dir-complete-sort)))
   (setq-local hyperdrive-directory-sort directory-sort)
   (with-silent-modifications
     (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
