@@ -495,8 +495,7 @@ for more information.  See `hyperdrive-read-entry' and
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer
                   (unless hyperdrive-mode
-                    ;; Remove overlays/text properties that might be in effect.
-                    (hyperdrive-clean-mode)
+                    (hyperdrive--clean-buffer)
                     (when hyperdrive-honor-auto-mode-alist
                       (let ((buffer-file-name (hyperdrive-entry-name entry)))
                         (set-auto-mode)))

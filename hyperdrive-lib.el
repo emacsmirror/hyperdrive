@@ -1227,24 +1227,15 @@ When BASE is non-nil, PATH will be expanded against BASE instead."
     (url-default-expander urlobj defobj)
     (url-recreate-url urlobj)))
 
-;;;; Compatibility
-
-;; This section includes code for compatibility with earlier versions
-;; of Emacs (going back to the version we declare support for), for
-;; features that aren't present in `compat'.
-
-(eval-and-compile
-  (if (< emacs-major-version 29)
-      (define-derived-mode hyperdrive-clean-mode fundamental-mode "Clean"
-        "A mode that removes all overlays and text properties.
-A copy of `clean-mode' from Emacs 29."
-        (kill-all-local-variables t)
-        (let ((inhibit-read-only t))
-          (dolist (overlay (overlays-in (point-min) (point-max)))
-            (delete-overlay overlay))
-          (set-text-properties (point-min) (point-max) nil)
-          (setq-local yank-excluded-properties t)))
-    (defalias 'hyperdrive-clean-mode 'clean-mode)))
+(defun hyperdrive--clean-buffer (&optional buffer)
+  "Remove all local variables, overlays, and text properties in BUFFER.
+ When BUFFER is nil, act on current buffer."
+  (with-current-buffer (or buffer (current-buffer))
+    (kill-all-local-variables t)
+    (let ((inhibit-read-only t))
+      (dolist (overlay (overlays-in (point-min) (point-max)))
+        (delete-overlay overlay))
+      (set-text-properties (point-min) (point-max) nil))))
 
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here
