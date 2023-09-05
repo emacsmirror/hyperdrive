@@ -1304,6 +1304,12 @@ When BASE is non-nil, PATH will be expanded against BASE instead."
     (url-default-expander urlobj defobj)
     (url-recreate-url urlobj)))
 
+;;;; Utilities
+
+(defun hyperdrive-time-greater-p (a b)
+  "Return non-nil if time value A is greater than B."
+  (not (time-less-p a b)))
+
 (defun hyperdrive--clean-buffer (&optional buffer)
   "Remove all local variables, overlays, and text properties in BUFFER.
  When BUFFER is nil, act on current buffer."
