@@ -121,21 +121,21 @@ arguments."
 Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
   (pcase-let* ((`(,column . ,direction) hyperdrive-directory-sort)
-               (arrow (if (eq direction :ascending) "▲" "▼"))
-               (size-header "Size")
-               (mtime-header "Last Modified")
-               (name-header "Name"))
+               (arrow (propertize (if (eq direction :ascending) "^" "v")
+                                  'face 'hyperdrive-header-arrow))
+               (size-header (propertize "Size" 'face 'hyperdrive-column-header))
+               (mtime-header (propertize "Last Modified" 'face 'hyperdrive-column-header))
+               (name-header (propertize "Name" 'face 'hyperdrive-column-header)))
     (pcase-exhaustive column
       ('size (cl-callf2 concat arrow size-header))
       ('mtime (cl-callf2 concat arrow mtime-header))
       ;; Put the arrow second so that the header doesn't move.
       ('name (cl-callf concat name-header arrow)))
     (concat prefix "\n"
-            (format "%6s  %s  %s"
-                    (propertize size-header 'face 'hyperdrive-column-header)
-                    (format hyperdrive-timestamp-format-string
-			    (propertize mtime-header 'face 'hyperdrive-column-header))
-                    (propertize name-header 'face 'hyperdrive-column-header)))))
+            (format (concat "%6s  " hyperdrive-timestamp-format-string "  %s")
+                    size-header
+                    mtime-header
+                    name-header))))
 
 (defun hyperdrive-dir-complete-sort ()
   "Return a value for `hyperdrive-directory-sort' selected with completion."

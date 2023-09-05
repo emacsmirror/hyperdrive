@@ -202,6 +202,9 @@ an existing buffer at the same version, or make a new buffer."
 (defface hyperdrive-timestamp '((t (:inherit default)))
   "Entry timestamp.")
 
+(defface hyperdrive-header-arrow '((t (:inherit bold)))
+  "Header arrows.")
+
 (defface hyperdrive-history-range '((t (:inherit font-lock-escape-face)))
   "Version range in `hyperdrive-history' buffers.")
 
