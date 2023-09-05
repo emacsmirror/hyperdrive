@@ -128,15 +128,15 @@ generated from PATH.  When ENCODE is non-nil, encode PATH."
    :version version
    :etc etc))
 
-(cl-defun hyperdrive-sort-entries (entries &key (by hyperdrive-directory-sort))
-  "Return ENTRIES sorted by BY.
-See `hyperdrive-directory-sort' for the type of BY."
-  (pcase-let* ((`(,accessor . ,direction) by)
+(cl-defun hyperdrive-sort-entries (entries &key (direction hyperdrive-directory-sort))
+  "Return ENTRIES sorted by DIRECTION.
+See `hyperdrive-directory-sort' for the type of DIRECTION."
+  (pcase-let* ((`(,accessor . ,direction) direction)
                ((map (direction sort-function)) (alist-get accessor hyperdrive-dir-sort-fields)))
     (cl-sort entries (lambda (a b)
                        (cond ((and a b) (funcall sort-function a b))
                              ;; When an entry lacks appropriate metadata
-                             ;; for sorting with BY, put it at the end.
+                             ;; for sorting by DIRECTION, put it at the end.
                              (a t)))
              :key accessor)))
 
