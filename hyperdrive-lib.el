@@ -131,8 +131,9 @@ generated from PATH.  When ENCODE is non-nil, encode PATH."
 (cl-defun hyperdrive-sort-entries (entries &key (direction hyperdrive-directory-sort))
   "Return ENTRIES sorted by DIRECTION.
 See `hyperdrive-directory-sort' for the type of DIRECTION."
-  (pcase-let* ((`(,accessor . ,direction) direction)
-               ((map (direction sort-function)) (alist-get accessor hyperdrive-dir-sort-fields)))
+  (pcase-let* ((`(,column . ,direction) direction)
+               ((map (:accessor accessor) (direction sort-function))
+                (alist-get column hyperdrive-dir-sort-fields)))
     (cl-sort entries (lambda (a b)
                        (cond ((and a b) (funcall sort-function a b))
                              ;; When an entry lacks appropriate metadata
@@ -1037,20 +1038,17 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
 (defun hyperdrive-complete-sort ()
   "Return a value for `hyperdrive-directory-sort' selected with completion."
   (pcase-let* ((read-answer-short t)
-               (choices (mapcar (pcase-lambda (`(,_accessor . ,(map (:desc desc))))
-                                  (list desc (aref desc 0) (format "Sort by %s" desc)))
+               (choices (mapcar (lambda (field)
+                                  (let ((desc (symbol-name (car field))))
+                                    (list desc (aref desc 0) (format "Sort by %s" desc))))
                                 hyperdrive-dir-sort-fields))
-               (desc (read-answer "Sort by column: " choices))
-               (`(,accessor . ,(map (:ascending _ascending) (:descending _descending)))
-                (cl-rassoc desc hyperdrive-dir-sort-fields
-                           :test (lambda (desc fields-properties)
-                                   (equal desc (map-elt fields-properties :desc)))))
-               (`(,current-accessor . ,current-direction) hyperdrive-directory-sort)
-               (direction (if (and (eq accessor current-accessor)
+               (column (intern (read-answer "Sort by column: " choices)))
+               (`(,current-column . ,current-direction) hyperdrive-directory-sort)
+               (direction (if (and (eq column current-column)
                                    (eq current-direction :ascending))
                               :descending
                             :ascending)))
-    (cons accessor direction)))
+    (cons column direction)))
 
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."

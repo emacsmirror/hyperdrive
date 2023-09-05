@@ -94,23 +94,23 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
-(defcustom hyperdrive-directory-sort '(hyperdrive-entry-name . :ascending)
+(defcustom hyperdrive-directory-sort '(name . :ascending)
+  ;; TODO(doc): Document change.
   "Column by which directory entries are sorted.
-Internally, a cons cell of (KEY . PREDICATE), the KEY being the
-`hyperdrive-entry' accessor function and the PREDICATE being the
-appropriate function (e.g. `time-less-p' for
-`hyperdrive-entry-mtime', `<' for `hyperdrive-entry-size',
-etc)."
+Internally, a cons cell of (COLUMN . DIRECTION), the COLUMn being
+one of the directory listing columns (\\+`name', \\+`size', or
+\\+`mtime') and DIRECTION being one of \\+`:ascending' or
+\\+`:descending'."
   ;; TODO: Consolidate type
-  :type '(radio (cons :tag "By name" (const :format "" hyperdrive-entry-name)
+  :type '(radio (cons :tag "By name" (const :format "" name)
                       (choice :tag "Direction" :value :ascending
                               (const :tag "Ascending" :ascending)
                               (const :tag "Descending" :descending)))
-                (cons :tag "By size" (const :format "" hyperdrive-entry-size)
+                (cons :tag "By size" (const :format "" size)
                       (choice :tag "Direction" :value :ascending
                               (const :tag "Ascending" :ascending)
                               (const :tag "Descending" :descending)))
-                (cons :tag "By date" (const :format "" hyperdrive-entry-mtime)
+                (cons :tag "By date" (const :format "" mtime)
                       (choice :tag "Direction" :value :ascending
                               (const :tag "Ascending" :ascending)
                               (const :tag "Descending" :descending)))))
@@ -292,9 +292,9 @@ values are alists mapping version range starts to plists with
 Keys are regexps matched against MIME types.")
 
 (defvar hyperdrive-dir-sort-fields
-  '((hyperdrive-entry-name  :desc "name"  :ascending string<     :descending string>)
-    (hyperdrive-entry-size  :desc "size"  :ascending <           :descending >)
-    (hyperdrive-entry-mtime :desc "mtime" :ascending time-less-p :descending hyperdrive-time-greater-p))
+  '((name  :accessor hyperdrive-entry-name  :ascending string<     :descending string>)
+    (size  :accessor hyperdrive-entry-size  :ascending <           :descending >)
+    (mtime :accessor hyperdrive-entry-mtime :ascending time-less-p :descending hyperdrive-time-greater-p))
   "Fields for sorting hyperdrive directory buffer columns.")
 
 ;;;; Footer

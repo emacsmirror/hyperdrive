@@ -120,22 +120,22 @@ arguments."
   "Return column headers as a string with PREFIX.
 Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
-  (pcase-let* ((`(,accessor . ,direction) hyperdrive-directory-sort)
+  (pcase-let* ((`(,column . ,direction) hyperdrive-directory-sort)
                (arrow (if (eq direction :ascending) "▲" "▼"))
-               (size-header (propertize "Size" 'face 'hyperdrive-column-header))
-               (mtime-header (propertize "Last Modified" 'face 'hyperdrive-column-header))
-               (name-header (propertize "Name" 'face 'hyperdrive-column-header)))
-    (pcase-exhaustive accessor
-      ('hyperdrive-entry-size (cl-callf2 concat arrow size-header))
-      ('hyperdrive-entry-mtime (cl-callf2 concat arrow mtime-header))
+               (size-header "Size")
+               (mtime-header "Last Modified")
+               (name-header "Name"))
+    (pcase-exhaustive column
+      ('size (cl-callf2 concat arrow size-header))
+      ('mtime (cl-callf2 concat arrow mtime-header))
       ;; Put the arrow second so that the header doesn't move.
-      ('hyperdrive-entry-name (cl-callf concat name-header arrow)))
+      ('name (cl-callf concat name-header arrow)))
     (concat prefix "\n"
             (format "%6s  %s  %s"
-                    size-header
+                    (propertize size-header 'face 'hyperdrive-column-header)
                     (format hyperdrive-timestamp-format-string
-			    mtime-header)
-                    name-header))))
+			    (propertize mtime-header 'face 'hyperdrive-column-header))
+                    (propertize name-header 'face 'hyperdrive-column-header)))))
 
 (defun hyperdrive-dir-pp (thing)
   "Pretty-print THING.
