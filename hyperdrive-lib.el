@@ -66,7 +66,7 @@ Passes ARGS to `format-message'."
   (name nil :documentation "Decoded filename of entry (excluding leading slash).")
   (path nil :documentation "Encoded path (including leading slash).")
   (headers nil :documentation "HTTP headers from request.")
-  (modified nil :documentation "Last modified time.")
+  (mtime nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
   (version nil :documentation "Hyperdrive version specified in entry's URL.")
   (type nil :documentation "MIME type of the entry.")
@@ -446,7 +446,7 @@ the given `plz-queue'"
 
 The following ENTRY slots are filled:
 - type
-- modified
+- mtime
 - size
 - hyperdrive (from persisted value if it exists)
 
@@ -468,7 +468,7 @@ The following ENTRY hyperdrive slots are filled:
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
           ;; TODO: Rename slot to "mtime" to avoid confusion.
-          (hyperdrive-entry-modified entry) last-modified)
+          (hyperdrive-entry-mtime entry) last-modified)
     (if persisted-hyperdrive
         (progn
           ;; Ensure that entry's hyperdrive is the persisted

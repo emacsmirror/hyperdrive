@@ -471,7 +471,7 @@ customize-group RET hyperdrive RET~:
   sorted.  Internally, a cons cell of (KEY . PREDICATE), the KEY being
   the `hyperdrive-entry' accessor function and the PREDICATE being the
   appropriate function (e.g. `time-less-p' for
-  `hyperdrive-entry-modified', `<' for `hyperdrive-entry-size', etc).
+  `hyperdrive-entry-mtime', `<' for `hyperdrive-entry-size', etc).
 
 #+vindex: hyperdrive-history-display-buffer-action
 - ~hyperdrive-history-display-buffer-action~ :: Display buffer action

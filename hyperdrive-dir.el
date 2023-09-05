@@ -130,7 +130,7 @@ Columns are suffixed with up/down arrows according to
        (setf size-arrow (pcase-exhaustive predicate
                           ('< "▲")
                           ('> "▼"))))
-      (`(hyperdrive-entry-modified . ,predicate)
+      (`(hyperdrive-entry-mtime . ,predicate)
        (setf date-arrow (pcase-exhaustive predicate
                           ('time-less-p "▲")
                           ((pred functionp) "▼")))))
@@ -153,14 +153,14 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun hyperdrive-dir--format-entry (entry)
   "Return ENTRY formatted as a string."
-  (pcase-let* (((cl-struct hyperdrive-entry size modified) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry size mtime) entry)
                (size (when size
                        (file-size-human-readable size)))
                (face (if (hyperdrive--entry-directory-p entry)
                          'hyperdrive-directory
                        'default))
-               (timestamp (if modified
-                              (format-time-string hyperdrive-timestamp-format modified)
+               (timestamp (if mtime
+                              (format-time-string hyperdrive-timestamp-format mtime)
                             (format hyperdrive-timestamp-format-string " "))))
     (format "%6s  %s  %s"
             (propertize (or size "")

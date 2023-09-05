@@ -48,7 +48,7 @@ value 'UNKNOWN.
 and whose cdr is a hyperdrive entry."
   (pcase-let* ((`(,range . ,entry) range-entry)
                (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) range)
-               ((cl-struct hyperdrive-entry size modified) entry)
+               ((cl-struct hyperdrive-entry size mtime) entry)
                (formatted-range (if (eq range-start range-end)
                                     (format "%d" range-start)
                                   (format "%d-%d" range-start range-end)))
@@ -58,8 +58,8 @@ and whose cdr is a hyperdrive entry."
                                               ('unknown "Unknown"))))
                (size (when size
                        (file-size-human-readable size)))
-               (timestamp (if modified
-                              (format-time-string hyperdrive-timestamp-format modified)
+               (timestamp (if mtime
+                              (format-time-string hyperdrive-timestamp-format mtime)
                             (format hyperdrive-timestamp-format-string " "))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version

@@ -99,7 +99,7 @@ Passed to `display-buffer', which see."
 Internally, a cons cell of (KEY . PREDICATE), the KEY being the
 `hyperdrive-entry' accessor function and the PREDICATE being the
 appropriate function (e.g. `time-less-p' for
-`hyperdrive-entry-modified', `<' for `hyperdrive-entry-size',
+`hyperdrive-entry-mtime', `<' for `hyperdrive-entry-size',
 etc)."
   :type '(radio (cons :tag "By name" (const :format "" hyperdrive-entry-name)
                       (choice :tag "Direction" :value string<
@@ -109,7 +109,7 @@ etc)."
                       (choice :tag "Direction" :value <
                               (const :tag "Ascending" <)
                               (const :tag "Descending" >)))
-                (cons :tag "By date" (const :format "" hyperdrive-entry-modified)
+                (cons :tag "By date" (const :format "" hyperdrive-entry-mtime)
                       (choice :tag "Direction" :value time-less-p
                               (const :tag "Ascending" time-less-p)
                               (const :tag "Descending" (lambda (a b)
