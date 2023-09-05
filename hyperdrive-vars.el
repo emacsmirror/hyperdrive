@@ -94,7 +94,7 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
-(defcustom hyperdrive-directory-sort '(hyperdrive-entry-name . string<)
+(defcustom hyperdrive-directory-sort '(hyperdrive-entry-name . :ascending)
   "Column by which directory entries are sorted.
 Internally, a cons cell of (KEY . PREDICATE), the KEY being the
 `hyperdrive-entry' accessor function and the PREDICATE being the
@@ -102,18 +102,17 @@ appropriate function (e.g. `time-less-p' for
 `hyperdrive-entry-mtime', `<' for `hyperdrive-entry-size',
 etc)."
   :type '(radio (cons :tag "By name" (const :format "" hyperdrive-entry-name)
-                      (choice :tag "Direction" :value string<
-                              (const :tag "Ascending" string<)
-                              (const :tag "Descending" string>)))
+                      (choice :tag "Direction" :value :ascending
+                              (const :tag "Ascending" :ascending)
+                              (const :tag "Descending" :descending)))
                 (cons :tag "By size" (const :format "" hyperdrive-entry-size)
-                      (choice :tag "Direction" :value <
-                              (const :tag "Ascending" <)
-                              (const :tag "Descending" >)))
+                      (choice :tag "Direction" :value :ascending
+                              (const :tag "Ascending" :ascending)
+                              (const :tag "Descending" :descending)))
                 (cons :tag "By date" (const :format "" hyperdrive-entry-mtime)
-                      (choice :tag "Direction" :value time-less-p
-                              (const :tag "Ascending" time-less-p)
-                              (const :tag "Descending" (lambda (a b)
-                                                         (not (time-less-p a b))))))))
+                      (choice :tag "Direction" :value :ascending
+                              (const :tag "Ascending" :ascending)
+                              (const :tag "Descending" :descending)))))
 
 (defcustom hyperdrive-history-display-buffer-action
   '(display-buffer-same-window)
@@ -290,6 +289,12 @@ values are alists mapping version range starts to plists with
     (,(rx (or "text/html" "application/xhtml+xml")) . hyperdrive-handler-html))
   "Alist mapping MIME types to handler functions.
 Keys are regexps matched against MIME types.")
+
+(defvar hyperdrive-dir-sort-fields
+  '((hyperdrive-entry-name  :desc "name"  :ascending string<     :descending string>)
+    (hyperdrive-entry-size  :desc "size"  :ascending <           :descending >)
+    (hyperdrive-entry-mtime :desc "mtime" :ascending time-less-p :descending hyperdrive-time-greater-p))
+  "Fields for sorting hyperdrive directory buffer columns.")
 
 ;;;; Footer
 

@@ -131,12 +131,14 @@ generated from PATH.  When ENCODE is non-nil, encode PATH."
 (cl-defun hyperdrive-sort-entries (entries &key (by hyperdrive-directory-sort))
   "Return ENTRIES sorted by BY.
 See `hyperdrive-directory-sort' for the type of BY."
-  (cl-sort entries (lambda (a b)
-                     (cond ((and a b) (funcall (cdr by) a b))
-                           ;; When an entry lacks appropriate metadata
-                           ;; for sorting with BY, put it at the end.
-                           (a t)))
-           :key (car by)))
+  (pcase-let* ((`(,accessor . ,direction) by)
+               ((map (direction sort-function)) (alist-get accessor hyperdrive-dir-sort-fields)))
+    (cl-sort entries (lambda (a b)
+                       (cond ((and a b) (funcall sort-function a b))
+                             ;; When an entry lacks appropriate metadata
+                             ;; for sorting with BY, put it at the end.
+                             (a t)))
+             :key accessor)))
 
 ;;;; API
 
@@ -1034,27 +1036,21 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
 
 (defun hyperdrive-complete-sort ()
   "Return a value for `hyperdrive-directory-sort' selected with completion."
-  (pcase-let* ((fn (pcase-lambda (`(cons :tag ,tag (const :format "" ,accessor)
-                                         (choice :tag "Direction" :value ,_default-direction
-                                                 (const :tag "Ascending" ,ascending-predicate)
-                                                 (const :tag "Descending" ,descending-predicate))))
-                     (list tag accessor ascending-predicate descending-predicate)))
-               (columns (mapcar fn (cdr (get 'hyperdrive-directory-sort 'custom-type))))
-               (read-answer-short t)
-               (choices (cl-loop for (tag . _) in columns
-                                 for name = (substring tag 3)
-                                 for key = (aref name 0)
-                                 collect (cons name (list key tag))))
-               (column-choice (read-answer "Sort by column: " choices))
-               (`(,accessor ,ascending-predicate ,descending-predicate)
-                (alist-get (concat "By " column-choice) columns nil nil #'equal))
-               (direction-choice (read-answer "Sort in direction: "
-                                              (list (cons "ascending" (list ?a "Ascending"))
-                                                    (cons "descending" (list ?d "Descending")))))
-               (predicate (pcase direction-choice
-                            ("ascending" ascending-predicate)
-                            ("descending" descending-predicate))))
-    (cons accessor predicate)))
+  (pcase-let* ((read-answer-short t)
+               (choices (mapcar (pcase-lambda (`(,_accessor . ,(map (:desc desc))))
+                                  (list desc (aref desc 0) (format "Sort by %s" desc)))
+                                hyperdrive-dir-sort-fields))
+               (desc (read-answer "Sort by column: " choices))
+               (`(,accessor . ,(map (:ascending _ascending) (:descending _descending)))
+                (cl-rassoc desc hyperdrive-dir-sort-fields
+                           :test (lambda (desc fields-properties)
+                                   (equal desc (map-elt fields-properties :desc)))))
+               (`(,current-accessor . ,current-direction) hyperdrive-directory-sort)
+               (direction (if (and (eq accessor current-accessor)
+                                   (eq current-direction :ascending))
+                              :descending
+                            :ascending)))
+    (cons accessor direction)))
 
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."

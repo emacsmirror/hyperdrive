@@ -120,29 +120,22 @@ arguments."
   "Return column headers as a string with PREFIX.
 Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
-  (let (name-arrow size-arrow date-arrow)
-    (pcase-exhaustive hyperdrive-directory-sort
-      (`(hyperdrive-entry-name . ,predicate)
-       (setf name-arrow (pcase-exhaustive predicate
-                          ('string< "▲")
-                          ('string> "▼"))))
-      (`(hyperdrive-entry-size . ,predicate)
-       (setf size-arrow (pcase-exhaustive predicate
-                          ('< "▲")
-                          ('> "▼"))))
-      (`(hyperdrive-entry-mtime . ,predicate)
-       (setf date-arrow (pcase-exhaustive predicate
-                          ('time-less-p "▲")
-                          ((pred functionp) "▼")))))
+  (pcase-let* ((`(,accessor . ,direction) hyperdrive-directory-sort)
+               (arrow (if (eq direction :ascending) "▲" "▼"))
+               (size-header (propertize "Size" 'face 'hyperdrive-column-header))
+               (mtime-header (propertize "Last Modified" 'face 'hyperdrive-column-header))
+               (name-header (propertize "Name" 'face 'hyperdrive-column-header)))
+    (pcase-exhaustive accessor
+      ('hyperdrive-entry-size (cl-callf2 concat arrow size-header))
+      ('hyperdrive-entry-mtime (cl-callf2 concat arrow mtime-header))
+      ;; Put the arrow second so that the header doesn't move.
+      ('hyperdrive-entry-name (cl-callf concat name-header arrow)))
     (concat prefix "\n"
             (format "%6s  %s  %s"
-                    (concat size-arrow
-                            (propertize "Size" 'face 'hyperdrive-column-header))
+                    size-header
                     (format hyperdrive-timestamp-format-string
-			    (concat date-arrow
-				    (propertize "Last Modified" 'face 'hyperdrive-column-header)))
-                    (concat (propertize "Name" 'face 'hyperdrive-column-header)
-                            name-arrow)))))
+			    mtime-header)
+                    name-header))))
 
 (defun hyperdrive-dir-pp (thing)
   "Pretty-print THING.
