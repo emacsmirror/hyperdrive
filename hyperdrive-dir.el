@@ -121,6 +121,8 @@ arguments."
 Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
   (pcase-let* ((`(,column . ,direction) hyperdrive-directory-sort)
+               ;; TODO: Use ▲ and ▼ glyphs, but make sure that the
+               ;; column headers are aligned correctly.
                (arrow (propertize (if (eq direction :ascending) "^" "v")
                                   'face 'hyperdrive-header-arrow))
                (size-header (propertize "Size" 'face 'hyperdrive-column-header))
