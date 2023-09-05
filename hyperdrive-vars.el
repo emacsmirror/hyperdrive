@@ -92,8 +92,7 @@ Passed to `display-buffer', which see."
   ;; TODO: Perhaps use `display-buffer--action-custom-type'?
   :type '(choice (const :tag "Same window" (display-buffer-same-window))
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
-                 (sexp :tag "Other"))
-  :group 'hyperdrive)
+                 (sexp :tag "Other")))
 
 (defcustom hyperdrive-directory-sort '(hyperdrive-entry-name . string<)
   "Column by which directory entries are sorted.
@@ -114,8 +113,7 @@ etc)."
                       (choice :tag "Direction" :value time-less-p
                               (const :tag "Ascending" time-less-p)
                               (const :tag "Descending" (lambda (a b)
-                                                         (not (time-less-p a b)))))))
-  :group 'hyperdrive)
+                                                         (not (time-less-p a b))))))))
 
 (defcustom hyperdrive-history-display-buffer-action
   '(display-buffer-same-window)
@@ -175,81 +173,59 @@ an existing buffer at the same version, or make a new buffer."
   :group 'hyperdrive)
 
 (defface hyperdrive-petname '((t :inherit font-lock-type-face))
-  "Applied to hyperdrive petnames."
-  :group 'hyperdrive-faces)
+  "Applied to hyperdrive petnames.")
 
 (defface hyperdrive-seed '((t :inherit font-lock-doc-face))
-  "Applied to hyperdrive seeds."
-  :group 'hyperdrive-faces)
+  "Applied to hyperdrive seeds.")
 
 (defface hyperdrive-domain '((t :inherit font-lock-keyword-face))
-  "Applied to hyperdrive domains."
-  :group 'hyperdrive-faces)
+  "Applied to hyperdrive domains.")
 
 (defface hyperdrive-nickname '((t :inherit font-lock-warning-face))
-  "Applied to hyperdrive nicknames."
-  :group 'hyperdrive-faces)
+  "Applied to hyperdrive nicknames.")
 
 (defface hyperdrive-public-key '((t :inherit font-lock-function-name-face))
-  "Applied to hyperdrive public keys."
-  :group 'hyperdrive-faces)
+  "Applied to hyperdrive public keys.")
 
-(defface hyperdrive-header
-  '((t (:inherit dired-header)))
-  "Directory path."
-  :group 'hyperdrive-faces)
+(defface hyperdrive-header '((t (:inherit dired-header)))
+  "Directory path.")
 
-(defface hyperdrive-column-header
-  '((t (:inherit underline)))
-  "Directory path."
-  :group 'hyperdrive-faces)
+(defface hyperdrive-column-header '((t (:inherit underline)))
+  "Directory path.")
 
-(defface hyperdrive-directory
-  '((t (:inherit dired-directory)))
-  "Subdirectories."
-  :group 'hyperdrive-faces)
+(defface hyperdrive-directory '((t (:inherit dired-directory)))
+  "Subdirectories.")
 
-(defface hyperdrive-size
-  '((t (:inherit font-lock-doc-face)))
-  "Size of entries."
-  :group 'hyperdrive-faces)
+(defface hyperdrive-size '((t (:inherit font-lock-doc-face)))
+  "Size of entries.")
 
-(defface hyperdrive-timestamp
-  '((t (:inherit default)))
-  "Entry timestamp."
-  :group 'hyperdrive-faces)
+(defface hyperdrive-timestamp '((t (:inherit default)))
+  "Entry timestamp.")
 
-(defface hyperdrive-history-range
-  '((t (:inherit font-lock-escape-face)))
-  "Version range in `hyperdrive-history' buffers."
-  :group 'hyperdrive-faces)
+(defface hyperdrive-history-range '((t (:inherit font-lock-escape-face)))
+  "Version range in `hyperdrive-history' buffers.")
 
 (defface hyperdrive-history-existent '((t (:foreground "black" :background "green")))
-  "Marker for known existent entries in `hyperdrive-history'buffers."
-  :group 'hyperdrive-faces)
+  "Marker for known existent entries in `hyperdrive-history'buffers.")
 
 (defface hyperdrive-history-nonexistent '((t (:foreground "black" :background "red")))
-  "Marker for known nonexistent entries in `hyperdrive-history'buffers."
-  :group 'hyperdrive-faces)
+  "Marker for known nonexistent entries in `hyperdrive-history'buffers.")
 
 (defface hyperdrive-history-unknown '((t (:foreground "black" :background "yellow")))
-  "Marker for entries with unknown existence in `hyperdrive-history' buffers."
-  :group 'hyperdrive-faces)
+  "Marker for entries with unknown existence in `hyperdrive-history' buffers.")
 
 (defface hyperdrive-button
   ;; Inspired by cus-edit.el's `custom-button' face.
   ;; NOTE: This face is not currently used, but
   ;; `hyperdrive-button-dangerous' inherits from it.
   '((t (:inherit custom-button)))
-  "Face for hyperdrive buttons."
-  :group 'hyperdrive-faces)
+  "Face for hyperdrive buttons.")
 
 (defface hyperdrive-button-dangerous
   '((t (:inherit hyperdrive-button
                  :box (:line-width 3)
                  :background "red" :foreground "yellow")))
-  "Face for dangerous hyperdrive buttons."
-  :group 'hyperdrive-faces)
+  "Face for dangerous hyperdrive buttons.")
 
 ;;;;; Regular expressions
 
