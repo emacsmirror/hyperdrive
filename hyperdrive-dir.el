@@ -288,13 +288,14 @@ DIRECTORY-SORT should be a valid value of
 `hyperdrive-directory-sort'."
   (interactive (list (hyperdrive-complete-sort)))
   (setq-local hyperdrive-directory-sort directory-sort)
-  (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
-    (ewoc-filter hyperdrive-ewoc #'ignore)
-    (dolist (entry (hyperdrive-sort-entries entries))
-      (ewoc-enter-last hyperdrive-ewoc entry))
-    (ewoc-set-hf hyperdrive-ewoc
-                 (hyperdrive-dir-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
-                 "")))
+  (with-silent-modifications
+    (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
+      (ewoc-filter hyperdrive-ewoc #'ignore)
+      (dolist (entry (hyperdrive-sort-entries entries))
+        (ewoc-enter-last hyperdrive-ewoc entry))
+      (ewoc-set-hf hyperdrive-ewoc
+                   (hyperdrive-dir-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
+                   ""))))
 
 ;;;; Imenu support
 
