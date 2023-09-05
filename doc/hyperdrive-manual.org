@@ -235,8 +235,8 @@ you are editing an existing hyperdrive file, ~save-buffer~ will
 silently update the current hyperdrive entry with the new content.
 
 ~hyperdrive.el~ will prompt to save modified hyperdrive files before
-exiting Emacs. If you want ~save-some-buffers~ to always prompt to
-save hyperdrive files in addition to regular files, set
+exiting Emacs. If you want the command ~save-some-buffers~ to always
+prompt to save hyperdrive files in addition to regular files, set
 ~save-some-buffers-default-predicate~ to ~t~.
 
 ** Link to a hyperdrive
