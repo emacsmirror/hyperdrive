@@ -74,7 +74,6 @@
 (require 'plz)
 
 (require 'hyperdrive-lib)
-(require 'hyperdrive-handlers)
 (require 'hyperdrive-org)
 
 ;;;; Links
