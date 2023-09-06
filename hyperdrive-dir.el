@@ -200,9 +200,7 @@ To be used as the pretty-printer for `ewoc-create'."
                        'default))
                (timestamp (if mtime
                               (format-time-string hyperdrive-timestamp-format mtime)
-                            (propertize " "
-                                        'display
-                                        '(space :width hyperdrive-timestamp-width)))))
+                            (propertize " " 'display '(space :width hyperdrive-timestamp-width)))))
     (format "%6s  %s  %s"
             (propertize (or size "")
                         'face 'hyperdrive-size)

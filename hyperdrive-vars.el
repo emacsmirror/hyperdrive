@@ -95,7 +95,7 @@ Passed to `display-buffer', which see."
 
 (defcustom hyperdrive-directory-sort '(name . :ascending)
   "Column by which directory entries are sorted.
-Internally, a cons cell of (COLUMN . DIRECTION), the COLUMn being
+Internally, a cons cell of (COLUMN . DIRECTION), the COLUMN being
 one of the directory listing columns (\\+`name', \\+`size', or
 \\+`mtime') and DIRECTION being one of \\+`:ascending' or
 \\+`:descending'."
@@ -191,8 +191,8 @@ an existing buffer at the same version, or make a new buffer."
 (defface hyperdrive-column-header '((t (:inherit underline)))
   "Column header.")
 
-(defface hyperdrive-selected-column-header '((t (:inherit underline
-                                                          :weight bold)))
+(defface hyperdrive-selected-column-header '((t ( :inherit underline
+                                                  :weight bold)))
   "Selected column header.")
 
 (defface hyperdrive-directory '((t (:inherit dired-directory)))
