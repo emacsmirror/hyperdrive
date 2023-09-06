@@ -542,11 +542,7 @@ Returns filled ENTRY."
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (when (and allow (eq 'unknown writablep))
-      (setf (hyperdrive-writablep hyperdrive) (pcase-exhaustive allow
-                                                ;; TODO: The Allow header array is
-                                                ;; serialized. Why isn't it an alist?
-                                                ("HEAD,GET,PUT,DELETE" t)
-                                                ("HEAD,GET" nil))))
+      (setf (hyperdrive-writablep hyperdrive) (string-match-p "PUT" allow)))
     (setf (hyperdrive-entry-size entry) (when content-length
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
