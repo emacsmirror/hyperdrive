@@ -359,6 +359,8 @@ for more information.  See `hyperdrive-read-entry' and
 `hyperdrive-complete-hyperdrive'."
   (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry
+    ;; `view-buffer' checks the mode-class symbol property of
+    ;; `major-mode' and avoids putting directory buffers in `view-mode'.
     :createp nil :then (lambda () (view-buffer (current-buffer)))))
 
 ;;;###autoload
