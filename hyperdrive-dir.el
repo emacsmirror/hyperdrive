@@ -224,8 +224,6 @@ With point on header, returns directory entry."
 
 ;;;; Commands
 
-(declare-function hyperdrive-open "hyperdrive")
-
 (defun hyperdrive-dir-find-file (entry)
   "Visit hyperdrive ENTRY at point.
 Interactively, visit file or directory at point in

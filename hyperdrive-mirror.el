@@ -41,7 +41,6 @@
 
 ;;;; Functions
 
-(declare-function hyperdrive-open "hyperdrive")
 (declare-function hyperdrive-upload-file "hyperdrive")
 (defun hyperdrive--mirror (files-and-urls parent-entry)
   "Upload each file to its corresponding URL in FILES-AND-URLs.

@@ -349,93 +349,11 @@ for more information.  See `hyperdrive-read-entry' and
   (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry))
 
-;; TODO: Consider moving `hyperdrive-open' and `hyperdrive-open-url'
-;; to hyperdrive-lib.el. We'd need to avoid a circular dependency,
-;; since `hyperdrive-open' refers `hyperdrive-type-handlers' (defined
-;; in hyperdrive-handlers.el).
-
 ;;;###autoload
 (defun hyperdrive-open-url (url)
   "Open hyperdrive URL."
   (interactive (list (hyperdrive-read-url :prompt "Open hyperdrive URL")))
   (hyperdrive-open (hyperdrive-url-entry url)))
-
-(declare-function hyperdrive-history "hyperdrive-history")
-(cl-defun hyperdrive-open (entry &key then recurse)
-  "Open hyperdrive ENTRY.
-If RECURSE, proceed up the directory hierarchy if given path is
-not found.  THEN may be a function to pass to the handler to call
-in the buffer opened by the handler."
-  (declare (indent defun))
-  ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
-  ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
-  ;; struct. If the hyperdrive already exists in hyperdrive-hyperdrives, there's no need to send a HEAD
-  ;; request, since the value will never change. We only need to send a HEAD request when calling
-  ;; `hyperdrive-open-url' on an unknown URL. Since `hyperdrive-complete-url' only returns a URL, we'll
-  ;; need to parse the URL and then call `gethash' (or refactor `hyperdrive-complete-url').
-  ;; See: <https://github.com/RangerMauve/hypercore-fetch/issues/60>. (implemented)
-  ;; FIXME: Some of the synchronous filling functions we've added now cause this to be blocking,
-  ;; which is very noticeable when a file can't be loaded from the gateway and eventually times out.
-  (let ((hyperdrive (hyperdrive-entry-hyperdrive entry)))
-    (hyperdrive-fill entry
-      :then (lambda (entry)
-              (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-                           (handler (alist-get type hyperdrive-type-handlers nil nil #'string-match-p)))
-                (unless (hyperdrive--entry-directory-p entry)
-                  ;; No need to fill latest version for directories,
-                  ;; since we do it in `hyperdrive--fill' already.
-                  (hyperdrive-fill-latest-version hyperdrive))
-                (hyperdrive-persist hyperdrive)
-                (funcall (or handler #'hyperdrive-handler-default) entry :then then)))
-      :else (lambda (err)
-              (cl-labels ((not-found-action
-                            () (if recurse
-                                   (hyperdrive-open (hyperdrive-parent entry) :recurse t)
-                                 (pcase (prompt)
-                                   ('history (hyperdrive-history entry))
-                                   ('up (hyperdrive-open (hyperdrive-parent entry)))
-                                   ('recurse (hyperdrive-open (hyperdrive-parent entry) :recurse t)))))
-                          (prompt
-                            () (pcase-exhaustive
-                                   (read-answer (format "URL not found: \"%s\". " (hyperdrive-entry-url entry))
-                                                '(("history" ?h "open version history")
-                                                  ("up" ?u "open parent directory")
-                                                  ("recurse" ?r "go up until a directory is found")
-                                                  ("exit" ?q "exit")))
-                                 ("history" 'history)
-                                 ("up" 'up)
-                                 ("recurse" 'recurse)
-                                 ("exit" nil))))
-                (pcase (plz-response-status (plz-error-response err))
-                  ;; FIXME: If plz-error is a curl-error, this block will fail.
-                  (404 ;; Path not found.
-                   (cond
-                    ((equal (hyperdrive-entry-path entry) "/")
-                     ;; Root directory not found: Drive has not been
-                     ;; loaded locally, and no peers are found seeding it.
-                     (hyperdrive-message "No peers found for %s" (hyperdrive-entry-url entry)))
-                    ((and (not (hyperdrive--entry-directory-p entry))
-                          (hyperdrive-writablep hyperdrive)
-                          (not (hyperdrive-entry-version entry)))
-                     ;; Entry is a writable file: create a new buffer
-                     ;; that will be saved to its path.
-                     (if-let ((buffer (get-buffer (hyperdrive--entry-buffer-name entry))))
-                         ;; Buffer already exists: likely the user deleted the entry
-                         ;; without killing the buffer.  Switch to the buffer and
-                         ;; alert the user that the entry no longer exists.
-                         (progn
-                           (switch-to-buffer buffer)
-                           (message "Entry no longer exists!  %s" (hyperdrive-entry-description entry)))
-                       ;; Make and switch to new buffer.
-                       (switch-to-buffer (hyperdrive--get-buffer-create entry))))
-                    (t
-                     ;; Hyperdrive entry is not writable: prompt for action.
-                     (not-found-action))))
-                  (500 ;; Generic error, likely a mistyped URL
-                   (hyperdrive-message "Generic hyper-gateway status 500 error. Is this URL correct? %s"
-                                       (hyperdrive-entry-url entry)))
-                  (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
-                                         (hyperdrive-entry-url entry) err))))))))
 
 ;;;###autoload
 (defun hyperdrive-download-entry (entry filename)
