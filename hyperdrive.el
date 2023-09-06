@@ -350,6 +350,18 @@ for more information.  See `hyperdrive-read-entry' and
   (hyperdrive-open entry))
 
 ;;;###autoload
+(defun hyperdrive-view-file (entry)
+  "View ENTRY in `view-mode', returning to previous buffer when done.
+Interactively, prompts for known hyperdrive and path.
+
+With universal prefix argument \\[universal-argument], prompts
+for more information.  See `hyperdrive-read-entry' and
+`hyperdrive-complete-hyperdrive'."
+  (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
+  (hyperdrive-open entry
+    :createp nil :then (lambda () (view-buffer (current-buffer)))))
+
+;;;###autoload
 (defun hyperdrive-open-url (url)
   "Open hyperdrive URL."
   (interactive (list (hyperdrive-read-url :prompt "Open hyperdrive URL")))
