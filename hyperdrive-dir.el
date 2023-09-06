@@ -139,7 +139,8 @@ Columns are suffixed with up/down arrows according to
                  "<mouse-1>" (lambda (&optional _e)
                                (interactive "e")
                                (hyperdrive-dir-sort
-                                (hyperdrive-dir-toggle-sort-direction column hyperdrive-directory-sort)))))
+                                (hyperdrive-dir-toggle-sort-direction column hyperdrive-directory-sort))))
+               'mouse-face 'highlight)
               headers)))
     (concat prefix "\n"
             (apply #'format (concat "%6s  " hyperdrive-timestamp-format-string "  %s")
