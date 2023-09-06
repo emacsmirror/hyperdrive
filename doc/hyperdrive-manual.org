@@ -177,7 +177,8 @@ default:
 #+kindex: revert-buffer
 - ~g~ refreshes the directory to display potential updates
 #+kindex: hyperdrive-dir-sort
-- ~o~ sorts directory contents by column
+- ~o~ sorts directory contents by column (you can also click on the
+  column headers)
 #+kindex: hyperdrive-dir-download-file
 - ~d~ downloads the file at point to disk
 #+kindex: hyperdrive-dir-delete
