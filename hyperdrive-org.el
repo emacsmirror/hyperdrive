@@ -152,6 +152,7 @@ the current location."
                  ;; prefixing with "file:" (because Org assumes that links
                  ;; without a specified protocol are "file:" links).
                  (not (string-prefix-p "file:" raw-link-type)))
+        ;; FIXME: For fuzzy links, passing to hyperdrive-expand-url is a no-no.
         (hyperdrive-open-url (hyperdrive-expand-url (org-element-property :path context)))))))
 
 ;;;###autoload
