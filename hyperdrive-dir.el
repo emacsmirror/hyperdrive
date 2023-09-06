@@ -199,6 +199,7 @@ With point on header, returns directory entry."
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
   "f"   #'hyperdrive-find-file ;; Alternatively, define new function which fills in name of entry at point.
+  "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
   "d"   #'hyperdrive-dir-download-file
@@ -228,6 +229,15 @@ Interactively, visit file or directory at point in
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-open entry))
+
+(declare-function hyperdrive-view-file "hyperdrive")
+(defun hyperdrive-dir-view-file (entry)
+  "Open hyperdrive ENTRY at point in `view-mode'.
+Interactively, opens file or directory at point in
+`hyperdrive-dir' buffer."
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
+  (hyperdrive-view-file entry))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 

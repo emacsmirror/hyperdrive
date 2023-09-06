@@ -10,6 +10,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - ~yank-media~ support (on Emacs 29 or later)
 - ~save-some-buffers~ integration
 - ~info-look~ integration
+- ~view-mode~ integration
 - Org-mode link completion
 - directory view sorting by column
 

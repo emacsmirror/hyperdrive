@@ -393,11 +393,13 @@ When VERSION is nil, return latest version of ENTRY."
          (_ (signal (car err) (cdr err))))))))
 
 (declare-function hyperdrive-history "hyperdrive-history")
-(cl-defun hyperdrive-open (entry &key then recurse)
+(cl-defun hyperdrive-open (entry &key then recurse (createp t))
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
-not found.  THEN may be a function to pass to the handler to call
-in the buffer opened by the handler."
+not found. THEN is a function to pass to the handler which will
+be called with no arguments in the buffer opened by the handler.
+When a writable ENTRY is not found and CREATEP is non-nil, create
+a new buffer for ENTRY."
   (declare (indent defun))
   ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
   ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
@@ -446,7 +448,8 @@ in the buffer opened by the handler."
                      ;; Root directory not found: Drive has not been
                      ;; loaded locally, and no peers are found seeding it.
                      (hyperdrive-message "No peers found for %s" (hyperdrive-entry-url entry)))
-                    ((and (not (hyperdrive--entry-directory-p entry))
+                    ((and createp
+                          (not (hyperdrive--entry-directory-p entry))
                           (hyperdrive-writablep hyperdrive)
                           (not (hyperdrive-entry-version entry)))
                      ;; Entry is a writable file: create a new buffer
@@ -529,7 +532,9 @@ The following ENTRY slots are filled:
 
 The following ENTRY hyperdrive slots are filled:
 - public-key
-- domains (merged with current persisted value)"
+- domains (merged with current persisted value)
+
+Returns filled ENTRY."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) entry)
                ((map link content-length content-type etag last-modified) headers)
                ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
