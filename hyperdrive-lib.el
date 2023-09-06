@@ -544,7 +544,6 @@ The following ENTRY hyperdrive slots are filled:
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
           (hyperdrive-entry-type entry) content-type
-          ;; TODO: Rename slot to "mtime" to avoid confusion.
           (hyperdrive-entry-mtime entry) last-modified)
     (if persisted-hyperdrive
         (progn
