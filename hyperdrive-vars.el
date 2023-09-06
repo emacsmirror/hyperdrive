@@ -295,9 +295,18 @@ values are alists mapping version range starts to plists with
 Keys are regexps matched against MIME types.")
 
 (defvar hyperdrive-dir-sort-fields
-  '((name  :accessor hyperdrive-entry-name  :ascending string<     :descending string>)
-    (size  :accessor hyperdrive-entry-size  :ascending <           :descending >)
-    (mtime :accessor hyperdrive-entry-mtime :ascending time-less-p :descending hyperdrive-time-greater-p))
+  '((size  :accessor hyperdrive-entry-size
+           :ascending <
+           :descending >
+           :desc "Size")
+    (mtime :accessor hyperdrive-entry-mtime
+           :ascending time-less-p
+           :descending hyperdrive-time-greater-p
+           :desc "Last Modified")
+    (name  :accessor hyperdrive-entry-name
+           :ascending string<
+           :descending string>
+           :desc "Name"))
   "Fields for sorting hyperdrive directory buffer columns.")
 
 ;;;; Footer
