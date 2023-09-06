@@ -77,7 +77,7 @@ Passes ARGS to `format-message'."
   "Represents a hyperdrive."
   (public-key nil :documentation "Hyperdrive's public key.")
   (seed nil :documentation "Seed (always and only present for writable hyperdrives).")
-  (writablep nil :documentation "Whether the drive is writable.")
+  (writablep 'unknown :documentation "Whether the drive is writable.")
   (petname nil :documentation "Petname.")
   ;; TODO: Where to invalidate old domains?
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
@@ -405,12 +405,6 @@ When a writable ENTRY is not found and CREATEP is non-nil, create
 a new buffer for ENTRY."
   (declare (indent defun))
   ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
-  ;; TODO: When possible, check whether drive is writable with a HEAD request, and set writablep in the
-  ;; struct. If the hyperdrive already exists in hyperdrive-hyperdrives, there's no need to send a HEAD
-  ;; request, since the value will never change. We only need to send a HEAD request when calling
-  ;; `hyperdrive-open-url' on an unknown URL. Since `hyperdrive-complete-url' only returns a URL, we'll
-  ;; need to parse the URL and then call `gethash' (or refactor `hyperdrive-complete-url').
-  ;; See: <https://github.com/RangerMauve/hypercore-fetch/issues/60>. (implemented)
   ;; FIXME: Some of the synchronous filling functions we've added now cause this to be blocking,
   ;; which is very noticeable when a file can't be loaded from the gateway and eventually times out.
   (let ((hyperdrive (hyperdrive-entry-hyperdrive entry)))
@@ -535,19 +529,23 @@ The following ENTRY slots are filled:
 
 The following ENTRY hyperdrive slots are filled:
 - public-key
+- writablep (when headers include Allow)
 - domains (merged with current persisted value)
 
 Returns filled ENTRY."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) entry)
-               ((map link content-length content-type etag last-modified) headers)
+               ((cl-struct hyperdrive writablep domains) hyperdrive)
+               ((map link content-length content-type etag last-modified allow) headers)
                ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
                (public-key (progn
                              (string-match hyperdrive--public-key-re link)
                              (match-string 1 link)))
                (persisted-hyperdrive (gethash public-key hyperdrive-hyperdrives))
-               (domain (car (hyperdrive-domains hyperdrive))))
+               (domain (car domains)))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
+    (when (and allow (eq 'unknown writablep))
+      (setf (hyperdrive-writablep hyperdrive) (string-match-p "PUT" allow)))
     (setf (hyperdrive-entry-size entry) (when content-length
                                           (ignore-errors
                                             (cl-parse-integer content-length)))
