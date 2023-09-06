@@ -190,7 +190,7 @@ an existing buffer at the same version, or make a new buffer."
   "Directory path.")
 
 (defface hyperdrive-column-header '((t (:inherit underline)))
-  "Directory path.")
+  "Column header.")
 
 (defface hyperdrive-directory '((t (:inherit dired-directory)))
   "Subdirectories.")
