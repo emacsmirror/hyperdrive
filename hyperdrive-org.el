@@ -106,7 +106,9 @@ raw URL, not an Org link."
 (defun hyperdrive-org-link-follow (url &optional _prefix)
   ;; TODO: Do we need to do anything if prefix is used?
   "Follow hyperdrive URL."
-  (hyperdrive-open (hyperdrive-url-entry url)))
+  ;; Add "hyper:" prefix because Org strips the prefix for links that
+  ;; have been configured with `org-link-set-parameters'.
+  (hyperdrive-open (hyperdrive-url-entry (concat "hyper:" url))))
 
 (defun hyperdrive--org-link-goto (target)
   "Go to TARGET in current Org buffer.
