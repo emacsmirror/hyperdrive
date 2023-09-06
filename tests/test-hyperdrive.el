@@ -114,3 +114,64 @@
                 (hyperdrive-url-entry (make-url (hexify "/subdir/with-file"))))
                ((cl-struct hyperdrive public-key) hyperdrive))
     (should (equal public-key test-hyperdrive-public-key))))
+
+;;;; Link testing
+
+(require 'hyperdrive-org)
+
+;;;;; URL links (i.e. "hyper://"-prefixed)
+
+(defun hyperdrive-test-org-url-link (url)
+  "Return the URL that would be opened by `hyperdrive-open' for URL."
+  (let (called-with-url)
+    (with-temp-buffer
+      (org-mode)
+      (insert url)
+      (goto-char 1)
+      (cl-letf (((symbol-function 'hyperdrive-open)
+                 (lambda (entry &rest _)
+                   (setf called-with-url (hyperdrive-entry-url entry)))))
+        (org-open-at-point)))
+    called-with-url))
+
+(ert-deftest hyperdrive-org-link-with-protocol-no-target ()
+  (let ((links '(("hyper://public_key/links%20test.org" . "hyper://public_key/links%20test.org")
+                 ("[[hyper://public_key/links%20test.org]]" . "hyper://public_key/links%20test.org"))))
+    (dolist (link links)
+      (should (equal (hyperdrive-test-org-url-link (car link)) (cdr link))))))
+
+(ert-deftest hyperdrive-org-link-with-protocol-with-target ()
+  (let ((links '(("[[hyper://public_key/links%20test.org#Heading%20A]]"
+                  . "hyper://public_key/links%20test.org#Heading%20A")
+                 ("hyper://public_key/links%20test.org#Heading%20A"
+                  . "hyper://public_key/links%20test.org#Heading%20A"))))
+    (dolist (link links)
+      (should (equal (hyperdrive-test-org-url-link (car link)) (cdr link))))))
+
+;;;;; Org links (i.e. not "hyper://"-prefixed)
+
+(defun hyperdrive-test-org-link (link)
+  ;; FIXME: Docstring.
+  "Return the URL that would be opened by `hyperdrive-open' for LINK.
+LINK is an Org link as a string."
+  (let (called-with-url)
+    (with-temp-buffer
+      (org-mode)
+      (hyperdrive-mode)
+      (insert link)
+      (goto-char 1)
+      (cl-letf (((symbol-function 'hyperdrive-open)
+                 (lambda (entry &rest _)
+                   (setf called-with-url (hyperdrive-entry-url entry)))))
+        (org-open-at-point)))
+    called-with-url))
+
+;; (ert-deftest hyperdrive-org-link-without-protocol-without-target-filename-with-spaces ()
+;;   (let ((links '(("[[links test.org]]"))))
+;;     (dolist (link links)
+;;       (should (equal )))))
+
+(ert-deftest hyperdrive-org-link-without-protocol-without-file-with-asterisk-target ()
+  (let ((links '(("[[*Heading A]]"))))
+    (dolist (link links)
+      (should (equal (hyperdrive-test-org-link (car link)) "WHAT")))))
