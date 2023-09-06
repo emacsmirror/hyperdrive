@@ -127,16 +127,23 @@ Columns are suffixed with up/down arrows according to
                                   'face 'hyperdrive-header-arrow))
                (headers))
     (pcase-dolist (`(,column . ,(map (:desc desc))) hyperdrive-dir-sort-fields)
-      (push (concat (and (eq column sort-column)
-                         ;; For right-aligned columns, put the arrow before desc.
-                         (or (eq column 'size)
-                             (eq column 'mtime))
-                         arrow)
-                    (propertize desc 'face 'hyperdrive-column-header)
-                    (and (eq column sort-column)
-                         ;; For left-aligned columns, put the arrow after desc.
-                         (eq column 'name)
-                         arrow))
+      (push (propertize
+             (concat (and (eq column sort-column)
+                          ;; For right-aligned columns, put the arrow before desc.
+                          (or (eq column 'size)
+                              (eq column 'mtime))
+                          arrow)
+                     (propertize desc 'face 'hyperdrive-column-header)
+                     (and (eq column sort-column)
+                          ;; For left-aligned columns, put the arrow after desc.
+                          (eq column 'name)
+                          arrow))
+             'keymap
+             (define-keymap
+               "<mouse-1>" (lambda (&optional _e)
+                             (interactive "e")
+                             (hyperdrive-dir-sort
+                              (hyperdrive-dir-toggle-sort-direction column hyperdrive-directory-sort)))))
             headers))
     (concat prefix "\n"
             (apply #'format (concat "%6s  " hyperdrive-timestamp-format-string "  %s")
