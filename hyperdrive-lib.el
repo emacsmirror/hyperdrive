@@ -358,6 +358,8 @@ hyperdrive's latest-version slot, the final gap is filled."
     (pcase-let* ((final-known-range (car ranges))
                  (`(,_range-start . ,(map (:range-end final-known-range-end))) final-known-range)
                  (latest-version (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry))))
+      (unless final-known-range-end
+        (setf final-known-range-end 0))
       (when (< final-known-range-end latest-version)
         ;; Insert possible final gap between latest known range and hyperdrive's latest-version
         (push `(,(1+ final-known-range-end) . (:range-end ,latest-version , :existsp unknown)) ranges)))
