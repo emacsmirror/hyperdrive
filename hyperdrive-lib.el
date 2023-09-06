@@ -718,6 +718,11 @@ requests return, call THEN with no arguments."
                           :else (lambda (err)
                                   (pcase (plz-response-status (plz-error-response err))
                                     ;; FIXME: If plz-error is a curl-error, this block will fail.
+                                    ;; TODO: How to handle entries which have never been known
+                                    ;; existent. From a UI perspective, the history buffer
+                                    ;; should display the versions at which the entry is known
+                                    ;; non-existent. However, we don't want to store loads of
+                                    ;; non-existent entries in `hyperdrive-version-ranges'.
                                     (404 nil)
                                     (_ (signal (car err) (cdr err))))
                                   err)
