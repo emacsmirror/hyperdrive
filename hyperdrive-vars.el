@@ -70,20 +70,19 @@
 Defaults to `eww-download-directory'."
   :type '(file :must-match t))
 
-(defvar hyperdrive-timestamp-format-string)
+(defvar hyperdrive-timestamp-width)
 (defcustom hyperdrive-timestamp-format "%x %X"
   "Format string used for timestamps.
 Passed to `format-time-string', which see."
   :type 'string
   :set (lambda (option value)
          (set-default option value)
-         (setf hyperdrive-timestamp-format-string
-               (format "%%%ds"
-                       ;; FIXME: This value varies based on current
-                       ;;        time. (format-time-string "%-I") will
-                       ;;        be one or two characters long
-                       ;;        depending on the time of day
-                       (string-width (format-time-string value))))))
+         (setf hyperdrive-timestamp-width
+               ;; FIXME: This value varies based on current
+               ;;        time. (format-time-string "%-I") will
+               ;;        be one or two characters long
+               ;;        depending on the time of day
+               (string-width (format-time-string value)))))
 
 (defcustom hyperdrive-directory-display-buffer-action
   '(display-buffer-same-window)
@@ -94,26 +93,24 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
-(defcustom hyperdrive-directory-sort '(hyperdrive-entry-name . string<)
+(defcustom hyperdrive-directory-sort '(name . :ascending)
   "Column by which directory entries are sorted.
-Internally, a cons cell of (KEY . PREDICATE), the KEY being the
-`hyperdrive-entry' accessor function and the PREDICATE being the
-appropriate function (e.g. `time-less-p' for
-`hyperdrive-entry-mtime', `<' for `hyperdrive-entry-size',
-etc)."
-  :type '(radio (cons :tag "By name" (const :format "" hyperdrive-entry-name)
-                      (choice :tag "Direction" :value string<
-                              (const :tag "Ascending" string<)
-                              (const :tag "Descending" string>)))
-                (cons :tag "By size" (const :format "" hyperdrive-entry-size)
-                      (choice :tag "Direction" :value <
-                              (const :tag "Ascending" <)
-                              (const :tag "Descending" >)))
-                (cons :tag "By date" (const :format "" hyperdrive-entry-mtime)
-                      (choice :tag "Direction" :value time-less-p
-                              (const :tag "Ascending" time-less-p)
-                              (const :tag "Descending" (lambda (a b)
-                                                         (not (time-less-p a b))))))))
+Internally, a cons cell of (COLUMN . DIRECTION), the COLUMN being
+one of the directory listing columns (\\+`name', \\+`size', or
+\\+`mtime') and DIRECTION being one of \\+`:ascending' or
+\\+`:descending'."
+  :type '(radio (cons :tag "By name" (const :format "" name)
+                      (choice :tag "Direction" :value :ascending
+                              (const :tag "Ascending" :ascending)
+                              (const :tag "Descending" :descending)))
+                (cons :tag "By size" (const :format "" size)
+                      (choice :tag "Direction" :value :ascending
+                              (const :tag "Ascending" :ascending)
+                              (const :tag "Descending" :descending)))
+                (cons :tag "By date" (const :format "" mtime)
+                      (choice :tag "Direction" :value :ascending
+                              (const :tag "Ascending" :ascending)
+                              (const :tag "Descending" :descending)))))
 
 (defcustom hyperdrive-history-display-buffer-action
   '(display-buffer-same-window)
@@ -191,7 +188,11 @@ an existing buffer at the same version, or make a new buffer."
   "Directory path.")
 
 (defface hyperdrive-column-header '((t (:inherit underline)))
-  "Directory path.")
+  "Column header.")
+
+(defface hyperdrive-selected-column-header '((t ( :inherit underline
+                                                  :weight bold)))
+  "Selected column header.")
 
 (defface hyperdrive-directory '((t (:inherit dired-directory)))
   "Subdirectories.")
@@ -201,6 +202,9 @@ an existing buffer at the same version, or make a new buffer."
 
 (defface hyperdrive-timestamp '((t (:inherit default)))
   "Entry timestamp.")
+
+(defface hyperdrive-header-arrow '((t (:inherit bold)))
+  "Header arrows.")
 
 (defface hyperdrive-history-range '((t (:inherit font-lock-escape-face)))
   "Version range in `hyperdrive-history' buffers.")
@@ -290,6 +294,21 @@ values are alists mapping version range starts to plists with
     (,(rx (or "text/html" "application/xhtml+xml")) . hyperdrive-handler-html))
   "Alist mapping MIME types to handler functions.
 Keys are regexps matched against MIME types.")
+
+(defvar hyperdrive-dir-sort-fields
+  '((size  :accessor hyperdrive-entry-size
+           :ascending <
+           :descending >
+           :desc "Size")
+    (mtime :accessor hyperdrive-entry-mtime
+           :ascending time-less-p
+           :descending hyperdrive-time-greater-p
+           :desc "Last Modified")
+    (name  :accessor hyperdrive-entry-name
+           :ascending string<
+           :descending string>
+           :desc "Name"))
+  "Fields for sorting hyperdrive directory buffer columns.")
 
 ;;;; Footer
 

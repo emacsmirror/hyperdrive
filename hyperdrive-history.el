@@ -60,7 +60,7 @@ and whose cdr is a hyperdrive entry."
                        (file-size-human-readable size)))
                (timestamp (if mtime
                               (format-time-string hyperdrive-timestamp-format mtime)
-                            (format hyperdrive-timestamp-format-string " "))))
+                            (propertize " " 'display '(space :width hyperdrive-timestamp-width)))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
     (format "%7s  %13s  %6s  %s"
@@ -179,7 +179,7 @@ Universal prefix argument \\[universal-argument] forces
                                            (propertize "Exists?" 'face 'hyperdrive-column-header)
                                            (propertize "Version Range" 'face 'hyperdrive-column-header)
                                            (propertize "Size" 'face 'hyperdrive-column-header)
-                                           (format hyperdrive-timestamp-format-string
+                                           (format (format "%%%ds" hyperdrive-timestamp-width)
                                                    (propertize "Last Modified" 'face 'hyperdrive-column-header)))))
                    (queue) (ewoc))
         (with-current-buffer (get-buffer-create

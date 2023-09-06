@@ -710,6 +710,8 @@ Universal prefix argument \\[universal-argument] forces
 
 ;;;; Configure Emacs and EWW for hyper:// URLs.
 
+(require 'url)
+
 (defun hyperdrive-url-loader (parsed-url)
   "Retrieve URL synchronously.
 PARSED-URL must be a URL-struct like the output of

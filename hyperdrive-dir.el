@@ -120,29 +120,67 @@ arguments."
   "Return column headers as a string with PREFIX.
 Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
-  (let (name-arrow size-arrow date-arrow)
-    (pcase-exhaustive hyperdrive-directory-sort
-      (`(hyperdrive-entry-name . ,predicate)
-       (setf name-arrow (pcase-exhaustive predicate
-                          ('string< "▲")
-                          ('string> "▼"))))
-      (`(hyperdrive-entry-size . ,predicate)
-       (setf size-arrow (pcase-exhaustive predicate
-                          ('< "▲")
-                          ('> "▼"))))
-      (`(hyperdrive-entry-mtime . ,predicate)
-       (setf date-arrow (pcase-exhaustive predicate
-                          ('time-less-p "▲")
-                          ((pred functionp) "▼")))))
-    (concat prefix "\n"
-            (format "%6s  %s  %s"
-                    (concat size-arrow
-                            (propertize "Size" 'face 'hyperdrive-column-header))
-                    (format hyperdrive-timestamp-format-string
-			    (concat date-arrow
-				    (propertize "Last Modified" 'face 'hyperdrive-column-header)))
-                    (concat (propertize "Name" 'face 'hyperdrive-column-header)
-                            name-arrow)))))
+  (pcase-let* ((`(,sort-column . ,direction) hyperdrive-directory-sort)
+               ;; TODO: Use "↑" and "↓" glyphs, but make sure that the
+               ;; column headers are aligned correctly.
+               (arrow (propertize (if (eq direction :ascending) "^" "v")
+                                  'face 'hyperdrive-header-arrow))
+               (headers))
+    (pcase-dolist (`(,column . ,(map (:desc desc))) hyperdrive-dir-sort-fields)
+      (let* ((selected (eq column sort-column))
+             ;; Put the arrow after desc, since the column is left-aligned.
+             (left-aligned (eq column 'name))
+             (format-str (pcase column
+                           ('size "%6s")
+                           ('mtime (format "%%%ds" hyperdrive-timestamp-width))
+                           ('name (format "%%-%ds" (- (window-width) 6 2 hyperdrive-timestamp-width 2)))))
+             (desc (concat (and selected (not left-aligned) arrow)
+                           (and (not left-aligned) " ")
+                           (propertize desc 'face (if selected
+                                                      'hyperdrive-selected-column-header
+                                                    'hyperdrive-column-header))
+                           ;; This extra space is necessary to prevent
+                           ;; the `hyperdrive-column-header' face from
+                           ;; extended to the end of the window.
+                           (and left-aligned " ")
+                           (and selected left-aligned arrow))))
+        (push (propertize (format format-str desc)
+                          'keymap
+                          (define-keymap
+                            "<mouse-1>" (lambda (&optional _e)
+                                          (interactive "e")
+                                          (hyperdrive-dir-sort
+                                           (hyperdrive-dir-toggle-sort-direction
+                                            column hyperdrive-directory-sort))))
+                          'mouse-face 'highlight)
+              headers)
+        (unless (eq column 'name)
+          ;; These gap spaces are necessary to prevent display mouse-face
+          ;; from activating all contiguous strings simultaneously.
+          (push "  " headers))))
+    (apply #'concat prefix "\n" (nreverse headers))))
+
+
+(defun hyperdrive-dir-complete-sort ()
+  "Return a value for `hyperdrive-directory-sort' selected with completion."
+  (pcase-let* ((read-answer-short t)
+               (choices (mapcar (lambda (field)
+                                  (let ((desc (symbol-name (car field))))
+                                    (list desc (aref desc 0) (format "Sort by %s" desc))))
+                                hyperdrive-dir-sort-fields))
+               (column (intern (read-answer "Sort by column: " choices))))
+    (hyperdrive-dir-toggle-sort-direction column hyperdrive-directory-sort)))
+
+(defun hyperdrive-dir-toggle-sort-direction (column sort)
+  "Return `hyperdrive-directory-sort' cons cell for COLUMN.
+If SORT is already sorted using COLUMN, toggle direction.
+Otherwise, set direction to \\+`:descending'."
+  (pcase-let* ((`(,current-column . ,current-direction) sort)
+               (direction (if (and (eq column current-column)
+                                   (eq current-direction :ascending))
+                              :descending
+                            :ascending)))
+    (cons column direction)))
 
 (defun hyperdrive-dir-pp (thing)
   "Pretty-print THING.
@@ -161,7 +199,7 @@ To be used as the pretty-printer for `ewoc-create'."
                        'default))
                (timestamp (if mtime
                               (format-time-string hyperdrive-timestamp-format mtime)
-                            (format hyperdrive-timestamp-format-string " "))))
+                            (propertize " " 'display '(space :width hyperdrive-timestamp-width)))))
     (format "%6s  %s  %s"
             (propertize (or size "")
                         'face 'hyperdrive-size)
@@ -293,15 +331,16 @@ Interactively, opens file or directory at point in
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
 DIRECTORY-SORT should be a valid value of
 `hyperdrive-directory-sort'."
-  (interactive (list (hyperdrive-complete-sort)))
+  (interactive (list (hyperdrive-dir-complete-sort)))
   (setq-local hyperdrive-directory-sort directory-sort)
-  (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
-    (ewoc-filter hyperdrive-ewoc #'ignore)
-    (dolist (entry (hyperdrive-sort-entries entries))
-      (ewoc-enter-last hyperdrive-ewoc entry))
-    (ewoc-set-hf hyperdrive-ewoc
-                 (hyperdrive-dir-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
-                 "")))
+  (with-silent-modifications
+    (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
+      (ewoc-filter hyperdrive-ewoc #'ignore)
+      (dolist (entry (hyperdrive-sort-entries entries))
+        (ewoc-enter-last hyperdrive-ewoc entry))
+      (ewoc-set-hf hyperdrive-ewoc
+                   (hyperdrive-dir-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
+                   ""))))
 
 ;;;; Imenu support
 

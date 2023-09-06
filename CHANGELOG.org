@@ -12,7 +12,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - ~info-look~ integration
 - ~view-mode~ integration
 - Org-mode link completion
-- directory view sorting by column
+- directory view sorting by column (with clickable headers)
 
 ** Changed
 

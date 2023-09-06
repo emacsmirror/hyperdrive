@@ -128,15 +128,18 @@ generated from PATH.  When ENCODE is non-nil, encode PATH."
    :version version
    :etc etc))
 
-(cl-defun hyperdrive-sort-entries (entries &key (by hyperdrive-directory-sort))
-  "Return ENTRIES sorted by BY.
-See `hyperdrive-directory-sort' for the type of BY."
-  (cl-sort entries (lambda (a b)
-                     (cond ((and a b) (funcall (cdr by) a b))
-                           ;; When an entry lacks appropriate metadata
-                           ;; for sorting with BY, put it at the end.
-                           (a t)))
-           :key (car by)))
+(cl-defun hyperdrive-sort-entries (entries &key (direction hyperdrive-directory-sort))
+  "Return ENTRIES sorted by DIRECTION.
+See `hyperdrive-directory-sort' for the type of DIRECTION."
+  (pcase-let* ((`(,column . ,direction) direction)
+               ((map (:accessor accessor) (direction sort-function))
+                (alist-get column hyperdrive-dir-sort-fields)))
+    (cl-sort entries (lambda (a b)
+                       (cond ((and a b) (funcall sort-function a b))
+                             ;; When an entry lacks appropriate metadata
+                             ;; for sorting by DIRECTION, put it at the end.
+                             (a t)))
+             :key accessor)))
 
 ;;;; API
 
@@ -1038,30 +1041,6 @@ Prompts with PROMPT and DEFAULT, according to `format-prompt'.
 DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
   (read-string (format-prompt prompt default) initial-input 'hyperdrive--name-history default))
 
-(defun hyperdrive-complete-sort ()
-  "Return a value for `hyperdrive-directory-sort' selected with completion."
-  (pcase-let* ((fn (pcase-lambda (`(cons :tag ,tag (const :format "" ,accessor)
-                                         (choice :tag "Direction" :value ,_default-direction
-                                                 (const :tag "Ascending" ,ascending-predicate)
-                                                 (const :tag "Descending" ,descending-predicate))))
-                     (list tag accessor ascending-predicate descending-predicate)))
-               (columns (mapcar fn (cdr (get 'hyperdrive-directory-sort 'custom-type))))
-               (read-answer-short t)
-               (choices (cl-loop for (tag . _) in columns
-                                 for name = (substring tag 3)
-                                 for key = (aref name 0)
-                                 collect (cons name (list key tag))))
-               (column-choice (read-answer "Sort by column: " choices))
-               (`(,accessor ,ascending-predicate ,descending-predicate)
-                (alist-get (concat "By " column-choice) columns nil nil #'equal))
-               (direction-choice (read-answer "Sort in direction: "
-                                              (list (cons "ascending" (list ?a "Ascending"))
-                                                    (cons "descending" (list ?d "Descending")))))
-               (predicate (pcase direction-choice
-                            ("ascending" ascending-predicate)
-                            ("descending" descending-predicate))))
-    (cons accessor predicate)))
-
 (cl-defun hyperdrive-put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
@@ -1313,6 +1292,12 @@ When BASE is non-nil, PATH will be expanded against BASE instead."
     ;; Destructively modify the URL object to give it the correct host and path.
     (url-default-expander urlobj defobj)
     (url-recreate-url urlobj)))
+
+;;;; Utilities
+
+(defun hyperdrive-time-greater-p (a b)
+  "Return non-nil if time value A is greater than B."
+  (not (time-less-p a b)))
 
 (defun hyperdrive--clean-buffer (&optional buffer)
   "Remove all local variables, overlays, and text properties in BUFFER.
