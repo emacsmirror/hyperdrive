@@ -99,7 +99,6 @@ Internally, a cons cell of (COLUMN . DIRECTION), the COLUMN being
 one of the directory listing columns (\\+`name', \\+`size', or
 \\+`mtime') and DIRECTION being one of \\+`:ascending' or
 \\+`:descending'."
-  ;; TODO: Consolidate type
   :type '(radio (cons :tag "By name" (const :format "" name)
                       (choice :tag "Direction" :value :ascending
                               (const :tag "Ascending" :ascending)
