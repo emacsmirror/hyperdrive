@@ -139,10 +139,10 @@ the current location."
     (let* ((context
             ;; TODO: Double-check that this is the correct way to get context.
             (org-element-lineage (org-element-context) '(link) t))
-           (type (org-element-type context))
+           (element-type (org-element-type context))
            (link-type (org-element-property :type context))
            (raw-link-type (org-element-property :raw-link context)))
-      (when (and (eq type 'link)
+      (when (and (eq element-type 'link)
                  (or
                   ;; "fuzzy" is for relative links without ./ prefix.
                   (equal "fuzzy" link-type)
