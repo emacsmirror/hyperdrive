@@ -70,20 +70,19 @@
 Defaults to `eww-download-directory'."
   :type '(file :must-match t))
 
-(defvar hyperdrive-timestamp-format-string)
+(defvar hyperdrive-timestamp-width)
 (defcustom hyperdrive-timestamp-format "%x %X"
   "Format string used for timestamps.
 Passed to `format-time-string', which see."
   :type 'string
   :set (lambda (option value)
          (set-default option value)
-         (setf hyperdrive-timestamp-format-string
-               (format "%%%ds"
-                       ;; FIXME: This value varies based on current
-                       ;;        time. (format-time-string "%-I") will
-                       ;;        be one or two characters long
-                       ;;        depending on the time of day
-                       (string-width (format-time-string value))))))
+         (setf hyperdrive-timestamp-width
+               ;; FIXME: This value varies based on current
+               ;;        time. (format-time-string "%-I") will
+               ;;        be one or two characters long
+               ;;        depending on the time of day
+               (string-width (format-time-string value)))))
 
 (defcustom hyperdrive-directory-display-buffer-action
   '(display-buffer-same-window)
