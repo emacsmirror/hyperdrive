@@ -122,7 +122,7 @@ Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
   (pcase-let* ((`(,sort-column . ,direction) hyperdrive-directory-sort)
                ;; HACK: This whole function seems overly complex.
-               ;; TODO: Use ▲ and ▼ glyphs, but make sure that the
+               ;; TODO: Use "↑" and "↓" glyphs, but make sure that the
                ;; column headers are aligned correctly.
                (arrow (propertize (if (eq direction :ascending) "^" "v")
                                   'face 'hyperdrive-header-arrow))
