@@ -208,9 +208,6 @@ With point on header, returns directory entry."
   "o"   #'hyperdrive-dir-sort
   "?"   #'hyperdrive-describe-hyperdrive)
 
-;; TODO: Get rid of this?
-(declare-function hyperdrive-bookmark-make-record "hyperdrive")
-
 (define-derived-mode hyperdrive-dir-mode hyperdrive-ewoc-mode
   `("Hyperdrive-dir"
     ;; TODO: Add more to lighter, e.g. URL.

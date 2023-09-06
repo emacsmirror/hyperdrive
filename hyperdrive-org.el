@@ -34,7 +34,6 @@
 (defvar hyperdrive-mode)
 
 (declare-function hyperdrive-open-url "hyperdrive")
-(declare-function hyperdrive-entry-url "hyperdrive-lib")
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
 ;; TODO: Determine whether it's really necessary to autoload these two functions.

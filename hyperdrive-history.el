@@ -241,8 +241,6 @@ Interactively, diff range entry at point with previous entry."
     :then (lambda ()
             (pop-to-buffer (current-buffer)))))
 
-(declare-function hyperdrive-open "hyperdrive")
-
 (defun hyperdrive-history-find-file (range-entry)
   "Visit hyperdrive entry in RANGE-ENTRY at point.
 When entry does not exist, does nothing and returns nil.
