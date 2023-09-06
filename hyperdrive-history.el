@@ -119,6 +119,7 @@ and ENTRY's version are nil."
   :parent  hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-history-mode' buffers."
   "RET" #'hyperdrive-history-find-file
+  "v"   #'hyperdrive-history-view-file
   "="   #'hyperdrive-history-diff
   "w"   #'hyperdrive-history-copy-url
   "d"   #'hyperdrive-history-download-file)
@@ -255,6 +256,28 @@ buffer."
     ('t
      ;; Known to exist: open it.
      (hyperdrive-open (cdr range-entry)))
+    ('nil
+     ;; Known to not exist: warn user.
+     (hyperdrive-user-error "File does not exist!"))
+    ('unknown
+     ;; Not known to exist: prompt user
+     ;; TODO: Design options
+     (hyperdrive-message "File not known to exist. What do you want to do?"))))
+
+(declare-function hyperdrive-view-file "hyperdrive")
+(defun hyperdrive-history-view-file (range-entry)
+  "Open hyperdrive entry in RANGE-ENTRY at point in `view-mode'.
+When entry does not exist or is not known to exist, does nothing
+and returns nil.
+
+Interactively, visit entry at point in `hyperdrive-history'
+buffer."
+  (declare (modes hyperdrive-history-mode))
+  (interactive (list (hyperdrive-history-range-entry-at-point)))
+  (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
+    ('t
+     ;; Known to exist: open it.
+     (hyperdrive-view-file (cdr range-entry)))
     ('nil
      ;; Known to not exist: warn user.
      (hyperdrive-user-error "File does not exist!"))
