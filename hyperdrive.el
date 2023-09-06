@@ -317,8 +317,6 @@ Intended to be passed to `buffer-local-restore-state'.")
                      write-contents-functions (cl-adjoin #'hyperdrive--write-contents write-contents-functions)
                      ;; TODO: Modify buffer-local value of `save-some-buffers-action-alist'
                      ;; to allow diffing modified buffer with hyperdrive file
-                     ;; TODO(A): Add to `kill-buffer-query-functions' to
-                     ;; query before killing hyperdrive buffers.
                      buffer-offer-save t))
         (add-hook 'after-change-major-mode-hook
                   #'hyperdrive--hack-write-contents-functions nil 'local))
@@ -745,6 +743,40 @@ The return value of this function is the retrieval buffer."
         (if eww-use-browse-url
             (rx-to-string `(or ,eww-use-browse-url (seq bos "hyper://")))
           (rx bos "hyper://"))))
+
+;;;; `kill-buffer-query-functions' integration
+
+(defun hyperdrive--kill-buffer-possibly-save (buffer)
+  "Ask whether to kill modified hyperdrive file BUFFER."
+  ;; Mostly copied from `kill-buffer--possibly-save'.
+  (cl-assert (and hyperdrive-mode hyperdrive-current-entry))
+  (let ((response
+         (cadr
+          (read-multiple-choice
+           (format "Hyperdrive file %s modified; kill anyway?"
+                   (hyperdrive-entry-description hyperdrive-current-entry))
+           '((?y "yes" "kill buffer without saving")
+             (?n "no" "exit without doing anything")
+             (?s "save and then kill" "save the buffer and then kill it"))
+           nil nil (and (not use-short-answers)
+                        (not (use-dialog-box-p)))))))
+    (if (equal response "no")
+        nil
+      (unless (equal response "yes")
+        (with-current-buffer buffer
+          (save-buffer)))
+      t)))
+
+(defun hyperdrive-kill-buffer-query-function ()
+  "Ask before killing an unsaved hyperdrive file buffer."
+  (if (and hyperdrive-mode
+           hyperdrive-current-entry
+           (not (hyperdrive--entry-directory-p hyperdrive-current-entry))
+           (buffer-modified-p))
+      (hyperdrive--kill-buffer-possibly-save (current-buffer))
+    t))
+
+(cl-pushnew #'hyperdrive-kill-buffer-query-function kill-buffer-query-functions)
 
 ;;;; Footer
 
