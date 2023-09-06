@@ -127,24 +127,37 @@ Columns are suffixed with up/down arrows according to
                                   'face 'hyperdrive-header-arrow))
                (headers))
     (pcase-dolist (`(,column . ,(map (:desc desc))) hyperdrive-dir-sort-fields)
-      (let ((selected (eq column sort-column))
-            ;; Put the arrow after desc, since the column is left-aligned.
-            (arrow-after (eq column 'name)))
-        (push (propertize
-               (concat (and selected (not arrow-after) arrow)
-                       (propertize desc 'face 'hyperdrive-column-header)
-                       (and selected arrow-after arrow))
-               'keymap
-               (define-keymap
-                 "<mouse-1>" (lambda (&optional _e)
-                               (interactive "e")
-                               (hyperdrive-dir-sort
-                                (hyperdrive-dir-toggle-sort-direction column hyperdrive-directory-sort))))
-               'mouse-face 'highlight)
-              headers)))
-    (concat prefix "\n"
-            (apply #'format (format "%%6s  %%%ds  %%s" hyperdrive-timestamp-width)
-                   (nreverse headers)))))
+      (let* ((selected (eq column sort-column))
+             ;; Put the arrow after desc, since the column is left-aligned.
+             (left-aligned (eq column 'name))
+             (format-str (pcase column
+                           ('size "%6s")
+                           ('mtime (format "%%%ds" hyperdrive-timestamp-width))
+                           ('name (format "%%-%ds" (- (window-width) 6 2 hyperdrive-timestamp-width 2)))))
+             (desc (concat (and selected (not left-aligned) arrow)
+                           (and (not left-aligned) " ")
+                           (propertize desc 'face 'hyperdrive-column-header)
+                           ;; This extra space is necessary to prevent
+                           ;; the `hyperdrive-column-header' face from
+                           ;; extended to the end of the window.
+                           (and left-aligned " ")
+                           (and selected left-aligned arrow))))
+        (push (propertize (format format-str desc)
+                          'keymap
+                          (define-keymap
+                            "<mouse-1>" (lambda (&optional _e)
+                                          (interactive "e")
+                                          (hyperdrive-dir-sort
+                                           (hyperdrive-dir-toggle-sort-direction
+                                            column hyperdrive-directory-sort))))
+                          'mouse-face 'highlight)
+              headers)
+        (unless (eq column 'name)
+          ;; These gap spaces are necessary to prevent display mouse-face
+          ;; from activating all contiguous strings simultaneously.
+          (push "  " headers))))
+    (apply #'concat prefix "\n" (nreverse headers))))
+
 
 (defun hyperdrive-dir-complete-sort ()
   "Return a value for `hyperdrive-directory-sort' selected with completion."
