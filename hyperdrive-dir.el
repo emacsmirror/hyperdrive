@@ -120,24 +120,27 @@ arguments."
   "Return column headers as a string with PREFIX.
 Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
-  (pcase-let* ((`(,column . ,direction) hyperdrive-directory-sort)
+  (pcase-let* ((`(,sort-column . ,direction) hyperdrive-directory-sort)
                ;; TODO: Use ▲ and ▼ glyphs, but make sure that the
                ;; column headers are aligned correctly.
                (arrow (propertize (if (eq direction :ascending) "^" "v")
                                   'face 'hyperdrive-header-arrow))
-               (size-header (propertize "Size" 'face 'hyperdrive-column-header))
-               (mtime-header (propertize "Last Modified" 'face 'hyperdrive-column-header))
-               (name-header (propertize "Name" 'face 'hyperdrive-column-header)))
-    (pcase-exhaustive column
-      ('size (cl-callf2 concat arrow size-header))
-      ('mtime (cl-callf2 concat arrow mtime-header))
-      ;; Put the arrow second so that the header doesn't move.
-      ('name (cl-callf concat name-header arrow)))
+               (headers))
+    (pcase-dolist (`(,column . ,(map (:desc desc))) hyperdrive-dir-sort-fields)
+      (push (concat (and (eq column sort-column)
+                         ;; For right-aligned columns, put the arrow before desc.
+                         (or (eq column 'size)
+                             (eq column 'mtime))
+                         arrow)
+                    (propertize desc 'face 'hyperdrive-column-header)
+                    (and (eq column sort-column)
+                         ;; For left-aligned columns, put the arrow after desc.
+                         (eq column 'name)
+                         arrow))
+            headers))
     (concat prefix "\n"
-            (format (concat "%6s  " hyperdrive-timestamp-format-string "  %s")
-                    size-header
-                    mtime-header
-                    name-header))))
+            (apply #'format (concat "%6s  " hyperdrive-timestamp-format-string "  %s")
+                   (nreverse headers)))))
 
 (defun hyperdrive-dir-complete-sort ()
   "Return a value for `hyperdrive-directory-sort' selected with completion."
