@@ -806,6 +806,7 @@ The return value of this function is the retrieval buffer."
                         expand-file-name url-default-expander)
          url-scheme-registry)
 
+(defvar eww-use-browse-url)
 (when (version<= "28.1" emacs-version)
   (require 'eww)
   (setf eww-use-browse-url
