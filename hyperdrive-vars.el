@@ -94,7 +94,6 @@ Passed to `display-buffer', which see."
                  (sexp :tag "Other")))
 
 (defcustom hyperdrive-directory-sort '(name . :ascending)
-  ;; TODO(doc): Document change.
   "Column by which directory entries are sorted.
 Internally, a cons cell of (COLUMN . DIRECTION), the COLUMn being
 one of the directory listing columns (\\+`name', \\+`size', or
