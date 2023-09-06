@@ -137,7 +137,9 @@ Columns are suffixed with up/down arrows according to
                            ('name (format "%%-%ds" (- (window-width) 6 2 hyperdrive-timestamp-width 2)))))
              (desc (concat (and selected (not left-aligned) arrow)
                            (and (not left-aligned) " ")
-                           (propertize desc 'face 'hyperdrive-column-header)
+                           (propertize desc 'face (if selected
+                                                      'hyperdrive-selected-column-header
+                                                    'hyperdrive-column-header))
                            ;; This extra space is necessary to prevent
                            ;; the `hyperdrive-column-header' face from
                            ;; extended to the end of the window.

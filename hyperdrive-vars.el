@@ -192,6 +192,10 @@ an existing buffer at the same version, or make a new buffer."
 (defface hyperdrive-column-header '((t (:inherit underline)))
   "Column header.")
 
+(defface hyperdrive-selected-column-header '((t (:inherit underline
+                                                          :weight bold)))
+  "Selected column header.")
+
 (defface hyperdrive-directory '((t (:inherit dired-directory)))
   "Subdirectories.")
 
