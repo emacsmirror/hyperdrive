@@ -29,6 +29,10 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Prevent accidental loss of unsaved hyperdrive files
 - Improved error handling
 
+** Security
+
+- Check DNSLink domains for suspicious characters
+
 * 0.1 [2023-08-12 Sat]
 
 - Initial release
