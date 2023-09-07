@@ -753,6 +753,9 @@ this issue by remembering which public key the DNS record resolved to,
 so that peers can use the stored public key itself for subsequent
 connections.
 
+DNS domains are checked for suspicious characters (see
+[[info:elisp#Suspicious Text]]).
+
 * Known limitations
 
 ** Files and folders can have the same name
