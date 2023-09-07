@@ -405,15 +405,32 @@ overwrite.
 
 With universal prefix argument \\[universal-argument], prompts
 for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'."
+`hyperdrive-complete-hyperdrive'.  With two universal prefix
+arguments \\[universal-argument] \\[universal-argument],
+overwrite without prompting."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                             :force-prompt current-prefix-arg
                                             :default-path (when (and hyperdrive-current-entry
                                                                      (not current-prefix-arg))
                                                             (hyperdrive-entry-path hyperdrive-current-entry))
-                                            :allow-version-p nil)))
-  ;; FIXME: Overwrites without prompting if file exists.
-  (ignore overwritep)
+                                            :allow-version-p nil)
+                     (equal '(16) current-prefix-arg)))
+  (unless (or overwritep (not (hyperdrive-entry-at nil entry)))
+    (unless (y-or-n-p
+	     (format "File %s exists; overwrite?" (hyperdrive-entry-description entry)))
+      (hyperdrive-user-error "Canceled"))
+    (when-let ((buffers (match-buffers (hyperdrive--buffer-for-entry entry))))
+      (unless (y-or-n-p
+	       (format "A buffer is visiting %s; proceed?" (hyperdrive-entry-description entry)))
+        (hyperdrive-user-error "Aborted"))
+      ;; TODO: In BUFFERS, when user attempts to modify the buffer,
+      ;; offer warning like "FILE has been modified in hyperdrive; are
+      ;; you sure you want to edit this buffer?"
+      ;; TODO Replace `match-buffers' above with `cl-find-if' if we don't
+      ;; end up adding a buffer-local variable to each buffer to
+      ;; indicate that the file in the hyperdrive has been modified.
+      (ignore buffers)
+      ))
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
               (url (hyperdrive-entry-url entry))
               (buffer (current-buffer)))
@@ -460,7 +477,7 @@ for more information.  See `hyperdrive-read-entry' and
   "Call `hyperdrive-write-buffer' for the current buffer.
 To be used in `write-contents-functions'."
   (cl-assert hyperdrive-mode)
-  (hyperdrive-write-buffer hyperdrive-current-entry))
+  (hyperdrive-write-buffer hyperdrive-current-entry t))
 
 (defun hyperdrive-copy-url (entry)
   "Save hyperdrive ENTRY's URL to the kill ring.
