@@ -1237,6 +1237,11 @@ Affected by option `hyperdrive-reuse-buffers', which see."
        (hyperdrive-entry-equal entry
                                (buffer-local-value 'hyperdrive-current-entry buffer))))
 
+(defun hyperdrive--buffer-for-entry (entry)
+  "Return a predicate to match buffer against ENTRY"
+  ;; TODO: This function is a workaround for bug#65797
+  (lambda (buffer) (hyperdrive--entry-buffer-p entry buffer)))
+
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
   (hyperdrive-entry-description entry :format-path 'name))
