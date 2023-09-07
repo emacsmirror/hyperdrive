@@ -250,6 +250,12 @@ empty public-key slot."
                (hyperdrive (pcase host
                              ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
                              ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
+                              (when (textsec-suspicious-p host 'domain)
+                                ;; Check DNSLink domains for suspicious characters; don't bother
+                                ;; checking public keys since they're not recognizable anyway.
+                                (unless (y-or-n-p
+	                                 (format "Suspicious domain: %s; continue anyway?" host))
+                                  (user-error "Suspicious domain %s" host)))
                               (hyperdrive-create :domains (list host)))
                              (_  ;; Assume host is a public-key
                               (or (gethash host hyperdrive-hyperdrives)
