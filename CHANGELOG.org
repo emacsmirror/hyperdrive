@@ -27,6 +27,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Fixed version history navigation in directories
 - Allow entering URLs without ~hyper://~
 - Prevent accidental loss of unsaved hyperdrive files
+- Prompt before overwriting with ~hyperdrive-write-buffer~
 - Improved error handling
 
 ** Security
