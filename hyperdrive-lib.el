@@ -1213,10 +1213,7 @@ Affected by option `hyperdrive-reuse-buffers', which see."
          (buffer
           (or (when (eq 'any-version hyperdrive-reuse-buffers)
                 (cl-loop for buffer in (buffer-list)
-                         when (and (buffer-local-value 'hyperdrive-mode buffer)
-                                   (buffer-local-value 'hyperdrive-current-entry buffer)
-                                   (hyperdrive-entry-equal entry
-                                                           (buffer-local-value 'hyperdrive-current-entry buffer)))
+                         when (hyperdrive--entry-buffer-p entry buffer)
                          return buffer))
               (get-buffer-create buffer-name))))
     (with-current-buffer buffer
@@ -1232,6 +1229,13 @@ Affected by option `hyperdrive-reuse-buffers', which see."
       (hyperdrive-mode)
       (setq-local hyperdrive-current-entry entry)
       (current-buffer))))
+
+(defun hyperdrive--entry-buffer-p (entry buffer)
+  "Return non-nil when BUFFER is visiting ENTRY."
+  (and (buffer-local-value 'hyperdrive-mode buffer)
+       (buffer-local-value 'hyperdrive-current-entry buffer)
+       (hyperdrive-entry-equal entry
+                               (buffer-local-value 'hyperdrive-current-entry buffer))))
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
