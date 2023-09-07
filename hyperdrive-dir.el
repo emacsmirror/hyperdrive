@@ -94,7 +94,9 @@ arguments."
                                                (or (when prev-entry
                                                      (goto-entry prev-entry ewoc))
                                                    (goto-char prev-point)))
-                                             (set-buffer-modified-p nil))
+                                             (set-buffer-modified-p nil)
+                                             (when then
+                                               (funcall then)))
                                            ;; TODO: Remove this and the commented out `debug-start-time'
                                            ;; binding when we're done experimenting.
                                            ;; (message "Elapsed: %s"
@@ -111,10 +113,7 @@ arguments."
               :then (lambda (&rest _)
                       (update-footer (cl-incf num-filled) num-entries))))
           (plz-run metadata-queue)
-          (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action)
-          ;; TODO: Should we display the buffer before or after calling THEN? (test with yank-media handler)
-          (when then
-            (funcall then)))))))
+          (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action))))))
 
 (defun hyperdrive-dir-column-headers (prefix)
   "Return column headers as a string with PREFIX.
