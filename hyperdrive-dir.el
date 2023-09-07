@@ -375,19 +375,7 @@ see Info node `(elisp)Yanking Media'."
         :body-type 'binary
         ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
         :body image :as 'response
-        :then (lambda (_res)
-                (hyperdrive-open parent
-                  :then (lambda ()
-                          (ewoc-goto-node ewoc
-                                          (hyperdrive-ewoc-find-node ewoc entry
-                                            :predicate (lambda (a b)
-                                                         (equal (hyperdrive-entry-path a)
-                                                                (hyperdrive-entry-path b)))))
-                          (recenter)
-                          ;; FIXME: Newly-added file is not highlit. Calling
-                          ;; the `then' callback in a queue finalizer inside
-                          ;; `hyperdrive-dir-handler' should fix this.
-                          )))
+        :then (lambda (_res) (hyperdrive-open entry))
         :else (lambda (plz-error)
                 (hyperdrive-message "Unable to yank media: %S" plz-error)))))
 
