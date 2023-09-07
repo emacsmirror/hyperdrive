@@ -250,7 +250,8 @@ empty public-key slot."
                (hyperdrive (pcase host
                              ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
                              ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
-                              (when (textsec-suspicious-p host 'domain)
+                              (when (and (fboundp #'textsec-suspicious-p)
+                                         (textsec-suspicious-p host 'domain))
                                 ;; Check DNSLink domains for suspicious characters; don't bother
                                 ;; checking public keys since they're not recognizable anyway.
                                 (unless (y-or-n-p
