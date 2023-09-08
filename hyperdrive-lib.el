@@ -314,6 +314,7 @@ Intended to be used as hash table key in `hyperdrive-version-ranges'."
 (defun hyperdrive-purge-version-ranges (hyperdrive)
   "Purge all version range data for HYPERDRIVE."
   (maphash (lambda (key _val)
+             ;; NOTE: The KEY starts with the key and ends with a path, so we compare as prefix.
              (when (string-prefix-p (hyperdrive-public-key hyperdrive) key)
                (remhash key hyperdrive-version-ranges)))
            hyperdrive-version-ranges)
@@ -1037,6 +1038,7 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
 (cl-defun hyperdrive-persist (hyperdrive &key purge)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'.
 With PURGE, delete hash table entry for HYPERDRIVE."
+  ;; TODO: Make separate function for purging persisted data.
   (if purge
       (remhash (hyperdrive-public-key hyperdrive) hyperdrive-hyperdrives)
     (puthash (hyperdrive-public-key hyperdrive) hyperdrive hyperdrive-hyperdrives))

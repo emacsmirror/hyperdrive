@@ -32,12 +32,13 @@
 
 ;;;; Variables
 
+;; TODO: Consolidate these two local variables into one?
 (defvar-local hyperdrive-mirror-parent-entry nil
   "Parent entry for `hyperdrive-mirror-mode' buffer.")
 (put 'hyperdrive-mirror-parent-entry 'permanent-local t)
 
-(defvar-local hyperdrive-mirror-already-uploaded nil
-  "Non-nil if files in `hyperdrive-mirror-mode' buffer have already been uploaded.")
+(defvar-local hyperdrive-mirror-query nil
+  "List of arguments passed to `hyperdrive-mirror', excluding \\+`no-confirm'.")
 
 ;;;; Functions
 
@@ -47,26 +48,33 @@
 FILES-AND-URLS is structured like `tabulated-list-entries'.  After
 uploading files, open PARENT-ENTRY."
   (let* ((count 0)
+         (upload-files-and-urls (cl-remove-if-not (pcase-lambda (`(,_id [,status ,_file ,_url]))
+                                                    (string-match-p (rx (or "new" "newer")) status))
+                                                  files-and-urls))
          (progress-reporter
-          (make-progress-reporter (format "Uploading %s files: " (length files-and-urls)) 0 (length files-and-urls)))
+          (make-progress-reporter (format "Uploading %s files: " (length upload-files-and-urls)) 0 (length upload-files-and-urls)))
          (queue (make-plz-queue
                  :limit hyperdrive-queue-size
                  :finally (lambda ()
                             (progress-reporter-done progress-reporter)
                             (hyperdrive-open parent-entry)
                             (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-                              (setq-local hyperdrive-mirror-already-uploaded t))))))
-    (pcase-dolist (`(,_id [,file ,url]) files-and-urls)
+                              (revert-buffer nil t))))))
+    (unless upload-files-and-urls
+      (hyperdrive-user-error "No new/newer files to upload"))
+    (pcase-dolist (`(,_id [,_status ,file ,url]) upload-files-and-urls)
       (hyperdrive-upload-file file (hyperdrive-url-entry url)
         :queue queue
         ;; TODO: Error handling (e.g. in case one or more files fails to upload).
         :then (lambda (_)
                 (progress-reporter-update progress-reporter (cl-incf count)))))))
 
-;;;; Commands
+(defun hyperdrive-mirror-revert-buffer (&optional _ignore-auto _noconfirm)
+  "Revert `hyperdrive-mirror-mode' buffer.
+Runs `hyperdrive-mirror' again with the same query."
+  (apply #'hyperdrive-mirror hyperdrive-mirror-query))
 
-;; TODO: Don't overwrite a hyperdrive file with the same
-;; contents. Should we keep a cache of uploaded files and mtimes?
+;;;; Commands
 
 ;;;###autoload
 (cl-defun hyperdrive-mirror
@@ -135,12 +143,36 @@ predicate and set NO-CONFIRM to t."
          (files-and-urls
           ;; Structured according to `tabulated-list-entries'
           (mapcar (lambda (file)
-                    (let ((url (hyperdrive-entry-url
-                                (hyperdrive-entry-create
-                                 :hyperdrive hyperdrive
-                                 :path (expand-file-name (file-relative-name file source) target-dir)
-                                 :encode t))))
-                      (list url (vector file url))))
+                    (let* ((entry (hyperdrive-entry-create
+                                   :hyperdrive hyperdrive
+                                   :path (expand-file-name (file-relative-name file source) target-dir)
+                                   :encode t))
+                           (status-no-properties
+                            (condition-case err
+                                (let ((drive-mtime (hyperdrive-entry-mtime (hyperdrive-fill entry :then 'sync)))
+                                      (local-mtime (file-attribute-modification-time (file-attributes file))))
+                                  (cond
+                                   ((time-equal-p drive-mtime local-mtime) "same")
+                                   ((time-less-p drive-mtime local-mtime) "newer")
+                                   (t "older")))
+                              (plz-error
+                               (pcase (caddr err)
+                                 ((app plz-error-response (cl-struct plz-response (status 404)))
+                                  ;; Entry doesn't exist: Set `status' to `new'.
+                                  (hyperdrive-update-nonexistent-version-range entry)
+                                  "new")
+                                 (_
+                                  ;; Re-signal error.
+                                  (signal (car err) (cdr err)))))))
+                           (status
+                            (propertize (format "%-7s" status-no-properties)
+                                        'face (pcase-exhaustive status-no-properties
+                                                ("new" 'hyperdrive-mirror-new)
+                                                ("newer" 'hyperdrive-mirror-newer)
+                                                ("older" 'hyperdrive-mirror-older)
+                                                ("same" 'hyperdrive-mirror-same))))
+                           (url (hyperdrive-entry-url entry)))
+                      (list url (vector status file url))))
                   files)))
     (unless files
       (hyperdrive-user-error "No files selected for mirroring (double-check predicate)"))
@@ -148,7 +180,8 @@ predicate and set NO-CONFIRM to t."
         (hyperdrive--mirror files-and-urls parent-entry)
       (pop-to-buffer (get-buffer-create "*hyperdrive-mirror*"))
       (hyperdrive-mirror-mode)
-      (setq-local hyperdrive-mirror-already-uploaded nil)
+      (setq-local hyperdrive-mirror-query
+                  `(,source ,hyperdrive :target-dir ,target-dir :predicate ,predicate))
       (setq-local hyperdrive-mirror-parent-entry parent-entry)
       (setf tabulated-list-entries files-and-urls)
       (tabulated-list-print))))
@@ -158,8 +191,7 @@ predicate and set NO-CONFIRM to t."
   (declare (modes hyperdrive-mirror-mode))
   (interactive)
   (if (and tabulated-list-entries hyperdrive-mirror-parent-entry)
-      (when (or (not hyperdrive-mirror-already-uploaded) (yes-or-no-p "Already uploaded files.  Upload again?"))
-        (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry))
+      (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry)
     (hyperdrive-user-error "Missing information about files to upload.  Are you in a \"*hyperdrive-mirror*\" buffer?")))
 
 ;;;; Mode
@@ -174,9 +206,11 @@ predicate and set NO-CONFIRM to t."
   "Major mode for buffers for mirror local directories to a hyperdrive."
   :group 'hyperdrive
   :interactive nil
-  ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29)
-  (setq tabulated-list-format [("From file" 60 t)
-                               ("To URL" 60 t)])
+  ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29) (or maybe taxy-magit-section)
+  (setq tabulated-list-format [("Status" 7 t)
+                               ("From file" 60 t)
+                               ("To URL" 60 t)]
+        revert-buffer-function #'hyperdrive-mirror-revert-buffer)
   (tabulated-list-init-header))
 
 ;;;; Footer
