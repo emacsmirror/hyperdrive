@@ -426,7 +426,7 @@ overwrite without prompting."
       ;; TODO: In BUFFERS, when user attempts to modify the buffer,
       ;; offer warning like "FILE has been modified in hyperdrive; are
       ;; you sure you want to edit this buffer?"
-      ;; TODO Replace `match-buffers' above with `cl-find-if' if we don't
+      ;; TODO: Replace `match-buffers' above with `cl-find-if' if we don't
       ;; end up adding a buffer-local variable to each buffer to
       ;; indicate that the file in the hyperdrive has been modified.
       (ignore buffers)
