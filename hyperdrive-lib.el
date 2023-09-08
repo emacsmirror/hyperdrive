@@ -935,15 +935,10 @@ case, when PREDICATE, only offer hyperdrives matching it."
 
 (cl-defun hyperdrive--format-hyperdrive (hyperdrive)
   "Return HYPERDRIVE formatted for completion."
-  (let ((petname (hyperdrive--format-host hyperdrive :format '(petname) :with-label t))
-        (nickname (hyperdrive--format-host hyperdrive :format '(nickname) :with-label t))
-        (domain (hyperdrive--format-host hyperdrive :format '(domain) :with-label t))
-        (seed (hyperdrive--format-host hyperdrive :format '(seed) :with-label t))
-        (short-key (hyperdrive--format-host hyperdrive :format '(short-key) :with-label t)))
-    (string-trim
-     (cl-loop for value in (list petname nickname domain seed short-key)
-              when value
-              concat (concat value "  ")))))
+  (string-trim
+   (cl-loop for format in '(petname nickname domain seed short-key)
+            when (hyperdrive--format-host hyperdrive :format (list format) :with-label t)
+            concat (concat it "  "))))
 
 (cl-defun hyperdrive-read-entry (&key predicate default-path (allow-version-p t) force-prompt)
   "Return new hyperdrive entry with path and hyperdrive read from user.
