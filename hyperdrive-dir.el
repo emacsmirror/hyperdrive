@@ -36,8 +36,8 @@
 ;;;###autoload
 (cl-defun hyperdrive-dir-handler (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
-If THEN, then call THEN in the directory buffer with no
-arguments."
+If THEN, call it in the directory buffer with no arguments after
+the metadata has been loaded."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
   ;; in a couple of seconds (same in hyperdrive-handler-default)
