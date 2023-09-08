@@ -234,6 +234,8 @@ If already at top-level directory, return nil."
     (when-let ((parent-path (file-name-parent-directory path)))
       (hyperdrive-entry-create :hyperdrive hyperdrive :path parent-path :version version))))
 
+;; For Emacsen <29.1.
+(declare-function textsec-suspicious-p "ext:textsec-check")
 (defun hyperdrive-url-entry (url)
   "Return entry for URL.
 Set entry's hyperdrive slot to persisted hyperdrive if it exists.
@@ -250,7 +252,7 @@ empty public-key slot."
                (hyperdrive (pcase host
                              ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
                              ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
-                              (when (and (fboundp #'textsec-suspicious-p)
+                              (when (and (>= emacs-major-version 29)
                                          (textsec-suspicious-p host 'domain))
                                 ;; Check DNSLink domains for suspicious characters; don't bother
                                 ;; checking public keys since they're not recognizable anyway.
