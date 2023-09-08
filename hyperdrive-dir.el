@@ -367,10 +367,7 @@ see Info node `(elisp)Yanking Media'."
                     (hyperdrive--entry-directory-p hyperdrive-current-entry)))
     (let ((entry (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                         :default-path (hyperdrive-entry-path hyperdrive-current-entry)
-                                        :allow-version-p nil))
-          ;; `parent' and `ewoc' are bound for the callback.
-          (parent hyperdrive-current-entry)
-          (ewoc hyperdrive-ewoc))
+                                        :allow-version-p nil)))
       (hyperdrive-api 'put (hyperdrive-entry-url entry)
         :body-type 'binary
         ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
