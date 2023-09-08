@@ -62,7 +62,7 @@ uploading files, open PARENT-ENTRY."
                               (revert-buffer nil t))))))
     (unless upload-files-and-urls
       (hyperdrive-user-error "No new/newer files to upload"))
-    (pcase-dolist (`(,_id [,status ,file ,url]) upload-files-and-urls)
+    (pcase-dolist (`(,_id [,_status ,file ,url]) upload-files-and-urls)
       (hyperdrive-upload-file file (hyperdrive-url-entry url)
         :queue queue
         ;; TODO: Error handling (e.g. in case one or more files fails to upload).
@@ -149,15 +149,15 @@ predicate and set NO-CONFIRM to t."
                                    :encode t))
                            (status-no-properties
                             (condition-case err
-                                (let ((drive-mod-time (hyperdrive-entry-modified (hyperdrive-fill entry :then 'sync)))
-                                      (local-mod-time (file-attribute-modification-time (file-attributes file))))
+                                (let ((drive-mtime (hyperdrive-entry-mtime (hyperdrive-fill entry :then 'sync)))
+                                      (local-mtime (file-attribute-modification-time (file-attributes file))))
                                   (cond
-                                   ((time-equal-p drive-mod-time local-mod-time) "same")
-                                   ((time-less-p drive-mod-time local-mod-time) "newer")
+                                   ((time-equal-p drive-mtime local-mtime) "same")
+                                   ((time-less-p drive-mtime local-mtime) "newer")
                                    (t "older")))
                               (plz-error
                                (pcase (caddr err)
-                                 ((app plz-error-response (cl-struct plz-response (status 404) body))
+                                 ((app plz-error-response (cl-struct plz-response (status 404)))
                                   ;; Entry doesn't exist: Set `status' to `new'.
                                   (hyperdrive-update-nonexistent-version-range entry)
                                   "new")
