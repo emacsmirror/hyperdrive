@@ -244,7 +244,8 @@ With point on header, returns directory entry."
   "D"   #'hyperdrive-dir-delete
   "H"   #'hyperdrive-dir-history
   "o"   #'hyperdrive-dir-sort
-  "?"   #'hyperdrive-describe-hyperdrive)
+  "?"   #'hyperdrive-describe-hyperdrive
+  "+"   #'hyperdrive-create-directory-no-op)
 
 (define-derived-mode hyperdrive-dir-mode hyperdrive-ewoc-mode
   `("Hyperdrive-dir"
@@ -323,6 +324,12 @@ Interactively, opens file or directory at point in
   "Display version history for ENTRY at point."
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-history entry))
+
+(defun hyperdrive-create-directory-no-op ()
+  "Signal error that directory creation is not possible in hyperdrive."
+  (interactive)
+  (hyperdrive-user-error
+   (substitute-command-keys "Cannot create empty directory; to create a new file, use `hyperdrive-find-file' or \\[hyperdrive-find-file]")))
 
 (defun hyperdrive-dir-sort (directory-sort)
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
