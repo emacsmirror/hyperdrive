@@ -758,19 +758,25 @@ DNS domains are checked for suspicious characters (see
 
 * Known limitations
 
-** Files and folders can have the same name
+** No empty directories
 
 Instead of files and folders, Hyperdrive technically has entries and
-entry prefixes. In other words, "folders" don't exist unless they
-contain files. It's possible for a "file" entry and a "folder" entry
-prefix to have the same name, like ~hyper://PUBLIC-KEY/foo/bar/~ (a
-"folder") and ~hyper://PUBLIC-KEY/foo/bar~ (a "file"). In this case, the
-folder listing for ~hyper://PUBLIC-KEY/path/~ would display the ~to~ entry
-but not the ~to/~ entry prefix. Because entry prefixes only exist when
-they prefix an entry, deleting the last "file" in a "folder" causes
-the "folder" to disappear as well.  When a hyperdrive "file" or
-"folder" is not found, ~hyperdrive.el~ prompts you for an action
-(see [[*Unknown paths]]).
+entry prefixes.  In other words, folders don't exist unless they
+contain files.  This results in potentially unexpected behavior:
+
+- it is not possible to create empty directories
+- deleting the last file in a folder deletes the folder as well
+
+When a hyperdrive file or folder is not found, ~hyperdrive.el~ prompts
+you for an action (see [[*Unknown paths]]).
+
+** Files and folders can have the same name
+
+In the current implementation of Hyperdrive, it's possible for an
+entry (folder) and an entry prefix (folder) to have the same name,
+e.g., ~hyper://PUBLIC-KEY/foo/bar/~ and ~hyper://PUBLIC-KEY/foo/bar~. In
+this case, the folder listing for ~hyper://PUBLIC-KEY/foo/~ would
+display the ~bar~ entry but not the ~bar/~ entry prefix.
 
 * Tips
 
