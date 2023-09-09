@@ -191,6 +191,8 @@ default:
 - ~j~ opens ~imenu~ to quickly jump to a file in the current directory
 #+kindex: hyperdrive-describe-hyperdrive
 - ~?~ opens a buffer describing the current hyperdrive
+#+kindex: hyperdrive-create-directory-no-op
+- ~+~ signals an error, because you cannot create empty directories ([[*No empty directories]])
 
 *** File view
 
