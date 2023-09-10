@@ -380,7 +380,7 @@ hyperdrive's latest-version slot, the final gap is filled."
 
 (defun hyperdrive-entry-previous (entry)
   "Return ENTRY at its hyperdrive's previous version, or nil.
-If ENTRY is a directory, just decrement ENTRY's version."
+If ENTRY is a directory, return a copy with decremented version."
   (if (hyperdrive--entry-directory-p entry)
       (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
                    (version (or version (hyperdrive-latest-version hyperdrive))))
