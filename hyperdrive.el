@@ -511,70 +511,28 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
       (hyperdrive-open previous-entry)
     (hyperdrive-message "At earliest known version of %s" (hyperdrive-entry-description entry :with-version nil))))
 
-(defun hyperdrive-next-version (entry &optional no-recurse)
-  "Show next version of ENTRY.
-When NO-RECURSE is non-nil and the next version range's :EXISTSP
-value is unknown, call `hyperdrive-fill-version-ranges' and
-recurse, passing NO-RECURSE t to `hyperdrive-next-version'."
+(defun hyperdrive-next-version (entry)
+  "Show next version of ENTRY."
   (declare (modes hyperdrive-mode))
   (interactive (list hyperdrive-current-entry))
-  ;; TODO: Consider splitting this logic into `hyperdrive-entry-next'.
-  (cl-flet ((open-at-version (version &optional message)
-              (let ((copy (hyperdrive-copy-tree entry t)))
-                (setf (hyperdrive-entry-version copy) version)
-                (hyperdrive-open copy)
-                (when message
-                  (hyperdrive-message message))))
-            (already-latest-error ()
-              (hyperdrive-user-error
-               "Already at latest version of entry; consider reverting buffer with %s to check for newer versions"
-               (substitute-command-keys
-                (if (fboundp 'revert-buffer-quick)
-                    "\\[revert-buffer-quick]"
-                  "\\[revert-buffer]")))))
-    (unless (hyperdrive-entry-version entry)
-      (already-latest-error))
-    (let ((latest-version (hyperdrive-fill-latest-version (hyperdrive-entry-hyperdrive entry))))
-      (when (eq latest-version (hyperdrive-entry-version entry))
-        ;; NOTE: There is an unlikely race condition here. It's possible that after
-        ;; the `hyperdrive-fill-latest-version' call, this entry was updated.
-        (open-at-version nil)
-        (already-latest-error))
-      (if (hyperdrive--entry-directory-p entry)
-          ;; For directories, increment the version number by one.
-          (let ((next-version (1+ (hyperdrive-entry-version entry))))
-            (open-at-version (if (eq next-version latest-version)
-                                 ;; Remove version number upon reaching the end of the history.
-                                 nil
-                               next-version)))
-        (pcase-let* ((`(,_range-start . ,(map (:range-end range-end))) (hyperdrive-entry-version-range entry))
-                     (next-range-start (1+ range-end))
-                     ((map (:existsp next-range-existsp) (:range-end next-range-end))
-                      (map-elt (hyperdrive-entry-version-ranges-no-gaps entry) next-range-start)))
-          (when (eq latest-version range-end)
-            ;; NOTE: There is an unlikely race condition here. It's possible that after
-            ;; the `hyperdrive-fill-latest-version' call, this entry was updated.
-            (open-at-version nil)
-            (already-latest-error))
-          (pcase next-range-existsp
-            ('t
-             ;; Known existent, open it:
-             (if (eq next-range-end latest-version)
-                 ;; This is the latest version: remove version number
-                 (open-at-version nil)
-               (open-at-version next-range-start)))
-            ('nil
-             ;; Known nonexistent, warn:
-             (hyperdrive-message (substitute-command-keys
-                                  "Entry deleted after this version. Try \\[hyperdrive-history]")))
-            ('unknown
-             ;; Unknown existence, either warn or recurse:
-             (if no-recurse
-                 (hyperdrive-message (substitute-command-keys
-                                      "Next version unknown. Try \\[hyperdrive-history]"))
-               (hyperdrive-message "Loading history to find next version...")
-               (hyperdrive-fill-version-ranges entry
-                 :then (lambda () (hyperdrive-next-version entry t)))))))))))
+  (pcase-exhaustive (hyperdrive-entry-next entry)
+    ((and (pred (eq entry)) next-entry)
+     ;; ENTRY already at latest version: open and say `revert-buffer'.
+     (hyperdrive-open next-entry)
+     (hyperdrive-message
+      "Already at latest version of entry; consider reverting buffer with %s to check for newer versions"
+      (substitute-command-keys
+       (if (fboundp 'revert-buffer-quick)
+           "\\[revert-buffer-quick]"
+         "\\[revert-buffer]"))))
+    ('nil ;; Known nonexistent: suggest `hyperdrive-history'.
+     (hyperdrive-message (substitute-command-keys
+                          "Entry deleted after this version. Try \\[hyperdrive-history]")))
+    ('unknown ;; Unknown existence: suggest `hyperdrive-history'.
+     (hyperdrive-message (substitute-command-keys
+                          "Next version unknown. Try \\[hyperdrive-history]")))
+    ((and (pred hyperdrive-entry-p) next-entry)
+     (hyperdrive-open next-entry))))
 
 ;;;; Bookmark support
 

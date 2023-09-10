@@ -406,6 +406,57 @@ When VERSION is nil, return latest version of ENTRY."
          (404 nil)
          (_ (signal (car err) (cdr err))))))))
 
+(cl-defun hyperdrive-entry-next (entry)
+  "Return unfilled ENTRY at its hyperdrive's next version.
+
+If next version is known nonexistent, return nil.
+If next version's existence is unknown, return \\+`unknown'.
+If ENTRY's version is nil, return value is `eq' to ENTRY.
+
+Sends a request to the gateway for hyperdrive's latest version."
+  (let ((next-entry (hyperdrive-copy-tree entry t))
+        (latest-version (hyperdrive-fill-latest-version
+                         (hyperdrive-entry-hyperdrive entry))))
+    ;; ENTRY's version is nil: return ENTRY.
+    (unless (hyperdrive-entry-version entry)
+      (cl-return-from hyperdrive-entry-next entry))
+
+    ;; ENTRY version is the latest version: return ENTRY with nil version.
+    (when (eq latest-version (hyperdrive-entry-version entry))
+      (setf (hyperdrive-entry-version next-entry) nil)
+      (cl-return-from hyperdrive-entry-next next-entry))
+
+    ;; ENTRY is a directory: increment the version number by one.
+    (when (hyperdrive--entry-directory-p entry)
+      (cl-incf (hyperdrive-entry-version next-entry))
+      (cl-return-from hyperdrive-entry-next next-entry))
+
+    ;; ENTRY is a file...
+    (pcase-let* ((`(,_range-start . ,(map (:range-end range-end))) (hyperdrive-entry-version-range entry))
+                 (next-range-start (1+ range-end))
+                 ((map (:existsp next-range-existsp) (:range-end next-range-end))
+                  ;; TODO: If cl struct copiers are extended like this:
+                  ;;       https://lists.gnu.org/archive/html/help-gnu-emacs/2021-10/msg00797.html
+                  ;;       replace following sexp with
+                  ;;       (hyperdrive-entry-version-range (hyperdrive-entry-copy :version next-range-start))
+                  (map-elt (hyperdrive-entry-version-ranges-no-gaps entry) next-range-start)))
+      ;; ENTRY is in the last version range: return ENTRY with nil version.
+      (when (eq latest-version range-end)
+        (setf (hyperdrive-entry-version next-entry) nil)
+        (cl-return-from hyperdrive-entry-next next-entry))
+
+      ;; Check existence of ENTRY's next version range...
+      (pcase-exhaustive next-range-existsp
+        ('t
+         (setf (hyperdrive-entry-version next-entry)
+               (if (eq next-range-end latest-version)
+                   ;; This is the latest version: remove version number.
+                   nil
+                 next-range-start))
+         next-entry)
+        ('nil nil)
+        ('unknown 'unknown)))))
+
 (declare-function hyperdrive-history "hyperdrive-history")
 (cl-defun hyperdrive-open (entry &key then recurse (createp t))
   "Open hyperdrive ENTRY.
