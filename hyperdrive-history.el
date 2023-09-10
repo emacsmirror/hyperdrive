@@ -153,7 +153,6 @@ Universal prefix argument \\[universal-argument] forces
                          (hyperdrive-read-entry :force-prompt t :allow-version-p nil)
                        hyperdrive-current-entry)))
   ;; TODO: Highlight range for ENTRY
-  ;; TODO: What to do when ENTRY is a directory?
   (when (hyperdrive--entry-directory-p entry)
     (hyperdrive-user-error "Directory history not yet implemented"))
   (hyperdrive-fill-version-ranges entry :then
