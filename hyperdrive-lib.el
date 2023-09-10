@@ -327,8 +327,8 @@ Returns nil when ENTRY is not known to exist at its version."
                (version (or entry-version (hyperdrive-latest-version hyperdrive)))
                (ranges (hyperdrive-entry-version-ranges entry)))
     (when ranges
-      (cl-find-if (pcase-lambda (`(,start . ,(map (:range-end range-end))))
-                    (<= start version range-end))
+      (cl-find-if (pcase-lambda (`(,range-start . ,(map (:range-end range-end))))
+                    (<= range-start version range-end))
                   ranges))))
 
 (defun hyperdrive-entry-exists-p (entry)
