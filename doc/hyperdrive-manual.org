@@ -296,6 +296,8 @@ For an explanation of the history buffer, see [[*Partial version data]].
 The following keybindings are available inside the directory view by
 default:
 
+#+kindex: hyperdrive-history-fill-version-ranges
+- ~+~ loads version history for unknown ranges
 #+kindex: hyperdrive-history-find-file
 - ~RET~ opens the file at the start of the range at point
 #+kindex: hyperdrive-history-view-file
