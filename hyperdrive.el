@@ -136,14 +136,6 @@
   (zerop (call-process-shell-command "systemctl --user is-active hyper-gateway.service")))
 
 ;;;###autoload
-(defun hyperdrive-status ()
-  "Say whether `hyper-gateway' systemd service is running."
-  (interactive)
-  (if (zerop (call-process-shell-command "systemctl --user is-active hyper-gateway.service"))
-      (hyperdrive-message "Gateway is running.")
-    (hyperdrive-message "Gateway is not running.")))
-
-;;;###autoload
 (defun hyperdrive-hyper-gateway-version ()
   "Say version number of `hyper-gateway'.
 Gateway must be running."
