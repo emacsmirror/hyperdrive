@@ -165,7 +165,7 @@ Columns are suffixed with up/down arrows according to
   (pcase-let* ((read-answer-short t)
                (choices (mapcar (lambda (field)
                                   (let ((desc (symbol-name (car field))))
-                                    (list desc (aref desc 0) (format "Sort by %s" desc))))
+                                    (list desc (aref desc 0) (format "sort by %s" desc))))
                                 hyperdrive-dir-sort-fields))
                (column (intern (read-answer "Sort by column: " choices))))
     (hyperdrive-dir-toggle-sort-direction column hyperdrive-directory-sort)))
