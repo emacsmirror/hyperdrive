@@ -119,6 +119,7 @@ and ENTRY's version are nil."
   "RET" #'hyperdrive-history-find-file
   "v"   #'hyperdrive-history-view-file
   "="   #'hyperdrive-history-diff
+  "+"   #'hyperdrive-history-fill-version-ranges
   "w"   #'hyperdrive-history-copy-url
   "d"   #'hyperdrive-history-download-file)
 
