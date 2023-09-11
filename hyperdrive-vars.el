@@ -152,7 +152,6 @@ through a shell)."
   :type 'natnum)
 
 (defcustom hyperdrive-fill-version-ranges-limit 10
-  ;; TODO(doc) Document `hyperdrive-fill-version-ranges-limit'.
   "Default maximum number of requests when filling version history."
   :type 'natnum)
 
