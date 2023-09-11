@@ -500,7 +500,7 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
 
 #+vindex: hyperdrive-queue-size
 - ~hyperdrive-queue-size~ :: Default number of request sent to
-  ~hyper-gateway~ at a time in a queues. Defaults to ~2~.
+  ~hyper-gateway~ at a time in a queues. Defaults to ~20~.
 
 #+vindex: hyperdrive-render-html
 - ~hyperdrive-render-html~ :: Control how HTML hyperdrive files are
