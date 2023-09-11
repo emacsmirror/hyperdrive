@@ -241,7 +241,10 @@ If already at top-level directory, return nil."
 Set entry's hyperdrive slot to persisted hyperdrive if it exists.
 
 If URL host is a DNSLink domain, returned entry will have an
-empty public-key slot."
+empty public-key slot.
+
+If URL does not begin with \"hyper://\" prefix, it will be added
+before making the entry struct."
   (unless (string-prefix-p "hyper://" url)
     (setf url (concat "hyper://" url)))
   (pcase-let* (((cl-struct url host (filename path) target)
