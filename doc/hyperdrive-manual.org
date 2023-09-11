@@ -54,6 +54,8 @@ There are two recommended options for installing ~hyperdrive.el~:
 NonGNU ELPA and ~package-vc~.
 
 *** NonGNU ELPA
+# TODO: use-package definition
+# TODO: package-refresh-contents after adding nongnu?
 
 ~hyperdrive.el~ is available on [[https://elpa.nongnu.org/][NonGNU ELPA]]. On Emacs 28 or later,
 installation is as simple as ~M-x package-install RET hyperdrive RET~.
@@ -147,6 +149,7 @@ public key (see [[*Public keys]]) that uniquely identifies that
 hyperdrive. ~hyperdrive-new~ is idempotent since the same seed will
 always produce the same public key. For this reason, a hyperdrive's
 seed cannot be changed.
+# TODO: Move conceptual master key stuff into *Concepts
 
 ** Open a hyperdrive
 #+findex: hyperdrive-open-url
