@@ -216,6 +216,20 @@ Universal prefix argument \\[universal-argument] forces
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))
 
+;; TODO: Add pcase-defmacro for destructuring range-entry
+(defun hyperdrive-history-fill-version-ranges (range-entry)
+  "Fill version ranges starting from RANGE-ENTRY at point."
+  (interactive (list (hyperdrive-history-range-entry-at-point)))
+  (pcase-let* ((`(,range . ,entry) range-entry)
+               (`(,_range-start . ,(map (:range-end range-end))) range)
+               (range-end-entry (hyperdrive-copy-tree entry)))
+    (setf (hyperdrive-entry-version range-end-entry) range-end)
+    (hyperdrive-fill-version-ranges range-end-entry
+      :finally (lambda ()
+                 ;; TODO: Should we open the history buffer for entry
+                 ;; or range-end-entry or...?
+                 (hyperdrive-history entry)))))
+
 (declare-function hyperdrive-diff-file-entries "hyperdrive-diff")
 (defun hyperdrive-history-diff (old-entry new-entry)
   "Show diff between OLD-ENTRY and NEW-ENTRY.
@@ -251,9 +265,8 @@ buffer."
      ;; Known to not exist: warn user.
      (hyperdrive-user-error "File does not exist!"))
     ('unknown
-     ;; Not known to exist: prompt user
-     ;; TODO: Design options
-     (hyperdrive-message "File not known to exist. What do you want to do?"))))
+     ;; Not known to exist: fill version ranges:
+     (hyperdrive-history-fill-version-ranges range-entry))))
 
 (declare-function hyperdrive-view-file "hyperdrive")
 (defun hyperdrive-history-view-file (range-entry)
@@ -273,9 +286,8 @@ buffer."
      ;; Known to not exist: warn user.
      (hyperdrive-user-error "File does not exist!"))
     ('unknown
-     ;; Not known to exist: prompt user
-     ;; TODO: Design options
-     (hyperdrive-message "File not known to exist. What do you want to do?"))))
+     ;; Not known to exist: fill version ranges:
+     (hyperdrive-history-fill-version-ranges range-entry))))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 
