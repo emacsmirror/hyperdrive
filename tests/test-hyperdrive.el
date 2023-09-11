@@ -36,6 +36,8 @@
 (require 'pcase)
 (require 'url)
 
+(require 'with-simulated-input)
+
 (require 'hyperdrive)
 
 ;;;; Magic constants
@@ -117,9 +119,11 @@
 
 ;;;; Link testing
 
+;;;;; Opening links
+
 (require 'hyperdrive-org)
 
-;;;;; URL links (i.e. "hyper://"-prefixed)
+;;;;;; URL links (i.e. "hyper://"-prefixed)
 
 (defun hyperdrive-test-org-url-link (url)
   "Return the URL that would be opened by `hyperdrive-open' for URL."
@@ -148,7 +152,7 @@
     (dolist (link links)
       (should (equal (hyperdrive-test-org-url-link (car link)) (cdr link))))))
 
-;;;;; Org links (i.e. not "hyper://"-prefixed)
+;;;;;; Org links (i.e. not "hyper://"-prefixed)
 
 (defun hyperdrive-test-org-link (link)
   ;; FIXME: Docstring.
@@ -175,3 +179,79 @@ LINK is an Org link as a string."
   (let ((links '(("[[*Heading A]]"))))
     (dolist (link links)
       (should (equal (hyperdrive-test-org-link (car link)) "WHAT")))))
+
+;;;;; Inserting links
+
+(defun hyperdrive-test-org-insert-link (link)
+  ;; FIXME: Docstring.
+  "Return the URL that would be inserted by `org-insert-link' for LINK.
+LINK is an Org link as a string."
+  (with-temp-buffer
+    (org-mode)
+    (hyperdrive-mode)
+    ;; TODO: Use org-link-store-props also?
+    (push link org-stored-links)
+    (org-insert-link)
+    (buffer-string)))
+
+(defun hyperdrive-test-org-link-roundtrip (contents)
+  (let ((org-id-link-to-org-use-id nil)
+        (default-directory "/")
+        (org-link-file-path-type
+         (lambda (path)
+           (replace-regexp-in-string (rx bos (optional "file:")
+                                         "/hyper:/") "hyper://" path)))
+        ;; (org-link-file-path-type
+        ;;  (lambda (path)
+        ;;    (string-trim-left (file-relative-name path)
+        ;;                      (rx "file:"))))
+        org-stored-links)
+    (with-temp-buffer
+      (insert contents)
+      (org-mode)
+      (hyperdrive-mode)
+      (setq-local hyperdrive-current-entry
+                  (hyperdrive-entry-create
+                   :hyperdrive (hyperdrive-create :public-key "public-key")
+                   :path "/foo/bar"))
+      (goto-char (point-min))
+      (re-search-forward (rx "<|>"))
+      (org-store-link nil 'interactive))
+    (with-temp-buffer
+      (org-mode)
+      (with-simulated-input "RET"
+        (org-insert-link))
+      (buffer-substring-no-properties (point-min) (point-max)))))
+
+(hyperdrive-test-org-link-roundtrip
+ "<|>
+* Heading A
+* Heading B")
+"[[hyper://public-key/foo/bar]]"
+
+(hyperdrive-test-org-link-roundtrip
+ "* Heading A
+<|>
+* Heading B")
+"[[hyper://public-key/foo/bar#Heading%20A][Heading A]]"
+
+(hyperdrive-test-org-link-roundtrip
+ "* Heading A
+:PROPERTIES:
+:ID: deadbeef
+:END:
+<|>
+* Heading B")
+"[[hyper://public-key/foo/bar#deadbeef][Heading A]]"
+
+(hyperdrive-test-org-link-roundtrip
+ "* Heading A
+:PROPERTIES:
+:CUSTOM_ID: custom-id
+:END:
+<|>
+* Heading B")
+"[[hyper://public-key/foo/bar#custom-id][Heading A]]"
+
+
+"hyper://public-key/foo/bar#deadbeef"
