@@ -151,6 +151,11 @@ through a shell)."
   ;; TODO: Consider a separate option for upload queue size, etc.
   :type 'natnum)
 
+(defcustom hyperdrive-fill-version-ranges-limit 10
+  ;; TODO(doc) Document `hyperdrive-fill-version-ranges-limit'.
+  "Default maximum number of requests when filling version history."
+  :type 'natnum)
+
 (defcustom hyperdrive-render-html t
   "Render HTML hyperdrive files with EWW."
   :type 'boolean)
