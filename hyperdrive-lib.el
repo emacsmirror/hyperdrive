@@ -417,12 +417,14 @@ If next version's existence is unknown, return \\+`unknown'.
 If ENTRY's version is nil, return value is `eq' to ENTRY.
 
 Sends a request to the gateway for hyperdrive's latest version."
+  (unless (hyperdrive-entry-version entry)
+    ;; ENTRY's version is nil: return ENTRY.
+    (cl-return-from hyperdrive-entry-next entry))
+
+  ;; ENTRY's version is not nil.
   (let ((next-entry (hyperdrive-copy-tree entry t))
         (latest-version (hyperdrive-fill-latest-version
                          (hyperdrive-entry-hyperdrive entry))))
-    ;; ENTRY's version is nil: return ENTRY.
-    (unless (hyperdrive-entry-version entry)
-      (cl-return-from hyperdrive-entry-next entry))
 
     ;; ENTRY version is the latest version: return ENTRY with nil version.
     (when (eq latest-version (hyperdrive-entry-version entry))
