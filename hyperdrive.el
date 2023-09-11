@@ -116,6 +116,9 @@
                               (string-trim-right (buffer-string)))))
       (kill-buffer buffer))))
 
+;; TODO: Add user option to start the gateway without systemd (run as
+;; Emacs subprocess, or other script)
+
 ;;;###autoload
 (defun hyperdrive-stop ()
   "Stop `hyper-gateway' systemd service."
