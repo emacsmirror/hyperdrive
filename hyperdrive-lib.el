@@ -799,28 +799,23 @@ Returns the ranges cons cell for ENTRY."
 ;;                 (fill-recursively range-end-entry)))))
 ;;       (funcall then))))
 
-(cl-defun hyperdrive-fill-version-ranges
-    (entry &key (limit hyperdrive-fill-version-ranges-limit) finally queue)
+(cl-defun hyperdrive-fill-version-ranges (entry &key finally)
+  ;; FIXME: Docstring.
   "Asynchronously fill in versions ranges for ENTRY.
 Recurse backward from ENTRY's version, filling unknown entries no
 more than LIMIT times.  Once all requests return, call FINALLY
-with no arguments.
-
-The QUEUE argument is used in recursive calls."
+with no arguments."
   ;; NOTE: `hyperdrive-fill-version-ranges' is recursive logically but not
   ;; technically, because each call is in the async callback.
   (declare (indent defun))
   (let* ((outstanding-nonexistent-requests-p)
-         ;; (finally-ran-p)
          (finally (lambda ()
+                    ;; (message "Running finally?  OUTSTANDING-NONEXISTENT-REQUESTS-P:%s"
+                    ;;          outstanding-nonexistent-requests-p)
                     (unless outstanding-nonexistent-requests-p
-                      (unwind-protect
-                          (funcall finally)
-                        ;; (setf finally-ran-p t)
-                        )))))
-    (unless queue
-      (setf queue (make-plz-queue :limit hyperdrive-queue-size
-                                  :finally finally)))
+                      (funcall finally))))
+         (queue (make-plz-queue :limit hyperdrive-queue-size
+                                :finally finally)))
     (cl-labels ((fill-existent (entry limit)
                   ;; For existent entries, send requests in series.
                   (when (cl-plusp limit)
@@ -829,11 +824,10 @@ The QUEUE argument is used in recursive calls."
                       (setf (hyperdrive-entry-version entry) (1- range-start))
                       (when (eq 'unknown (hyperdrive-entry-exists-p entry))
                         ;; Recurse backward through history.
-                        (hyperdrive-fill-version-ranges entry
-                          :limit (1- limit) :queue queue)
+                        (fill-entry entry :limit (1- limit))
                         ;; Return non-nil to indicate that a request was made.
                         t))))
-                (fill-nonexistent (copy-entry limit)
+                (fill-nonexistent (entry limit)
                   (let ((nonexistent-queue (make-plz-queue
                                             :limit hyperdrive-queue-size
                                             :finally (lambda ()
@@ -847,7 +841,8 @@ The QUEUE argument is used in recursive calls."
                                                                    (fill-nonexistent entry new-limit))
                                                            ;; (unless finally-ran-p
                                                            ;;   (funcall finally))
-                                                           (funcall finally)))))))
+                                                           ;; (message "NONEXISTENT-QUEUE-FINALLY: Calling plz-queue-finally...")
+                                                           (funcall (plz-queue-finally queue))))))))
                     ;; For nonexistent entries, send requests in parallel.
                     (cl-dotimes (i hyperdrive-queue-size outstanding-nonexistent-requests-p)
                       ;; Send the maximum number of simultaneous requests.
@@ -866,30 +861,32 @@ The QUEUE argument is used in recursive calls."
                         ;; the filled-entry is thrown away.
                         :then (lambda (_filled-entry)
                                 ;; (message "KNOWN-EXISTENT: %s" (hyperdrive-entry-version filled-entry))
-                                (message "THEN")
+                                ;; (message "THEN")
                                 )
                         :else (lambda (err)
-                                (message "KNOWN-NONEXISTENT: %s" (hyperdrive-entry-version entry))
+                                ;; (message "KNOWN-NONEXISTENT: %s" (hyperdrive-entry-version entry))
                                 ;; TODO: Better error handling.
                                 (pcase (plz-response-status (plz-error-response err))
                                   ;; FIXME: If plz-error is a curl-error, this block will fail.
                                   (404 nil)
                                   (_ (signal (car err) (cdr err)))))
                         :queue nonexistent-queue)
-                      (setf outstanding-nonexistent-requests-p t)))))
-      (let ((copy-entry (hyperdrive-copy-tree entry t)))
-        (hyperdrive-fill copy-entry
-          ;; `hyperdrive-fill' is only used to fill the version ranges;
-          ;; the filled-entry is thrown away.
-          :then (lambda (_filled-entry)
-                  (fill-existent copy-entry limit))
-          :else (lambda (err)
-                  (pcase (plz-response-status (plz-error-response err))
-                    ;; FIXME: If plz-error is a curl-error, this block will fail.
-                    (404
-                     (fill-nonexistent copy-entry limit))
-                    (_ (signal (car err) (cdr err)))))
-          :queue queue)))))
+                      (setf outstanding-nonexistent-requests-p t))))
+                (fill-entry (entry &key (limit hyperdrive-fill-version-ranges-limit))
+                  (let ((copy-entry (hyperdrive-copy-tree entry t)))
+                    (hyperdrive-fill copy-entry
+                      ;; `hyperdrive-fill' is only used to fill the version ranges;
+                      ;; the filled-entry is thrown away.
+                      :then (lambda (_filled-entry)
+                              (fill-existent copy-entry limit))
+                      :else (lambda (err)
+                              (pcase (plz-response-status (plz-error-response err))
+                                ;; FIXME: If plz-error is a curl-error, this block will fail.
+                                (404
+                                 (fill-nonexistent copy-entry limit))
+                                (_ (signal (car err) (cdr err)))))
+                      :queue queue))))
+      (fill-entry entry))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.

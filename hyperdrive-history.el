@@ -227,7 +227,7 @@ Universal prefix argument \\[universal-argument] forces
     (setf (hyperdrive-entry-version range-end-entry) range-end)
     (hyperdrive-fill-version-ranges range-end-entry
       :finally (lambda ()
-                 (message "FINALLY")
+                 ;; (message "HYPERDRIVE-HISTORY-FILL-VERSION-RANGES: FINALLY")
                  ;; TODO: Should we open the history buffer for entry
                  ;; or range-end-entry or...?
                  (hyperdrive-history entry)))))
