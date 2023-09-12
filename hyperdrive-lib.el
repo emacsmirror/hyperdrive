@@ -813,23 +813,33 @@ The QUEUE argument is used in recursive calls."
   (unless queue
     (setf queue (make-plz-queue :limit hyperdrive-queue-size
                                 :finally (when finally finally))))
-  (hyperdrive-fill (hyperdrive-copy-tree entry t)
-    :then (lambda (filled-entry)
-            (when (cl-plusp limit)
-              ;; Don't use `hyperdrive-entry-previous' here, since it makes a sync request
-              (pcase-let ((`(,range-start . ,_plist) (hyperdrive-entry-version-range filled-entry)))
-                (setf (hyperdrive-entry-version filled-entry) (1- range-start))
-                (when (eq 'unknown (hyperdrive-entry-exists-p filled-entry))
-                  ;; Recurse backward through history, filling unknown entries.
-                  ;; Stop recursing at known nonexistent entry or at the limit.
-                  (hyperdrive-fill-version-ranges filled-entry
-                    :limit (1- limit) :finally finally :queue queue)))))
-    :else (lambda (err)
-            (pcase (plz-response-status (plz-error-response err))
-              ;; FIXME: If plz-error is a curl-error, this block will fail.
-              (404 nil) ;; The loop stops if entry is not found, but don't error
-              (_ (signal (car err) (cdr err)))))
-    :queue queue))
+  (let ((copy-entry (hyperdrive-copy-tree entry t)))
+    (hyperdrive-fill copy-entry
+      :then (lambda (filled-entry)
+              (when (cl-plusp limit)
+                ;; Don't use `hyperdrive-entry-previous' here, since it makes a sync request
+                (pcase-let ((`(,range-start . ,_plist) (hyperdrive-entry-version-range filled-entry)))
+                  (setf (hyperdrive-entry-version filled-entry) (1- range-start))
+                  (when (eq 'unknown (hyperdrive-entry-exists-p filled-entry))
+                    ;; Recurse backward through history, filling unknown entries.
+                    ;; Stop recursing at known nonexistent entry or at the limit.
+                    (hyperdrive-fill-version-ranges filled-entry
+                      :limit (1- limit) :queue queue)))))
+      :else (lambda (err)
+              (pcase (plz-response-status (plz-error-response err))
+                ;; FIXME: If plz-error is a curl-error, this block will fail.
+                (404
+                 ;; ENTRY is known nonexistent: send LIMIT number of
+                 ;; parallel requests for entries before ENTRY's version.
+                 (cl-dotimes (i limit)
+                   (cl-decf (hyperdrive-entry-version copy-entry))
+                   (unless (and (cl-plusp (hyperdrive-entry-version copy-entry))
+                                (eq 'unknown (hyperdrive-entry-exists-p copy-entry)))
+                     (cl-return))
+                   (hyperdrive-fill-version-ranges copy-entry
+                     :limit 0 :queue queue)))
+                (_ (signal (car err) (cdr err)))))
+      :queue queue)))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
