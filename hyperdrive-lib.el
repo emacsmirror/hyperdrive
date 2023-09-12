@@ -824,7 +824,7 @@ with no arguments."
                       (setf (hyperdrive-entry-version entry) (1- range-start))
                       (when (eq 'unknown (hyperdrive-entry-exists-p entry))
                         ;; Recurse backward through history.
-                        (fill-entry entry :limit (1- limit))
+                        (fill-entry entry :limit limit)
                         ;; Return non-nil to indicate that a request was made.
                         t))))
                 (fill-nonexistent (entry limit)
@@ -873,7 +873,8 @@ with no arguments."
                         :queue nonexistent-queue)
                       (setf outstanding-nonexistent-requests-p t))))
                 (fill-entry (entry &key (limit hyperdrive-fill-version-ranges-limit))
-                  (let ((copy-entry (hyperdrive-copy-tree entry t)))
+                  (let ((copy-entry (hyperdrive-copy-tree entry t))
+                        (limit (1- limit)))
                     (hyperdrive-fill copy-entry
                       ;; `hyperdrive-fill' is only used to fill the version ranges;
                       ;; the filled-entry is thrown away.
