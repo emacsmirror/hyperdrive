@@ -842,7 +842,7 @@ with no arguments."
                                                            ;; (unless finally-ran-p
                                                            ;;   (funcall finally))
                                                            ;; (message "NONEXISTENT-QUEUE-FINALLY: Calling plz-queue-finally...")
-                                                           (funcall (plz-queue-finally queue))))))))
+                                                           (funcall finally)))))))
                     ;; For nonexistent entries, send requests in parallel.
                     (cl-dotimes (i hyperdrive-queue-size outstanding-nonexistent-requests-p)
                       ;; Send the maximum number of simultaneous requests.
