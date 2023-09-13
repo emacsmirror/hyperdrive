@@ -828,17 +828,16 @@ Once all requests return, call FINALLY with no arguments."
                                             :limit hyperdrive-queue-size
                                             :finally (lambda ()
                                                        (setf outstanding-nonexistent-requests-p nil)
-                                                       (cl-decf limit hyperdrive-queue-size)
-                                                       (let ((last-requested-entry (hyperdrive-copy-tree entry t)))
-                                                         (cl-incf (hyperdrive-entry-version last-requested-entry))
-                                                         (if (hyperdrive-entry-exists-p last-requested-entry)
-                                                             (fill-existent entry)
-                                                           (fill-nonexistent entry))
-                                                         (when finishedp
+                                                       (if finishedp
                                                            ;; If the fill-nonexistent loop stopped
-                                                           ;; prematurely, the fill-entry-queue
-                                                           ;; finalizer won't run: call `finally' here.
-                                                           (funcall finally)))))))
+                                                           ;; prematurely, stop filling and call `finally'.
+                                                           (funcall finally)
+                                                         (cl-decf limit hyperdrive-queue-size)
+                                                         (let ((last-requested-entry (hyperdrive-copy-tree entry t)))
+                                                           (cl-incf (hyperdrive-entry-version last-requested-entry))
+                                                           (if (hyperdrive-entry-exists-p last-requested-entry)
+                                                               (fill-existent entry)
+                                                             (fill-nonexistent entry))))))))
                     ;; For nonexistent entries, send requests in parallel.
                     (cl-dotimes (i hyperdrive-queue-size)
                       ;; Send the maximum number of simultaneous requests.
