@@ -811,8 +811,8 @@ with no arguments."
                     (unless outstanding-nonexistent-requests-p
                       (funcall finally))))
          (limit hyperdrive-fill-version-ranges-limit)
-         (queue (make-plz-queue :limit hyperdrive-queue-size
-                                :finally finally))
+         (fill-entry-queue (make-plz-queue :limit hyperdrive-queue-size
+                                           :finally finally))
          ;; Flag used in the nonexistent-queue finalizer.
          finishedp)
     (cl-labels ((fill-existent (entry)
@@ -873,7 +873,7 @@ with no arguments."
                                 (404
                                  (fill-nonexistent copy-entry))
                                 (_ (signal (car err) (cdr err)))))
-                      :queue queue))))
+                      :queue fill-entry-queue))))
       (fill-entry entry))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
