@@ -524,7 +524,7 @@ a new buffer for ENTRY."
                          ;; alert the user that the entry no longer exists.
                          (progn
                            (switch-to-buffer buffer)
-                           (message "Entry no longer exists!  %s" (hyperdrive-entry-description entry)))
+                           (hyperdrive-message "Entry no longer exists!  %s" (hyperdrive-entry-description entry)))
                        ;; Make and switch to new buffer.
                        (switch-to-buffer (hyperdrive--get-buffer-create entry))))
                     (t
