@@ -41,7 +41,7 @@ modify this GNU manual."
 
 ** Emacs
 
-~hyperdrive.el~ requires [[https://www.gnu.org/software/emacs/][Emacs]] version 27.1 or later.
+~hyperdrive.el~ requires [[https://www.gnu.org/software/emacs/][GNU Emacs]] version 27.1 or later.
 
 ** hyper-gateway
 
