@@ -804,7 +804,7 @@ Returns the ranges cons cell for ENTRY."
 Once all requests return, call FINALLY with no arguments."
   (declare (indent defun))
   (let* ((outstanding-nonexistent-requests-p)
-         (limit hyperdrive-fill-version-ranges-limit)
+         (total-requests-limit hyperdrive-fill-version-ranges-limit)
          (fill-entry-queue (make-plz-queue :limit hyperdrive-queue-limit
                                            :finally (lambda ()
                                                       (unless outstanding-nonexistent-requests-p
@@ -816,7 +816,7 @@ Once all requests return, call FINALLY with no arguments."
                   (setf (hyperdrive-entry-version entry)
                         ;; Fill end of previous range.
                         (1- (car (hyperdrive-entry-version-range entry))))
-                  (if (and (cl-plusp limit)
+                  (if (and (cl-plusp total-requests-limit)
                            (eq 'unknown (hyperdrive-entry-exists-p entry)))
 
                       ;; Recurse backward through history.
@@ -831,7 +831,7 @@ Once all requests return, call FINALLY with no arguments."
                                                            ;; If the fill-nonexistent loop stopped
                                                            ;; prematurely, stop filling and call `finally'.
                                                            (funcall finally)
-                                                         (cl-decf limit hyperdrive-queue-limit)
+                                                         (cl-decf total-requests-limit hyperdrive-queue-limit)
                                                          (let ((last-requested-entry (hyperdrive-copy-tree entry t)))
                                                            (cl-incf (hyperdrive-entry-version last-requested-entry))
                                                            (if (hyperdrive-entry-exists-p last-requested-entry)
@@ -843,7 +843,7 @@ Once all requests return, call FINALLY with no arguments."
                       (cl-decf (hyperdrive-entry-version entry))
                       (unless (and (cl-plusp (hyperdrive-entry-version entry))
                                    (eq 'unknown (hyperdrive-entry-exists-p entry))
-                                   (> limit i))
+                                   (> total-requests-limit i))
                         ;; Stop at the beginning of the history, at a known
                         ;; existent/nonexistent entry, or at the limit.
                         (setf finishedp t)
@@ -860,7 +860,7 @@ Once all requests return, call FINALLY with no arguments."
                       (setf outstanding-nonexistent-requests-p t))))
                 (fill-entry (entry)
                   (let ((copy-entry (hyperdrive-copy-tree entry t)))
-                    (cl-decf limit)
+                    (cl-decf total-requests-limit)
                     (hyperdrive-fill copy-entry
                       ;; `hyperdrive-fill' is only used to fill the version ranges;
                       ;; the filled-entry is thrown away.
