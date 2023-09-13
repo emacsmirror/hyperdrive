@@ -816,18 +816,20 @@ with no arguments."
                       (funcall finally))))
          (limit hyperdrive-fill-version-ranges-limit)
          (queue (make-plz-queue :limit hyperdrive-queue-size
-                                :finally finally)))
+                                :finally finally))
+         ;; Flag used in the nonexistent-queue finalizer.
+         finishedp)
     (cl-labels ((fill-existent (entry)
                   ;; For existent entries, send requests in series.
                   (setf (hyperdrive-entry-version entry)
                         ;; Fill end of previous range.
                         (1- (car (hyperdrive-entry-version-range entry))))
-                  (when (and (cl-plusp limit)
-                             (eq 'unknown (hyperdrive-entry-exists-p entry)))
-                    ;; Recurse backward through history.
-                    (fill-entry entry)
-                    ;; Return non-nil to indicate that a request was made.
-                    t))
+                  (if (and (cl-plusp limit)
+                           (eq 'unknown (hyperdrive-entry-exists-p entry)))
+
+                      ;; Recurse backward through history.
+                      (fill-entry entry)
+                    (setf finishedp t)))
                 (fill-nonexistent (entry)
                   (let ((nonexistent-queue (make-plz-queue
                                             :limit hyperdrive-queue-size
@@ -837,15 +839,14 @@ with no arguments."
                                                        (let ((last-requested-entry (hyperdrive-copy-tree entry t)))
                                                          (cl-incf (hyperdrive-entry-version last-requested-entry))
                                                          ;; (message "ENTRY2: %s %s" (hyperdrive-entry-version entry) (hyperdrive-entry-exists-p last-requested-entry))
-                                                         (unless (if (hyperdrive-entry-exists-p last-requested-entry)
-                                                                     (fill-existent entry)
-                                                                   (fill-nonexistent entry))
-                                                           ;; (unless finally-ran-p
-                                                           ;;   (funcall finally))
-                                                           ;; (message "NONEXISTENT-QUEUE-FINALLY: Calling plz-queue-finally...")
+                                                         (if (hyperdrive-entry-exists-p last-requested-entry)
+                                                             (fill-existent entry)
+                                                           (fill-nonexistent entry))
+                                                         ;; (message "NONEXISTENT-QUEUE-FINALLY: Calling plz-queue-finally...")
+                                                         (when finishedp
                                                            (funcall finally)))))))
                     ;; For nonexistent entries, send requests in parallel.
-                    (cl-dotimes (i hyperdrive-queue-size outstanding-nonexistent-requests-p)
+                    (cl-dotimes (i hyperdrive-queue-size)
                       ;; Send the maximum number of simultaneous requests.
                       (cl-decf (hyperdrive-entry-version entry))
                       ;; (message "ENTRY0: %s %s %s %s" (hyperdrive-entry-version entry) (hyperdrive-entry-exists-p entry) limit i)
@@ -854,7 +855,7 @@ with no arguments."
                                    (> limit i))
                         ;; Stop at the beginning of the history, at a known
                         ;; existent/nonexistent entry, or at the limit.
-                        (cl-return))
+                        (cl-return (setf finishedp t)))
                       ;; (message "ENTRY1: %s %s" (hyperdrive-entry-version entry) (hyperdrive-entry-exists-p entry))
 
                       (hyperdrive-fill (hyperdrive-copy-tree entry t)
