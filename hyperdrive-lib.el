@@ -847,7 +847,8 @@ Once all requests return, call FINALLY with no arguments."
                                    (> limit i))
                         ;; Stop at the beginning of the history, at a known
                         ;; existent/nonexistent entry, or at the limit.
-                        (cl-return (setf finishedp t)))
+                        (setf finishedp t)
+                        (cl-return))
                       (hyperdrive-fill (hyperdrive-copy-tree entry t)
                         :then #'ignore
                         :else (lambda (err)
