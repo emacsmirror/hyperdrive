@@ -838,6 +838,9 @@ with no arguments."
                                                              (fill-existent entry)
                                                            (fill-nonexistent entry))
                                                          (when finishedp
+                                                           ;; If the fill-nonexistent loop stopped
+                                                           ;; prematurely, the fill-entry-queue
+                                                           ;; finalizer won't run: call `finally' here.
                                                            (funcall finally)))))))
                     ;; For nonexistent entries, send requests in parallel.
                     (cl-dotimes (i hyperdrive-queue-size)
