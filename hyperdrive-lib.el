@@ -852,10 +852,7 @@ with no arguments."
                         ;; existent/nonexistent entry, or at the limit.
                         (cl-return (setf finishedp t)))
                       (hyperdrive-fill (hyperdrive-copy-tree entry t)
-                        ;; `hyperdrive-fill' is only used to fill the version ranges;
-                        ;; the filled-entry is thrown away.
-                        :then (lambda (_filled-entry)
-                                )
+                        :then #'ignore
                         :else (lambda (err)
                                 ;; TODO: Better error handling.
                                 (pcase (plz-response-status (plz-error-response err))
