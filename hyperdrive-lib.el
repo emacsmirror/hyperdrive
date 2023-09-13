@@ -388,6 +388,8 @@ If ENTRY is a directory, return a copy with decremented version."
         (when (> version 1)
           (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1- version))))
     (when-let ((previous-entry (hyperdrive-entry-at (1- (car (hyperdrive-entry-version-range entry))) entry)))
+      ;; TODO(A): Check `hyperdrive-version-ranges' to see if there are
+      ;; existing versions prior to nonexistent range
       ;; Entry version is currently its range end, but it should be its version range start.
       (setf (hyperdrive-entry-version previous-entry) (car (hyperdrive-entry-version-range previous-entry)))
       previous-entry)))
