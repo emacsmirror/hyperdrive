@@ -805,7 +805,7 @@ Once all requests return, call FINALLY with no arguments."
   (declare (indent defun))
   (let* ((outstanding-nonexistent-requests-p)
          (limit hyperdrive-fill-version-ranges-limit)
-         (fill-entry-queue (make-plz-queue :limit hyperdrive-queue-size
+         (fill-entry-queue (make-plz-queue :limit hyperdrive-queue-limit
                                            :finally (lambda ()
                                                       (unless outstanding-nonexistent-requests-p
                                                         (funcall finally)))))
@@ -824,21 +824,21 @@ Once all requests return, call FINALLY with no arguments."
                     (setf finishedp t)))
                 (fill-nonexistent (entry)
                   (let ((nonexistent-queue (make-plz-queue
-                                            :limit hyperdrive-queue-size
+                                            :limit hyperdrive-queue-limit
                                             :finally (lambda ()
                                                        (setf outstanding-nonexistent-requests-p nil)
                                                        (if finishedp
                                                            ;; If the fill-nonexistent loop stopped
                                                            ;; prematurely, stop filling and call `finally'.
                                                            (funcall finally)
-                                                         (cl-decf limit hyperdrive-queue-size)
+                                                         (cl-decf limit hyperdrive-queue-limit)
                                                          (let ((last-requested-entry (hyperdrive-copy-tree entry t)))
                                                            (cl-incf (hyperdrive-entry-version last-requested-entry))
                                                            (if (hyperdrive-entry-exists-p last-requested-entry)
                                                                (fill-existent entry)
                                                              (fill-nonexistent entry))))))))
                     ;; For nonexistent entries, send requests in parallel.
-                    (cl-dotimes (i hyperdrive-queue-size)
+                    (cl-dotimes (i hyperdrive-queue-limit)
                       ;; Send the maximum number of simultaneous requests.
                       (cl-decf (hyperdrive-entry-version entry))
                       (unless (and (cl-plusp (hyperdrive-entry-version entry))

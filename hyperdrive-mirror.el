@@ -54,7 +54,7 @@ uploading files, open PARENT-ENTRY."
          (progress-reporter
           (make-progress-reporter (format "Uploading %s files: " (length upload-files-and-urls)) 0 (length upload-files-and-urls)))
          (queue (make-plz-queue
-                 :limit hyperdrive-queue-size
+                 :limit hyperdrive-queue-limit
                  :finally (lambda ()
                             (progress-reporter-done progress-reporter)
                             (hyperdrive-open parent-entry)
@@ -163,7 +163,7 @@ predicate and set NO-CONFIRM to t."
                         `(,source ,hyperdrive :target-dir ,target-dir :predicate ,predicate)
                         hyperdrive-mirror-parent-entry parent-entry)
             (setf metadata-queue (make-plz-queue
-                                  :limit hyperdrive-queue-size
+                                  :limit hyperdrive-queue-limit
                                   :finally (lambda ()
                                              (with-current-buffer buffer
                                                (with-silent-modifications

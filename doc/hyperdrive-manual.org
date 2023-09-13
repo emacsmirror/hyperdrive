@@ -500,12 +500,12 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
   URLs externally. Default uses [[https://mpv.io/][mpv]]. There also exists a preconfigured
   option for [[https://www.videolan.org/vlc/][VLC media player]].
 
-#+vindex: hyperdrive-queue-size
-- ~hyperdrive-queue-size~ :: Default number of request sent to
+#+vindex: hyperdrive-queue-limit
+- ~hyperdrive-queue-limit~ :: Default number of request sent to
   ~hyper-gateway~ at a time in a queues. Defaults to ~20~.
 
 #+vindex: hyperdrive-fill-version-ranges-limit
-- ~hyperdrive-queue-size~ :: Default maximum number of requests when
+- ~hyperdrive-queue-limit~ :: Default maximum number of requests when
   filling version history. Defaults to ~10~.
 
 #+vindex: hyperdrive-render-html

@@ -624,7 +624,7 @@ Universal prefix argument \\[universal-argument] forces
       (hyperdrive-user-error "Can't upload multiple files with same name: %S" (file-name-nondirectory file))))
   (setf target-directory (hyperdrive--format-path target-directory :directoryp t))
   (let ((queue (make-plz-queue
-                :limit hyperdrive-queue-size
+                :limit hyperdrive-queue-limit
                 :finally (lambda ()
                            ;; FIXME: Offer more informative message in case of errors?
                            (hyperdrive-open (hyperdrive-entry-create :hyperdrive hyperdrive

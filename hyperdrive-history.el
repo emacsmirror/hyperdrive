@@ -191,7 +191,7 @@ Universal prefix argument \\[universal-argument] forces
               range-entries))
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
       (display-buffer (current-buffer) hyperdrive-history-display-buffer-action)
-      (setf queue (make-plz-queue :limit hyperdrive-queue-size
+      (setf queue (make-plz-queue :limit hyperdrive-queue-limit
                                   :finally (lambda ()
                                              ;; NOTE: Ensure that the buffer's window is selected,
                                              ;; if it has one.  (Workaround a possible bug in EWOC.)
