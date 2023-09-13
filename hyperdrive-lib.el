@@ -804,12 +804,11 @@ Returns the ranges cons cell for ENTRY."
 Once all requests return, call FINALLY with no arguments."
   (declare (indent defun))
   (let* ((outstanding-nonexistent-requests-p)
-         (finally (lambda ()
-                    (unless outstanding-nonexistent-requests-p
-                      (funcall finally))))
          (limit hyperdrive-fill-version-ranges-limit)
          (fill-entry-queue (make-plz-queue :limit hyperdrive-queue-size
-                                           :finally finally))
+                                           :finally (lambda ()
+                                                      (unless outstanding-nonexistent-requests-p
+                                                        (funcall finally)))))
          ;; Flag used in the nonexistent-queue finalizer.
          finishedp)
     (cl-labels ((fill-existent (entry)
