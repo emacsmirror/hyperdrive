@@ -814,9 +814,10 @@ with no arguments."
                     ;;          outstanding-nonexistent-requests-p)
                     (unless outstanding-nonexistent-requests-p
                       (funcall finally))))
+         (limit hyperdrive-fill-version-ranges-limit)
          (queue (make-plz-queue :limit hyperdrive-queue-size
                                 :finally finally)))
-    (cl-labels ((fill-existent (entry limit)
+    (cl-labels ((fill-existent (entry)
                   ;; For existent entries, send requests in series.
                   (setf (hyperdrive-entry-version entry)
                         ;; Fill end of previous range.
@@ -824,21 +825,21 @@ with no arguments."
                   (when (and (cl-plusp limit)
                              (eq 'unknown (hyperdrive-entry-exists-p entry)))
                     ;; Recurse backward through history.
-                    (fill-entry entry :limit limit)
+                    (fill-entry entry)
                     ;; Return non-nil to indicate that a request was made.
                     t))
-                (fill-nonexistent (entry limit)
+                (fill-nonexistent (entry)
                   (let ((nonexistent-queue (make-plz-queue
                                             :limit hyperdrive-queue-size
                                             :finally (lambda ()
                                                        (setf outstanding-nonexistent-requests-p nil)
-                                                       (let ((new-limit (- limit hyperdrive-queue-size))
-                                                             (last-requested-entry (hyperdrive-copy-tree entry t)))
+                                                       (cl-decf limit hyperdrive-queue-size)
+                                                       (let ((last-requested-entry (hyperdrive-copy-tree entry t)))
                                                          (cl-incf (hyperdrive-entry-version last-requested-entry))
                                                          ;; (message "ENTRY2: %s %s" (hyperdrive-entry-version entry) (hyperdrive-entry-exists-p last-requested-entry))
                                                          (unless (if (hyperdrive-entry-exists-p last-requested-entry)
-                                                                     (fill-existent entry new-limit)
-                                                                   (fill-nonexistent entry new-limit))
+                                                                     (fill-existent entry)
+                                                                   (fill-nonexistent entry))
                                                            ;; (unless finally-ran-p
                                                            ;;   (funcall finally))
                                                            ;; (message "NONEXISTENT-QUEUE-FINALLY: Calling plz-queue-finally...")
@@ -872,19 +873,19 @@ with no arguments."
                                   (_ (signal (car err) (cdr err)))))
                         :queue nonexistent-queue)
                       (setf outstanding-nonexistent-requests-p t))))
-                (fill-entry (entry &key (limit hyperdrive-fill-version-ranges-limit))
-                  (let ((copy-entry (hyperdrive-copy-tree entry t))
-                        (limit (1- limit)))
+                (fill-entry (entry)
+                  (let ((copy-entry (hyperdrive-copy-tree entry t)))
+                    (cl-decf limit)
                     (hyperdrive-fill copy-entry
                       ;; `hyperdrive-fill' is only used to fill the version ranges;
                       ;; the filled-entry is thrown away.
                       :then (lambda (_filled-entry)
-                              (fill-existent copy-entry limit))
+                              (fill-existent copy-entry))
                       :else (lambda (err)
                               (pcase (plz-response-status (plz-error-response err))
                                 ;; FIXME: If plz-error is a curl-error, this block will fail.
                                 (404
-                                 (fill-nonexistent copy-entry limit))
+                                 (fill-nonexistent copy-entry))
                                 (_ (signal (car err) (cdr err)))))
                       :queue queue))))
       (fill-entry entry))))
