@@ -805,8 +805,6 @@ Returns the ranges cons cell for ENTRY."
 Recurse backward from ENTRY's version, filling unknown entries no
 more than LIMIT times.  Once all requests return, call FINALLY
 with no arguments."
-  ;; NOTE: `hyperdrive-fill-version-ranges' is recursive logically but not
-  ;; technically, because each call is in the async callback.
   (declare (indent defun))
   (let* ((outstanding-nonexistent-requests-p)
          (finally (lambda ()
