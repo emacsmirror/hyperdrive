@@ -800,11 +800,8 @@ Returns the ranges cons cell for ENTRY."
 ;;       (funcall then))))
 
 (cl-defun hyperdrive-fill-version-ranges (entry &key finally)
-  ;; FIXME: Docstring.
-  "Asynchronously fill in versions ranges for ENTRY.
-Recurse backward from ENTRY's version, filling unknown entries no
-more than LIMIT times.  Once all requests return, call FINALLY
-with no arguments."
+  "Asynchronously fill in versions ranges before ENTRY.
+Once all requests return, call FINALLY with no arguments."
   (declare (indent defun))
   (let* ((outstanding-nonexistent-requests-p)
          (finally (lambda ()
