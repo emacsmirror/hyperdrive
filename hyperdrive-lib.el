@@ -818,15 +818,15 @@ with no arguments."
                                 :finally finally)))
     (cl-labels ((fill-existent (entry limit)
                   ;; For existent entries, send requests in series.
-                  (when (cl-plusp limit)
-                    ;; Don't use `hyperdrive-entry-previous' here, since it makes a sync request
-                    (pcase-let ((`(,range-start . ,_plist) (hyperdrive-entry-version-range entry)))
-                      (setf (hyperdrive-entry-version entry) (1- range-start))
-                      (when (eq 'unknown (hyperdrive-entry-exists-p entry))
-                        ;; Recurse backward through history.
-                        (fill-entry entry :limit limit)
-                        ;; Return non-nil to indicate that a request was made.
-                        t))))
+                  (setf (hyperdrive-entry-version entry)
+                        ;; Fill end of previous range.
+                        (1- (car (hyperdrive-entry-version-range entry))))
+                  (when (and (cl-plusp limit)
+                             (eq 'unknown (hyperdrive-entry-exists-p entry)))
+                    ;; Recurse backward through history.
+                    (fill-entry entry :limit limit)
+                    ;; Return non-nil to indicate that a request was made.
+                    t))
                 (fill-nonexistent (entry limit)
                   (let ((nonexistent-queue (make-plz-queue
                                             :limit hyperdrive-queue-size
