@@ -583,6 +583,7 @@ the given `plz-queue'"
          :else (lambda (&rest args)
                  (when (hyperdrive-entry-version entry)
                    ;; If request is canceled, the entry may not have a version.
+                   ;; FIXME: Only update nonexistent range on 404.
                    (hyperdrive-update-nonexistent-version-range entry))
                  (apply else args))
          :noquery t))))
