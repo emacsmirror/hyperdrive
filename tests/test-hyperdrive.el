@@ -194,64 +194,96 @@ LINK is an Org link as a string."
     (org-insert-link)
     (buffer-string)))
 
-(defun hyperdrive-test-org-link-roundtrip (contents)
+(cl-defun hyperdrive-test-org-link-roundtrip
+    (contents &key store-from insert-into)
   (let ((org-id-link-to-org-use-id nil)
         (default-directory "/")
         (org-link-file-path-type
          (lambda (path)
            (replace-regexp-in-string (rx bos (optional "file:")
-                                         "/hyper:/") "hyper://" path)))
+                                         "/hyper:/")
+                                     "hyper://" path)))
         ;; (org-link-file-path-type
         ;;  (lambda (path)
         ;;    (string-trim-left (file-relative-name path)
         ;;                      (rx "file:"))))
+        (store-from-entry (hyperdrive-entry-create
+                           :hyperdrive (hyperdrive-create :public-key (car store-from))
+                           :path (cdr store-from)))
+        (insert-into-entry (hyperdrive-entry-create
+                            :hyperdrive (hyperdrive-create :public-key (car insert-into))
+                            :path (cdr insert-into)))
         org-stored-links)
     (with-temp-buffer
       (insert contents)
       (org-mode)
       (hyperdrive-mode)
-      (setq-local hyperdrive-current-entry
-                  (hyperdrive-entry-create
-                   :hyperdrive (hyperdrive-create :public-key "public-key")
-                   :path "/foo/bar"))
+      (setq-local hyperdrive-current-entry store-from-entry)
       (goto-char (point-min))
       (re-search-forward (rx "<|>"))
       (org-store-link nil 'interactive))
     (with-temp-buffer
       (org-mode)
+      (hyperdrive-mode)
+      (setq-local hyperdrive-current-entry insert-into-entry)
       (with-simulated-input "RET"
         (org-insert-link))
       (buffer-substring-no-properties (point-min) (point-max)))))
 
-(hyperdrive-test-org-link-roundtrip
- "<|>
+(ert-deftest hyperdrive-link-same-drive-different-file-before-heading ()
+  "Linking to a file (before the first heading) and on same drive."
+  (should
+   (equal "[[./foo/bar]]"
+          (hyperdrive-test-org-link-roundtrip
+           "<|>
 * Heading A
-* Heading B")
-"[[hyper://public-key/foo/bar]]"
+* Heading B"
+           :store-from '("public-key" . "/foo/bar")
+           :insert-into '("public-key" . "/foo/zot")))))
 
-(hyperdrive-test-org-link-roundtrip
- "* Heading A
+(ert-deftest hyperdrive-link-same-drive-same-file-in-heading-without-custom-id ()
+  "Linking to a heading within the same file (and on same drive)."
+  (should
+   (equal "[[*Heading A]]"
+          (hyperdrive-test-org-link-roundtrip
+           "* Heading A
 <|>
-* Heading B")
-"[[hyper://public-key/foo/bar#Heading%20A][Heading A]]"
+* Heading B"
+           :store-from '("public-key" . "/foo/bar")
+           :insert-into '("public-key" . "/foo/bar")))))
 
-(hyperdrive-test-org-link-roundtrip
- "* Heading A
-:PROPERTIES:
-:ID: deadbeef
-:END:
-<|>
-* Heading B")
-"[[hyper://public-key/foo/bar#deadbeef][Heading A]]"
+(ert-deftest hyperdrive-link-heading-within-drive ()
+  "Linking to a heading within the same drive but different file.")
 
-(hyperdrive-test-org-link-roundtrip
- "* Heading A
-:PROPERTIES:
-:CUSTOM_ID: custom-id
-:END:
-<|>
-* Heading B")
-"[[hyper://public-key/foo/bar#custom-id][Heading A]]"
+;; (hyperdrive-test-org-link-roundtrip
+;;  "<|>
+;; * Heading A
+;; * Heading B")
+;; "[[hyper://public-key/foo/bar]]"
+
+;; (hyperdrive-test-org-link-roundtrip
+;;  "* Heading A
+;; <|>
+;; * Heading B")
+;; "[[hyper://public-key/foo/bar#Heading%20A][Heading A]]"
+
+;; (hyperdrive-test-org-link-roundtrip
+;;  "* Heading A
+;; :PROPERTIES:
+;; :ID: deadbeef
+;; :END:
+;; <|>
+;; * Heading B")
+;; "[[hyper://public-key/foo/bar#deadbeef][Heading A]]"
+
+;; (hyperdrive-test-org-link-roundtrip
+;;  "* Heading A
+;; :PROPERTIES:
+;; :CUSTOM_ID: custom-id
+;; :END:
+;; <|>
+;; * Heading B")
+;; "[[hyper://public-key/foo/bar#custom-id][Heading A]]"
 
 
-"hyper://public-key/foo/bar#deadbeef"
+;; "hyper://public-key/foo/bar#deadbeef"

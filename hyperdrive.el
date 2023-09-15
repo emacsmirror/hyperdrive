@@ -303,10 +303,15 @@ Intended to be passed to `buffer-local-restore-state'.")
                      ;; to allow diffing modified buffer with hyperdrive file
                      buffer-offer-save t))
         (add-hook 'after-change-major-mode-hook
-                  #'hyperdrive--hack-write-contents-functions nil 'local))
+                  #'hyperdrive--hack-write-contents-functions nil 'local)
+        ;; TODO: Consider checking for existing advice before adding our own.
+        (advice-add #'org-insert-link :after #'hyperdrive--org-insert-link-after-advice))
     (buffer-local-restore-state hyperdrive-mode--state)
     (remove-hook 'after-change-major-mode-hook
-                 #'hyperdrive--hack-write-contents-functions 'local)))
+                 #'hyperdrive--hack-write-contents-functions 'local)
+    ;; FIXME: Only remove advice when all hyperdrive-mode buffers are killed.
+    ;; (advice-remove #'org-insert-link #'hyperdrive--org-insert-link)
+    ))
 ;; Making it permanent-local keeps the minor mode active even if the
 ;; user changes the major mode, so the buffer can still be saved back
 ;; to the hyperdrive.

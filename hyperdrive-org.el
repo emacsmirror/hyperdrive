@@ -155,6 +155,17 @@ the current location."
         ;; FIXME: For fuzzy links, passing to hyperdrive-expand-url is a no-no.
         (hyperdrive-open-url (hyperdrive-expand-url (org-element-property :path context)))))))
 
+(defun hyperdrive--org-insert-link-after-advice (&rest _)
+  "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
+  (when (and hyperdrive-mode hyperdrive-current-entry)
+    (let* ((element (org-element-context))
+           (_ (cl-assert (eq 'link (car element))))
+           (entry (hyperdrive-url-entry (org-element-property :raw-link element))))
+      entry
+      
+      )
+    ))
+
 ;;;###autoload
 (with-eval-after-load 'org
   (org-link-set-parameters "hyper"
