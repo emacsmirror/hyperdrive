@@ -546,6 +546,7 @@ filled entry; or if request fails, call ELSE (which is passed to
 `hyperdrive-api', which see.  If QUEUE, make the fill request in
 the given `plz-queue'"
   (declare (indent defun))
+  (message "filling: %s" (hyperdrive-entry-version entry))
   (unless else
     ;; Binding this in the function argument form causes a spurious
     ;; lint warning about a docstring being too long, so we do this
@@ -704,6 +705,7 @@ into one contiguous nonexistent range.
 For the format of each version range, see `hyperdrive-version-ranges'.
 
 Returns the ranges cons cell for ENTRY."
+  (message "UPDATING NONEXISTENT: %s" (hyperdrive-entry-version entry))
   (unless (or (hyperdrive--entry-directory-p entry)
               ;; If there already exists a nonexistent range in
               ;; `hyperdrive-version-ranges', there's nothing to do.
@@ -810,72 +812,135 @@ Once all requests return, call FINALLY with no arguments."
          (total-requests-limit hyperdrive-fill-version-ranges-limit)
          (fill-entry-queue (make-plz-queue :limit hyperdrive-queue-limit
                                            :finally (lambda ()
+                                                      (message "finally?")
                                                       (unless outstanding-nonexistent-requests-p
+                                                        (message "FINALLY")
                                                         (funcall finally)))))
          ;; Flag used in the nonexistent-queue finalizer.
          finishedp)
     (cl-labels ((fill-existent (entry)
-                  ;; For existent entries, send requests in series.
-                  (setf (hyperdrive-entry-version entry)
-                        ;; Fill end of previous range.
-                        (1- (car (hyperdrive-entry-version-range entry))))
-                  (if (and (cl-plusp total-requests-limit)
-                           (eq 'unknown (hyperdrive-entry-exists-p entry)))
+                  (let ((copy-entry (hyperdrive-copy-tree entry t)))
+                    (message "EXISTENT: %s" (hyperdrive-entry-version copy-entry))
+                    ;; For existent entries, send requests in series.
+                    (setf (hyperdrive-entry-version copy-entry)
+                          ;; Fill end of previous range.
+                          (1- (car (hyperdrive-entry-version-range copy-entry))))
+                    (if (and (cl-plusp total-requests-limit)
+                             (eq 'unknown (hyperdrive-entry-exists-p copy-entry)))
 
-                      ;; Recurse backward through history.
-                      (fill-entry entry)
-                    (setf finishedp t)))
+                        ;; Recurse backward through history.
+                        (fill-entry copy-entry)
+                      (setf finishedp t))))
                 (fill-nonexistent (entry)
-                  (let ((nonexistent-queue (make-plz-queue
-                                            :limit hyperdrive-queue-limit
-                                            :finally (lambda ()
-                                                       (setf outstanding-nonexistent-requests-p nil)
-                                                       (if finishedp
-                                                           ;; If the fill-nonexistent loop stopped
-                                                           ;; prematurely, stop filling and call `finally'.
-                                                           (funcall finally)
-                                                         (cl-decf total-requests-limit hyperdrive-queue-limit)
-                                                         (let ((last-requested-entry (hyperdrive-copy-tree entry t)))
-                                                           (cl-incf (hyperdrive-entry-version last-requested-entry))
-                                                           (if (hyperdrive-entry-exists-p last-requested-entry)
-                                                               (fill-existent entry)
-                                                             (fill-nonexistent entry))))))))
+                  (message "NONEXISTENT TOP: %s" (hyperdrive-entry-version entry))
+                  (let ((nonexistent-queue
+                         (make-plz-queue
+                          :limit hyperdrive-queue-limit
+                          :finally (lambda ()
+                                     (message "NONEXISTENT FINALLY: %s" (hyperdrive-entry-version entry))
+                                     (setf outstanding-nonexistent-requests-p nil)
+                                     (if finishedp
+                                         ;; If the fill-nonexistent loop stopped
+                                         ;; prematurely, stop filling and call `finally'.
+                                         (funcall finally)
+                                       (let ((last-requested-entry (hyperdrive-copy-tree entry t))
+                                             ;; (previous-entry (hyperdrive-copy-tree entry t))
+                                             )
+                                         ;; TODO: Create macro to copy a struct AND set one (or more) of its slots.
+                                         (cl-decf (hyperdrive-entry-version last-requested-entry) hyperdrive-queue-limit)
+                                         ;; (cl-decf (hyperdrive-entry-version previous-entry) hyperdrive-queue-limit)
+                                         (message "NONEXISTENT FINALLY LAST REQUESTED: %s" (hyperdrive-entry-version last-requested-entry))
+                                         ;; (message "NONEXISTENT FINALLY PREVIOUS: %s" (hyperdrive-entry-version previous-entry))
+                                         (cl-decf total-requests-limit hyperdrive-queue-limit)
+                                         (pcase-exhaustive (hyperdrive-entry-exists-p last-requested-entry)
+                                           ('t (fill-existent last-requested-entry))
+                                           ('nil (fill-nonexistent last-requested-entry))
+                                           ('unknown
+                                            (hyperdrive-error "Entry should have been filled: %S" last-requested-entry)))))))))
                     ;; For nonexistent entries, send requests in parallel.
                     (cl-dotimes (i hyperdrive-queue-limit)
                       ;; Send the maximum number of simultaneous requests.
-                      (cl-decf (hyperdrive-entry-version entry))
-                      (unless (and (cl-plusp (hyperdrive-entry-version entry))
-                                   (eq 'unknown (hyperdrive-entry-exists-p entry))
-                                   (> total-requests-limit i))
-                        ;; Stop at the beginning of the history, at a known
-                        ;; existent/nonexistent entry, or at the limit.
-                        (setf finishedp t)
-                        (cl-return))
-                      (hyperdrive-fill (hyperdrive-copy-tree entry t)
-                        :then #'ignore
-                        :else (lambda (err)
-                                ;; TODO: Better error handling.
-                                (pcase (plz-response-status (plz-error-response err))
-                                  ;; FIXME: If plz-error is a curl-error, this block will fail.
-                                  (404 nil)
-                                  (_ (signal (car err) (cdr err)))))
-                        :queue nonexistent-queue)
-                      (setf outstanding-nonexistent-requests-p t))))
+                      (let ((prev-entry (hyperdrive-copy-tree entry t)))
+                        (cl-decf (hyperdrive-entry-version prev-entry) (1+ i))
+                        (unless (and (cl-plusp (hyperdrive-entry-version prev-entry))
+                                     (eq 'unknown (hyperdrive-entry-exists-p prev-entry))
+                                     (> total-requests-limit i))
+                          ;; Stop at the beginning of the history, at a known
+                          ;; existent/nonexistent entry, or at the limit.
+                          (setf finishedp t)
+                          (cl-return))
+                        (message "NONEXISTENT AFTER DECREMENT AND RETURN: %s" (hyperdrive-entry-version prev-entry))
+                        (hyperdrive-api 'head (hyperdrive-entry-url prev-entry)
+                          :queue nonexistent-queue
+                          :as 'response
+                          :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
+                                  (let ((range-start-entry (hyperdrive-copy-tree prev-entry t))
+                                        (range-start (string-to-number etag)))
+                                    ;; TODO: No need for range-start-entry
+                                    (message "RANGE-START: %s" range-start)
+                                    (setf (hyperdrive-entry-version range-start-entry) range-start)
+                                    (unless (eq 'unknown (hyperdrive-entry-exists-p range-start-entry))
+                                      ;; Stop if the requested entry has a
+                                      ;; range-start that is already known.
+                                      (message "FINISHED! VERSION: %s, RANGE-START: %s" (hyperdrive-entry-version prev-entry) range-start)
+                                      (setf finishedp t))
+                                    (hyperdrive-update-existent-version-range prev-entry range-start)))
+                          :else (lambda (err)
+                                  (message "NONEXISTENT ELSE: %s" (hyperdrive-entry-version prev-entry))   ;; TODO: Better error handling.
+                                  (pcase (plz-response-status (plz-error-response err))
+                                    ;; FIXME: If plz-error is a curl-error, this block will fail.
+                                    (404 (hyperdrive-update-nonexistent-version-range (hyperdrive-copy-tree prev-entry t)))
+                                    (_ (signal (car err) (cdr err)))))
+                          :noquery t)
+                        (setf outstanding-nonexistent-requests-p t)))))
                 (fill-entry (entry)
+                  (message "FILL-ENTRY: %s" (hyperdrive-entry-version entry))
                   (let ((copy-entry (hyperdrive-copy-tree entry t)))
                     (cl-decf total-requests-limit)
-                    (hyperdrive-fill copy-entry
-                      ;; `hyperdrive-fill' is only used to fill the version ranges;
-                      ;; the filled-entry is thrown away.
-                      :then (lambda (_filled-entry)
-                              (fill-existent copy-entry))
+                    (hyperdrive-api 'head (hyperdrive-entry-url copy-entry)
+                      :queue fill-entry-queue
+                      :as 'response
+                      :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
+                              (let ((range-start-entry (hyperdrive-copy-tree copy-entry t))
+                                    (range-start (string-to-number etag)))
+                                ;; (message "RANGE-START: %s" range-start)
+                                (setf (hyperdrive-entry-version range-start-entry) range-start)
+                                (unless (eq 'unknown (hyperdrive-entry-exists-p range-start-entry))
+                                  ;; Stop if the requested entry has a
+                                  ;; range-start that it already known.
+                                  ;; (message "FINISHED! VERSION: %s, RANGE-START: %s" (hyperdrive-entry-version prev-entry) range-start)
+                                  (setf finishedp t))
+                                (hyperdrive-update-existent-version-range copy-entry range-start)
+                                (fill-existent copy-entry)))
+                      ;; (lambda (&rest _args)
+                      ;;   (cl-decf (hyperdrive-entry-version copy-entry))
+                      ;;   (fill-existent copy-entry))
                       :else (lambda (err)
+                              ;; (message "NONEXISTENT ELSE: %s" (hyperdrive-entry-version copy-entry))   ;; TODO: Better error handling.
                               (pcase (plz-response-status (plz-error-response err))
                                 ;; FIXME: If plz-error is a curl-error, this block will fail.
                                 (404
+                                 (hyperdrive-update-nonexistent-version-range (hyperdrive-copy-tree copy-entry t))
+                                 ;; (cl-decf (hyperdrive-entry-version copy-entry))
                                  (fill-nonexistent copy-entry))
                                 (_ (signal (car err) (cdr err)))))
-                      :queue fill-entry-queue))))
+                      :noquery t)
+                    ;; (message "HERE")
+                    ;; (hyperdrive-fill copy-entry
+                    ;;   ;; `hyperdrive-fill' is only used to fill the version ranges;
+                    ;;   ;; the filled-entry is thrown away.
+                    ;;   :then (lambda (_filled-entry)
+                    ;;           (cl-decf (hyperdrive-entry-version copy-entry))
+                    ;;           (fill-existent copy-entry))
+                    ;;   :else (lambda (err)
+                    ;;           (pcase (plz-response-status (plz-error-response err))
+                    ;;             ;; FIXME: If plz-error is a curl-error, this block will fail.
+                    ;;             (404
+                    ;;              (cl-decf (hyperdrive-entry-version copy-entry))
+                    ;;              (fill-nonexistent copy-entry))
+                    ;;             (_ (signal (car err) (cdr err)))))
+                    ;;   :queue fill-entry-queue)
+                    )))
       (fill-entry entry))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
