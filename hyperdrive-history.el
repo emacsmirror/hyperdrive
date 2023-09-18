@@ -223,12 +223,15 @@ Universal prefix argument \\[universal-argument] forces
   (interactive (list (hyperdrive-history-range-entry-at-point)))
   (pcase-let* ((`(,range . ,entry) range-entry)
                (`(,_range-start . ,(map (:range-end range-end))) range)
-               (range-end-entry (hyperdrive-copy-tree entry)))
+               (range-end-entry (hyperdrive-copy-tree entry))
+               (ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
     (setf (hyperdrive-entry-version range-end-entry) range-end)
+    (overlay-put ov 'display "Loading")
     (hyperdrive-fill-version-ranges range-end-entry
       :finally (lambda ()
                  ;; TODO: Should we open the history buffer for entry
                  ;; or range-end-entry or...?
+                 (delete-overlay ov)
                  (hyperdrive-history entry)))))
 
 (declare-function hyperdrive-diff-file-entries "hyperdrive-diff")
