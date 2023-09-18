@@ -336,7 +336,7 @@ With non-nil VERSION, use it instead of ENTRY's version."
                     (<= range-start version range-end))
                   ranges))))
 
-(defun hyperdrive-entry-exists-p (entry)
+(cl-defun hyperdrive-entry-exists-p (entry &key version)
   "Return status of ENTRY's existence at its version.
 
 - t       :: ENTRY is known to exist.
@@ -344,8 +344,9 @@ With non-nil VERSION, use it instead of ENTRY's version."
 - unknown :: ENTRY is not known to exist.
 
 Does not make a request to the gateway; checks the cached value
-in `hyperdrive-version-ranges'."
-  (if-let ((range (hyperdrive-entry-version-range entry)))
+in `hyperdrive-version-ranges'.
+With non-nil VERSION, use it instead of ENTRY's version."
+  (if-let ((range (hyperdrive-entry-version-range entry :version version)))
       (pcase-let ((`(,_range-start . ,(map (:existsp existsp))) range))
         existsp)
     'unknown))
