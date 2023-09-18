@@ -323,11 +323,13 @@ Intended to be used as hash table key in `hyperdrive-version-ranges'."
            hyperdrive-version-ranges)
   (persist-save 'hyperdrive-version-ranges))
 
-(defun hyperdrive-entry-version-range (entry)
+(cl-defun hyperdrive-entry-version-range (entry &key version)
   "Return the version range containing ENTRY.
-Returns nil when ENTRY is not known to exist at its version."
+Returns nil when ENTRY is not known to exist at its version.
+
+With non-nil VERSION, use it instead of ENTRY's version."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
-               (version (or entry-version (hyperdrive-latest-version hyperdrive)))
+               (version (or version entry-version (hyperdrive-latest-version hyperdrive)))
                (ranges (hyperdrive-entry-version-ranges entry)))
     (when ranges
       (cl-find-if (pcase-lambda (`(,range-start . ,(map (:range-end range-end))))
