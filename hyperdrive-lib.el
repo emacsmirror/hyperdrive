@@ -805,7 +805,7 @@ Returns the ranges cons cell for ENTRY."
 ;;                 (fill-recursively range-end-entry)))))
 ;;       (funcall then))))
 
-(cl-defun hyperdrive-fill-version-ranges (entry &key finally)
+(cl-defun hyperdrive-fill-version-ranges (entry &key (finally #'ignore))
   "Asynchronously fill in versions ranges before ENTRY.
 Once all requests return, call FINALLY with no arguments."
   (declare (indent defun))
