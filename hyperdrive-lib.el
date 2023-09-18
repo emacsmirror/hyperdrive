@@ -819,28 +819,28 @@ Once all requests return, call FINALLY with no arguments."
                                                         (funcall finally)))))
          ;; Flag used in the nonexistent-queue finalizer.
          finishedp)
-    (cl-labels ((fill-existent (version)
+    (cl-labels ((fill-existent-at (version)
                   (let ((prev-range-end (1- (car (hyperdrive-entry-version-range entry :version version)))))
                     (if (and (cl-plusp total-requests-limit)
                              (eq 'unknown (hyperdrive-entry-exists-p entry :version prev-range-end)))
                         ;; Recurse backward through history.
-                        (fill-entry prev-range-end)
+                        (fill-entry-at prev-range-end)
                       (setf finishedp t))))
-                (fill-nonexistent (version)
+                (fill-nonexistent-at (version)
                   (let ((nonexistent-queue
                          (make-plz-queue
                           :limit hyperdrive-queue-limit
                           :finally (lambda ()
                                      (setf outstanding-nonexistent-requests-p nil)
                                      (if finishedp
-                                         ;; If the fill-nonexistent loop stopped
+                                         ;; If the fill-nonexistent-at loop stopped
                                          ;; prematurely, stop filling and call `finally'.
                                          (funcall finally)
                                        (let ((last-requested-version (- version hyperdrive-queue-limit)))
                                          (cl-decf total-requests-limit hyperdrive-queue-limit)
                                          (pcase-exhaustive (hyperdrive-entry-exists-p entry :version last-requested-version)
-                                           ('t (fill-existent last-requested-version))
-                                           ('nil (fill-nonexistent last-requested-version))
+                                           ('t (fill-existent-at last-requested-version))
+                                           ('nil (fill-nonexistent-at last-requested-version))
                                            ('unknown
                                             (hyperdrive-error "Entry should have been filled at version: %s" last-requested-version))))))))
                         ;; Make a copy of the version ranges for use in the HEAD request callback.
@@ -877,7 +877,7 @@ Once all requests return, call FINALLY with no arguments."
                                     (_ (signal (car err) (cdr err)))))
                           :noquery t)
                         (setf outstanding-nonexistent-requests-p t)))))
-                (fill-entry (version)
+                (fill-entry-at (version)
                   (let ((copy-entry (hyperdrive-copy-tree entry t)))
                     (setf (hyperdrive-entry-version copy-entry) version)
                     (cl-decf total-requests-limit)
@@ -894,16 +894,16 @@ Once all requests return, call FINALLY with no arguments."
                                     ;; range-start that was already known
                                     ;; before this batch of parallel requests.
                                     (setf finishedp t)
-                                  (fill-existent version))))
+                                  (fill-existent-at version))))
                       :else (lambda (err)
                               (pcase (plz-response-status (plz-error-response err))
                                 ;; FIXME: If plz-error is a curl-error, this block will fail.
                                 (404
                                  (hyperdrive-update-nonexistent-version-range copy-entry)
-                                 (fill-nonexistent version))
+                                 (fill-nonexistent-at version))
                                 (_ (signal (car err) (cdr err)))))
                       :noquery t))))
-      (fill-entry (hyperdrive-entry-version entry)))))
+      (fill-entry-at (hyperdrive-entry-version entry)))))
 
 (defun hyperdrive-fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
