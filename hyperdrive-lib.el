@@ -549,7 +549,6 @@ filled entry; or if request fails, call ELSE (which is passed to
 `hyperdrive-api', which see.  If QUEUE, make the fill request in
 the given `plz-queue'"
   (declare (indent defun))
-  ;; (message "filling: %s" (hyperdrive-entry-version entry))
   (unless else
     ;; Binding this in the function argument form causes a spurious
     ;; lint warning about a docstring being too long, so we do this
@@ -708,7 +707,6 @@ into one contiguous nonexistent range.
 For the format of each version range, see `hyperdrive-version-ranges'.
 
 Returns the ranges cons cell for ENTRY."
-  (message "UPDATING NONEXISTENT: %s" (hyperdrive-entry-version entry))
   (unless (or (hyperdrive--entry-directory-p entry)
               ;; If there already exists a nonexistent range in
               ;; `hyperdrive-version-ranges', there's nothing to do.
