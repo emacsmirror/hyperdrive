@@ -328,6 +328,7 @@ Intended to be used as hash table key in `hyperdrive-version-ranges'."
 Returns nil when ENTRY is not known to exist at its version.
 
 With non-nil VERSION, use it instead of ENTRY's version."
+  (declare (indent defun))
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
                (version (or version entry-version (hyperdrive-latest-version hyperdrive)))
                (ranges (hyperdrive-entry-version-ranges entry)))
