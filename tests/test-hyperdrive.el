@@ -233,13 +233,13 @@ LINK is an Org link as a string."
 (ert-deftest hyperdrive-link-same-drive-different-file-before-heading ()
   "Linking to a file (before the first heading) and on same drive."
   (should
-   (equal "[[./foo/bar]]"
+   (equal "[[/foo/bar.org]]"
           (hyperdrive-test-org-link-roundtrip
            "<|>
 * Heading A
 * Heading B"
-           :store-from '("public-key" . "/foo/bar")
-           :insert-into '("public-key" . "/foo/zot")))))
+           :store-from '("deadbeef" . "/foo/bar.org")
+           :insert-into '("deadbeef" . "/foo/zot.org")))))
 
 (ert-deftest hyperdrive-link-same-drive-same-file-in-heading-without-custom-id ()
   "Linking to a heading within the same file (and on same drive)."
@@ -249,8 +249,8 @@ LINK is an Org link as a string."
            "* Heading A
 <|>
 * Heading B"
-           :store-from '("public-key" . "/foo/bar")
-           :insert-into '("public-key" . "/foo/bar")))))
+           :store-from '("deadbeef" . "/foo/bar.org")
+           :insert-into '("deadbeef" . "/foo/bar.org")))))
 
 (ert-deftest hyperdrive-link-heading-within-drive ()
   "Linking to a heading within the same drive but different file.")

@@ -317,7 +317,7 @@ Assuming the ~CUSTOM_ID~ is ~heading-a~:
 
 *** Inserting links
 
-+ *NOTE:* Because of limitations in ~org-insert-link~, which is not extensible, we have come to the conclusion that our only feasible option for now is to copy its definition into hyperdrive.el and modify it slightly for hyperdrive-mode buffers; then we will use a /very/ simple advice around ~org-insert-link~ to call our function in ~hyperdrive-mode~ buffers, falling back to the original function in all other cases.  If we are very careful with the advice function (and perhaps deactivate it when not needed), this should be acceptable and should probably work.
++ *NOTE*: After several attempts at using ~:override~ advice, integrating, and modifying ~org-insert-link~, we concluded that those approaches are impractical.  Instead, we'll use ~:after~ advice to allow ~org-insert-link~ to behave normally, and then read the link it inserted and modify it as appropriate for the hyperdrive-backed buffer.
 
 + We first distinguish between whether the buffer we're inserting the link into is within the same hyperdrive, or not.
 

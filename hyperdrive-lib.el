@@ -955,8 +955,10 @@ URL."
                 entry)
                (protocol (when with-protocol
                            "hyper://"))
-               (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                              :format host-format :with-faces with-faces))
+               (host (when host-format
+                       ;; FIXME: Update docstring to say that host-format can be nil to omit it.
+                       (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
+                                                :format host-format :with-faces with-faces)))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)

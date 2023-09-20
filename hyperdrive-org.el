@@ -158,13 +158,27 @@ the current location."
 (defun hyperdrive--org-insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
   (when (and hyperdrive-mode hyperdrive-current-entry)
-    (let* ((element (org-element-context))
-           (_ (cl-assert (eq 'link (car element))))
-           (entry (hyperdrive-url-entry (org-element-property :raw-link element))))
-      entry
+    (let* ((link-element (org-element-context))
+           (_ (cl-assert (eq 'link (car link-element))))
+           (target-entry (hyperdrive-url-entry (org-element-property :raw-link link-element)))
+           (host-format '(public-key)))
+      (when (equal (hyperdrive-public-key (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                   (hyperdrive-public-key (hyperdrive-entry-hyperdrive target-entry)))
+        ;; Link points to same hyperdrive as the file the link is in:
+        ;; make link relative.
+        (setf host-format nil))
+      
+      (delete-region (org-element-property :begin link-element)
+                     (org-element-property :end link-element))
+      (insert (org-link-make-string
+               (hyperdrive--format-entry-url
+                target-entry :with-protocol nil :host-format host-format)))
+      
       
       )
     ))
+
+
 
 ;;;###autoload
 (with-eval-after-load 'org
