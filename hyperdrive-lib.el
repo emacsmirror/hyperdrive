@@ -280,18 +280,6 @@ before making the entry struct."
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
-(defun hyperdrive-entry-equal (a b)
-  "Return non-nil if hyperdrive entries A and B are equal.
-Compares only public key and path."
-  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
-                          (hyperdrive (cl-struct hyperdrive (public-key a-key))))
-               a)
-              ((cl-struct hyperdrive-entry (path b-path)
-                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
-               b))
-    (and (equal a-path b-path)
-         (equal a-key b-key))))
-
 (defun hyperdrive-entry-latest (entry)
   "Return ENTRY at its hyperdrive's latest version, or nil."
   (hyperdrive-entry-at nil entry))
@@ -1320,8 +1308,8 @@ Affected by option `hyperdrive-reuse-buffers', which see."
   "Return non-nil when BUFFER is visiting ENTRY."
   (and (buffer-local-value 'hyperdrive-mode buffer)
        (buffer-local-value 'hyperdrive-current-entry buffer)
-       (hyperdrive-entry-equal entry
-                               (buffer-local-value 'hyperdrive-current-entry buffer))))
+       (hyperdrive-entry-equal-p
+        entry (buffer-local-value 'hyperdrive-current-entry buffer))))
 
 (defun hyperdrive--buffer-for-entry (entry)
   "Return a predicate to match buffer against ENTRY."
@@ -1409,6 +1397,18 @@ When BUFFER is nil, act on current buffer."
     (let ((inhibit-read-only t))
       (delete-all-overlays)
       (set-text-properties (point-min) (point-max) nil))))
+
+(defun hyperdrive-entry-equal-p (a b)
+  "Return non-nil if hyperdrive entries A and B are equal.
+Compares only public key and path."
+  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key a-key))))
+               a)
+              ((cl-struct hyperdrive-entry (path b-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
+               b))
+    (and (equal a-path b-path)
+         (equal a-key b-key))))
 
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here

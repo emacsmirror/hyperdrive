@@ -62,7 +62,7 @@ the metadata has been loaded."
                (metadata-queue) (ewoc) (prev-entry) (prev-point))
     (cl-labels ((goto-entry (entry ewoc)
                   (when-let ((node (hyperdrive-ewoc-find-node ewoc entry
-                                     :predicate #'hyperdrive-entry-equal)))
+                                     :predicate #'hyperdrive-entry-equal-p)))
                     (goto-char (ewoc-location node))))
                 (update-footer (num-filled num-of)
                   (when (zerop (mod num-filled 5))
