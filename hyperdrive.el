@@ -496,7 +496,10 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   (interactive (list hyperdrive-current-entry))
   (if-let ((previous-entry (hyperdrive-entry-previous entry)))
       (hyperdrive-open previous-entry)
-    (hyperdrive-message "At earliest known version of %s" (hyperdrive-entry-description entry :with-version nil))))
+    (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
+                        (hyperdrive-entry-description entry :with-version nil)
+                        (1- (or (hyperdrive-entry-version entry)
+                                (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry)))))))
 
 (defun hyperdrive-next-version (entry)
   "Show next version of ENTRY."
