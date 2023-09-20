@@ -286,10 +286,6 @@ Intended to be passed to `buffer-local-restore-state'.")
   ;; TODO: Consider moving hyperdrive-mode definition to
   ;; hyperdrive-lib.el.  (Since it's used in multiple files.)
   "Minor mode for buffers opened from hyperdrives."
-  ;; TODO: When users change the major-mode inside a buffer visiting hyperdrive file,
-  ;; `hyperdrive-mode' is disabled. We check for `hyperdrive-mode' inside a number of
-  ;; hyperdrive-* functions. Should we instead check for `hyperdrive-current-entry'
-  ;; and disregard the current value of `hyperdrive-mode'?
   :global nil
   :interactive nil
   :group 'hyperdrive
