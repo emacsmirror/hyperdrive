@@ -231,8 +231,6 @@ Universal prefix argument \\[universal-argument] forces
       :finally (lambda ()
                  ;; TODO: Should we open the history buffer for entry
                  ;; or range-end-entry or...?
-                 ;; TODO: The overlay disappears when the buffer is
-                 ;; deleted anyway. Is `delete-overlay' necessary?
                  (delete-overlay ov)
                  (hyperdrive-history entry)))))
 
