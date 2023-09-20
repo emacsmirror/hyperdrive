@@ -296,6 +296,8 @@ For an explanation of the history buffer, see [[*Partial version data]].
 The following keybindings are available inside the directory view by
 default:
 
+#+kindex: hyperdrive-history-fill-version-ranges
+- ~+~ loads version history for unknown ranges
 #+kindex: hyperdrive-history-find-file
 - ~RET~ opens the file at the start of the range at point
 #+kindex: hyperdrive-history-view-file
@@ -498,9 +500,13 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
   URLs externally. Default uses [[https://mpv.io/][mpv]]. There also exists a preconfigured
   option for [[https://www.videolan.org/vlc/][VLC media player]].
 
-#+vindex: hyperdrive-queue-size
-- ~hyperdrive-queue-size~ :: Default number of request sent to
+#+vindex: hyperdrive-queue-limit
+- ~hyperdrive-queue-limit~ :: Default number of request sent to
   ~hyper-gateway~ at a time in a queues. Defaults to ~20~.
+
+#+vindex: hyperdrive-fill-version-ranges-limit
+- ~hyperdrive-queue-limit~ :: Default maximum number of requests when
+  filling version history. Defaults to ~10~.
 
 #+vindex: hyperdrive-render-html
 - ~hyperdrive-render-html~ :: Control how HTML hyperdrive files are

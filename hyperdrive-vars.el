@@ -145,10 +145,14 @@ through a shell)."
                  (const :tag "VLC" "vlc %s")
                  (string :tag "Other command")))
 
-(defcustom hyperdrive-queue-size 20
+(defcustom hyperdrive-queue-limit 20
   "Default size of request queues."
   ;; TODO: Consider a separate option for metadata queue size (e.g. used in the dir handler).
   ;; TODO: Consider a separate option for upload queue size, etc.
+  :type 'natnum)
+
+(defcustom hyperdrive-fill-version-ranges-limit 10
+  "Default maximum number of requests when filling version history."
   :type 'natnum)
 
 (defcustom hyperdrive-render-html t

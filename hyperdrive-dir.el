@@ -81,7 +81,7 @@ the metadata has been loaded."
                 metadata-queue (make-plz-queue
 				;; Experimentation seems to show that a
 				;; queue size of about 20 performs best.
-                                :limit hyperdrive-queue-size
+                                :limit hyperdrive-queue-limit
                                 :finally (lambda ()
                                            (with-current-buffer (ewoc-buffer ewoc)
                                              (with-silent-modifications

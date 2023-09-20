@@ -496,7 +496,10 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   (interactive (list hyperdrive-current-entry))
   (if-let ((previous-entry (hyperdrive-entry-previous entry)))
       (hyperdrive-open previous-entry)
-    (hyperdrive-message "At earliest known version of %s" (hyperdrive-entry-description entry :with-version nil))))
+    (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
+                        (hyperdrive-entry-description entry :with-version nil)
+                        (1- (or (hyperdrive-entry-version entry)
+                                (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry)))))))
 
 (defun hyperdrive-next-version (entry)
   "Show next version of ENTRY."
@@ -624,7 +627,7 @@ Universal prefix argument \\[universal-argument] forces
       (hyperdrive-user-error "Can't upload multiple files with same name: %S" (file-name-nondirectory file))))
   (setf target-directory (hyperdrive--format-path target-directory :directoryp t))
   (let ((queue (make-plz-queue
-                :limit hyperdrive-queue-size
+                :limit hyperdrive-queue-limit
                 :finally (lambda ()
                            ;; FIXME: Offer more informative message in case of errors?
                            (hyperdrive-open (hyperdrive-entry-create :hyperdrive hyperdrive
