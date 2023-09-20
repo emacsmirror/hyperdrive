@@ -383,20 +383,33 @@ hyperdrive's latest-version slot, the final gap is filled."
         (push `(,(1+ final-known-range-end) . (:range-end ,latest-version , :existsp unknown)) ranges)))
     (nreverse ranges)))
 
-(defun hyperdrive-entry-previous (entry)
+(cl-defun hyperdrive-entry-previous (entry &key cache-only)
   "Return ENTRY at its hyperdrive's previous version, or nil.
-If ENTRY is a directory, return a copy with decremented version."
+If ENTRY is a directory, return a copy with decremented version.
+If CACHE-ONLY, don't send a request to the gateway; only check
+`hyperdrive-version-ranges'.  In this case, return value may also
+be \\+`unknown'."
   (if (hyperdrive--entry-directory-p entry)
       (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
                    (version (or version (hyperdrive-latest-version hyperdrive))))
         (when (> version 1)
           (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1- version))))
-    (when-let ((previous-entry (hyperdrive-entry-at (1- (car (hyperdrive-entry-version-range entry))) entry)))
-      ;; TODO(A): Check `hyperdrive-version-ranges' to see if there are
-      ;; existing versions prior to nonexistent range
-      ;; Entry version is currently its range end, but it should be its version range start.
-      (setf (hyperdrive-entry-version previous-entry) (car (hyperdrive-entry-version-range previous-entry)))
-      previous-entry)))
+    (let ((previous-version (1- (car (hyperdrive-entry-version-range entry)))))
+      (pcase-exhaustive (hyperdrive-entry-version-range entry :version previous-version)
+        (`(,range-start . ,(map (:existsp existsp)))
+         (if existsp
+             ;; Return entry if it's known existent.
+             (hyperdrive-entry-at range-start entry)
+           ;; Return nil if it's known nonexistent.
+           nil))
+        ('nil
+         ;; Entry is not known to exist, optionally send a request.
+         (if cache-only
+             'unknown
+           (when-let ((previous-entry (hyperdrive-entry-at previous-version entry)))
+             ;; Entry version is currently its range end, but it should be its version range start.
+             (setf (hyperdrive-entry-version previous-entry) (car (hyperdrive-entry-version-range previous-entry)))
+             previous-entry)))))))
 
 (defun hyperdrive-entry-at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
