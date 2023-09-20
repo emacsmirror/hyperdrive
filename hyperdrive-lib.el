@@ -1410,5 +1410,14 @@ Compares only public key and path."
     (and (equal a-path b-path)
          (equal a-key b-key))))
 
+(defun hyperdrive-equal-p (a b)
+  "Return non-nil if hyperdrives A and B are equal.
+Compares their public keys."
+  (equal (hyperdrive-public-key a) (hyperdrive-public-key b)))
+
+(defun hyperdrive-entry-hyperdrive-equal-p (a b)
+  "Return non-nil if entries A and B have the same hyperdrive."
+  (hyperdrive-equal-p (hyperdrive-entry-hyperdrive a) (hyperdrive-entry-hyperdrive b)))
+
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here
