@@ -150,7 +150,7 @@ Universal prefix argument \\[universal-argument] forces
                        hyperdrive-current-entry)))
   ;; TODO: Highlight range for ENTRY
   (when (hyperdrive--entry-directory-p entry)
-    (hyperdrive-user-error "Directory history not implemented."))
+    (hyperdrive-user-error "Directory history not implemented"))
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                (range-entries
                 (mapcar (lambda (range)

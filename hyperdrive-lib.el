@@ -485,7 +485,7 @@ Sends a request to the gateway for hyperdrive's latest version."
 (cl-defun hyperdrive-open (entry &key then recurse (createp t))
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
-not found. THEN is a function to pass to the handler which will
+not found.  THEN is a function to pass to the handler which will
 be called with no arguments in the buffer opened by the handler.
 When a writable ENTRY is not found and CREATEP is non-nil, create
 a new buffer for ENTRY."
@@ -609,15 +609,15 @@ the given `plz-queue'"
   "Fill ENTRY and its hyperdrive from HEADERS.
 
 The following ENTRY slots are filled:
-- type
-- mtime
-- size
-- hyperdrive (from persisted value if it exists)
+- \\+`type'
+- \\+`mtime'
+- \\+`size'
+- \\+`hyperdrive' (from persisted value if it exists)
 
 The following ENTRY hyperdrive slots are filled:
-- public-key
-- writablep (when headers include Allow)
-- domains (merged with current persisted value)
+- \\+`public-key'
+- \\+`writablep' (when headers include Allow)
+- \\+`domains' (merged with current persisted value)
 
 Returns filled ENTRY."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) entry)
@@ -731,10 +731,10 @@ Returns the ranges cons cell for ENTRY."
                  ((cl-struct hyperdrive-entry hyperdrive path version) entry)
                  (version (or version (hyperdrive-latest-version hyperdrive)))
                  (previous-range (hyperdrive-entry-version-range
-                                  (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1- version))))
+                                   (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1- version))))
                  (`(,previous-range-start . ,(map (:existsp previous-exists-p))) previous-range)
                  (next-range (hyperdrive-entry-version-range
-                              (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1+ version))))
+                               (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version (1+ version))))
                  (`(,next-range-start . ,(map (:existsp next-exists-p) (:range-end next-range-end))) next-range)
                  (range-start (if (and previous-range (null previous-exists-p))
                                   ;; Extend previous nonexistent range
@@ -1317,7 +1317,7 @@ Affected by option `hyperdrive-reuse-buffers', which see."
                                (buffer-local-value 'hyperdrive-current-entry buffer))))
 
 (defun hyperdrive--buffer-for-entry (entry)
-  "Return a predicate to match buffer against ENTRY"
+  "Return a predicate to match buffer against ENTRY."
   ;; TODO: This function is a workaround for bug#65797
   (lambda (buffer) (hyperdrive--entry-buffer-p entry buffer)))
 
@@ -1396,7 +1396,7 @@ When BASE is non-nil, PATH will be expanded against BASE instead."
 
 (defun hyperdrive--clean-buffer (&optional buffer)
   "Remove all local variables, overlays, and text properties in BUFFER.
- When BUFFER is nil, act on current buffer."
+When BUFFER is nil, act on current buffer."
   (with-current-buffer (or buffer (current-buffer))
     (kill-all-local-variables t)
     (let ((inhibit-read-only t))
