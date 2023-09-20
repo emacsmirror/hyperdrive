@@ -278,9 +278,6 @@ without confirmation."
 
 ;;;; hyperdrive-mode
 
-;; TODO: Investigate possibility of not having `hyperdrive-mode', of
-;; just using `hyperdrive-current-entry'.
-
 (defvar-local hyperdrive-mode--state nil
   "Previous state of buffer before `hyperdrive-mode' was activated.
 Intended to be passed to `buffer-local-restore-state'.")
