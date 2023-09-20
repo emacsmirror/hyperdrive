@@ -1145,10 +1145,6 @@ If then, then call THEN with no arguments.  Default handler."
           (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
                        ((map target) etc)
                        (response-buffer (current-buffer)))
-            ;; TODO: Revisit buffer naming/"visiting" (e.g. what
-            ;; happens if the user opens a Hyperdrive file and then
-            ;; saves another buffer to the same location?).  See
-            ;; also: hyperdrive-save, etc.
             (with-current-buffer (hyperdrive--get-buffer-create entry)
               ;; TODO: Don't reload if we're jumping to a link on the
               ;; same page (but ensure that reverting still works).
