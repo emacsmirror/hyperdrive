@@ -1150,14 +1150,15 @@ If then, then call THEN with no arguments.  Default handler."
               ;; same page (but ensure that reverting still works).
               (if (buffer-modified-p)
                   (hyperdrive-message "Buffer modified: %S" (current-buffer))
-                (with-silent-modifications
-                  (erase-buffer)
-                  (insert-buffer-substring response-buffer))
-                (setf buffer-undo-list nil
-                      buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
-                (set-buffer-modified-p nil)
-                (set-visited-file-modtime (current-time))
-                (goto-char (point-min)))
+                (let ((old-point (point)))
+                  (with-silent-modifications
+                    (erase-buffer)
+                    (insert-buffer-substring response-buffer))
+                  (setf buffer-undo-list nil
+                        buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
+                  (set-buffer-modified-p nil)
+                  (set-visited-file-modtime (current-time))
+                  (goto-char old-point)))
               ;; TODO: Option to defer showing buffer.
               ;; It seems that `pop-to-buffer' is moving point, even
               ;; though it shouldn't, so we call it here, before going
