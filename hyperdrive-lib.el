@@ -1400,8 +1400,7 @@ When BUFFER is nil, act on current buffer."
   (with-current-buffer (or buffer (current-buffer))
     (kill-all-local-variables t)
     (let ((inhibit-read-only t))
-      (dolist (overlay (overlays-in (point-min) (point-max)))
-        (delete-overlay overlay))
+      (delete-all-overlays)
       (set-text-properties (point-min) (point-max) nil))))
 
 (provide 'hyperdrive-lib)
