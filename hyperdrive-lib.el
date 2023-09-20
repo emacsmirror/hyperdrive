@@ -1204,8 +1204,9 @@ directory (if its URL ends in \"/\"), pass to
 
 (cl-defun hyperdrive-handler-html (entry &key then)
   "Show ENTRY, where ENTRY is an HTML file.
-Renders HTML with `shr-insert-document', then calls THEN if
-given."
+If `hyperdrive-render-html' is non-nil, render HTML with
+`shr-insert-document', then calls THEN if given.  Otherwise, open
+with `hyperdrive-handler-default'."
   (if hyperdrive-render-html
       (progn
         (eww (hyperdrive-entry-url entry))
