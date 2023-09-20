@@ -138,11 +138,6 @@ and ENTRY's version are nil."
 
 ;;;; Commands
 
-
-;; TODO: Test with deleted and recreated files
-;; TODO: Also test what happens when you write a new version of a file
-;; and attempt to load its history buffer.
-
 ;;;###autoload
 (defun hyperdrive-history (entry)
   "Display version history for current hyperdrive ENTRY.

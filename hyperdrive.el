@@ -434,8 +434,11 @@ overwrite without prompting."
                       (let ((buffer-file-name (hyperdrive-entry-name entry)))
                         (set-auto-mode)))
                     (hyperdrive-mode))
-                  (hyperdrive--fill entry (plz-response-headers response))
+                  ;; NOTE: `hyperdrive-fill-latest-version' must come before
+                  ;; `hyperdrive--fill' because the latter calls
+                  ;; `hyperdrive-update-existent-version-range' internally.
                   (hyperdrive-fill-latest-version hyperdrive)
+                  (hyperdrive--fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
                   ;; FIXME: For large buffers, `buffer-size' returns a different
