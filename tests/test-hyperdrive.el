@@ -259,6 +259,24 @@ LINK is an Org link as a string."
 (ert-deftest hyperdrive-link-heading-within-drive ()
   "Linking to a heading within the same drive but different file.")
 
+;;;;;;; With protocol
+
+;; These links will look the same regardless of hyperdrive or path.
+
+(ert-deftest hyperdrive-link-different-drive-with-custom-id ()
+  (should
+   (equal "[[hyper://deadbeef/foo/bar.org#%3A%3A%23example%20ID]]"
+          (hyperdrive-test-org-link-roundtrip
+           "
+* Heading A
+:PROPERTIES:
+:CUSTOM_ID: example ID
+:END:
+<|>
+* Heading B"
+           :store-from '("deadbeef" . "/foo/bar.org")
+           :insert-into '("fredbeef" . "/foo/bar.org")))))
+
 ;; (hyperdrive-test-org-link-roundtrip
 ;;  "<|>
 ;; * Heading A

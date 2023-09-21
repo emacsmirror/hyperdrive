@@ -162,36 +162,29 @@ the current location."
     (let* ((link-element (org-element-context))
            (_ (cl-assert (eq 'link (car link-element))))
            (target-entry (hyperdrive-url-entry (org-element-property :raw-link link-element)))
-           (host-format '(public-key))
-           (with-path t)
-           (fragment-prefix "#"))
-      (when (equal (hyperdrive-public-key (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
-                   (hyperdrive-public-key (hyperdrive-entry-hyperdrive target-entry)))
-        ;; Link points to same hyperdrive as the file the link is in:
-        ;; make link relative.
-        (setf host-format nil))
-      (when (equal (hyperdrive-entry-path hyperdrive-current-entry)
-                   (hyperdrive-entry-path target-entry))
-        ;; Link points to same file: make link relative.
-        (setf with-path nil)
-        (when (alist-get 'target (hyperdrive-entry-etc target-entry))
-          ;; HACK: Adjust target to give us the result we want.
-          (setf fragment-prefix "")
-          ))
-      
+           (host-format '(public-key)) (with-path t) (with-protocol t)
+           fragment-prefix)
+      (cond ((hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
+             ;; Link points to same file on same hyperdrive: make link
+             ;; relative.
+             (setf with-protocol nil
+                   host-format nil
+                   with-path nil))
+            ((hyperdrive-entry-hyperdrive-equal-p hyperdrive-current-entry target-entry)
+             ;; Link points to same hyperdrive as the file the link is in:
+             ;; make link relative.
+             (setf with-protocol nil
+                   host-format nil))
+            (t
+             (setf fragment-prefix (concat "#" (url-hexify-string "::")))
+             (cl-callf url-hexify-string (alist-get 'target (hyperdrive-entry-etc target-entry)))))
       (delete-region (org-element-property :begin link-element)
                      (org-element-property :end link-element))
       (insert (org-link-make-string
                (hyperdrive--format-entry-url
                 target-entry :fragment-prefix fragment-prefix
                 :with-path with-path
-                :with-protocol nil :host-format host-format)))
-      
-      
-      )
-    ))
-
-
+                :with-protocol with-protocol :host-format host-format))))))
 
 ;;;###autoload
 (with-eval-after-load 'org
