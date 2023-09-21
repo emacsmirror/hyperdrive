@@ -88,13 +88,14 @@ raw URL, not an Org link."
   ;; is (which is very simple; see below).
   (cl-assert (eq 'org-mode major-mode))
   (when hyperdrive-mode
-    (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
-           (heading (org-entry-get (point) "ITEM"))
+    (let* ((heading (org-entry-get (point) "ITEM"))
            (custom-id (org-entry-get (point) "CUSTOM_ID"))
-           (generated-id (org-entry-get (point) "ID"))
-           (fragment (or custom-id generated-id heading))
-           (raw-url (concat url (when fragment
-                                  (concat "#" (url-hexify-string fragment))))))
+           ;; (generated-id (org-entry-get (point) "ID"))
+           (fragment (cond (custom-id (concat "#" custom-id))
+                           (heading (concat "*" heading))))
+           (entry-copy (hyperdrive-copy-tree hyperdrive-current-entry t))
+           (_ (setf (alist-get 'target (hyperdrive-entry-etc entry-copy)) fragment))
+           (raw-url (hyperdrive-entry-url entry-copy)))
       (if raw-url-p
           raw-url
         ;; NOTE: Due to annoying issues with older versions of Emacs
@@ -161,18 +162,30 @@ the current location."
     (let* ((link-element (org-element-context))
            (_ (cl-assert (eq 'link (car link-element))))
            (target-entry (hyperdrive-url-entry (org-element-property :raw-link link-element)))
-           (host-format '(public-key)))
+           (host-format '(public-key))
+           (with-path t)
+           (fragment-prefix "#"))
       (when (equal (hyperdrive-public-key (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
                    (hyperdrive-public-key (hyperdrive-entry-hyperdrive target-entry)))
         ;; Link points to same hyperdrive as the file the link is in:
         ;; make link relative.
         (setf host-format nil))
+      (when (equal (hyperdrive-entry-path hyperdrive-current-entry)
+                   (hyperdrive-entry-path target-entry))
+        ;; Link points to same file: make link relative.
+        (setf with-path nil)
+        (when (alist-get 'target (hyperdrive-entry-etc target-entry))
+          ;; HACK: Adjust target to give us the result we want.
+          (setf fragment-prefix "")
+          ))
       
       (delete-region (org-element-property :begin link-element)
                      (org-element-property :end link-element))
       (insert (org-link-make-string
                (hyperdrive--format-entry-url
-                target-entry :with-protocol nil :host-format host-format)))
+                target-entry :fragment-prefix fragment-prefix
+                :with-path with-path
+                :with-protocol nil :host-format host-format)))
       
       
       )

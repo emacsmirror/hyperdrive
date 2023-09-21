@@ -175,24 +175,12 @@ LINK is an Org link as a string."
 ;;     (dolist (link links)
 ;;       (should (equal )))))
 
-(ert-deftest hyperdrive-org-link-without-protocol-without-file-with-asterisk-target ()
-  (let ((links '(("[[*Heading A]]"))))
-    (dolist (link links)
-      (should (equal (hyperdrive-test-org-link (car link)) "WHAT")))))
+;; (ert-deftest hyperdrive-org-link-without-protocol-without-file-with-asterisk-target ()
+;;   (let ((links '(("[[*Heading A]]"))))
+;;     (dolist (link links)
+;;       (should (equal (hyperdrive-test-org-link (car link)) "WHAT")))))
 
 ;;;;; Inserting links
-
-(defun hyperdrive-test-org-insert-link (link)
-  ;; FIXME: Docstring.
-  "Return the URL that would be inserted by `org-insert-link' for LINK.
-LINK is an Org link as a string."
-  (with-temp-buffer
-    (org-mode)
-    (hyperdrive-mode)
-    ;; TODO: Use org-link-store-props also?
-    (push link org-stored-links)
-    (org-insert-link)
-    (buffer-string)))
 
 (cl-defun hyperdrive-test-org-link-roundtrip
     (contents &key store-from insert-into)
@@ -229,6 +217,22 @@ LINK is an Org link as a string."
       (with-simulated-input "RET"
         (org-insert-link))
       (buffer-substring-no-properties (point-min) (point-max)))))
+
+;;;;;; Test cases
+
+(ert-deftest hyperdrive-link-no-protocol-no-path-same-drive-same-file-custom-id ()
+  (should
+   (equal "[[#example ID]]"
+          (hyperdrive-test-org-link-roundtrip
+           "
+* Heading A
+:PROPERTIES:
+:CUSTOM_ID: example ID
+:END:
+<|>
+* Heading B"
+           :store-from '("deadbeef" . "/foo/bar.org")
+           :insert-into '("deadbeef" . "/foo/bar.org")))))
 
 (ert-deftest hyperdrive-link-same-drive-different-file-before-heading ()
   "Linking to a file (before the first heading) and on same drive."

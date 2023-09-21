@@ -159,8 +159,9 @@ Org doesn't support this for local files (this syntax would point to a heading b
 - State "TODO"       from              [2023-08-29 Tue 15:58]
 :END:
 
-+ [[./links test.org::#Heading%20A]]
-+ [[/links test.org#Heading%20A]]
++ [[./org links.org::#Heading%20A]]
++ [[/org links.org#Heading%20A]]
++ [[#hyperdrive foo][Heading with CUSTOM_ID]]
 
 ***** Regexp searches for file content
 

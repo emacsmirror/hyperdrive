@@ -931,6 +931,8 @@ When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
 
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
+           (fragment-prefix "#")
+           (with-path t)
            (with-protocol t) (with-help-echo t) (with-target t) (with-faces t))
   "Return ENTRY's URL.
 Returns URL formatted like:
@@ -962,13 +964,16 @@ URL."
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)
-                              (concat "#" target)))
+                              (concat fragment-prefix target)))
+               (path (when with-path
+                       path))
                (url (concat protocol host version-part path target-part)))
     (if with-help-echo
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
                                 entry :with-protocol t :host-format '(public-key domain)
-                                :with-help-echo nil :with-target with-target :with-faces with-faces))
+                                :with-path with-path :with-help-echo nil :with-target with-target
+                                :with-faces with-faces))
       url)))
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format with-label (with-faces t))

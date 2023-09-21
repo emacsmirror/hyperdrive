@@ -286,6 +286,57 @@ How to tell which extension caused a peer-open or peer-remove event?
 + Basically, we want to always store a full ~hyper://...~ URL when the user calls ~org-store-link~.
 + Then, when the user calls ~org-insert-link~, we decide based on context (and maybe also on user input) what kind of a link to insert.
 
+*** Terminology
+
++ Link types :: Links that are valid within Org documents.
+
+  - Bracket-less URLs :: Full, ~hyper://~-prefixed URLs
+
+    This type of link may have a search option/fragment, which must be URL-encoded:
+
+    * ~CUSTOM_ID~ :: e.g. ~hyper://deadbeef/foo/bar.org#%3A%3A%23CUSTOM_ID~, which decodes to ~hyper://deadbeef/foo/bar.org#::#CUSTOM_ID~
+
+    * Heading text search option :: With or without ~*~ prefix, e.g.
+
+      - ~hyper://deadbeef/foo/bar.org#%3A%3A%2AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar.org#::*Heading A~
+      - ~hyper://deadbeef/foo/bar.org#%3A%3AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar.org#::Heading A~
+
+  - Bracketed Org links :: Without ~hyper://~ prefix (being careful to note that Org links can in fact point to URLs, but may also be this alternative, non-URL format)
+
+    Org links may be further subdivided into two types:
+
+    + With protocol :: e.g. ~hyper://...~
+
+    + Without protocol :: e.g. ~./foo/bar.org...~
+
+      *NOTE:* This link type has no URL-encoding in any part.
+
+      These Org links are further divided into:
+
+      - Without path :: A link pointing to a heading in the same file.
+
+        This type of link must have a search option/fragment:
+
+        * ~CUSTOM_ID~ :: e.g. ~#CUSTOM_ID~
+
+        * Heading text search option :: With or without ~*~ prefix, e.g.
+
+          + ~*Heading A~
+          + ~Heading A~
+
+      - With path :: A link pointing to a file at a path, starting with ~/~ or ~.~
+
+        This type of link may optionally have a search option/fragment:
+
+        * ~CUSTOM_ID~ :: e.g. ~./foo/bar.org::#CUSTOM_ID~
+
+        * Heading text search option :: With or without ~*~ prefix, e.g.
+
+          + ~./foo/bar.org::*Heading A~
+          + ~./foo/bar.org::Heading A~
+
+
+
 *** Limitations
 
 + Because hyperdrive buffers are not considered file-backed by Emacs, and Org refuses to follow ~ID~-based links in non-file-backed buffers, in a hyperdrive-backed Org buffer, ~ID~-based links /will not/ be followable.  This is a limitation of ~org-id.el~, and it seems unlikely that we would be able to overcome it (unless and until we support hyperdrive using TRAMP's infrastructure).
@@ -309,11 +360,12 @@ Assuming the ~CUSTOM_ID~ is ~heading-a~:
 **** To a heading with only an ~ID~
 
 + Because of the [[*Limitations][Limitations]], if the user stores a link to a heading that does not have a ~CUSTOM_ID~ but only has an ~ID~, we ignore the ~ID~.
-+ We store: ~hyper://public-key/foo.org#::*Heading A~
++ We store: [[hyper://public-key/foo.org#::*Heading A]]
 
 **** To a heading with neither ~CUSTOM_ID~ nor ~ID~
 
-+ We store: ~hyper://public-key/foo.org#::*Heading A~
++ We store: [[hyper://public-key/foo.org#::*Heading A]]
++ Internally, the entry's ~etc~ map's ~target~ key will have the value ~"::*Heading A"~.
 
 *** Inserting links
 
