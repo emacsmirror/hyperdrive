@@ -156,6 +156,11 @@ the current location."
         ;; FIXME: For fuzzy links, passing to hyperdrive-expand-url is a no-no.
         (hyperdrive-open-url (hyperdrive-expand-url (org-element-property :path context)))))))
 
+(defcustom hyperdrive-org-link-full-url nil
+  "Use full \"hyper://\" URLs when storing and inserting links in Org files.
+Otherwise, follow setting in `org-link-file-path-type'."
+  :type 'boolean)
+
 (defun hyperdrive--org-insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
   (when (and hyperdrive-mode hyperdrive-current-entry)

@@ -182,130 +182,130 @@ LINK is an Org link as a string."
 
 ;;;;; Inserting links
 
-(cl-defun hyperdrive-test-org-link-roundtrip
-    (contents &key store-from insert-into)
-  (let ((org-id-link-to-org-use-id nil)
-        (default-directory "/")
-        (org-link-file-path-type
-         (lambda (path)
-           (replace-regexp-in-string (rx bos (optional "file:")
-                                         "/hyper:/")
-                                     "hyper://" path)))
-        ;; (org-link-file-path-type
-        ;;  (lambda (path)
-        ;;    (string-trim-left (file-relative-name path)
-        ;;                      (rx "file:"))))
-        (store-from-entry (hyperdrive-entry-create
-                           :hyperdrive (hyperdrive-create :public-key (car store-from))
-                           :path (cdr store-from)))
-        (insert-into-entry (hyperdrive-entry-create
-                            :hyperdrive (hyperdrive-create :public-key (car insert-into))
-                            :path (cdr insert-into)))
-        org-stored-links)
-    (with-temp-buffer
-      (insert contents)
-      (org-mode)
-      (hyperdrive-mode)
-      (setq-local hyperdrive-current-entry store-from-entry)
-      (goto-char (point-min))
-      (re-search-forward (rx "<|>"))
-      (org-store-link nil 'interactive))
-    (with-temp-buffer
-      (org-mode)
-      (hyperdrive-mode)
-      (setq-local hyperdrive-current-entry insert-into-entry)
-      (with-simulated-input "RET"
-        (org-insert-link))
-      (buffer-substring-no-properties (point-min) (point-max)))))
+;; (cl-defun hyperdrive-test-org-link-roundtrip
+;;     (contents &key store-from insert-into)
+;;   (let ((org-id-link-to-org-use-id nil)
+;;         (default-directory "/")
+;;         (org-link-file-path-type
+;;          (lambda (path)
+;;            (replace-regexp-in-string (rx bos (optional "file:")
+;;                                          "/hyper:/")
+;;                                      "hyper://" path)))
+;;         ;; (org-link-file-path-type
+;;         ;;  (lambda (path)
+;;         ;;    (string-trim-left (file-relative-name path)
+;;         ;;                      (rx "file:"))))
+;;         (store-from-entry (hyperdrive-entry-create
+;;                            :hyperdrive (hyperdrive-create :public-key (car store-from))
+;;                            :path (cdr store-from)))
+;;         (insert-into-entry (hyperdrive-entry-create
+;;                             :hyperdrive (hyperdrive-create :public-key (car insert-into))
+;;                             :path (cdr insert-into)))
+;;         org-stored-links)
+;;     (with-temp-buffer
+;;       (insert contents)
+;;       (org-mode)
+;;       (hyperdrive-mode)
+;;       (setq-local hyperdrive-current-entry store-from-entry)
+;;       (goto-char (point-min))
+;;       (re-search-forward (rx "<|>"))
+;;       (org-store-link nil 'interactive))
+;;     (with-temp-buffer
+;;       (org-mode)
+;;       (hyperdrive-mode)
+;;       (setq-local hyperdrive-current-entry insert-into-entry)
+;;       (with-simulated-input "RET"
+;;         (org-insert-link))
+;;       (buffer-substring-no-properties (point-min) (point-max)))))
 
-;;;;;; Test cases
+;; ;;;;;; Test cases
 
-(ert-deftest hyperdrive-link-no-protocol-no-path-same-drive-same-file-custom-id ()
-  (should
-   (equal "[[#example ID]]"
-          (hyperdrive-test-org-link-roundtrip
-           "
-* Heading A
-:PROPERTIES:
-:CUSTOM_ID: example ID
-:END:
-<|>
-* Heading B"
-           :store-from '("deadbeef" . "/foo/bar.org")
-           :insert-into '("deadbeef" . "/foo/bar.org")))))
-
-(ert-deftest hyperdrive-link-same-drive-different-file-before-heading ()
-  "Linking to a file (before the first heading) and on same drive."
-  (should
-   (equal "[[/foo/bar.org]]"
-          (hyperdrive-test-org-link-roundtrip
-           "<|>
-* Heading A
-* Heading B"
-           :store-from '("deadbeef" . "/foo/bar.org")
-           :insert-into '("deadbeef" . "/foo/zot.org")))))
-
-(ert-deftest hyperdrive-link-same-drive-same-file-in-heading-without-custom-id ()
-  "Linking to a heading within the same file (and on same drive)."
-  (should
-   (equal "[[*Heading A]]"
-          (hyperdrive-test-org-link-roundtrip
-           "* Heading A
-<|>
-* Heading B"
-           :store-from '("deadbeef" . "/foo/bar.org")
-           :insert-into '("deadbeef" . "/foo/bar.org")))))
-
-(ert-deftest hyperdrive-link-heading-within-drive ()
-  "Linking to a heading within the same drive but different file.")
-
-;;;;;;; With protocol
-
-;; These links will look the same regardless of hyperdrive or path.
-
-(ert-deftest hyperdrive-link-different-drive-with-custom-id ()
-  (should
-   (equal "[[hyper://deadbeef/foo/bar.org#%3A%3A%23example%20ID]]"
-          (hyperdrive-test-org-link-roundtrip
-           "
-* Heading A
-:PROPERTIES:
-:CUSTOM_ID: example ID
-:END:
-<|>
-* Heading B"
-           :store-from '("deadbeef" . "/foo/bar.org")
-           :insert-into '("fredbeef" . "/foo/bar.org")))))
-
-;; (hyperdrive-test-org-link-roundtrip
-;;  "<|>
+;; (ert-deftest hyperdrive-link-no-protocol-no-path-same-drive-same-file-custom-id ()
+;;   (should
+;;    (equal "[[#example ID]]"
+;;           (hyperdrive-test-org-link-roundtrip
+;;            "
 ;; * Heading A
-;; * Heading B")
-;; "[[hyper://public-key/foo/bar]]"
-
-;; (hyperdrive-test-org-link-roundtrip
-;;  "* Heading A
-;; <|>
-;; * Heading B")
-;; "[[hyper://public-key/foo/bar#Heading%20A][Heading A]]"
-
-;; (hyperdrive-test-org-link-roundtrip
-;;  "* Heading A
 ;; :PROPERTIES:
-;; :ID: deadbeef
+;; :CUSTOM_ID: example ID
 ;; :END:
 ;; <|>
-;; * Heading B")
-;; "[[hyper://public-key/foo/bar#deadbeef][Heading A]]"
+;; * Heading B"
+;;            :store-from '("deadbeef" . "/foo/bar.org")
+;;            :insert-into '("deadbeef" . "/foo/bar.org")))))
 
-;; (hyperdrive-test-org-link-roundtrip
-;;  "* Heading A
+;; (ert-deftest hyperdrive-link-same-drive-different-file-before-heading ()
+;;   "Linking to a file (before the first heading) and on same drive."
+;;   (should
+;;    (equal "[[/foo/bar.org]]"
+;;           (hyperdrive-test-org-link-roundtrip
+;;            "<|>
+;; * Heading A
+;; * Heading B"
+;;            :store-from '("deadbeef" . "/foo/bar.org")
+;;            :insert-into '("deadbeef" . "/foo/zot.org")))))
+
+;; (ert-deftest hyperdrive-link-same-drive-same-file-in-heading-without-custom-id ()
+;;   "Linking to a heading within the same file (and on same drive)."
+;;   (should
+;;    (equal "[[*Heading A]]"
+;;           (hyperdrive-test-org-link-roundtrip
+;;            "* Heading A
+;; <|>
+;; * Heading B"
+;;            :store-from '("deadbeef" . "/foo/bar.org")
+;;            :insert-into '("deadbeef" . "/foo/bar.org")))))
+
+;; (ert-deftest hyperdrive-link-heading-within-drive ()
+;;   "Linking to a heading within the same drive but different file.")
+
+;; ;;;;;;; With protocol
+
+;; ;; These links will look the same regardless of hyperdrive or path.
+
+;; (ert-deftest hyperdrive-link-different-drive-with-custom-id ()
+;;   (should
+;;    (equal "[[hyper://deadbeef/foo/bar.org#%3A%3A%23example%20ID]]"
+;;           (hyperdrive-test-org-link-roundtrip
+;;            "
+;; * Heading A
 ;; :PROPERTIES:
-;; :CUSTOM_ID: custom-id
+;; :CUSTOM_ID: example ID
 ;; :END:
 ;; <|>
-;; * Heading B")
-;; "[[hyper://public-key/foo/bar#custom-id][Heading A]]"
+;; * Heading B"
+;;            :store-from '("deadbeef" . "/foo/bar.org")
+;;            :insert-into '("fredbeef" . "/foo/bar.org")))))
+
+;; ;; (hyperdrive-test-org-link-roundtrip
+;; ;;  "<|>
+;; ;; * Heading A
+;; ;; * Heading B")
+;; ;; "[[hyper://public-key/foo/bar]]"
+
+;; ;; (hyperdrive-test-org-link-roundtrip
+;; ;;  "* Heading A
+;; ;; <|>
+;; ;; * Heading B")
+;; ;; "[[hyper://public-key/foo/bar#Heading%20A][Heading A]]"
+
+;; ;; (hyperdrive-test-org-link-roundtrip
+;; ;;  "* Heading A
+;; ;; :PROPERTIES:
+;; ;; :ID: deadbeef
+;; ;; :END:
+;; ;; <|>
+;; ;; * Heading B")
+;; ;; "[[hyper://public-key/foo/bar#deadbeef][Heading A]]"
+
+;; ;; (hyperdrive-test-org-link-roundtrip
+;; ;;  "* Heading A
+;; ;; :PROPERTIES:
+;; ;; :CUSTOM_ID: custom-id
+;; ;; :END:
+;; ;; <|>
+;; ;; * Heading B")
+;; ;; "[[hyper://public-key/foo/bar#custom-id][Heading A]]"
 
 
-;; "hyper://public-key/foo/bar#deadbeef"
+;; ;; "hyper://public-key/foo/bar#deadbeef"

@@ -283,8 +283,8 @@ How to tell which extension caused a peer-open or peer-remove event?
 
 ** Design
 
-+ Basically, we want to always store a full ~hyper://...~ URL when the user calls ~org-store-link~.
-+ Then, when the user calls ~org-insert-link~, we decide based on context (and maybe also on user input) what kind of a link to insert.
+1. Basically, we want to always store a full ~hyper://...~ URL when the user calls ~org-store-link~.
+2. Then, when the user calls ~org-insert-link~, we decide based on context (and maybe also on user input) what kind of a link to insert.
 
 *** Terminology
 
