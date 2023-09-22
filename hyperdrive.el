@@ -339,6 +339,9 @@ Interactively, prompts for known hyperdrive and path.
 With universal prefix argument \\[universal-argument], prompts
 for more information.  See `hyperdrive-read-entry' and
 `hyperdrive-complete-hyperdrive'."
+  ;; TODO: Stay in `view-mode' after
+  ;; `hyperdrive-previous-version'/`hyperdrive-next-version'. This may
+  ;; require another minor mode.
   (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
   (hyperdrive-open entry
     ;; `view-buffer' checks the mode-class symbol property of
