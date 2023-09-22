@@ -677,9 +677,9 @@ Returns the latest version number."
 
 (defun hyperdrive--fill-latest-version (hyperdrive headers)
   "Fill the latest version slot in HYPERDRIVE from HEADERS.
-HEADERS must from a HEAD/GET request to a directory, as only
-those requests return the correct ETag header.
-Returns the latest version number."
+HEADERS must from a HEAD/GET request to a directory or a
+PUT/DELETE request to a file, as only those requests return the
+correct ETag header.  Returns the latest version number."
   ;; TODO: Update relevant buffers when hyperdrive latest version
   ;; updates, at the least describe-hyperdrive buffers.
   ;; TODO: Consider updating version range here. First check all the
