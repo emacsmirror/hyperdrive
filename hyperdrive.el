@@ -481,6 +481,7 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   (declare (modes hyperdrive-mode))
   (interactive)
   (if-let ((parent (hyperdrive-parent hyperdrive-current-entry)))
+      ;; TODO: Go to entry in parent directory.
       (hyperdrive-open parent)
     (hyperdrive-user-error "At root directory")))
 
