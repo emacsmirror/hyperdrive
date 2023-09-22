@@ -52,7 +52,7 @@
   (let ((name (intern (concat "hyperdrive-" (symbol-name name)))))
     `(cl-macrolet ((make-url
                      (&rest args) `(concat "hyper://" test-hyperdrive-public-key ,@args))
-                   (hexify (string) `(url-hexify-string ,string (cons ?/ url-unreserved-chars))))
+                   (hexify (string) `(hyperdrive--url-hexify-string ,string)))
        (ert-deftest ,name () ,@args))))
 
 ;;;; Tests
@@ -74,7 +74,7 @@
   (pcase-let (((cl-struct hyperdrive-entry name path)
                (hyperdrive-url-entry (make-url (hexify "/name with spaces")))))
     (should (equal name "name with spaces"))
-    (should (equal path "/name%20with%20spaces")))
+    (should (equal path "/name with spaces")))
   (pcase-let (((cl-struct hyperdrive-entry name path)
                (hyperdrive-url-entry (make-url "/subdir/"))))
     (should (equal name "subdir/"))
@@ -116,6 +116,25 @@
                 (hyperdrive-url-entry (make-url (hexify "/subdir/with-file"))))
                ((cl-struct hyperdrive public-key) hyperdrive))
     (should (equal public-key test-hyperdrive-public-key))))
+
+(hyperdrive-deftest entry-url-round-trip ()
+
+  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry (make-url "")))))
+    (should (equal url (concat "hyper://" test-hyperdrive-public-key "/"))))
+
+  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry (make-url "/")))))
+    (should (equal url (concat "hyper://" test-hyperdrive-public-key "/"))))
+
+  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry (make-url "/name-without-spaces")))))
+    (should (equal url (concat "hyper://" test-hyperdrive-public-key "/name-without-spaces"))))
+
+  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry (make-url "/name%20without%20spaces")))))
+    (should (equal url (concat "hyper://" test-hyperdrive-public-key "/name%20without%20spaces"))))
+
+  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry
+                                    (make-url "/name%20without%20spaces/subdir")))))
+    (should (equal url (concat "hyper://" test-hyperdrive-public-key
+                               "/name%20without%20spaces/subdir")))))
 
 ;;;; Link testing
 

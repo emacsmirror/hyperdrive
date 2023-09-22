@@ -64,7 +64,7 @@ Passes ARGS to `format-message'."
   ;; could theoretically contain a slash, and `file-name-nondirectory'
   ;; would return the wrong value in that case.
   (name nil :documentation "Decoded filename of entry (excluding leading slash).")
-  (path nil :documentation "Encoded path (including leading slash).")
+  (path nil :documentation "Decoded path (including leading slash).")
   (headers nil :documentation "HTTP headers from request.")
   (mtime nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
@@ -96,6 +96,12 @@ domains slot."
                ;; TODO: Fallback to secondary domains?
                (host (or public-key (car domains))))
     (concat "hyper://" host)))
+
+(defun hyperdrive--url-hexify-string (string)
+  "Return STRING having been URL-encoded.
+Calls `url-hexify-string' with the \"/\" character added to
+`url-unreserved-chars'."
+  (url-hexify-string string (cons ?/ url-unreserved-chars)))
 
 (defun hyperdrive-entry-url (entry)
   "Return ENTRY's canonical URL.
@@ -267,14 +273,15 @@ before making the entry struct."
                               (or (gethash host hyperdrive-hyperdrives)
                                   (hyperdrive-create :public-key host)))))
                (etc (when target
-                      (list (cons 'target target))))
+                      (list (cons 'target (url-unhex-string target)))))
                (version (pcase path
                           ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
                            (setf path p)
                            (string-to-number v)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
-    (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version :etc etc)))
+    (hyperdrive-entry-create :hyperdrive hyperdrive :path (url-unhex-string path)
+                             :version version :etc etc)))
 
 ;;;; Entries
 
@@ -964,9 +971,9 @@ URL."
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)
-                              (concat fragment-prefix target)))
+                              (concat fragment-prefix (hyperdrive--url-hexify-string target))))
                (path (when with-path
-                       path))
+                       (hyperdrive--url-hexify-string path)))
                (url (concat protocol host version-part path target-part)))
     (if with-help-echo
         (propertize url

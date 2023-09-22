@@ -42,11 +42,11 @@
   (declare (indent defun))
   (let ((org-id-link-to-org-use-id nil)
         (default-directory "/")
-        (org-link-file-path-type
-         (lambda (path)
-           (replace-regexp-in-string (rx bos (optional "file:")
-                                         "/hyper:/")
-                                     "hyper://" path)))
+        ;; (org-link-file-path-type
+        ;;  (lambda (path)
+        ;;    (replace-regexp-in-string (rx bos (optional "file:")
+        ;;                                  "/hyper:/")
+        ;;                              "hyper://" path)))
         ;; (org-link-file-path-type
         ;;  (lambda (path)
         ;;    (string-trim-left (file-relative-name path)
@@ -91,21 +91,27 @@
 
 ;;     * No search option :: e.g. ~hyper://deadbeef/foo/bar%20quux.org~, which decodes to ~hyper://deadbeef/foo/bar quux.org~
 
-(cl-defmacro hyperdrive-test-org-link (name &key store-body store-from insert-into results)
+(cl-defmacro hyperdrive-test-org-link-deftest (name &key store-body store-from insert-into results)
   "FIXME: Docstring."
-  (declare (indent defun))
-  (let ((test-name (make-symbol (concat "hyperdrive-test-org-link/" (symbol-name name))))
+  (declare (indent defun)
+	   ;; (debug (&define symbolp &rest [&or [":store-body" stringp]
+	   ;; 				      [":store-from" sexp]
+	   ;; 				      [":insert-into" sexp]
+	   ;; 				      [":results" sexp]]))
+	   )
+  (let ((test-name (intern (concat "hyperdrive-test-org-link/" (symbol-name name))))
         body-forms)
     (pcase-dolist ((map (:let vars) (:result result)) results)
       (push `(let (,@vars)
-               (should (equal (hyperdrive-test-org-link-roundtrip ,store-body
-                                :store-from ,store-from :insert-into ,insert-into)
-                              ,result)))
+               (should (equal ,result
+                              (hyperdrive-test-org-link-roundtrip ,store-body
+                                :store-from ,store-from :insert-into ,insert-into))))
             body-forms))
     `(ert-deftest ,test-name ()
+       "Docstring."
        ,@(nreverse body-forms))))
 
-(hyperdrive-test-org-link same-drive-same-file-before-heading
+(hyperdrive-test-org-link-deftest same-drive-same-file-before-heading
   :store-body "<|>
 * Heading A
 :PROPERTIES:
@@ -137,7 +143,7 @@
             
             ( :let ((org-link-file-path-type 'adaptive)
                     (hyperdrive-org-link-full-url nil))
-              :result "[[./foo/bar quux.org]]")
+              :result "[[./bar quux.org]]")
             ( :let ((org-link-file-path-type 'adaptive)
                     (hyperdrive-org-link-full-url t))
               :result "[[hyper://deadbeef/foo/bar%20quux.org]]")))

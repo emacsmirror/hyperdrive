@@ -166,30 +166,71 @@ Otherwise, follow setting in `org-link-file-path-type'."
   (when (and hyperdrive-mode hyperdrive-current-entry)
     (let* ((link-element (org-element-context))
            (_ (cl-assert (eq 'link (car link-element))))
-           (target-entry (hyperdrive-url-entry (org-element-property :raw-link link-element)))
+           (url (org-element-property :raw-link link-element))
+           (target-entry (hyperdrive-url-entry url))
            (host-format '(public-key)) (with-path t) (with-protocol t)
-           fragment-prefix)
-      (cond ((hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
+           fragment-prefix destination)
+      (cond (hyperdrive-org-link-full-url
+             ;; User wants only full "hyper://" URLs.
+             (when (alist-get 'target (hyperdrive-entry-etc target-entry))
+               (setf fragment-prefix (concat "#" (url-hexify-string "::")))
+               (cl-callf url-hexify-string (alist-get 'target (hyperdrive-entry-etc target-entry))))
+             (setf destination (hyperdrive--format-entry-url
+                                target-entry :fragment-prefix fragment-prefix
+                                :with-path with-path
+                                :with-protocol with-protocol :host-format host-format)))
+            ((hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
              ;; Link points to same file on same hyperdrive: make link
              ;; relative.
              (setf with-protocol nil
                    host-format nil
-                   with-path nil))
+                   with-path (if (alist-get 'target (hyperdrive-entry-etc target-entry))
+                                 nil t)
+                   destination (concat "./"
+                                       (file-relative-name
+                                        (hyperdrive-entry-path target-entry)
+                                        (file-name-directory (hyperdrive-entry-path target-entry)))))
+             (pcase org-link-file-path-type
+               ((or 'absolute 'noabbrev)
+                ;; These two options are the same for our purposes,
+                ;; because hyperdrives have no home directory.
+                (setf destination (hyperdrive-entry-path target-entry)))
+               ('adaptive
+                (setf destination
+                      (if (string-prefix-p (file-name-parent-directory
+                                            (hyperdrive-entry-path hyperdrive-current-entry))
+                                           (hyperdrive-entry-path target-entry))
+                          ;; Link points to file in same directory tree: use relative link.
+                          (concat "./"
+                                  (file-relative-name
+                                   (hyperdrive-entry-path target-entry)
+                                   (file-name-directory (hyperdrive-entry-path target-entry))))
+                        (hyperdrive-entry-path target-entry))))
+               ('relative
+                (setf destination
+                      (concat "./"
+                              (file-relative-name
+                               (hyperdrive-entry-path target-entry)
+                               (file-name-directory (hyperdrive-entry-path target-entry))))))))
             ((hyperdrive-entry-hyperdrive-equal-p hyperdrive-current-entry target-entry)
              ;; Link points to same hyperdrive as the file the link is in:
              ;; make link relative.
              (setf with-protocol nil
-                   host-format nil))
+                   host-format nil
+                   destination (concat "./"
+                                       (file-relative-name
+                                        (hyperdrive-entry-path target-entry)
+                                        (file-name-directory (hyperdrive-entry-path target-entry))))))
             (t
              (setf fragment-prefix (concat "#" (url-hexify-string "::")))
-             (cl-callf url-hexify-string (alist-get 'target (hyperdrive-entry-etc target-entry)))))
+             (cl-callf url-hexify-string (alist-get 'target (hyperdrive-entry-etc target-entry)))
+             (setf destination (hyperdrive--format-entry-url
+                                target-entry :fragment-prefix fragment-prefix
+                                :with-path with-path
+                                :with-protocol with-protocol :host-format host-format))))
       (delete-region (org-element-property :begin link-element)
                      (org-element-property :end link-element))
-      (insert (org-link-make-string
-               (hyperdrive--format-entry-url
-                target-entry :fragment-prefix fragment-prefix
-                :with-path with-path
-                :with-protocol with-protocol :host-format host-format))))))
+      (insert (org-link-make-string destination)))))
 
 ;;;###autoload
 (with-eval-after-load 'org
