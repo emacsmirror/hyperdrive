@@ -288,54 +288,51 @@ How to tell which extension caused a peer-open or peer-remove event?
 
 *** Terminology
 
-+ Link types :: Links that are valid within Org documents.
++ Hyperdrive Org links :: Links to hyperdrive files/directories that are valid within Org documents.
 
-  - Bracket-less URLs :: Full, ~hyper://~-prefixed URLs
+  - With protocol prefix
 
-    This type of link may have a search option/fragment, which must be URL-encoded:
+    This link type or may not be surrounded by brackets. It may or may
+    not contain a search option. Path and search option must be
+    URL-encoded and separated by a decoded ~#~.
 
-    * ~CUSTOM_ID~ :: e.g. ~hyper://deadbeef/foo/bar.org#%3A%3A%23CUSTOM_ID~, which decodes to ~hyper://deadbeef/foo/bar.org#::#CUSTOM_ID~
+    * No search option :: e.g. ~hyper://deadbeef/foo/bar%20quux.org~, which decodes to ~hyper://deadbeef/foo/bar quux.org~
 
-    * Heading text search option :: With or without ~*~ prefix, e.g.
+    * ~CUSTOM_ID~ :: e.g.
+      ~hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::#baz zot~
 
-      - ~hyper://deadbeef/foo/bar.org#%3A%3A%2AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar.org#::*Heading A~
-      - ~hyper://deadbeef/foo/bar.org#%3A%3AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar.org#::Heading A~
+    * Heading text search option :: With or without ~*~ (actually [[elisp:(rx "*" (0+ space))]]) prefix, e.g.
 
-  - Bracketed Org links :: Without ~hyper://~ prefix (being careful to note that Org links can in fact point to URLs, but may also be this alternative, non-URL format)
+      - ~hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::*Heading A~
+      - ~hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2A%20%20Heading%20A~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::*  Heading A~
+      - ~hyper://deadbeef/foo/bar%20quux.org#%3A%3AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::Heading A~
 
-    Org links may be further subdivided into two types:
+  - Without protocol prefix
 
-    + With protocol :: e.g. ~hyper://...~
+    This link type must be surrounded by brackets.  It has no
+    URL-encoding in any part. It may or may not contain a path:
 
-    + Without protocol :: e.g. ~./foo/bar.org...~
+    + With path :: A link pointing to a file at a path, starting with ~/~ or ~.~, with or without search option:
 
-      *NOTE:* This link type has no URL-encoding in any part.
+      - No search option :: ~[[/foo/bar quux.org]]~
 
-      These Org links are further divided into:
+      - ~CUSTOM_ID~ :: e.g. ~[[/foo/bar quux.org::#CUSTOM_ID]]~
 
-      - Without path :: A link pointing to a heading in the same file.
+      - Heading text search option :: With or without ~*~ (actually [[elisp:(rx "*" (0+ space))]]) prefix, e.g.
 
-        This type of link must have a search option/fragment:
+        + ~[[/foo/bar quux.org::*Heading A]]~
+        + ~[[/foo/bar quux.org::*  Heading A]]~
+        + ~[[/foo/bar quux.org::Heading A]]~
 
-        * ~CUSTOM_ID~ :: e.g. ~#CUSTOM_ID~
+    + Without path :: A link pointing to a heading in the same file with search option alone:
 
-        * Heading text search option :: With or without ~*~ prefix, e.g.
+      - ~CUSTOM_ID~ :: e.g. ~#CUSTOM_ID~
 
-          + ~*Heading A~
-          + ~Heading A~
+      - Heading text search option :: With or without ~*~ (actually [[elisp:(rx "*" (0+ space))]]) prefix, e.g.
 
-      - With path :: A link pointing to a file at a path, starting with ~/~ or ~.~
-
-        This type of link may optionally have a search option/fragment:
-
-        * ~CUSTOM_ID~ :: e.g. ~./foo/bar.org::#CUSTOM_ID~
-
-        * Heading text search option :: With or without ~*~ prefix, e.g.
-
-          + ~./foo/bar.org::*Heading A~
-          + ~./foo/bar.org::Heading A~
-
-
+        + ~*Heading A~
+        + ~*  Heading A~
+        + ~Heading A~
 
 *** Limitations
 
