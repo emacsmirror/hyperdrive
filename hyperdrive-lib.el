@@ -877,14 +877,21 @@ HYPERDRIVE's public metadata file."
     (hyperdrive-persist hyperdrive)
     hyperdrive))
 
-(cl-defun hyperdrive-delete (entry &key then else)
-  "Delete ENTRY, then call THEN.
-Call ELSE if request fails."
+(cl-defun hyperdrive-delete (entry &key (then #'ignore) (else #'ignore))
+  "Delete ENTRY, then call THEN with response.
+Call ELSE with `plz-error' struct if request fails."
   (declare (indent defun))
-  ;; TODO: update-version-ranges here.
-  ;; TODO: `hyperdrive--fill-latest-version' here.
   (hyperdrive-api 'delete (hyperdrive-entry-url entry)
-    :then then :else else))
+    :as 'response
+    :then (lambda (response)
+            (pcase-let* (((cl-struct plz-response headers) response)
+                         ((map etag) headers)
+                         (nonexistent-entry (hyperdrive-copy-tree entry t)))
+              (setf (hyperdrive-entry-version nonexistent-entry) (string-to-number etag))
+              (hyperdrive--fill-latest-version (hyperdrive-entry-hyperdrive entry) headers)
+              (hyperdrive-update-nonexistent-version-range nonexistent-entry)
+              (funcall then response)))
+    :else else))
 
 (cl-defun hyperdrive-purge-no-prompt (hyperdrive &key then else)
   "Purge all data corresponding to HYPERDRIVE, then call THEN with response.
