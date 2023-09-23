@@ -52,8 +52,7 @@ the metadata has been loaded."
                                   (hyperdrive-entry-create
                                    :hyperdrive hyperdrive
                                    :path (concat (url-unhex-string path) entry-name)
-                                   :version version
-                                   :encode t))
+                                   :version version))
                                 entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
                (header (hyperdrive-dir-column-headers (hyperdrive-entry-description directory-entry)))

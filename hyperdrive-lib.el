@@ -108,13 +108,11 @@ Calls `url-hexify-string' with the \"/\" character added to
 Returns URL with hyperdrive's full public key."
   (hyperdrive--format-entry-url entry :with-protocol t))
 
-(cl-defun hyperdrive-entry-create (&key hyperdrive path version etc encode)
+(cl-defun hyperdrive-entry-create (&key hyperdrive path version etc)
   "Return hyperdrive entry struct from args.
 HYPERDRIVE, VERSION, and ETC are used as-is.  Entry NAME is
-generated from PATH.  When ENCODE is non-nil, encode PATH."
+generated from PATH."
   (setf path (hyperdrive--format-path path))
-  (when encode
-    (cl-callf url-hexify-string path (cons ?/ url-unreserved-chars)))
   (hyperdrive-entry--create
    :hyperdrive hyperdrive
    :path path
@@ -295,7 +293,7 @@ before making the entry struct."
   "Return URI-encoded URL for ENTRY without protocol, version, target, or face.
 Intended to be used as hash table key in `hyperdrive-version-ranges'."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path :encode t)))
+               (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
     (hyperdrive--format-entry-url version-less :host-format '(public-key) :with-protocol nil
                                   :with-help-echo nil :with-target nil :with-faces nil)))
 
@@ -1080,7 +1078,7 @@ version number."
                         (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number current-version)
                       current-version)))
          (path (hyperdrive-read-path :hyperdrive hyperdrive :version version :default default-path)))
-    (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version :encode t)))
+    (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version)))
 
 (defvar hyperdrive--version-history nil
   "Minibuffer history of `hyperdrive-read-version'.")

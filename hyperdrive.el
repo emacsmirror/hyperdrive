@@ -640,12 +640,11 @@ Universal prefix argument \\[universal-argument] forces
                 :finally (lambda ()
                            ;; FIXME: Offer more informative message in case of errors?
                            (hyperdrive-open (hyperdrive-entry-create :hyperdrive hyperdrive
-                                                                     :path target-directory
-                                                                     :encode t))
+                                                                     :path target-directory))
                            (hyperdrive-message "Uploaded %s files." (length files))))))
     (dolist (file files)
       (let* ((path (file-name-concat target-directory (file-name-nondirectory file)))
-             (entry (hyperdrive-entry-create :hyperdrive hyperdrive :path path :encode t)))
+             (entry (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
         ;; TODO: Handle failures? Retry?
         (hyperdrive-upload-file file entry :queue queue :then #'ignore)))
     (plz-run queue)))

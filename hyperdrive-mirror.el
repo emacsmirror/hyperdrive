@@ -139,7 +139,7 @@ predicate and set NO-CONFIRM to t."
       (setf predicate (lambda (filename)
                         (string-match-p regexp filename)))))
   (let* ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
-         (parent-entry (hyperdrive-entry-create :hyperdrive hyperdrive :path target-dir :encode t))
+         (parent-entry (hyperdrive-entry-create :hyperdrive hyperdrive :path target-dir))
          (buffer (unless no-confirm
                    (get-buffer-create "*hyperdrive-mirror*")))
          (num-filled 0)
@@ -177,8 +177,7 @@ predicate and set NO-CONFIRM to t."
             (dolist (file files)
               (let ((entry (hyperdrive-entry-create
                             :hyperdrive hyperdrive
-                            :path (expand-file-name (file-relative-name file source) target-dir)
-                            :encode t)))
+                            :path (expand-file-name (file-relative-name file source) target-dir))))
                 (hyperdrive-fill entry :queue metadata-queue
                   :then (lambda (entry)
                           (let* ((drive-mtime (hyperdrive-entry-mtime entry))
