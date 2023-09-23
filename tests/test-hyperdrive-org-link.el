@@ -114,6 +114,9 @@
               body-forms)))
     `(progn ,@(nreverse body-forms))))
 
+;; TODO: We'll need at least one test for inserting a link into an Org
+;; file that is /not/ in a hyperdrive.
+
 (hyperdrive-test-org-link-deftest same-drive-same-file-before-heading
   :store-body "<|>
 * Heading A
@@ -150,6 +153,79 @@
             ( :let ((org-link-file-path-type 'adaptive)
                     (hyperdrive-org-link-full-url t))
               :result "[[hyper://deadbeef/foo/bar%20quux.org]]")))
+
+(hyperdrive-test-org-link-deftest same-drive-same-file-on-heading-with-custom-id
+  :store-body "
+* Heading A
+:PROPERTIES:
+:CUSTOM_ID: baz zot
+:END:
+<|>
+* Heading B"
+  :store-from '("deadbeef" . "/foo/bar quux.org")
+  :insert-into '("deadbeef" . "/foo/bar quux.org")
+  :results (( :let ((org-link-file-path-type 'relative)
+                    (hyperdrive-org-link-full-url nil))
+              :result "[[#baz zot]]")
+            ( :let ((org-link-file-path-type 'relative)
+                    (hyperdrive-org-link-full-url t))
+              :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot]]")
+
+            ( :let ((org-link-file-path-type 'absolute)
+                    (hyperdrive-org-link-full-url nil))
+              :result "[[#baz zot]]")
+            ( :let ((org-link-file-path-type 'absolute)
+                    (hyperdrive-org-link-full-url t))
+              :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot]]")
+
+            ( :let ((org-link-file-path-type 'noabbrev)
+                    (hyperdrive-org-link-full-url nil))
+              :result "[[#baz zot]]")
+            ( :let ((org-link-file-path-type 'noabbrev)
+                    (hyperdrive-org-link-full-url t))
+              :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot]]")
+
+            ( :let ((org-link-file-path-type 'adaptive)
+                    (hyperdrive-org-link-full-url nil))
+              :result "[[#baz zot]]")
+            ( :let ((org-link-file-path-type 'adaptive)
+                    (hyperdrive-org-link-full-url t))
+              :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot]]")))
+
+(hyperdrive-test-org-link-deftest same-drive-same-file-on-heading-no-custom-id
+  :store-body "
+* Heading A
+<|>
+* Heading B"
+  :store-from '("deadbeef" . "/foo/bar quux.org")
+  :insert-into '("deadbeef" . "/foo/bar quux.org")
+  :results (( :let ((org-link-file-path-type 'relative)
+                    (hyperdrive-org-link-full-url nil))
+              :result "[[*Heading A]]")
+            ( :let ((org-link-file-path-type 'relative)
+                    (hyperdrive-org-link-full-url t))
+              :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A]]")
+
+            ( :let ((org-link-file-path-type 'absolute)
+                    (hyperdrive-org-link-full-url nil))
+              :result "[[*Heading A]]")
+            ( :let ((org-link-file-path-type 'absolute)
+                    (hyperdrive-org-link-full-url t))
+              :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A]]")
+
+            ( :let ((org-link-file-path-type 'noabbrev)
+                    (hyperdrive-org-link-full-url nil))
+              :result "[[*Heading A]]")
+            ( :let ((org-link-file-path-type 'noabbrev)
+                    (hyperdrive-org-link-full-url t))
+              :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A]]")
+
+            ( :let ((org-link-file-path-type 'adaptive)
+                    (hyperdrive-org-link-full-url nil))
+              :result "[[*Heading A]]")
+            ( :let ((org-link-file-path-type 'adaptive)
+                    (hyperdrive-org-link-full-url t))
+              :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A]]")))
 
 ;;     * ~CUSTOM_ID~ :: e.g.
 ;;       ~hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::#baz zot~

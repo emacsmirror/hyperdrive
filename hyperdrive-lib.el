@@ -955,6 +955,7 @@ number in URL.
 Note that, if HOST-FORMAT includes values other than `public-key'
 and `domain', the resulting URL may not be a valid hyperdrive
 URL."
+  ;; FIXME: Update docstring to explain that the URL parts are URL-encoded when appropriate.
   ;; NOTE: Entries may have only a domain, not a public key yet, so we
   ;; include `domain' in HOST-FORMAT's default value.  The public key
   ;; will be filled in later.

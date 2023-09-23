@@ -36,6 +36,12 @@
 (declare-function hyperdrive-open-url "hyperdrive")
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
+(defcustom hyperdrive-org-link-full-url nil
+  "Use full \"hyper://\" URLs when storing and inserting links in Org files.
+Otherwise, follow setting in `org-link-file-path-type'."
+  :type 'boolean
+  :group 'hyperdrive)
+
 ;; TODO: Determine whether it's really necessary to autoload these two functions.
 
 ;;;###autoload
@@ -156,11 +162,6 @@ the current location."
         ;; FIXME: For fuzzy links, passing to hyperdrive-expand-url is a no-no.
         (hyperdrive-open-url (hyperdrive-expand-url (org-element-property :path context)))))))
 
-(defcustom hyperdrive-org-link-full-url nil
-  "Use full \"hyper://\" URLs when storing and inserting links in Org files.
-Otherwise, follow setting in `org-link-file-path-type'."
-  :type 'boolean)
-
 (defun hyperdrive--org-insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
   (when (and hyperdrive-mode hyperdrive-current-entry)
@@ -173,8 +174,7 @@ Otherwise, follow setting in `org-link-file-path-type'."
       (cond (hyperdrive-org-link-full-url
              ;; User wants only full "hyper://" URLs.
              (when (alist-get 'target (hyperdrive-entry-etc target-entry))
-               (setf fragment-prefix (concat "#" (url-hexify-string "::")))
-               (cl-callf url-hexify-string (alist-get 'target (hyperdrive-entry-etc target-entry))))
+               (setf fragment-prefix (concat "#" (url-hexify-string "::"))))
              (setf destination (hyperdrive--format-entry-url
                                 target-entry :fragment-prefix fragment-prefix
                                 :with-path with-path
@@ -182,42 +182,34 @@ Otherwise, follow setting in `org-link-file-path-type'."
             ((hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
              ;; Link points to same file on same hyperdrive: make link
              ;; relative.
-             (setf with-protocol nil
-                   host-format nil
-                   with-path (if (alist-get 'target (hyperdrive-entry-etc target-entry))
-                                 nil t)
-                   destination (concat "./"
-                                       (file-relative-name
-                                        (hyperdrive-entry-path target-entry)
-                                        (file-name-directory (hyperdrive-entry-path target-entry)))))
-             (pcase org-link-file-path-type
-               ((or 'absolute 'noabbrev)
-                ;; These two options are the same for our purposes,
-                ;; because hyperdrives have no home directory.
-                (setf destination (hyperdrive-entry-path target-entry)))
-               ('adaptive
-                (setf destination
-                      (if (string-prefix-p (file-name-parent-directory
-                                            (hyperdrive-entry-path hyperdrive-current-entry))
-                                           (hyperdrive-entry-path target-entry))
-                          ;; Link points to file in same directory tree: use relative link.
-                          (concat "./"
-                                  (file-relative-name
-                                   (hyperdrive-entry-path target-entry)
-                                   (file-name-directory (hyperdrive-entry-path target-entry))))
-                        (hyperdrive-entry-path target-entry))))
-               ('relative
-                (setf destination
-                      (concat "./"
-                              (file-relative-name
-                               (hyperdrive-entry-path target-entry)
-                               (file-name-directory (hyperdrive-entry-path target-entry))))))))
+             (setf destination
+                   (or (alist-get 'target (hyperdrive-entry-etc target-entry))
+                       (pcase org-link-file-path-type
+                         ((or 'absolute 'noabbrev)
+                          ;; These two options are the same for our purposes,
+                          ;; because hyperdrives have no home directory.
+                          (setf destination (hyperdrive-entry-path target-entry)))
+                         ('adaptive
+                          (setf destination
+                                (if (string-prefix-p (file-name-parent-directory
+                                                      (hyperdrive-entry-path hyperdrive-current-entry))
+                                                     (hyperdrive-entry-path target-entry))
+                                    ;; Link points to file in same directory tree: use relative link.
+                                    (concat "./"
+                                            (file-relative-name
+                                             (hyperdrive-entry-path target-entry)
+                                             (file-name-directory (hyperdrive-entry-path target-entry))))
+                                  (hyperdrive-entry-path target-entry))))
+                         ('relative
+                          (setf destination
+                                (concat "./"
+                                        (file-relative-name
+                                         (hyperdrive-entry-path target-entry)
+                                         (file-name-directory (hyperdrive-entry-path target-entry))))))))))
             ((hyperdrive-entry-hyperdrive-equal-p hyperdrive-current-entry target-entry)
              ;; Link points to same hyperdrive as the file the link is in:
              ;; make link relative.
-             (setf with-protocol nil
-                   host-format nil
-                   destination (concat "./"
+             (setf destination (concat "./"
                                        (file-relative-name
                                         (hyperdrive-entry-path target-entry)
                                         (file-name-directory (hyperdrive-entry-path target-entry))))))
