@@ -215,7 +215,6 @@ the current location."
                                         (file-name-directory (hyperdrive-entry-path target-entry))))))
             (t
              (setf fragment-prefix (concat "#" (url-hexify-string "::")))
-             (cl-callf url-hexify-string (alist-get 'target (hyperdrive-entry-etc target-entry)))
              (setf destination (hyperdrive--format-entry-url
                                 target-entry :fragment-prefix fragment-prefix
                                 :with-path with-path
