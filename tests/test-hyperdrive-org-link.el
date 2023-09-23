@@ -99,17 +99,20 @@
 	   ;; 				      [":insert-into" sexp]
 	   ;; 				      [":results" sexp]]))
 	   )
-  (let ((test-name (intern (concat "hyperdrive-test-org-link/" (symbol-name name))))
-        body-forms)
+  (let (body-forms)
     (pcase-dolist ((map (:let vars) (:result result)) results)
-      (push `(let (,@vars)
-               (should (equal ,result
-                              (hyperdrive-test-org-link-roundtrip ,store-body
-                                :store-from ,store-from :insert-into ,insert-into))))
-            body-forms))
-    `(ert-deftest ,test-name ()
-       "Docstring."
-       ,@(nreverse body-forms))))
+      (let* ((olfpt (cadadr (assoc 'org-link-file-path-type vars)))
+             (holfu (cadr (assoc 'hyperdrive-org-link-full-url vars)))
+             (test-name (intern (format "hyperdrive-test-org-link/%s/%s-%s"
+                                        name olfpt holfu))))
+        (push `(ert-deftest ,test-name ()
+                 "Docstring."
+                 (let (,@vars)
+                   (should (equal ,result
+                                  (hyperdrive-test-org-link-roundtrip ,store-body
+                                    :store-from ,store-from :insert-into ,insert-into)))))
+              body-forms)))
+    `(progn ,@(nreverse body-forms))))
 
 (hyperdrive-test-org-link-deftest same-drive-same-file-before-heading
   :store-body "<|>
