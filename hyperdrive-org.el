@@ -186,25 +186,29 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
   (let* ((url (org-element-property :raw-link link-element))
          (target-entry (hyperdrive-url-entry url))
          (search-option (alist-get 'target (hyperdrive-entry-etc target-entry)))
-         (host-format '(public-key)) (with-path t) (with-protocol t)
-         fragment-prefix)
-
-    (when (and search-option
-               (hyperdrive-entry-equal-p hyperdrive-current-entry target-entry))
-      ;; Search option alone
-      (cl-return-from hyperdrive--org-normalize-link search-option))
+         (host-format '(public-key)) (with-path t) (with-protocol t))
 
     (when (or hyperdrive-org-link-full-url
               (not (hyperdrive-entry-hyperdrive-equal-p
                     hyperdrive-current-entry target-entry)))
       ;; Full "hyper://" URL
       (when search-option
-        (setf fragment-prefix (concat "#" (url-hexify-string "::"))))
+        ;; When linking to a different file, prefix search option with "::".
+        (cl-callf2 concat "::" (alist-get 'target (hyperdrive-entry-etc target-entry))))
       (cl-return-from hyperdrive--org-normalize-link
         (hyperdrive--format-entry-url
-         target-entry :fragment-prefix fragment-prefix
+         target-entry
          :with-path with-path
          :with-protocol with-protocol :host-format host-format)))
+
+    (when (and search-option
+               (hyperdrive-entry-equal-p hyperdrive-current-entry target-entry))
+      ;; Search option alone
+      (cl-return-from hyperdrive--org-normalize-link search-option))
+
+    (when search-option
+      ;; When linking to a different file, prefix search option with "::".
+      (cl-callf2 concat "::" search-option))
 
     (let ((adaptive-target-p
            ;; See the `adaptive' option in `org-link-file-path-type'.
@@ -213,22 +217,21 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
              (hyperdrive-entry-path hyperdrive-current-entry))
             (hyperdrive-entry-path target-entry))))
       (hyperdrive--ensure-dot-slash-prefix-path
-       (apply #'concat
-              (pcase org-link-file-path-type
-                ;; TODO: Handle `org-link-file-path-type' as a function.
-                ((or 'absolute
-                     ;; TODO: Consider special-casing `noabbrev' - who knows?
-                     ;; `noabbrev' is like `absolute' because hyperdrives have
-                     ;; no home directory.
-                     'noabbrev
-                     (and 'adaptive (guard (not adaptive-target-p))))
-                 (hyperdrive-entry-path target-entry))
-                ((or 'relative (and 'adaptive (guard adaptive-target-p)))
-                 (file-relative-name
-                  (hyperdrive-entry-path target-entry)
-                  (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))
-              (when search-option
-                (list "::" search-option)))))))
+       (concat
+        (pcase org-link-file-path-type
+          ;; TODO: Handle `org-link-file-path-type' as a function.
+          ((or 'absolute
+               ;; TODO: Consider special-casing `noabbrev' - who knows?
+               ;; `noabbrev' is like `absolute' because hyperdrives have
+               ;; no home directory.
+               'noabbrev
+               (and 'adaptive (guard (not adaptive-target-p))))
+           (hyperdrive-entry-path target-entry))
+          ((or 'relative (and 'adaptive (guard adaptive-target-p)))
+           (file-relative-name
+            (hyperdrive-entry-path target-entry)
+            (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))
+        search-option)))))
 
 ;;;###autoload
 (with-eval-after-load 'org
