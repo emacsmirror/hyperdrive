@@ -172,36 +172,28 @@ the current location."
 (defun hyperdrive--org-insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
   (when (and hyperdrive-mode hyperdrive-current-entry)
-    (let ((link-element (org-element-context)))
-      (cl-assert (eq 'link (car link-element)))
-      (delete-region (org-element-property :begin link-element)
-                     (org-element-property :end link-element))
-      (insert (org-link-make-string (hyperdrive--org-normalize-link link-element))))))
+    (let* ((link-element (org-element-context))
+           (_ (cl-assert (eq 'link (car link-element))))
+           (url (org-element-property :raw-link link-element))
+           (target-entry (hyperdrive-url-entry url)))
+      (when (and (not hyperdrive-org-link-full-url)
+                 (hyperdrive-entry-hyperdrive-equal-p
+                  hyperdrive-current-entry target-entry))
+        (delete-region (org-element-property :begin link-element)
+                       (org-element-property :end link-element))
+        (insert (org-link-make-string
+                 (hyperdrive--org-shorthand-link target-entry)))))))
 
-(cl-defun hyperdrive--org-normalize-link (link-element)
-  "Return normalized copy of \"hyper://\" LINK-ELEMENT.
+(cl-defun hyperdrive--org-shorthand-link (entry)
+  "Return a non-\"hyper://\"-prefixed link to ENTRY.
 Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'.
 FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
   (cl-assert hyperdrive-current-entry)
-  (let* ((url (org-element-property :raw-link link-element))
-         (target-entry (hyperdrive-url-entry url))
-         (search-option (alist-get 'target (hyperdrive-entry-etc target-entry))))
-
-    (when (or hyperdrive-org-link-full-url
-              (not (hyperdrive-entry-hyperdrive-equal-p
-                    hyperdrive-current-entry target-entry)))
-      ;; Full "hyper://" URL
-      (when search-option
-        ;; When linking to a different file, prefix search option with "::".
-        (cl-callf2 concat "::"
-                   (alist-get 'target (hyperdrive-entry-etc target-entry))))
-      (cl-return-from hyperdrive--org-normalize-link
-        (hyperdrive-entry-url target-entry)))
-
+  (let ((search-option (alist-get 'target (hyperdrive-entry-etc entry))))
     (when (and search-option
-               (hyperdrive-entry-equal-p hyperdrive-current-entry target-entry))
+               (hyperdrive-entry-equal-p hyperdrive-current-entry entry))
       ;; Search option alone
-      (cl-return-from hyperdrive--org-normalize-link search-option))
+      (cl-return-from hyperdrive--org-shorthand-link search-option))
 
     (when search-option
       ;; When linking to a different file, prefix search option with "::".
@@ -212,7 +204,7 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
            (string-prefix-p
             (file-name-directory
              (hyperdrive-entry-path hyperdrive-current-entry))
-            (hyperdrive-entry-path target-entry))))
+            (hyperdrive-entry-path entry))))
       (hyperdrive--ensure-dot-slash-prefix-path
        (concat
         (pcase org-link-file-path-type
@@ -223,10 +215,10 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
                ;; no home directory.
                'noabbrev
                (and 'adaptive (guard (not adaptive-target-p))))
-           (hyperdrive-entry-path target-entry))
+           (hyperdrive-entry-path entry))
           ((or 'relative (and 'adaptive (guard adaptive-target-p)))
            (file-relative-name
-            (hyperdrive-entry-path target-entry)
+            (hyperdrive-entry-path entry)
             (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))
         search-option)))))
 
