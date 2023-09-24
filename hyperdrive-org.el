@@ -37,8 +37,15 @@
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
 (defcustom hyperdrive-org-link-full-url nil
-  "Use full \"hyper://\" URLs when storing and inserting links in Org files.
-Otherwise, follow setting in `org-link-file-path-type'."
+  "Always insert full \"hyper://\" URLs when linking to hyperdrive files.
+Otherwise, when inserting a link to the same hyperdrive Org file,
+
+- insert a relative path link when before the first heading, or
+- insert a heading text or CUSTOM_ID link when after the first heading
+
+Otherwise, when inserting a link to a different file in the same
+hyperdrive, insert a relative or absolute link according to
+`org-link-file-path-type'."
   :type 'boolean
   :group 'hyperdrive)
 
