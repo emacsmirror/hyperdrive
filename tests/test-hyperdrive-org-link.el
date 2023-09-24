@@ -81,6 +81,25 @@
 
 ;;;; Tests
 
+;;;;; Scenarios
+
+(defvar hyperdrive-test-org-store-link-scenarios
+  '((org-mode/before-heading
+     :public-key "deadbeef"
+     :path "/foo/bar quux.org"
+     :content "★
+* Heading A"
+     :url "hyper://deadbeef/foo/bar%20quux.org"
+     :desc nil))
+  "Alist keyed by scenario symbols.
+Each value is a plist with the following keys:
+
+- \\=`:public-key'
+- \\=`:path'
+- \\=`:content'
+- \\=`:url'
+- \\=`:desc'")
+
 ;;;;; Storing links
 
 (cl-defun hyperdrive-test-org-store-link (contents &key public-key path)
@@ -104,13 +123,15 @@ Point is indicated by ★."
     org-stored-links))
 
 (ert-deftest hyperdrive-test-org-link-store/before-heading ()
-  (cl-destructuring-bind ((url desc))
-      (hyperdrive-test-org-store-link
-        "★
-* Heading A"
-        :public-key "deadbeef" :path "/foo/bar quux.org")
-    (should (string= "hyper://deadbeef/foo/bar%20quux.org" url))
-    (should (null desc))))
+  (pcase-let* (((map :public-key :path :content
+                     (:url expected-url) (:desc expected-desc))
+                (alist-get 'org-mode/before-heading
+                           hyperdrive-test-org-store-link-scenarios))
+               (`((,got-url ,got-desc))
+                (hyperdrive-test-org-store-link content
+                  :public-key public-key :path path)))
+    (should (string= expected-url got-url))
+    (should (string= expected-desc got-desc))))
 
 (ert-deftest hyperdrive-test-org-link-store/on-heading-with-custom-id ()
   (cl-destructuring-bind ((url desc))
