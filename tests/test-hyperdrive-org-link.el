@@ -77,7 +77,7 @@
 ;; (while (re-search-forward (rx (0+ blank) (group (or "+" "-" "*")) (1+ blank)) nil t)
 ;;   (replace-match (make-string (length (match-string 1)) ?\; )))
 
-
+;; TODO: Rename this file to test-hyperdrive-org.el
 
 ;;;; Tests
 
