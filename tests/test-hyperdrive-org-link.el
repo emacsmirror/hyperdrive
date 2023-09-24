@@ -90,7 +90,25 @@
      :content "★
 * Heading A"
      :url "hyper://deadbeef/foo/bar%20quux.org"
-     :desc nil))
+     :desc nil)
+    (org-mode/on-heading-with-custom-id
+     :public-key "deadbeef"
+     :path "/foo/bar quux.org"
+     :content
+     "* Heading A
+:PROPERTIES:
+:CUSTOM_ID: baz zot
+:END:
+★"
+     :url "hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot"
+     :desc "Heading A")
+    (org-mode/on-heading-no-custom-id
+     :public-key "deadbeef"
+     :path "/foo/bar quux.org"
+     :content "* Heading A
+★"
+     :url "hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A"
+     :desc "Heading A"))
   "Alist keyed by scenario symbols.
 Each value is a plist with the following keys:
 
@@ -122,37 +140,26 @@ Point is indicated by ★."
       (org-store-link nil 'interactive))
     org-stored-links))
 
-(ert-deftest hyperdrive-test-org-link-store/before-heading ()
-  (pcase-let* (((map :public-key :path :content
-                     (:url expected-url) (:desc expected-desc))
-                (alist-get 'org-mode/before-heading
-                           hyperdrive-test-org-store-link-scenarios))
-               (`((,got-url ,got-desc))
-                (hyperdrive-test-org-store-link content
-                  :public-key public-key :path path)))
-    (should (string= expected-url got-url))
-    (should (string= expected-desc got-desc))))
+(defmacro hyperdrive-test-org-store-link-deftest (scenario)
+  "Test scenario in `hyperdrive-test-org-store-link-scenarios'."
+  (let ((test-name (intern
+                    (format "hyperdrive-test-org-store-link/%s" scenario))))
+    `(ert-deftest ,test-name ()
+       (pcase-let* (((map :public-key :path :content
+                          (:url expected-url) (:desc expected-desc))
+                     ;; TODO: Is there a better syntax that explicit `quote'?
+                     (alist-get (quote ,scenario)
+                                hyperdrive-test-org-store-link-scenarios))
+                    (`((,got-url ,got-desc))
+                     (hyperdrive-test-org-store-link content
+                       :public-key public-key :path path)))
+         (should (string= expected-url got-url))
+         (should (string= expected-desc got-desc))))))
 
-(ert-deftest hyperdrive-test-org-link-store/on-heading-with-custom-id ()
-  (cl-destructuring-bind ((url desc))
-      (hyperdrive-test-org-store-link
-        "* Heading A
-:PROPERTIES:
-:CUSTOM_ID: baz zot
-:END:
-★"
-        :public-key "deadbeef" :path "/foo/bar quux.org")
-    (should (string= "hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot" url))
-    (should (string= "Heading A" desc))))
-
-(ert-deftest hyperdrive-test-org-link-store/on-heading-no-custom-id ()
-  (cl-destructuring-bind ((url desc))
-      (hyperdrive-test-org-store-link
-        "* Heading A
-★"
-        :public-key "deadbeef" :path "/foo/bar quux.org")
-    (should (string= "hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A" url))
-    (should (string= "Heading A" desc))))
+;; TODO: Loop through `hyperdrive-test-org-store-link-scenarios'?
+(hyperdrive-test-org-store-link-deftest org-mode/before-heading)
+(hyperdrive-test-org-store-link-deftest org-mode/on-heading-with-custom-id)
+(hyperdrive-test-org-store-link-deftest org-mode/on-heading-no-custom-id)
 
 ;; + Hyperdrive Org links :: Links to hyperdrive files/directories that are valid within Org documents.
 
