@@ -215,6 +215,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
        (pcase org-link-file-path-type
          ;; TODO: Handle `org-link-file-path-type' as a function.
          ((or 'absolute
+              ;; TODO: Consider special-casing `noabbrev' - who knows?
               ;; `noabbrev' is like `absolute' because hyperdrives have
               ;; no home directory.
               'noabbrev
