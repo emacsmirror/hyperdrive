@@ -176,11 +176,12 @@ the current location."
            (_ (cl-assert (eq 'link (car link-element))))
            (url (org-element-property :raw-link link-element))
            (target-entry (hyperdrive-url-entry url))
+           (search-option (alist-get 'target (hyperdrive-entry-etc target-entry)))
            (host-format '(public-key)) (with-path t) (with-protocol t)
            fragment-prefix destination)
       (cond (hyperdrive-org-link-full-url
              ;; User wants only full "hyper://" URLs.
-             (when (alist-get 'target (hyperdrive-entry-etc target-entry))
+             (when search-option
                (setf fragment-prefix (concat "#" (url-hexify-string "::"))))
              (setf destination (hyperdrive--format-entry-url
                                 target-entry :fragment-prefix fragment-prefix
@@ -190,7 +191,7 @@ the current location."
              ;; Link points to same file on same hyperdrive: make link
              ;; relative.
              (setf destination
-                   (or (alist-get 'target (hyperdrive-entry-etc target-entry))
+                   (or search-option
                        (pcase org-link-file-path-type
                          ;; TODO: Handle `org-link-file-path-type' as a function.
                          ((or 'absolute 'noabbrev)
