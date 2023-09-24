@@ -213,7 +213,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
         ;; because hyperdrives have no home directory.
         (hyperdrive-entry-path target-entry))
        ('adaptive
-        (if (string-prefix-p (file-name-parent-directory
+        (if (string-prefix-p (file-name-directory
                               (hyperdrive-entry-path hyperdrive-current-entry))
                              (hyperdrive-entry-path target-entry))
             ;; Link points to file in same directory tree: use relative link.
