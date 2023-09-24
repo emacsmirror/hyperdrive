@@ -88,22 +88,12 @@ raw URL, not an Org link."
   ;; it generates target fragments like we need.  So it's simpler for
   ;; us to reimplement some of the logic here.
   ;;
-  ;; Also, it appears that Org links to ID properties (not CUSTOM_ID)
-  ;; can't have filename parts, i.e. they can only link to the
-  ;; generated ID and leave locating the entry's file to Org's cache,
-  ;; which isn't suitable for our purposes.  So instead, we generate
-  ;; our own link type which, in that case, includes both the filename
-  ;; and the ID or CUSTOM_ID.
-
-  ;; The URL's "fragment" (aka "target" in org-link jargon) is either
-  ;; the CUSTOM_ID, ID, or headline search string, whichever is found
-  ;; first, and it's up to the follow function to determine which it
-  ;; is (which is very simple; see below).
+  ;; The URL's "fragment" (aka "target" in org-link jargon) is the
+  ;; CUSTOM_ID if it exists or headline search string if it exists.
   (cl-assert (eq 'org-mode major-mode))
   (when hyperdrive-mode
     (let* ((heading (org-entry-get (point) "ITEM"))
            (custom-id (org-entry-get (point) "CUSTOM_ID"))
-           ;; (generated-id (org-entry-get (point) "ID"))
            (fragment (cond (custom-id (concat "#" custom-id))
                            (heading (concat "*" heading))))
            (entry-copy (hyperdrive-copy-tree hyperdrive-current-entry t))
