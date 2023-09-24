@@ -117,7 +117,7 @@
 ;; TODO: We'll need at least one test for inserting a link into an Org
 ;; file that is /not/ in a hyperdrive.
 
-(hyperdrive-test-org-link-deftest same-drive-same-file-before-heading
+(hyperdrive-test-org-link-deftest same-drive-same-path-before-heading
   :store-body "<|>
 * Heading A
 :PROPERTIES:
@@ -154,7 +154,7 @@
                     (hyperdrive-org-link-full-url t))
               :result "[[hyper://deadbeef/foo/bar%20quux.org]]")))
 
-(hyperdrive-test-org-link-deftest same-drive-same-file-on-heading-with-custom-id
+(hyperdrive-test-org-link-deftest same-drive-same-path-on-heading-with-custom-id
   :store-body "
 * Heading A
 :PROPERTIES:
@@ -192,7 +192,7 @@
                     (hyperdrive-org-link-full-url t))
               :result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot]]")))
 
-(hyperdrive-test-org-link-deftest same-drive-same-file-on-heading-no-custom-id
+(hyperdrive-test-org-link-deftest same-drive-same-path-on-heading-no-custom-id
   :store-body "
 * Heading A
 <|>
