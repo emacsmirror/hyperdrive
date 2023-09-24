@@ -178,7 +178,7 @@ the current location."
                      (org-element-property :end link-element))
       (insert (org-link-make-string (hyperdrive--org-normalize-link link-element))))))
 
-(defun hyperdrive--org-normalize-link (link-element)
+(cl-defun hyperdrive--org-normalize-link (link-element)
   "Return normalized copy of \"hyper://\" LINK-ELEMENT.
 Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
   (cl-assert hyperdrive-current-entry)
@@ -187,15 +187,18 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
          (search-option (alist-get 'target (hyperdrive-entry-etc target-entry)))
          (host-format '(public-key)) (with-path t) (with-protocol t)
          fragment-prefix destination)
-    (cond (hyperdrive-org-link-full-url
-           ;; User wants only full "hyper://" URLs.
-           (when search-option
-             (setf fragment-prefix (concat "#" (url-hexify-string "::"))))
-           (setf destination (hyperdrive--format-entry-url
-                              target-entry :fragment-prefix fragment-prefix
-                              :with-path with-path
-                              :with-protocol with-protocol :host-format host-format)))
-          ((hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
+    (when (or hyperdrive-org-link-full-url
+              (not (hyperdrive-entry-hyperdrive-equal-p
+                    hyperdrive-current-entry target-entry)))
+      ;; Full "hyper://" URL
+      (when search-option
+        (setf fragment-prefix (concat "#" (url-hexify-string "::"))))
+      (cl-return-from hyperdrive--org-normalize-link
+        (hyperdrive--format-entry-url
+         target-entry :fragment-prefix fragment-prefix
+         :with-path with-path
+         :with-protocol with-protocol :host-format host-format)))
+    (cond ((hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
            ;; Link points to same file on same hyperdrive: make link
            ;; relative.
            (setf destination
@@ -229,13 +232,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
            (setf destination (concat "./"
                                      (file-relative-name
                                       (hyperdrive-entry-path target-entry)
-                                      (file-name-directory (hyperdrive-entry-path target-entry))))))
-          (t
-           (setf fragment-prefix (concat "#" (url-hexify-string "::")))
-           (setf destination (hyperdrive--format-entry-url
-                              target-entry :fragment-prefix fragment-prefix
-                              :with-path with-path
-                              :with-protocol with-protocol :host-format host-format))))
+                                      (file-name-directory (hyperdrive-entry-path target-entry)))))))
     destination))
 
 ;;;###autoload
