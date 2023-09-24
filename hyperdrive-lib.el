@@ -970,7 +970,7 @@ URL."
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)
-                              (concat fragment-prefix (hyperdrive--url-hexify-string target))))
+                              (concat fragment-prefix (url-hexify-string target))))
                (path (when with-path
                        (hyperdrive--url-hexify-string path)))
                (url (concat protocol host version-part path target-part)))
