@@ -146,7 +146,7 @@
             ( :let ((org-link-file-path-type 'noabbrev)
                     (hyperdrive-org-link-full-url t))
               :result "[[hyper://deadbeef/foo/bar%20quux.org]]")
-            
+
             ( :let ((org-link-file-path-type 'adaptive)
                     (hyperdrive-org-link-full-url nil))
               :result "[[./bar quux.org]]")
