@@ -81,6 +81,58 @@
 
 ;;;; Tests
 
+;;;;; Storing links
+
+(cl-defun hyperdrive-test-org-store-link (contents &key public-key path)
+  "Return stored link to entry with PUBLIC-KEY, PATH, and CONTENTS.
+Point is indicated by ★."
+  (declare (indent defun))
+  (let ((org-id-link-to-org-use-id nil)
+        ;; (default-directory "/")
+        (entry (hyperdrive-entry-create
+                :hyperdrive (hyperdrive-create :public-key public-key)
+                :path path))
+        org-stored-links)
+    (with-temp-buffer
+      (insert contents)
+      (org-mode)
+      (hyperdrive-mode)
+      (setq-local hyperdrive-current-entry entry)
+      (goto-char (point-min))
+      (search-forward "★")
+      (org-store-link nil 'interactive))
+    org-stored-links))
+
+(ert-deftest hyperdrive-test-org-link-store/before-heading ()
+  (cl-destructuring-bind ((url desc))
+      (hyperdrive-test-org-store-link
+        "★
+* Heading A"
+        :public-key "deadbeef" :path "/foo/bar quux.org")
+    (should (string= "hyper://deadbeef/foo/bar%20quux.org" url))
+    (should (null desc))))
+
+(ert-deftest hyperdrive-test-org-link-store/on-heading-with-custom-id ()
+  (cl-destructuring-bind ((url desc))
+      (hyperdrive-test-org-store-link
+        "* Heading A
+:PROPERTIES:
+:CUSTOM_ID: baz zot
+:END:
+★"
+        :public-key "deadbeef" :path "/foo/bar quux.org")
+    (should (string= "hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot" url))
+    (should (string= "Heading A" desc))))
+
+(ert-deftest hyperdrive-test-org-link-store/on-heading-no-custom-id ()
+  (cl-destructuring-bind ((url desc))
+      (hyperdrive-test-org-store-link
+        "* Heading A
+★"
+        :public-key "deadbeef" :path "/foo/bar quux.org")
+    (should (string= "hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A" url))
+    (should (string= "Heading A" desc))))
+
 ;; + Hyperdrive Org links :: Links to hyperdrive files/directories that are valid within Org documents.
 
 ;;   - With protocol prefix
