@@ -172,9 +172,17 @@ the current location."
 (defun hyperdrive--org-insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
   (when (and hyperdrive-mode hyperdrive-current-entry)
-    (let* ((link-element (org-element-context))
-           (_ (cl-assert (eq 'link (car link-element))))
-           (url (org-element-property :raw-link link-element))
+    (let ((link-element (org-element-context)))
+      (cl-assert (eq 'link (car link-element)))
+      (delete-region (org-element-property :begin link-element)
+                     (org-element-property :end link-element))
+      (insert (org-link-make-string (hyperdrive--org-normalize-link link-element))))))
+
+(defun hyperdrive--org-normalize-link (link-element)
+  "Return normalized copy of \"hyper://\" LINK-ELEMENT.
+Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
+  (when hyperdrive-current-entry
+    (let* ((url (org-element-property :raw-link link-element))
            (target-entry (hyperdrive-url-entry url))
            (search-option (alist-get 'target (hyperdrive-entry-etc target-entry)))
            (host-format '(public-key)) (with-path t) (with-protocol t)
@@ -228,9 +236,7 @@ the current location."
                                 target-entry :fragment-prefix fragment-prefix
                                 :with-path with-path
                                 :with-protocol with-protocol :host-format host-format))))
-      (delete-region (org-element-property :begin link-element)
-                     (org-element-property :end link-element))
-      (insert (org-link-make-string destination)))))
+      destination)))
 
 ;;;###autoload
 (with-eval-after-load 'org
