@@ -198,41 +198,40 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
          target-entry :fragment-prefix fragment-prefix
          :with-path with-path
          :with-protocol with-protocol :host-format host-format)))
-    (cond ((hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
-           ;; Link points to same file on same hyperdrive: make link
-           ;; relative.
-           (setf destination
-                 (or search-option
-                     (pcase org-link-file-path-type
-                       ;; TODO: Handle `org-link-file-path-type' as a function.
-                       ((or 'absolute 'noabbrev)
-                        ;; These two options are the same for our purposes,
-                        ;; because hyperdrives have no home directory.
-                        (setf destination (hyperdrive-entry-path target-entry)))
-                       ('adaptive
-                        (setf destination
-                              (if (string-prefix-p (file-name-parent-directory
-                                                    (hyperdrive-entry-path hyperdrive-current-entry))
-                                                   (hyperdrive-entry-path target-entry))
-                                  ;; Link points to file in same directory tree: use relative link.
-                                  (concat "./"
-                                          (file-relative-name
-                                           (hyperdrive-entry-path target-entry)
-                                           (file-name-directory (hyperdrive-entry-path target-entry))))
-                                (hyperdrive-entry-path target-entry))))
-                       ('relative
-                        (setf destination
-                              (concat "./"
-                                      (file-relative-name
-                                       (hyperdrive-entry-path target-entry)
-                                       (file-name-directory (hyperdrive-entry-path target-entry))))))))))
-          ((hyperdrive-entry-hyperdrive-equal-p hyperdrive-current-entry target-entry)
-           ;; Link points to same hyperdrive as the file the link is in:
-           ;; make link relative.
-           (setf destination (concat "./"
-                                     (file-relative-name
-                                      (hyperdrive-entry-path target-entry)
-                                      (file-name-directory (hyperdrive-entry-path target-entry)))))))
+    (if (hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
+        ;; Link points to same file on same hyperdrive: make link
+        ;; relative.
+        (setf destination
+              (or search-option
+                  (pcase org-link-file-path-type
+                    ;; TODO: Handle `org-link-file-path-type' as a function.
+                    ((or 'absolute 'noabbrev)
+                     ;; These two options are the same for our purposes,
+                     ;; because hyperdrives have no home directory.
+                     (setf destination (hyperdrive-entry-path target-entry)))
+                    ('adaptive
+                     (setf destination
+                           (if (string-prefix-p (file-name-parent-directory
+                                                 (hyperdrive-entry-path hyperdrive-current-entry))
+                                                (hyperdrive-entry-path target-entry))
+                               ;; Link points to file in same directory tree: use relative link.
+                               (concat "./"
+                                       (file-relative-name
+                                        (hyperdrive-entry-path target-entry)
+                                        (file-name-directory (hyperdrive-entry-path target-entry))))
+                             (hyperdrive-entry-path target-entry))))
+                    ('relative
+                     (setf destination
+                           (concat "./"
+                                   (file-relative-name
+                                    (hyperdrive-entry-path target-entry)
+                                    (file-name-directory (hyperdrive-entry-path target-entry)))))))))
+      ;; Link points to same hyperdrive as the file the link is in:
+      ;; make link relative.
+      (setf destination (concat "./"
+                                (file-relative-name
+                                 (hyperdrive-entry-path target-entry)
+                                 (file-name-directory (hyperdrive-entry-path target-entry))))))
     destination))
 
 ;;;###autoload
