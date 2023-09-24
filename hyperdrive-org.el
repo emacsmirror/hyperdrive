@@ -205,26 +205,25 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
       ;; Search option alone
       (cl-return-from hyperdrive--org-normalize-link search-option))
 
-    (hyperdrive--ensure-dot-slash-prefix-path
-     (pcase org-link-file-path-type
-       ;; TODO: Handle `org-link-file-path-type' as a function.
-       ((or 'absolute 'noabbrev)
-        ;; These two options are the same for our purposes,
-        ;; because hyperdrives have no home directory.
-        (hyperdrive-entry-path target-entry))
-       ('adaptive
-        (if (string-prefix-p (file-name-directory
-                              (hyperdrive-entry-path hyperdrive-current-entry))
-                             (hyperdrive-entry-path target-entry))
-            ;; Link points to file in same directory tree: use relative link.
-            (file-relative-name
-             (hyperdrive-entry-path target-entry)
-             (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))
-          (hyperdrive-entry-path target-entry)))
-       ('relative
-        (file-relative-name
-         (hyperdrive-entry-path target-entry)
-         (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry))))))))
+    (let ((adaptive-target-p
+           ;; See the `adaptive' option in `org-link-file-path-type'.
+           (string-prefix-p
+            (file-name-directory
+             (hyperdrive-entry-path hyperdrive-current-entry))
+            (hyperdrive-entry-path target-entry))))
+      (hyperdrive--ensure-dot-slash-prefix-path
+       (pcase org-link-file-path-type
+         ;; TODO: Handle `org-link-file-path-type' as a function.
+         ((or 'absolute
+              ;; `noabbrev' is like `absolute' because hyperdrives have
+              ;; no home directory.
+              'noabbrev
+              (and 'adaptive (guard (not adaptive-target-p))))
+          (hyperdrive-entry-path target-entry))
+         ((or 'relative (and 'adaptive (guard adaptive-target-p)))
+          (file-relative-name
+           (hyperdrive-entry-path target-entry)
+           (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))))))
 
 ;;;###autoload
 (with-eval-after-load 'org
