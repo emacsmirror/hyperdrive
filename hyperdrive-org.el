@@ -192,6 +192,7 @@ the current location."
              (setf destination
                    (or (alist-get 'target (hyperdrive-entry-etc target-entry))
                        (pcase org-link-file-path-type
+                         ;; TODO: Handle `org-link-file-path-type' as a function.
                          ((or 'absolute 'noabbrev)
                           ;; These two options are the same for our purposes,
                           ;; because hyperdrives have no home directory.
