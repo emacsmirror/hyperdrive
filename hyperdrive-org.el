@@ -180,7 +180,8 @@ the current location."
 
 (cl-defun hyperdrive--org-normalize-link (link-element)
   "Return normalized copy of \"hyper://\" LINK-ELEMENT.
-Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
+Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'.
+FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
   (cl-assert hyperdrive-current-entry)
   (let* ((url (org-element-property :raw-link link-element))
          (target-entry (hyperdrive-url-entry url))
