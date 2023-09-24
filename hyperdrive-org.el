@@ -185,8 +185,7 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
   (cl-assert hyperdrive-current-entry)
   (let* ((url (org-element-property :raw-link link-element))
          (target-entry (hyperdrive-url-entry url))
-         (search-option (alist-get 'target (hyperdrive-entry-etc target-entry)))
-         (host-format '(public-key)) (with-path t) (with-protocol t))
+         (search-option (alist-get 'target (hyperdrive-entry-etc target-entry))))
 
     (when (or hyperdrive-org-link-full-url
               (not (hyperdrive-entry-hyperdrive-equal-p
@@ -194,12 +193,10 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
       ;; Full "hyper://" URL
       (when search-option
         ;; When linking to a different file, prefix search option with "::".
-        (cl-callf2 concat "::" (alist-get 'target (hyperdrive-entry-etc target-entry))))
+        (cl-callf2 concat "::"
+                   (alist-get 'target (hyperdrive-entry-etc target-entry))))
       (cl-return-from hyperdrive--org-normalize-link
-        (hyperdrive--format-entry-url
-         target-entry
-         :with-path with-path
-         :with-protocol with-protocol :host-format host-format)))
+        (hyperdrive-entry-url target-entry)))
 
     (when (and search-option
                (hyperdrive-entry-equal-p hyperdrive-current-entry target-entry))
