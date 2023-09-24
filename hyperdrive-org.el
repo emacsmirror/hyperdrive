@@ -219,12 +219,12 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
             ;; Link points to file in same directory tree: use relative link.
             (file-relative-name
              (hyperdrive-entry-path target-entry)
-             (file-name-directory (hyperdrive-entry-path target-entry)))
+             (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))
           (hyperdrive-entry-path target-entry)))
        ('relative
         (file-relative-name
          (hyperdrive-entry-path target-entry)
-         (file-name-directory (hyperdrive-entry-path target-entry))))))))
+         (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry))))))))
 
 ;;;###autoload
 (with-eval-after-load 'org
