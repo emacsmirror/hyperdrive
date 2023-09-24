@@ -213,19 +213,22 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
              (hyperdrive-entry-path hyperdrive-current-entry))
             (hyperdrive-entry-path target-entry))))
       (hyperdrive--ensure-dot-slash-prefix-path
-       (pcase org-link-file-path-type
-         ;; TODO: Handle `org-link-file-path-type' as a function.
-         ((or 'absolute
-              ;; TODO: Consider special-casing `noabbrev' - who knows?
-              ;; `noabbrev' is like `absolute' because hyperdrives have
-              ;; no home directory.
-              'noabbrev
-              (and 'adaptive (guard (not adaptive-target-p))))
-          (hyperdrive-entry-path target-entry))
-         ((or 'relative (and 'adaptive (guard adaptive-target-p)))
-          (file-relative-name
-           (hyperdrive-entry-path target-entry)
-           (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))))))
+       (apply #'concat
+              (pcase org-link-file-path-type
+                ;; TODO: Handle `org-link-file-path-type' as a function.
+                ((or 'absolute
+                     ;; TODO: Consider special-casing `noabbrev' - who knows?
+                     ;; `noabbrev' is like `absolute' because hyperdrives have
+                     ;; no home directory.
+                     'noabbrev
+                     (and 'adaptive (guard (not adaptive-target-p))))
+                 (hyperdrive-entry-path target-entry))
+                ((or 'relative (and 'adaptive (guard adaptive-target-p)))
+                 (file-relative-name
+                  (hyperdrive-entry-path target-entry)
+                  (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))
+              (when search-option
+                (list "::" search-option)))))))
 
 ;;;###autoload
 (with-eval-after-load 'org
