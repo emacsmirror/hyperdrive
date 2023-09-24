@@ -189,6 +189,11 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
          (host-format '(public-key)) (with-path t) (with-protocol t)
          fragment-prefix)
 
+    (when (and search-option
+               (hyperdrive-entry-equal-p hyperdrive-current-entry target-entry))
+      ;; Search option alone
+      (cl-return-from hyperdrive--org-normalize-link search-option))
+
     (when (or hyperdrive-org-link-full-url
               (not (hyperdrive-entry-hyperdrive-equal-p
                     hyperdrive-current-entry target-entry)))
@@ -200,11 +205,6 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
          target-entry :fragment-prefix fragment-prefix
          :with-path with-path
          :with-protocol with-protocol :host-format host-format)))
-
-    (when (and search-option
-               (hyperdrive-entry-equal-p hyperdrive-current-entry target-entry))
-      ;; Search option alone
-      (cl-return-from hyperdrive--org-normalize-link search-option))
 
     (let ((adaptive-target-p
            ;; See the `adaptive' option in `org-link-file-path-type'.
