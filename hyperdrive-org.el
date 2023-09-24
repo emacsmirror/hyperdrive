@@ -187,6 +187,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
          (search-option (alist-get 'target (hyperdrive-entry-etc target-entry)))
          (host-format '(public-key)) (with-path t) (with-protocol t)
          fragment-prefix destination)
+
     (when (or hyperdrive-org-link-full-url
               (not (hyperdrive-entry-hyperdrive-equal-p
                     hyperdrive-current-entry target-entry)))
@@ -198,6 +199,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
          target-entry :fragment-prefix fragment-prefix
          :with-path with-path
          :with-protocol with-protocol :host-format host-format)))
+
     (if (hyperdrive-entry-equal-p hyperdrive-current-entry target-entry)
         ;; Link points to same file on same hyperdrive: make link
         ;; relative.
@@ -226,6 +228,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
                                    (file-relative-name
                                     (hyperdrive-entry-path target-entry)
                                     (file-name-directory (hyperdrive-entry-path target-entry)))))))))
+
       ;; Link points to same hyperdrive as the file the link is in:
       ;; make link relative.
       (setf destination (concat "./"
