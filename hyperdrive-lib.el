@@ -1433,5 +1433,11 @@ Compares their public keys."
   "Return non-nil if entries A and B have the same hyperdrive."
   (hyperdrive-equal-p (hyperdrive-entry-hyperdrive a) (hyperdrive-entry-hyperdrive b)))
 
+(defun hyperdrive--ensure-dot-slash-prefix-path (path)
+  "Return PATH. Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
+  (if (string-match-p (rx bos (or "/" "./" "../")) path)
+      path
+    (concat "./" path)))
+
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here

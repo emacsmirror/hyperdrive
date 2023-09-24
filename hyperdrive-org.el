@@ -217,25 +217,22 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
                                                  (hyperdrive-entry-path hyperdrive-current-entry))
                                                 (hyperdrive-entry-path target-entry))
                                ;; Link points to file in same directory tree: use relative link.
-                               (concat "./"
-                                       (file-relative-name
-                                        (hyperdrive-entry-path target-entry)
-                                        (file-name-directory (hyperdrive-entry-path target-entry))))
+                               (file-relative-name
+                                (hyperdrive-entry-path target-entry)
+                                (file-name-directory (hyperdrive-entry-path target-entry)))
                              (hyperdrive-entry-path target-entry))))
                     ('relative
                      (setf destination
-                           (concat "./"
-                                   (file-relative-name
-                                    (hyperdrive-entry-path target-entry)
-                                    (file-name-directory (hyperdrive-entry-path target-entry)))))))))
+                           (file-relative-name
+                            (hyperdrive-entry-path target-entry)
+                            (file-name-directory (hyperdrive-entry-path target-entry))))))))
 
       ;; Link points to same hyperdrive as the file the link is in:
       ;; make link relative.
-      (setf destination (concat "./"
-                                (file-relative-name
-                                 (hyperdrive-entry-path target-entry)
-                                 (file-name-directory (hyperdrive-entry-path target-entry))))))
-    destination))
+      (setf destination (file-relative-name
+                         (hyperdrive-entry-path target-entry)
+                         (file-name-directory (hyperdrive-entry-path target-entry)))))
+    (hyperdrive--ensure-dot-slash-prefix-path destination)))
 
 ;;;###autoload
 (with-eval-after-load 'org
