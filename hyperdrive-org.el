@@ -222,6 +222,13 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
             (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))
         search-option)))))
 
+(defun hyperdrive--org-link-description (link)
+  "Return description of Org LINK or nil if it has none."
+  ;; TODO: Is there a built-in solution?
+  (when-let* ((desc-begin (org-element-property :contents-begin link))
+              (desc-end (org-element-property :contents-end link)))
+    (buffer-substring desc-begin desc-end)))
+
 ;;;###autoload
 (with-eval-after-load 'org
   (org-link-set-parameters "hyper"
