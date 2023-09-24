@@ -175,6 +175,7 @@ the current location."
     (let* ((link-element (org-element-context))
            (_ (cl-assert (eq 'link (car link-element))))
            (url (org-element-property :raw-link link-element))
+           (desc (hyperdrive--org-link-description link-element))
            (target-entry (hyperdrive-url-entry url)))
       (when (and (not hyperdrive-org-link-full-url)
                  (hyperdrive-entry-hyperdrive-equal-p
@@ -182,7 +183,8 @@ the current location."
         (delete-region (org-element-property :begin link-element)
                        (org-element-property :end link-element))
         (insert (org-link-make-string
-                 (hyperdrive--org-shorthand-link target-entry)))))))
+                 (hyperdrive--org-shorthand-link target-entry)
+                 desc))))))
 
 (cl-defun hyperdrive--org-shorthand-link (entry)
   "Return a non-\"hyper://\"-prefixed link to ENTRY.
