@@ -36,6 +36,19 @@
 (declare-function hyperdrive-open-url "hyperdrive")
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
+(defcustom hyperdrive-org-link-full-url nil
+  "Always insert full \"hyper://\" URLs when linking to hyperdrive files.
+Otherwise, when inserting a link to the same hyperdrive Org file,
+
+- insert a relative path link when before the first heading, or
+- insert a heading text or CUSTOM_ID link when after the first heading
+
+Otherwise, when inserting a link to a different file in the same
+hyperdrive, insert a relative or absolute link according to
+`org-link-file-path-type'."
+  :type 'boolean
+  :group 'hyperdrive)
+
 ;; TODO: Determine whether it's really necessary to autoload these two functions.
 
 ;;;###autoload
@@ -75,26 +88,17 @@ raw URL, not an Org link."
   ;; it generates target fragments like we need.  So it's simpler for
   ;; us to reimplement some of the logic here.
   ;;
-  ;; Also, it appears that Org links to ID properties (not CUSTOM_ID)
-  ;; can't have filename parts, i.e. they can only link to the
-  ;; generated ID and leave locating the entry's file to Org's cache,
-  ;; which isn't suitable for our purposes.  So instead, we generate
-  ;; our own link type which, in that case, includes both the filename
-  ;; and the ID or CUSTOM_ID.
-
-  ;; The URL's "fragment" (aka "target" in org-link jargon) is either
-  ;; the CUSTOM_ID, ID, or headline search string, whichever is found
-  ;; first, and it's up to the follow function to determine which it
-  ;; is (which is very simple; see below).
+  ;; The URL's "fragment" (aka "target" in org-link jargon) is the
+  ;; CUSTOM_ID if it exists or headline search string if it exists.
   (cl-assert (eq 'org-mode major-mode))
   (when hyperdrive-mode
-    (let* ((url (hyperdrive-entry-url hyperdrive-current-entry))
-           (heading (org-entry-get (point) "ITEM"))
+    (let* ((heading (org-entry-get (point) "ITEM"))
            (custom-id (org-entry-get (point) "CUSTOM_ID"))
-           (generated-id (org-entry-get (point) "ID"))
-           (fragment (or custom-id generated-id heading))
-           (raw-url (concat url (when fragment
-                                  (concat "#" (url-hexify-string fragment))))))
+           (fragment (cond (custom-id (concat "#" custom-id))
+                           (heading (concat "*" heading))))
+           (entry-copy (hyperdrive-copy-tree hyperdrive-current-entry t))
+           (_ (setf (alist-get 'target (hyperdrive-entry-etc entry-copy)) fragment))
+           (raw-url (hyperdrive-entry-url entry-copy)))
       (if raw-url-p
           raw-url
         ;; NOTE: Due to annoying issues with older versions of Emacs
@@ -112,47 +116,106 @@ raw URL, not an Org link."
 
 (defun hyperdrive--org-link-goto (target)
   "Go to TARGET in current Org buffer.
-TARGET may be a CUSTOM_ID, an ID, or a headline."
+TARGET may be a CUSTOM_ID or a headline."
   (cl-assert (eq 'org-mode major-mode))
-  ;; We do not ensure that a target only exists once in the file, but
-  ;; neither does Org always do so.
-  (setf target (url-unhex-string target))
-  (goto-char (or (org-find-property "CUSTOM_ID" target)
-                 (org-find-property "ID" target)
-                 (org-find-exact-headline-in-buffer target)
-                 (hyperdrive-error "Unable to find entry in file: %S" target))))
+  (org-link-search target))
 
 (defun hyperdrive-org-link-complete ()
   "Create a hyperdrive org link."
   ;; TODO: Support other hyper:// links like diffs when implemented.
   (hyperdrive-entry-url (hyperdrive-read-entry :force-prompt t)))
 
+;; TODO: hyperdrive--org-* or hyperdrive-org--*?
+
 (defun hyperdrive--org-open-at-point ()
   "Handle relative links in hyperdrive-mode org files.
 
 Added to `org-open-at-point-functions' in order to short-circuit
-the logic for handling links of \"fuzzy\" or \"file\" type.
-
-Uses `url-default-expander' to expand the relative link against
-the current location."
+the logic for handling links of \"file\" type."
   (when hyperdrive-mode
-    (let* ((context
-            ;; TODO: Double-check that this is the correct way to get context.
-            (org-element-lineage (org-element-context) '(link) t))
-           (type (org-element-type context))
-           (link-type (org-element-property :type context))
-           (raw-link-type (org-element-property :raw-link context)))
-      (when (and (eq type 'link)
-                 (or
-                  ;; "fuzzy" is for relative links without ./ prefix.
-                  (equal "fuzzy" link-type)
-                  ;; "file is for absolute links and relative links with ./ prefix.
-                  (equal "file" link-type))
-                 ;; Allow links to explicitly point to local files by
-                 ;; prefixing with "file:" (because Org assumes that links
-                 ;; without a specified protocol are "file:" links).
-                 (not (string-prefix-p "file:" raw-link-type)))
-        (hyperdrive-open-url (hyperdrive-expand-url (org-element-property :path context)))))))
+    (hyperdrive-open (hyperdrive--org-link-entry-at-point))))
+
+(defun hyperdrive--org-link-entry-at-point ()
+  "Return a hyperdrive entry for the Org link at point."
+  ;; This function is not in the code path for full URLs or links that
+  ;; are only search options.
+  (let* ((context (org-element-lineage (org-element-context) '(link) t))
+         (element-type (org-element-type context))
+         (link-type (org-element-property :type context))
+         (raw-link-type (org-element-property :raw-link context)))
+    (when (and (eq element-type 'link)
+               (equal "file" link-type)
+               ;; Don't treat link as a relative/absolute path in the
+               ;; hyperdrive if "file:" protocol prefix is explicit.
+               (not (string-prefix-p "file:" raw-link-type)))
+      (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) hyperdrive-current-entry)
+                   (entry (hyperdrive-entry-create
+                           :hyperdrive hyperdrive
+                           :path (expand-file-name (org-element-property :path context)
+                                                   (file-name-directory path))
+                           :etc `((target . ,(org-element-property :search-option context))))))
+        entry))))
+
+(defun hyperdrive--org-insert-link-after-advice (&rest _)
+  "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
+  (when (and hyperdrive-mode hyperdrive-current-entry)
+    (let* ((link-element (org-element-context))
+           (_ (cl-assert (eq 'link (car link-element))))
+           (url (org-element-property :raw-link link-element))
+           (desc (hyperdrive--org-link-description link-element))
+           (target-entry (hyperdrive-url-entry url)))
+      (when (and (not hyperdrive-org-link-full-url)
+                 (hyperdrive-entry-hyperdrive-equal-p
+                  hyperdrive-current-entry target-entry))
+        (delete-region (org-element-property :begin link-element)
+                       (org-element-property :end link-element))
+        (insert (org-link-make-string
+                 (hyperdrive--org-shorthand-link target-entry)
+                 desc))))))
+
+(cl-defun hyperdrive--org-shorthand-link (entry)
+  "Return a non-\"hyper://\"-prefixed link to ENTRY.
+Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'.
+FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
+  (cl-assert hyperdrive-current-entry)
+  (let ((search-option (alist-get 'target (hyperdrive-entry-etc entry))))
+    (when (and search-option
+               (hyperdrive-entry-equal-p hyperdrive-current-entry entry))
+      (cl-return-from hyperdrive--org-shorthand-link search-option))
+
+    ;; Search option alone: Remove leading "::"
+    (when search-option
+      (cl-callf2 concat "::" search-option))
+
+    (let ((adaptive-target-p
+           ;; See the `adaptive' option in `org-link-file-path-type'.
+           (string-prefix-p
+            (file-name-directory
+             (hyperdrive-entry-path hyperdrive-current-entry))
+            (hyperdrive-entry-path entry))))
+      (hyperdrive--ensure-dot-slash-prefix-path
+       (concat
+        (pcase org-link-file-path-type
+          ;; TODO: Handle `org-link-file-path-type' as a function.
+          ((or 'absolute
+               ;; TODO: Consider special-casing `noabbrev' - who knows?
+               ;; `noabbrev' is like `absolute' because hyperdrives have
+               ;; no home directory.
+               'noabbrev
+               (and 'adaptive (guard (not adaptive-target-p))))
+           (hyperdrive-entry-path entry))
+          ((or 'relative (and 'adaptive (guard adaptive-target-p)))
+           (file-relative-name
+            (hyperdrive-entry-path entry)
+            (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))
+        search-option)))))
+
+(defun hyperdrive--org-link-description (link)
+  "Return description of Org LINK or nil if it has none."
+  ;; TODO: Is there a built-in solution?
+  (when-let* ((desc-begin (org-element-property :contents-begin link))
+              (desc-end (org-element-property :contents-end link)))
+    (buffer-substring desc-begin desc-end)))
 
 ;;;###autoload
 (with-eval-after-load 'org

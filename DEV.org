@@ -277,3 +277,118 @@ even when that peer is not advertising the topic ~not-advertising-this~.
 
 How to tell which extension caused a peer-open or peer-remove event?
 
+* Org links 
+
++ [[file:tests/org links.org][org links.org]]
+
+** Design
+
+1. Basically, we want to always store a full ~hyper://...~ URL when the user calls ~org-store-link~.
+2. Then, when the user calls ~org-insert-link~, we decide based on context (and maybe also on user input) what kind of a link to insert.
+
+*** Terminology
+
++ Hyperdrive Org links :: Links to hyperdrive files/directories that are valid within Org documents.
+
+  - With protocol prefix
+
+    This link type or may not be surrounded by brackets. It may or may
+    not contain a search option. Path and search option must be
+    URL-encoded and separated by a decoded ~#~.
+
+    * No search option :: e.g. ~hyper://deadbeef/foo/bar%20quux.org~, which decodes to ~hyper://deadbeef/foo/bar quux.org~
+
+    * ~CUSTOM_ID~ :: e.g.
+      ~hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::#baz zot~
+
+    * Heading text search option :: With or without ~*~ (actually [[elisp:(rx "*" (0+ space))]]) prefix, e.g.
+
+      - ~hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::*Heading A~
+      - ~hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2A%20%20Heading%20A~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::*  Heading A~
+      - ~hyper://deadbeef/foo/bar%20quux.org#%3A%3AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::Heading A~
+
+  - Without protocol prefix
+
+    This link type must be surrounded by brackets.  It has no
+    URL-encoding in any part. It may or may not contain a path:
+
+    + With path :: A link pointing to a file at a path, starting with ~/~ or ~.~, with or without search option:
+
+      - No search option :: ~[[/foo/bar quux.org]]~
+
+      - ~CUSTOM_ID~ :: e.g. ~[[/foo/bar quux.org::#CUSTOM_ID]]~
+
+      - Heading text search option :: With or without ~*~ (actually [[elisp:(rx "*" (0+ space))]]) prefix, e.g.
+
+        + ~[[/foo/bar quux.org::*Heading A]]~
+        + ~[[/foo/bar quux.org::*  Heading A]]~
+        + ~[[/foo/bar quux.org::Heading A]]~
+
+    + Without path :: A link pointing to a heading in the same file with search option alone:
+
+      - ~CUSTOM_ID~ :: e.g. ~#CUSTOM_ID~
+
+      - Heading text search option :: With or without ~*~ (actually [[elisp:(rx "*" (0+ space))]]) prefix, e.g.
+
+        + ~*Heading A~
+        + ~*  Heading A~
+        + ~Heading A~
+
+*** Limitations
+
++ Because hyperdrive buffers are not considered file-backed by Emacs, and Org refuses to follow ~ID~-based links in non-file-backed buffers, in a hyperdrive-backed Org buffer, ~ID~-based links /will not/ be followable.  This is a limitation of ~org-id.el~, and it seems unlikely that we would be able to overcome it (unless and until we support hyperdrive using TRAMP's infrastructure).
+
+*** Use cases
+
++ We want users to be able to take one or more Org files and have links between them continue working regardless of whether the files are on a hyperdrive or not.
+
+*** Storing links
+
++ All examples below assume point is on a heading titled ~Heading A~.
+
+**** To a heading with a ~CUSTOM_ID~
+
+Assuming the ~CUSTOM_ID~ is ~heading-a~:
+
++ We'll follow Org's example by storing two links:
+  + ~hyper://public-key/foo.org#heading-a~
+  + ~hyper://public-key/foo.org#::*Heading A~
+
+**** To a heading with only an ~ID~
+
++ Because of the [[*Limitations][Limitations]], if the user stores a link to a heading that does not have a ~CUSTOM_ID~ but only has an ~ID~, we ignore the ~ID~.
++ We store: [[hyper://public-key/foo.org#::*Heading A]]
+
+**** To a heading with neither ~CUSTOM_ID~ nor ~ID~
+
++ We store: [[hyper://public-key/foo.org#::*Heading A]]
++ Internally, the entry's ~etc~ map's ~target~ key will have the value ~"::*Heading A"~.
+
+*** Inserting links
+
++ *NOTE*: After several attempts at using ~:override~ advice, integrating, and modifying ~org-insert-link~, we concluded that those approaches are impractical.  Instead, we'll use ~:after~ advice to allow ~org-insert-link~ to behave normally, and then read the link it inserted and modify it as appropriate for the hyperdrive-backed buffer.
+
++ We first distinguish between whether the buffer we're inserting the link into is within the same hyperdrive, or not.
+
+**** Inserting into a buffer that is in the same hyperdrive
+
++ Like Org mode, we'll use a relative link.
+
+**** Inserting into a buffer that is not in the same hyperdrive
+
+**** Inserting full ~hyper://~ -prefixed links
+
++ These links may point only to files, or headings in files which have ~CUSTOM_ID~ properties--not headings which have ~ID~ properties, nor by using ~:search-option~-style heading matches.
++ Like in Org, a link using a ~#~-prefixed "fragment" may point only to a heading which has a ~CUSTOM_ID~ property; the ~ID~ property is not considered, nor is heading text.
+
++ This type of link may point to:
+  * A file (i.e. not to a heading within a file)
+  * A heading within a file, by:
+    * ~CUSTOM_ID~ (by placing the ID in the URL fragment, i.e. ~hyper://.../foo.org#CUSTOM_ID~ )
+    * Heading text (by placing the Org search option in the URL fragment, URL-encoded, i.e. ~hyper://.../foo.org/#%3A%3A%2AHeading%20A~ to encode the search option ~::*Heading A~).
+    # TODO: Consider also supporting ~ID~ properties.
+
+**** Inserting relative links
+
++ 
+

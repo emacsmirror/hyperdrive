@@ -303,10 +303,15 @@ Intended to be passed to `buffer-local-restore-state'.")
                      ;; to allow diffing modified buffer with hyperdrive file
                      buffer-offer-save t))
         (add-hook 'after-change-major-mode-hook
-                  #'hyperdrive--hack-write-contents-functions nil 'local))
+                  #'hyperdrive--hack-write-contents-functions nil 'local)
+        ;; TODO: Consider checking for existing advice before adding our own.
+        (advice-add #'org-insert-link :after #'hyperdrive--org-insert-link-after-advice))
     (buffer-local-restore-state hyperdrive-mode--state)
     (remove-hook 'after-change-major-mode-hook
-                 #'hyperdrive--hack-write-contents-functions 'local)))
+                 #'hyperdrive--hack-write-contents-functions 'local)
+    ;; FIXME: Only remove advice when all hyperdrive-mode buffers are killed.
+    ;; (advice-remove #'org-insert-link #'hyperdrive--org-insert-link)
+    ))
 ;; Making it permanent-local keeps the minor mode active even if the
 ;; user changes the major mode, so the buffer can still be saved back
 ;; to the hyperdrive.
@@ -635,12 +640,11 @@ Universal prefix argument \\[universal-argument] forces
                 :finally (lambda ()
                            ;; FIXME: Offer more informative message in case of errors?
                            (hyperdrive-open (hyperdrive-entry-create :hyperdrive hyperdrive
-                                                                     :path target-directory
-                                                                     :encode t))
+                                                                     :path target-directory))
                            (hyperdrive-message "Uploaded %s files." (length files))))))
     (dolist (file files)
       (let* ((path (file-name-concat target-directory (file-name-nondirectory file)))
-             (entry (hyperdrive-entry-create :hyperdrive hyperdrive :path path :encode t)))
+             (entry (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
         ;; TODO: Handle failures? Retry?
         (hyperdrive-upload-file file entry :queue queue :then #'ignore)))
     (plz-run queue)))

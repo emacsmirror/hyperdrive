@@ -64,7 +64,7 @@ Passes ARGS to `format-message'."
   ;; could theoretically contain a slash, and `file-name-nondirectory'
   ;; would return the wrong value in that case.
   (name nil :documentation "Decoded filename of entry (excluding leading slash).")
-  (path nil :documentation "Encoded path (including leading slash).")
+  (path nil :documentation "Decoded path (including leading slash).")
   (headers nil :documentation "HTTP headers from request.")
   (mtime nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
@@ -97,18 +97,22 @@ domains slot."
                (host (or public-key (car domains))))
     (concat "hyper://" host)))
 
+(defun hyperdrive--url-hexify-string (string)
+  "Return STRING having been URL-encoded.
+Calls `url-hexify-string' with the \"/\" character added to
+`url-unreserved-chars'."
+  (url-hexify-string string (cons ?/ url-unreserved-chars)))
+
 (defun hyperdrive-entry-url (entry)
   "Return ENTRY's canonical URL.
 Returns URL with hyperdrive's full public key."
   (hyperdrive--format-entry-url entry :with-protocol t))
 
-(cl-defun hyperdrive-entry-create (&key hyperdrive path version etc encode)
+(cl-defun hyperdrive-entry-create (&key hyperdrive path version etc)
   "Return hyperdrive entry struct from args.
 HYPERDRIVE, VERSION, and ETC are used as-is.  Entry NAME is
-generated from PATH.  When ENCODE is non-nil, encode PATH."
+generated from PATH."
   (setf path (hyperdrive--format-path path))
-  (when encode
-    (cl-callf url-hexify-string path (cons ?/ url-unreserved-chars)))
   (hyperdrive-entry--create
    :hyperdrive hyperdrive
    :path path
@@ -267,30 +271,19 @@ before making the entry struct."
                               (or (gethash host hyperdrive-hyperdrives)
                                   (hyperdrive-create :public-key host)))))
                (etc (when target
-                      (list (cons 'target target))))
+                      `((target . ,(substring (url-unhex-string target) (length "::"))))))
                (version (pcase path
                           ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
                            (setf path p)
                            (string-to-number v)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
-    (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version :etc etc)))
+    (hyperdrive-entry-create :hyperdrive hyperdrive :path (url-unhex-string path)
+                             :version version :etc etc)))
 
 ;;;; Entries
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
-
-(defun hyperdrive-entry-equal (a b)
-  "Return non-nil if hyperdrive entries A and B are equal.
-Compares only public key and path."
-  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
-                          (hyperdrive (cl-struct hyperdrive (public-key a-key))))
-               a)
-              ((cl-struct hyperdrive-entry (path b-path)
-                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
-               b))
-    (and (equal a-path b-path)
-         (equal a-key b-key))))
 
 (defun hyperdrive-entry-latest (entry)
   "Return ENTRY at its hyperdrive's latest version, or nil."
@@ -300,7 +293,7 @@ Compares only public key and path."
   "Return URI-encoded URL for ENTRY without protocol, version, target, or face.
 Intended to be used as hash table key in `hyperdrive-version-ranges'."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path :encode t)))
+               (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
     (hyperdrive--format-entry-url version-less :host-format '(public-key) :with-protocol nil
                                   :with-help-echo nil :with-target nil :with-faces nil)))
 
@@ -943,6 +936,7 @@ When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
 
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
+           (with-path t)
            (with-protocol t) (with-help-echo t) (with-target t) (with-faces t))
   "Return ENTRY's URL.
 Returns URL formatted like:
@@ -959,7 +953,9 @@ number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
 and `domain', the resulting URL may not be a valid hyperdrive
-URL."
+URL.
+
+Path and target fragment are URI-encoded."
   ;; NOTE: Entries may have only a domain, not a public key yet, so we
   ;; include `domain' in HOST-FORMAT's default value.  The public key
   ;; will be filled in later.
@@ -967,18 +963,24 @@ URL."
                 entry)
                (protocol (when with-protocol
                            "hyper://"))
-               (host (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                              :format host-format :with-faces with-faces))
+               (host (when host-format
+                       ;; FIXME: Update docstring to say that host-format can be nil to omit it.
+                       (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
+                                                :format host-format :with-faces with-faces)))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)
-                              (concat "#" target)))
+                              (concat "#" (url-hexify-string "::")
+                                      (url-hexify-string target))))
+               (path (when with-path
+                       (hyperdrive--url-hexify-string path)))
                (url (concat protocol host version-part path target-part)))
     (if with-help-echo
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
                                 entry :with-protocol t :host-format '(public-key domain)
-                                :with-help-echo nil :with-target with-target :with-faces with-faces))
+                                :with-path with-path :with-help-echo nil :with-target with-target
+                                :with-faces with-faces))
       url)))
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format with-label (with-faces t))
@@ -1078,7 +1080,7 @@ version number."
                         (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number current-version)
                       current-version)))
          (path (hyperdrive-read-path :hyperdrive hyperdrive :version version :default default-path)))
-    (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version :encode t)))
+    (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version)))
 
 (defvar hyperdrive--version-history nil
   "Minibuffer history of `hyperdrive-read-version'.")
@@ -1320,8 +1322,8 @@ Affected by option `hyperdrive-reuse-buffers', which see."
   "Return non-nil when BUFFER is visiting ENTRY."
   (and (buffer-local-value 'hyperdrive-mode buffer)
        (buffer-local-value 'hyperdrive-current-entry buffer)
-       (hyperdrive-entry-equal entry
-                               (buffer-local-value 'hyperdrive-current-entry buffer))))
+       (hyperdrive-entry-equal-p
+        entry (buffer-local-value 'hyperdrive-current-entry buffer))))
 
 (defun hyperdrive--buffer-for-entry (entry)
   "Return a predicate to match buffer against ENTRY."
@@ -1386,15 +1388,6 @@ When PATH is nil or blank, return \"/\"."
                         path)
                       "/")))
 
-(defun hyperdrive-expand-url (path &optional base)
-  "Return a URL string of PATH expanded against current entry.
-When BASE is non-nil, PATH will be expanded against BASE instead."
-  (let* ((urlobj (url-generic-parse-url path))
-         (defobj (url-generic-parse-url (or base (hyperdrive-entry-url hyperdrive-current-entry)))))
-    ;; Destructively modify the URL object to give it the correct host and path.
-    (url-default-expander urlobj defobj)
-    (url-recreate-url urlobj)))
-
 ;;;; Utilities
 
 (defun hyperdrive-time-greater-p (a b)
@@ -1409,6 +1402,33 @@ When BUFFER is nil, act on current buffer."
     (let ((inhibit-read-only t))
       (delete-all-overlays)
       (set-text-properties (point-min) (point-max) nil))))
+
+(defun hyperdrive-entry-equal-p (a b)
+  "Return non-nil if hyperdrive entries A and B are equal.
+Compares only public key and path."
+  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key a-key))))
+               a)
+              ((cl-struct hyperdrive-entry (path b-path)
+                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
+               b))
+    (and (equal a-path b-path)
+         (equal a-key b-key))))
+
+(defun hyperdrive-equal-p (a b)
+  "Return non-nil if hyperdrives A and B are equal.
+Compares their public keys."
+  (equal (hyperdrive-public-key a) (hyperdrive-public-key b)))
+
+(defun hyperdrive-entry-hyperdrive-equal-p (a b)
+  "Return non-nil if entries A and B have the same hyperdrive."
+  (hyperdrive-equal-p (hyperdrive-entry-hyperdrive a) (hyperdrive-entry-hyperdrive b)))
+
+(defun hyperdrive--ensure-dot-slash-prefix-path (path)
+  "Return PATH. Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
+  (if (string-match-p (rx bos (or "/" "./" "../")) path)
+      path
+    (concat "./" path)))
 
 (provide 'hyperdrive-lib)
 ;;; hyperdrive-lib.el ends here

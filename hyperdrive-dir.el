@@ -52,8 +52,7 @@ the metadata has been loaded."
                                   (hyperdrive-entry-create
                                    :hyperdrive hyperdrive
                                    :path (concat (url-unhex-string path) entry-name)
-                                   :version version
-                                   :encode t))
+                                   :version version))
                                 entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
                (header (hyperdrive-dir-column-headers (hyperdrive-entry-description directory-entry)))
@@ -62,7 +61,7 @@ the metadata has been loaded."
                (metadata-queue) (ewoc) (prev-entry) (prev-point))
     (cl-labels ((goto-entry (entry ewoc)
                   (when-let ((node (hyperdrive-ewoc-find-node ewoc entry
-                                     :predicate #'hyperdrive-entry-equal)))
+                                     :predicate #'hyperdrive-entry-equal-p)))
                     (goto-char (ewoc-location node))))
                 (update-footer (num-filled num-of)
                   (when (zerop (mod num-filled 5))
