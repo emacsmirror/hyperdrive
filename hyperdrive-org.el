@@ -147,7 +147,7 @@ the current location."
                  (not (string-prefix-p "file:" raw-link-type)))
         (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) hyperdrive-current-entry)
                      (entry (hyperdrive-entry-create
-                             :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
+                             :hyperdrive hyperdrive
                              :path (expand-file-name (org-element-property :path context)
                                                      (file-name-directory path))
                              :etc `((target . ,(org-element-property :search-option context))))))
