@@ -276,8 +276,10 @@ filesystem, explicitly add the ~file:~ link type prefix:
 ~file:~/.emacs.d/init.el~.
 
 Org-mode hyperdrive link completion allows you to interactively link
-to a hyperdrive file/folder by running ~M-x org-insert-link~ (or ~C-c
-C-l~ in org-mode), then typing ~hyper:~ and ~RET~.
+to a hyperdrive file/folder by running ~M-x org-insert-link~ (or ~C-c C-l~
+in org-mode), then typing ~hyper:~ and ~RET~.  To change how
+~org-insert-link~ inserts links to files within the same hyperdrive,
+adjust ~hyperdrive-org-link-full-url~ and ~org-link-file-path-type~.
 
 ** View the hyperdrive version history
 #+findex: hyperdrive-previous-version
