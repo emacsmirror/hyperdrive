@@ -116,13 +116,12 @@ raw URL, not an Org link."
 
 (defun hyperdrive--org-link-goto (target)
   "Go to TARGET in current Org buffer.
-TARGET may be a CUSTOM_ID, an ID, or a headline."
+TARGET may be a CUSTOM_ID or a headline."
   (cl-assert (eq 'org-mode major-mode))
   ;; We do not ensure that a target only exists once in the file, but
   ;; neither does Org always do so.
   (setf target (url-unhex-string target))
   (goto-char (or (org-find-property "CUSTOM_ID" target)
-                 (org-find-property "ID" target)
                  (org-find-exact-headline-in-buffer target)
                  (hyperdrive-error "Unable to find entry in file: %S" target))))
 
