@@ -141,9 +141,7 @@ the logic for handling links of \"file\" type.
 Uses `url-default-expander' to expand the relative link against
 the current location."
   (when hyperdrive-mode
-    (let* ((context
-            ;; TODO: Double-check that this is the correct way to get context.
-            (org-element-lineage (org-element-context) '(link) t))
+    (let* ((context (org-element-lineage (org-element-context) '(link) t))
            (element-type (org-element-type context))
            (link-type (org-element-property :type context))
            (raw-link-type (org-element-property :raw-link context)))
