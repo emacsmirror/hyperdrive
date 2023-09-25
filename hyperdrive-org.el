@@ -146,7 +146,13 @@ the current location."
                  ;; Don't treat link as a relative/absolute path in the
                  ;; hyperdrive if "file:" protocol prefix is explicit.
                  (not (string-prefix-p "file:" raw-link-type)))
-        (hyperdrive-open-url (hyperdrive-expand-url (org-element-property :path context)))))))
+        (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) hyperdrive-current-entry)
+                     (entry (hyperdrive-entry-create
+                             :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
+                             :path (expand-file-name (org-element-property :path context)
+                                                     (file-name-directory path))
+                             :etc `((target . ,(org-element-property :search-option context))))))
+          (hyperdrive-open entry))))))
 
 (defun hyperdrive--org-insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
