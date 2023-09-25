@@ -35,8 +35,6 @@
 (require 'hyperdrive)
 (require 'hyperdrive-org)
 
-;; TODO: Rename this file to test-hyperdrive-org.el
-
 ;;;; Tests
 
 ;;;;; Scenarios
