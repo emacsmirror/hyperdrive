@@ -254,3 +254,79 @@ variables and the expected link."
   :path "/thud.org"
   :results
   ((:result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A][Heading A]]")))
+
+;;;; Parse relative/absolute link into entry tests
+
+;; Neither full "hyper://"-prefixed URLs, nor links which are only search
+;; options, are handled by `hyperdrive--org-link-entry-at-point'.
+
+(defmacro hyperdrive-org-test-link-parse-deftest (name current-entry link parsed-entry)
+  (declare (indent defun))
+  (let ((test-name (intern (format "hyperdrive-test-org-parse-link/%s" name))))
+    `(ert-deftest ,test-name ()
+       (let ((hyperdrive-current-entry ,current-entry))
+         (with-temp-buffer
+           ;; FIXME: Use persistent buffer for performance.
+           (org-mode)
+           (erase-buffer)
+           (insert ,link)
+           (goto-char (point-min))
+           (should
+            (hyperdrive-entry-equal-p ,parsed-entry (hyperdrive--org-link-entry-at-point))))))))
+
+(hyperdrive-org-test-link-parse-deftest absolute/without-search-option
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org")
+  "[[/foo/bar quux.org]]"
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org"))
+
+(hyperdrive-org-test-link-parse-deftest parent/without-search-option
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org")
+  "[[../foo/bar quux.org]]"
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org"))
+
+(hyperdrive-org-test-link-parse-deftest sibling/without-search-option
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org")
+  "[[./bar quux.org]]"
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org"))
+
+(hyperdrive-org-test-link-parse-deftest sibling/with-heading-text-search-option
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org")
+  "[[./bar quux.org::Heading A]]"
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org"
+   :etc '((target . "Heading A"))))
+
+(hyperdrive-org-test-link-parse-deftest sibling/with-heading-text*-search-option
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org")
+  "[[./bar quux.org::*Heading A]]"
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org"
+   :etc '((target . "*Heading A"))))
+
+(hyperdrive-org-test-link-parse-deftest sibling/with-custom-id-search-option
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org")
+  "[[./bar quux.org::#baz zot]]"
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+   :path "/foo/bar quux.org"
+   :etc '((target . "#baz zot"))))

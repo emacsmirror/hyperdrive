@@ -131,27 +131,30 @@ TARGET may be a CUSTOM_ID or a headline."
   "Handle relative links in hyperdrive-mode org files.
 
 Added to `org-open-at-point-functions' in order to short-circuit
-the logic for handling links of \"file\" type.
-
-Uses `url-default-expander' to expand the relative link against
-the current location."
+the logic for handling links of \"file\" type."
   (when hyperdrive-mode
-    (let* ((context (org-element-lineage (org-element-context) '(link) t))
-           (element-type (org-element-type context))
-           (link-type (org-element-property :type context))
-           (raw-link-type (org-element-property :raw-link context)))
-      (when (and (eq element-type 'link)
-                 (equal "file" link-type)
-                 ;; Don't treat link as a relative/absolute path in the
-                 ;; hyperdrive if "file:" protocol prefix is explicit.
-                 (not (string-prefix-p "file:" raw-link-type)))
-        (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) hyperdrive-current-entry)
-                     (entry (hyperdrive-entry-create
-                             :hyperdrive hyperdrive
-                             :path (expand-file-name (org-element-property :path context)
-                                                     (file-name-directory path))
-                             :etc `((target . ,(org-element-property :search-option context))))))
-          (hyperdrive-open entry))))))
+    (hyperdrive-open (hyperdrive--org-link-entry-at-point))))
+
+(defun hyperdrive--org-link-entry-at-point ()
+  "Return a hyperdrive entry for the Org link at point."
+  ;; This function is not in the code path for full URLs or links that
+  ;; are only search options.
+  (let* ((context (org-element-lineage (org-element-context) '(link) t))
+         (element-type (org-element-type context))
+         (link-type (org-element-property :type context))
+         (raw-link-type (org-element-property :raw-link context)))
+    (when (and (eq element-type 'link)
+               (equal "file" link-type)
+               ;; Don't treat link as a relative/absolute path in the
+               ;; hyperdrive if "file:" protocol prefix is explicit.
+               (not (string-prefix-p "file:" raw-link-type)))
+      (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) hyperdrive-current-entry)
+                   (entry (hyperdrive-entry-create
+                           :hyperdrive hyperdrive
+                           :path (expand-file-name (org-element-property :path context)
+                                                   (file-name-directory path))
+                           :etc `((target . ,(org-element-property :search-option context))))))
+        entry))))
 
 (defun hyperdrive--org-insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
