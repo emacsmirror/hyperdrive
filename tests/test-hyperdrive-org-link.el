@@ -84,14 +84,14 @@
 ;;;;; Scenarios
 
 (defvar hyperdrive-test-org-store-link-scenarios
-  '((org-mode/before-heading
+  '((org-mode-before-heading
      :public-key "deadbeef"
      :path "/foo/bar quux.org"
      :content "★
 * Heading A"
      :url "hyper://deadbeef/foo/bar%20quux.org"
      :desc nil)
-    (org-mode/on-heading-with-custom-id
+    (org-mode-on-heading-with-custom-id
      :public-key "deadbeef"
      :path "/foo/bar quux.org"
      :content
@@ -102,7 +102,7 @@
 ★"
      :url "hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot"
      :desc "Heading A")
-    (org-mode/on-heading-no-custom-id
+    (org-mode-on-heading-no-custom-id
      :public-key "deadbeef"
      :path "/foo/bar quux.org"
      :content "* Heading A
@@ -157,9 +157,9 @@ Point is indicated by ★."
          (should (string= expected-desc got-desc))))))
 
 ;; TODO: Loop through `hyperdrive-test-org-store-link-scenarios'?
-(hyperdrive-test-org-store-link-deftest org-mode/before-heading)
-(hyperdrive-test-org-store-link-deftest org-mode/on-heading-with-custom-id)
-(hyperdrive-test-org-store-link-deftest org-mode/on-heading-no-custom-id)
+(hyperdrive-test-org-store-link-deftest org-mode-before-heading)
+(hyperdrive-test-org-store-link-deftest org-mode-on-heading-with-custom-id)
+(hyperdrive-test-org-store-link-deftest org-mode-on-heading-no-custom-id)
 
 ;; + Hyperdrive Org links :: Links to hyperdrive files/directories that are valid within Org documents.
 
