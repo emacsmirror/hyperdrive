@@ -161,6 +161,118 @@ Point is indicated by ★."
 (hyperdrive-test-org-store-link-deftest org-mode-on-heading-with-custom-id)
 (hyperdrive-test-org-store-link-deftest org-mode-on-heading-no-custom-id)
 
+;;;;; Inserting links
+
+(cl-defun hyperdrive-test-org-entry-create (&key public-key path)
+  (hyperdrive-entry-create
+   :hyperdrive (hyperdrive-create :public-key public-key)
+   :path path))
+
+(cl-defun hyperdrive-test-org-insert-link-string (scenario &key public-key path)
+  "Return link for SCENARIO inserted into entry with PUBLIC-KEY and PATH."
+  (declare (indent defun))
+  (pcase-let* (((map :url :desc) (alist-get scenario hyperdrive-test-org-store-link-scenarios))
+               (org-stored-links `((,url ,desc))))
+    (with-temp-buffer
+      (org-mode)
+      (hyperdrive-mode)
+      (setq-local hyperdrive-current-entry (hyperdrive-test-org-entry-create
+                                            :public-key public-key :path path))
+      (org-insert-link nil url desc)
+      (buffer-string))))
+
+(cl-defmacro hyperdrive-test-org-insert-link-deftest (name &key public-key path results)
+  "Test inserted link in entry with PUBLIC-KEY and PATH.
+Scenario is the first part of NAME, and RESULTS contain let-bound
+variables and the expected link."
+  (declare (indent defun))
+  (let ((scenario (intern (string-trim-right (symbol-name name)
+                                             (rx "/" (1+ anything) eos))))
+        body-forms)
+    (pcase-dolist ((map (:let vars) (:result result)) results)
+      (let* ((olfpt (cadadr (assoc 'org-link-file-path-type vars)))
+             (test-name (intern (format "hyperdrive-test-org-insert-link/%s/%s"
+                                        name olfpt))))
+        (push `(ert-deftest ,test-name ()
+                 (let (,@vars)
+                   (should (string= ,result
+                                    (hyperdrive-test-org-insert-link-string ',scenario
+                                      :public-key ,public-key :path ,path)))))
+              body-forms)))
+    `(progn ,@body-forms)))
+
+(hyperdrive-test-org-insert-link-deftest org-mode-before-heading/same-drive-same-path
+  :public-key "deadbeef"
+  :path "/foo/bar quux.org"
+  :results (( :let ((org-link-file-path-type 'relative))
+              :result "[[./bar quux.org]]")
+            ( :let ((org-link-file-path-type 'absolute))
+              :result "[[/foo/bar quux.org]]")
+            ( :let ((org-link-file-path-type 'noabbrev))
+              :result "[[/foo/bar quux.org]]")
+            ( :let ((org-link-file-path-type 'adaptive))
+              :result "[[./bar quux.org]]")))
+
+(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-with-custom-id/same-drive-same-path
+  :public-key "deadbeef"
+  :path "/foo/bar quux.org"
+  :results (( :let ((org-link-file-path-type 'relative))
+              :result "[[#baz zot][Heading A]]")
+            ( :let ((org-link-file-path-type 'absolute))
+              :result "[[#baz zot][Heading A]]")
+            ( :let ((org-link-file-path-type 'noabbrev))
+              :result "[[#baz zot][Heading A]]")
+            ( :let ((org-link-file-path-type 'adaptive))
+              :result "[[#baz zot][Heading A]]")))
+
+(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-no-custom-id/same-drive-same-path
+  :public-key "deadbeef"
+  :path "/foo/bar quux.org"
+  :results (( :let ((org-link-file-path-type 'relative))
+              :result "[[*Heading A][Heading A]]")
+            ( :let ((org-link-file-path-type 'absolute))
+              :result "[[*Heading A][Heading A]]")
+            ( :let ((org-link-file-path-type 'noabbrev))
+              :result "[[*Heading A][Heading A]]")
+            ( :let ((org-link-file-path-type 'adaptive))
+              :result "[[*Heading A][Heading A]]")))
+
+(hyperdrive-test-org-insert-link-deftest org-mode-before-heading/same-drive-different-path
+  :public-key "deadbeef"
+  :path "/thud.org"
+  :results (( :let ((org-link-file-path-type 'relative))
+              :result "[[./foo/bar quux.org]]")
+            ( :let ((org-link-file-path-type 'absolute))
+              :result "[[/foo/bar quux.org]]")
+            ( :let ((org-link-file-path-type 'noabbrev))
+              :result "[[/foo/bar quux.org]]")
+            ( :let ((org-link-file-path-type 'adaptive))
+              :result "[[./foo/bar quux.org]]")))
+
+(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-with-custom-id/same-drive-different-path
+  :public-key "deadbeef"
+  :path "/thud.org"
+  :results (( :let ((org-link-file-path-type 'relative))
+              :result "[[./foo/bar quux.org::#baz zot][Heading A]]")
+            ( :let ((org-link-file-path-type 'absolute))
+              :result "[[/foo/bar quux.org::#baz zot][Heading A]]")
+            ( :let ((org-link-file-path-type 'noabbrev))
+              :result "[[/foo/bar quux.org::#baz zot][Heading A]]")
+            ( :let ((org-link-file-path-type 'adaptive))
+              :result "[[./foo/bar quux.org::#baz zot][Heading A]]")))
+
+(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-no-custom-id/same-drive-different-path
+  :public-key "deadbeef"
+  :path "/thud.org"
+  :results (( :let ((org-link-file-path-type 'relative))
+              :result "[[./foo/bar quux.org::*Heading A][Heading A]]")
+            ( :let ((org-link-file-path-type 'absolute))
+              :result "[[/foo/bar quux.org::*Heading A][Heading A]]")
+            ( :let ((org-link-file-path-type 'noabbrev))
+              :result "[[/foo/bar quux.org::*Heading A][Heading A]]")
+            ( :let ((org-link-file-path-type 'adaptive))
+              :result "[[./foo/bar quux.org::*Heading A][Heading A]]")))
+
 ;; + Hyperdrive Org links :: Links to hyperdrive files/directories that are valid within Org documents.
 
 ;;   - With protocol prefix
