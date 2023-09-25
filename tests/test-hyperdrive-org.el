@@ -88,6 +88,7 @@ Point is indicated by ★."
         org-stored-links)
     (with-temp-buffer
       (insert contents)
+      ;; TODO: Initialize this buffer only once for this file's tests.
       (org-mode)
       (hyperdrive-mode)
       (setq-local hyperdrive-current-entry entry)
@@ -129,6 +130,7 @@ Point is indicated by ★."
   (declare (indent defun))
   (pcase-let (((map :url :desc) (alist-get scenario hyperdrive-test-org-store-link-scenarios)))
     (with-temp-buffer
+      ;; TODO: Initialize this buffer only once for this file's tests.
       (org-mode)
       (hyperdrive-mode)
       (setq-local hyperdrive-current-entry (hyperdrive-test-org-entry-create
