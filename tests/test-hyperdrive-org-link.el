@@ -159,6 +159,8 @@ variables and the expected link."
               body-forms)))
     `(progn ,@body-forms)))
 
+;;;;;; Insert shorthand links
+
 (hyperdrive-test-org-insert-link-deftest org-mode-before-heading/same-drive-same-path
   :public-key "deadbeef"
   :path "/foo/bar quux.org"
