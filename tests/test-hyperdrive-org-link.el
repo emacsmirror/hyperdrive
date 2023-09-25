@@ -76,7 +76,7 @@ Each value is a plist with the following keys:
 - \\=`:url'
 - \\=`:desc'")
 
-;;;;; Storing links
+;;;;; Store links
 
 (cl-defun hyperdrive-test-org-store-link (contents &key public-key path)
   "Return stored link to entry with PUBLIC-KEY, PATH, and CONTENTS.
@@ -119,7 +119,7 @@ Point is indicated by ★."
 (hyperdrive-test-org-store-link-deftest org-mode-on-heading-with-custom-id)
 (hyperdrive-test-org-store-link-deftest org-mode-on-heading-no-custom-id)
 
-;;;;; Inserting links
+;;;;; Insert links
 
 (cl-defun hyperdrive-test-org-entry-create (&key public-key path)
   (hyperdrive-entry-create
