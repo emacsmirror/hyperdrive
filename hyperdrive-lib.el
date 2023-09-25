@@ -936,20 +936,20 @@ When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
 
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
-           (with-path t)
-           (with-protocol t) (with-help-echo t) (with-target t) (with-faces t))
+           (with-path t) (with-protocol t) (with-help-echo t)
+           (with-target t) (with-faces t))
   "Return ENTRY's URL.
 Returns URL formatted like:
 
   hyper://HOST-FORMAT/PATH/TO/FILE
 
-HOST-FORMAT is passed to `hyperdrive--format-host', which see.  If
-WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
+HOST-FORMAT is passed to `hyperdrive--format-host', which see.
+If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL.  When WITH-FACES is nil, don't add face text properties.
-If WITH-TARGET, append the ENTRY's target, stored in its :etc
-slot.  When ENTRY has non-nil `version' slot, include version
-number in URL.
+full URL.  When WITH-FACES is nil, don't add face text
+properties.  If WITH-TARGET, append the ENTRY's target, stored in
+its :etc slot.  If WITH-PATH, include the path portion.  When
+ENTRY has non-nil `version' slot, include version number in URL.
 
 Note that, if HOST-FORMAT includes values other than `public-key'
 and `domain', the resulting URL may not be a valid hyperdrive
@@ -973,6 +973,7 @@ Path and target fragment are URI-encoded."
                               (concat "#" (url-hexify-string "::")
                                       (url-hexify-string target))))
                (path (when with-path
+                       ;; TODO: Consider removing this argument if it's not needed.
                        (hyperdrive--url-hexify-string path)))
                (url (concat protocol host version-part path target-part)))
     (if with-help-echo
@@ -1425,7 +1426,8 @@ Compares their public keys."
   (hyperdrive-equal-p (hyperdrive-entry-hyperdrive a) (hyperdrive-entry-hyperdrive b)))
 
 (defun hyperdrive--ensure-dot-slash-prefix-path (path)
-  "Return PATH. Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
+  "Return PATH, ensuring it begins with the correct prefix.
+Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
   (if (string-match-p (rx bos (or "/" "./" "../")) path)
       path
     (concat "./" path)))

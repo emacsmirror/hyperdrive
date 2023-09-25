@@ -175,8 +175,8 @@ the logic for handling links of \"file\" type."
 
 (cl-defun hyperdrive--org-shorthand-link (entry)
   "Return a non-\"hyper://\"-prefixed link to ENTRY.
-Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'.
-FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
+Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
+  ;; FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'.
   (cl-assert hyperdrive-current-entry)
   (let ((search-option (alist-get 'target (hyperdrive-entry-etc entry))))
     (when (and search-option
