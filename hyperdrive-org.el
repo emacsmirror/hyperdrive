@@ -136,7 +136,7 @@ TARGET may be a CUSTOM_ID or a headline."
   "Handle relative links in hyperdrive-mode org files.
 
 Added to `org-open-at-point-functions' in order to short-circuit
-the logic for handling links of \"fuzzy\" or \"file\" type.
+the logic for handling links of \"file\" type.
 
 Uses `url-default-expander' to expand the relative link against
 the current location."
@@ -148,16 +148,10 @@ the current location."
            (link-type (org-element-property :type context))
            (raw-link-type (org-element-property :raw-link context)))
       (when (and (eq element-type 'link)
-                 (or
-                  ;; "fuzzy" is for relative links without ./ prefix.
-                  (equal "fuzzy" link-type)
-                  ;; "file is for absolute links and relative links with ./ prefix.
-                  (equal "file" link-type))
-                 ;; Allow links to explicitly point to local files by
-                 ;; prefixing with "file:" (because Org assumes that links
-                 ;; without a specified protocol are "file:" links).
+                 (equal "file" link-type)
+                 ;; Don't treat link as a relative/absolute path in the
+                 ;; hyperdrive if "file:" protocol prefix is explicit.
                  (not (string-prefix-p "file:" raw-link-type)))
-        ;; FIXME: For fuzzy links, passing to hyperdrive-expand-url is a no-no.
         (hyperdrive-open-url (hyperdrive-expand-url (org-element-property :path context)))))))
 
 (defun hyperdrive--org-insert-link-after-advice (&rest _)
