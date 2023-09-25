@@ -271,7 +271,7 @@ before making the entry struct."
                               (or (gethash host hyperdrive-hyperdrives)
                                   (hyperdrive-create :public-key host)))))
                (etc (when target
-                      (list (cons 'target (url-unhex-string target)))))
+                      `((target . ,(substring (url-unhex-string target) (length "::"))))))
                (version (pcase path
                           ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
                            (setf path p)
@@ -970,7 +970,8 @@ Path and target fragment are URI-encoded."
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)
-                              (concat "#" (url-hexify-string target))))
+                              (concat "#" (url-hexify-string "::")
+                                      (url-hexify-string target))))
                (path (when with-path
                        (hyperdrive--url-hexify-string path)))
                (url (concat protocol host version-part path target-part)))

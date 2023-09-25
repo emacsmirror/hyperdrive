@@ -94,8 +94,8 @@ raw URL, not an Org link."
   (when hyperdrive-mode
     (let* ((heading (org-entry-get (point) "ITEM"))
            (custom-id (org-entry-get (point) "CUSTOM_ID"))
-           (fragment (cond (custom-id (concat "::#" custom-id))
-                           (heading (concat "::*" heading))))
+           (fragment (cond (custom-id (concat "#" custom-id))
+                           (heading (concat "*" heading))))
            (entry-copy (hyperdrive-copy-tree hyperdrive-current-entry t))
            (_ (setf (alist-get 'target (hyperdrive-entry-etc entry-copy)) fragment))
            (raw-url (hyperdrive-entry-url entry-copy)))
@@ -118,8 +118,7 @@ raw URL, not an Org link."
   "Go to TARGET in current Org buffer.
 TARGET may be a CUSTOM_ID or a headline."
   (cl-assert (eq 'org-mode major-mode))
-  ;; Remove leading "::" from target.
-  (org-link-search (substring target (length "::"))))
+  (org-link-search target))
 
 (defun hyperdrive-org-link-complete ()
   "Create a hyperdrive org link."
@@ -179,9 +178,11 @@ FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'."
   (let ((search-option (alist-get 'target (hyperdrive-entry-etc entry))))
     (when (and search-option
                (hyperdrive-entry-equal-p hyperdrive-current-entry entry))
-      ;; Search option alone: Remove leading "::"
-      (cl-return-from hyperdrive--org-shorthand-link
-        (substring search-option (length "::"))))
+      (cl-return-from hyperdrive--org-shorthand-link search-option))
+
+    ;; Search option alone: Remove leading "::"
+    (when search-option
+      (cl-callf2 concat "::" search-option))
 
     (let ((adaptive-target-p
            ;; See the `adaptive' option in `org-link-file-path-type'.
