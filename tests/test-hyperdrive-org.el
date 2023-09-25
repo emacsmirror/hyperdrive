@@ -127,8 +127,7 @@ Point is indicated by ★."
 (cl-defun hyperdrive-test-org-insert-link-string (scenario &key public-key path)
   "Return link for SCENARIO inserted into entry with PUBLIC-KEY and PATH."
   (declare (indent defun))
-  (pcase-let* (((map :url :desc) (alist-get scenario hyperdrive-test-org-store-link-scenarios))
-               (org-stored-links `((,url ,desc))))
+  (pcase-let (((map :url :desc) (alist-get scenario hyperdrive-test-org-store-link-scenarios)))
     (with-temp-buffer
       (org-mode)
       (hyperdrive-mode)
