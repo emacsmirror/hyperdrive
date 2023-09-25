@@ -68,11 +68,11 @@
   "Alist keyed by scenario symbols.
 Each value is a plist with the following keys:
 
-- \\=`:public-key'
-- \\=`:path'
-- \\=`:content'
-- \\=`:url'
-- \\=`:desc'")
+- \\+`:public-key'
+- \\+`:path'
+- \\+`:content'
+- \\+`:url'
+- \\+`:desc'")
 
 ;;;;; Store links
 
