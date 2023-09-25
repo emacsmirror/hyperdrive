@@ -231,5 +231,25 @@ variables and the expected link."
             ( :let ((org-link-file-path-type 'adaptive))
               :result "[[./foo/bar quux.org::*Heading A][Heading A]]")))
 
-;; TODO: We'll need at least one test for inserting a link into an Org
-;; file that is /not/ in a hyperdrive.
+;;;;;; Insert full "hyper://" links
+
+;; Testing a different drive should stand in for testing
+;; `hyperdrive-org-link-full-url' as well as insertion in
+;; non-hyperdrive buffers, since all of these cases cause
+;; `hyperdrive--org-insert-link-after-advice' to do nothing.
+
+(hyperdrive-test-org-insert-link-deftest org-mode-before-heading/different-drive
+  :public-key "fredbeef"
+  :path "/thud.org"
+  :results ((:result "[[hyper://deadbeef/foo/bar%20quux.org]]")))
+
+(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-with-custom-id/different-drive
+  :public-key "fredbeef"
+  :path "/thud.org"
+  :results ((:result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot][Heading A]]")))
+
+(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-no-custom-id/different-drive
+  :public-key "fredbeef"
+  :path "/thud.org"
+  :results
+  ((:result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2AHeading%20A][Heading A]]")))
