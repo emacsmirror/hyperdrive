@@ -130,6 +130,8 @@ TARGET may be a CUSTOM_ID or a headline."
   ;; TODO: Support other hyper:// links like diffs when implemented.
   (hyperdrive-entry-url (hyperdrive-read-entry :force-prompt t)))
 
+;; TODO: hyperdrive--org-* or hyperdrive-org--*?
+
 (defun hyperdrive--org-open-at-point ()
   "Handle relative links in hyperdrive-mode org files.
 
