@@ -118,11 +118,8 @@ raw URL, not an Org link."
   "Go to TARGET in current Org buffer.
 TARGET may be a CUSTOM_ID or a headline."
   (cl-assert (eq 'org-mode major-mode))
-  ;; We do not ensure that a target only exists once in the file, but
-  ;; neither does Org always do so.
-  (goto-char (or (org-find-property "CUSTOM_ID" target)
-                 (org-find-exact-headline-in-buffer target)
-                 (hyperdrive-error "Unable to find entry in file: %S" target))))
+  ;; Remove leading "::" from target.
+  (org-link-search (substring target (length "::"))))
 
 (defun hyperdrive-org-link-complete ()
   "Create a hyperdrive org link."
