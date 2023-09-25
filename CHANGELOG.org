@@ -7,6 +7,8 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 ** Added
 
+- ~org-insert-link~ automatically inserts relative links to hyperdrive
+  files within the same drive
 - ~yank-media~ support (on Emacs 29 or later)
 - ~save-some-buffers~ integration
 - ~info-look~ integration
