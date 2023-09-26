@@ -1,15 +1,16 @@
 image: nixos/latest
 environment:
   NIX_CONFIG: "experimental-features = nix-command flakes"
+  EMACS_CI: emacs-snapshot
 sources:
   - https://git.sr.ht/~ushin/hyperdrive.el
 tasks:
   - setup-emacs: |
-      nix run 'github:purcell/nix-emacs-ci#emacs-28-2' -- -Q
+      nix profile install 'github:purcell/nix-emacs-ci#emacs-28-2'
 
   - initialize-sandbox: |
       cd hyperdrive.el
-      ./makem/makem.sh -vvv --sandbox=.sandbox --install-deps --install-linters
+      ./makem/makem.sh --emacs emacs-28.2 -vvv --sandbox=.sandbox --install-deps --install-linters
 
   - all: |
       # We specify the rules so we can omit lint-checkdoc and
