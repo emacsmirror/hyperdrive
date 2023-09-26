@@ -2,6 +2,7 @@ image: debian/stable
 packages:
   - emacs
   - ispell
+  - iamerican
 sources:
   - https://git.sr.ht/~ushin/hyperdrive.el
 tasks:
