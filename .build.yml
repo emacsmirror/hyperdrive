@@ -6,10 +6,6 @@ packages:
 sources:
   - https://git.sr.ht/~ushin/hyperdrive.el
 tasks:
-  # - download-makem: |
-  #     cd hyperdrive.el || exit 1
-  #     curl -Lo makem.sh https://raw.githubusercontent.com/alphapapa/makem.sh/master/makem.sh
-  #     chmod 755 makem.sh
   - initialize-sandbox: |
       cd hyperdrive.el
       ./makem/makem.sh -vvv --sandbox=.sandbox --install-deps --install-linters
