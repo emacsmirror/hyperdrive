@@ -1,0 +1,20 @@
+image: debian/stable
+packages:
+  - emacs
+  - ispell
+sources:
+  - https://git.sr.ht/~ushin/hyperdrive.el
+tasks:
+  - download-makem: |
+      cd hyperdrive.el || exit 1
+      curl -Lo makem.sh https://raw.githubusercontent.com/alphapapa/makem.sh/master/makem.sh
+      chmod 755 makem.sh
+  - initialize-sandbox: |
+      cd hyperdrive.el
+      ./makem.sh -vvv --sandbox=.sandbox --install-deps --install-linters
+  - lint: |
+      cd hyperdrive.el
+      ./makem.sh -vvv --sandbox=.sandbox lint
+  - test: |
+      cd hyperdrive.el
+      ./makem.sh -vvv --sandbox=.sandbox test
