@@ -13,9 +13,7 @@ tasks:
   - initialize-sandbox: |
       cd hyperdrive.el
       ./makem/makem.sh -vvv --sandbox=.sandbox --install-deps --install-linters
-  - lint: |
+  - all: |
       cd hyperdrive.el
-      ./makem/makem.sh -vvv --sandbox=.sandbox lint
-  - test: |
-      cd hyperdrive.el
-      ./makem/makem.sh -vvv --sandbox=.sandbox test
+      ./makem/makem.sh -vvv --sandbox=.sandbox all
+
