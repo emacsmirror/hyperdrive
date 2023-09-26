@@ -13,7 +13,8 @@ tasks:
   - initialize-sandbox: |
       cd hyperdrive.el
       ./makem/makem.sh -vvv --sandbox=.sandbox --install-deps --install-linters
+  # We specify the rules so we can omit lint-checkdoc and lint-indent, which we'll just run locally.
   - all: |
       cd hyperdrive.el
-      ./makem/makem.sh -vvv --sandbox=.sandbox all
+      ./makem/makem.sh -vvv --sandbox=.sandbox lint-compile lint-declare lint-package lint-regexps tests
 
