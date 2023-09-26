@@ -10,7 +10,8 @@ tasks:
       cd hyperdrive.el
       ./makem/makem.sh -vvv --sandbox=.sandbox --install-deps --install-linters
   # We specify the rules so we can omit lint-checkdoc and lint-indent, which we'll just run locally.
+  # TODO: Re-enable package-lint rule when <https://github.com/purcell/package-lint/issues/227> is solved.
   - all: |
       cd hyperdrive.el
-      ./makem/makem.sh -vvv --sandbox=.sandbox lint-compile lint-declare lint-package lint-regexps tests
+      ./makem/makem.sh -vvv --sandbox=.sandbox lint-compile lint-declare lint-regexps tests
 
