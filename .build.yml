@@ -14,7 +14,7 @@ tasks:
       ./makem.sh -vvv --sandbox=.sandbox --install-deps --install-linters
   - lint: |
       cd hyperdrive.el
-      ./makem.sh -vvv --sandbox=.sandbox lint
+      ./makem.sh -vvv --sandbox=.sandbox lint -- --eval "(setq print-length nil eval-expression-print-length nil)"
   - test: |
       cd hyperdrive.el
       ./makem.sh -vvv --sandbox=.sandbox test
