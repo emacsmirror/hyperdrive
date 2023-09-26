@@ -1,11 +1,12 @@
-image: debian/stable
-packages:
-  - emacs
-  - ispell
-  - iamerican
+image: nixos/latest
+environment:
+  NIX_CONFIG: "experimental-features = nix-command flakes"
 sources:
   - https://git.sr.ht/~ushin/hyperdrive.el
 tasks:
+  - setup-emacs: |
+      nix run 'github:purcell/nix-emacs-ci#emacs-28-2' -- -Q
+
   - initialize-sandbox: |
       cd hyperdrive.el
       ./makem/makem.sh -vvv --sandbox=.sandbox --install-deps --install-linters
