@@ -1,7 +1,6 @@
 image: nixos/latest
 environment:
   NIX_CONFIG: "experimental-features = nix-command flakes"
-  # EMACS_CI: emacs-snapshot
 sources:
   - https://git.sr.ht/~ushin/hyperdrive.el
 tasks:
