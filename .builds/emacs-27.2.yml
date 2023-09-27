@@ -1,6 +1,6 @@
 image: nixos/latest
 environment:
-  NIX_CONFIG: "experimental-features = nix-command flakes"
+  NIX_CONFIG: "experimental-features = nix-command flakes \n accept-flake-config = true"
 sources:
   - https://git.sr.ht/~ushin/hyperdrive.el
 tasks:
