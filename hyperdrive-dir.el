@@ -382,11 +382,12 @@ see Info node `(elisp)Yanking Media'."
 
   (add-hook 'hyperdrive-dir-mode-hook
             (lambda ()
-              (yank-media-handler
-               "image/.*" (with-no-warnings
-                            ;; Silence byte-compiler warning about the
-                            ;; function not being known.
-                            #'hyperdrive-dir--yank-media-image-handler)))))
+              ;; Silence compiler warning about `yank-media-handler' not being
+              ;; defined in earlier versions of Emacs.  (`with-suppressed-warnings'
+              ;; doesn't allow suppressing this warning.)
+              (with-no-warnings
+                (yank-media-handler
+                 "image/.*" #'hyperdrive-dir--yank-media-image-handler)))))
 
 (provide 'hyperdrive-dir)
 ;;; hyperdrive-dir.el ends here
