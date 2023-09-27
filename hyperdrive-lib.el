@@ -1400,7 +1400,10 @@ When PATH is nil or blank, return \"/\"."
 When BUFFER is nil, act on current buffer."
   (with-current-buffer (or buffer (current-buffer))
     (if (>= emacs-major-version 29)
-        (kill-all-local-variables t)
+        (with-suppressed-warnings ((callargs kill-all-local-variables))
+          (kill-all-local-variables t))
+      ;; NOTE: On Emacs <29, this function will not kill permanent-local
+      ;; variables.  We're not sure if that will be a problem.
       (kill-all-local-variables))
     (let ((inhibit-read-only t))
       (delete-all-overlays)
