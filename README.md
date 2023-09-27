@@ -1,5 +1,7 @@
 # hyperdrive.el - P2P filesystem in Emacs
 
+[![builds.sr.ht status](https://builds.sr.ht/~ushin/hyperdrive.el/commits/master/emacs-29.1.yml.svg)](https://builds.sr.ht/~ushin/hyperdrive.el/commits/master/emacs-29.1.yml?)
+
 [Hyperdrive](https://docs.holepunch.to/building-blocks/hyperdrive) is a P2P, real-time, local-first, versioned
 filesystem designed for easy peer-to-peer file sharing.
 `hyperdrive.el` is an independent project built by [USHIN](https://ushin.org) which
