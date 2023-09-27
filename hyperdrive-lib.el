@@ -1399,7 +1399,9 @@ When PATH is nil or blank, return \"/\"."
   "Remove all local variables, overlays, and text properties in BUFFER.
 When BUFFER is nil, act on current buffer."
   (with-current-buffer (or buffer (current-buffer))
-    (kill-all-local-variables t)
+    (if (>= emacs-major-version 29)
+        (kill-all-local-variables t)
+      (kill-all-local-variables))
     (let ((inhibit-read-only t))
       (delete-all-overlays)
       (set-text-properties (point-min) (point-max) nil))))
