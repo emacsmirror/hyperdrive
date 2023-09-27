@@ -734,7 +734,8 @@ The return value of this function is the retrieval buffer."
            '((?y "yes" "kill buffer without saving")
              (?n "no" "exit without doing anything")
              (?s "save and then kill" "save the buffer and then kill it"))
-           nil nil (and (not use-short-answers)
+           nil nil (and (not (bound-and-true-p ;; Variable is new in Emacs 28.
+                              use-short-answers))
                         (not (when (fboundp 'use-dialog-box-p)
                                (with-no-warnings
                                  (use-dialog-box-p)))))))))
