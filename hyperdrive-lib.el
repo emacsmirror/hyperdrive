@@ -44,6 +44,10 @@
 (declare-function hyperdrive-mode "hyperdrive")
 (declare-function hyperdrive-dir-mode "hyperdrive-dir")
 
+(eval-and-compile
+  (when (< emacs-major-version 28)
+    (cl-pushnew '(modes ignore) defun-declarations-alist :test #'equal)))
+
 ;;;; Errors
 
 (define-error 'hyperdrive-error "hyperdrive error")
