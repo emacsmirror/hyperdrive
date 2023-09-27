@@ -31,6 +31,11 @@
 (require 'hyperdrive-lib)
 (require 'hyperdrive-ewoc)
 
+;;;; Variables
+
+(defvar imenu-auto-rescan)
+(defvar imenu-space-replacement)
+
 ;;;; Functions
 
 ;;;###autoload
