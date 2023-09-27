@@ -846,6 +846,9 @@ world of p2p as well as the development of ~hyper-gateway~.
 suggestion that we allow for a non-splitting approach for uploading
 files from the filesystem.
 
+[[https://www.sanityinc.com/][Steve Purcell]] and [[https://github.com/akirak][Akira Komamura]] for suggestion to improve our CI
+build manifests.
+
 * Indices
 
 ** Keystroke index
