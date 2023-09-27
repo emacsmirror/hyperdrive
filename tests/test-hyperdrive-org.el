@@ -35,6 +35,8 @@
 (require 'hyperdrive)
 (require 'hyperdrive-org)
 
+(defvar org-id-link-to-org-use-id)
+
 ;;;; Tests
 
 ;;;;; Scenarios
