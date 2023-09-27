@@ -102,7 +102,7 @@ Point is indicated by ★."
   (let ((test-name (intern
                     (format "hyperdrive-test-org-store-link/%s" scenario))))
     `(ert-deftest ,test-name ()
-       (pcase-let* (((map :public-key :path :content
+       (pcase-let* (((map (:public-key public-key) (:path path) (:content content)
                           (:url expected-url) (:desc expected-desc))
                      ;; TODO: Is there a better syntax that explicit `quote'?
                      (alist-get (quote ,scenario)
@@ -128,7 +128,8 @@ Point is indicated by ★."
 (cl-defun hyperdrive-test-org-insert-link-string (scenario &key public-key path)
   "Return link for SCENARIO inserted into entry with PUBLIC-KEY and PATH."
   (declare (indent defun))
-  (pcase-let (((map :url :desc) (alist-get scenario hyperdrive-test-org-store-link-scenarios)))
+  (pcase-let (((map (:url url) (:desc desc))
+               (alist-get scenario hyperdrive-test-org-store-link-scenarios)))
     (with-temp-buffer
       ;; TODO: Initialize this buffer only once for this file's tests.
       (org-mode)
