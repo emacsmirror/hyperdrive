@@ -80,12 +80,10 @@ Each value is a plist with the following keys:
   "Return stored link to entry with PUBLIC-KEY, PATH, and CONTENTS.
 Point is indicated by ★."
   (declare (indent defun))
-  (let ((org-id-link-to-org-use-id nil)
-        ;; (default-directory "/")
-        (entry (hyperdrive-entry-create
+  (let ((entry (hyperdrive-entry-create
                 :hyperdrive (hyperdrive-create :public-key public-key)
                 :path path))
-        org-stored-links)
+        org-id-link-to-org-use-id org-stored-links)
     (with-temp-buffer
       (insert contents)
       ;; TODO: Initialize this buffer only once for this file's tests.
