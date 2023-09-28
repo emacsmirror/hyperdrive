@@ -7,7 +7,7 @@
 ;; Maintainer: Joseph Turner <~ushin/ushin@lists.sr.ht>
 ;; Created: 2022
 ;; Version: 0.2-pre
-;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5"))
+;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5") (transient "0.4.3"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
@@ -763,6 +763,45 @@ The return value of this function is the retrieval buffer."
     t))
 
 (cl-pushnew #'hyperdrive-kill-buffer-query-function kill-buffer-query-functions)
+
+;;;;; Transient support
+
+(require 'transient)
+
+(transient-define-prefix hyperdrive-transient ()
+  ;; FIXME: Docstring.
+  ""
+  [("?" "Manual" hyperdrive-info-manual)]
+  [ :class transient-subgroups
+    ;; :pad-keys t
+    ["Gateway"
+     ("g s" "Start gateway" hyperdrive-start)
+     ("g S" "Stop gateway" hyperdrive-stop)
+     ("g v" "Show gateway version" hyperdrive-hyper-gateway-version)]
+    ["Drives"
+     ("d n" "New" hyperdrive-new)
+     ("d d" "Describe" hyperdrive-describe-hyperdrive)
+     ("d p" "Purge" hyperdrive-purge)
+     ("d s p" "Set petname" hyperdrive-set-petname)
+     ("d s n" "Set nickname" hyperdrive-set-nickname)]
+    ["Bookmarks"
+     ("b j" "Jump" hyperdrive-bookmark-jump)
+     ("b l" "List" hyperdrive-bookmark-list)]
+    [:class transient-subgroups
+            ["Files"
+             ("f f" "Find" hyperdrive-find-file)
+             ("f v" "View" hyperdrive-view-file)]
+            ["File" :if (lambda () (or (and hyperdrive-current-entry
+                                            (not (hyperdrive--entry-directory-p hyperdrive-current-entry)))
+                                       (and (eq major-mode 'hyperdrive-dir-mode)
+                                            (hyperdrive-dir--entry-at-point))))
+             ("f d" "Download" hyperdrive-download-entry)
+             ("f D" "Delete" hyperdrive-delete)
+             ("f h" "History" hyperdrive-history)
+             ("f w" "Copy URL" hyperdrive-copy-url)
+             ]]])
+
+:if (lambda () hyperdrive-current-entry)
 
 ;;;; Footer
 
