@@ -21,7 +21,7 @@ for managing hyperdrives.
 
 This manual is for ~hyperdrive.el~ version {{{version}}}.
 
-* Copying
+* Freedom to copy
 
 Copyright \copy 2023 USHIN, Inc.
 
