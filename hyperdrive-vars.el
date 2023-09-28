@@ -151,7 +151,7 @@ through a shell)."
   ;; TODO: Consider a separate option for upload queue size, etc.
   :type 'natnum)
 
-(defcustom hyperdrive-fill-version-ranges-limit 10
+(defcustom hyperdrive-fill-version-ranges-limit 100
   "Default maximum number of requests when filling version history."
   :type 'natnum)
 
