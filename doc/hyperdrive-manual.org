@@ -61,7 +61,8 @@ NonGNU ELPA and ~package-vc~.
 # TODO: package-refresh-contents after adding nongnu?
 
 ~hyperdrive.el~ is available on [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]]. On Emacs 28 or later,
-installation is as simple as ~M-x package-install RET hyperdrive RET~.
+installation is as simple as ~M-x package-refresh-contents~ then ~M-x
+package-install RET hyperdrive RET~.
 
 On Emacs 27, you'll first have to add the NonGNU ELPA repository:
 
