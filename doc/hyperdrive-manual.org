@@ -53,8 +53,8 @@ network ([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-g
 
 ** hyperdrive.el
 
-There are two recommended options for installing ~hyperdrive.el~:
-NonGNU ELPA and ~package-vc~.
+There are three recommended options for installing ~hyperdrive.el~:
+NonGNU ELPA, MELPA, and ~package-vc~.
 
 *** NonGNU ELPA
 # TODO: use-package definition
@@ -76,6 +76,18 @@ version of ~hyperdrive.el~ by running ~M-x package-refresh-contents~
 then ~M-x package-upgrade RET hyperdrive~. If ~package-upgrade~ is not
 available as a command, display the list of packages with ~M-x
 list-packages~, select ~hyperdrive~, and click the ~Install~ button.
+
+*** MELPA
+
+~hyperdrive.el~ is also available on
+[[https://melpa.org/#/hyperdrive][MELPA]]. First add the MELPA repository:
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'package
+    (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/")))
+#+end_src
+
+Then follow the [[*NonGNU ELPA][NonGNU ELPA]] installation instructions.
 
 *** package-vc
 
