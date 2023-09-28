@@ -94,7 +94,11 @@ Point is indicated by ★."
       (setq-local hyperdrive-current-entry entry)
       (goto-char (point-min))
       (search-forward "★")
-      (org-store-link nil 'interactive))
+      (org-store-link nil 'interactive)
+      ;; Disable the mode because on Emacs 27, `with-temp-buffer'
+      ;; calls kill-buffer hooks and stuff like that which cause
+      ;; prompting to kill the buffer when running the tests.
+      (hyperdrive-mode -1))
     org-stored-links))
 
 (defmacro hyperdrive-test-org-store-link-deftest (scenario)
@@ -137,6 +141,10 @@ Point is indicated by ★."
       (setq-local hyperdrive-current-entry (hyperdrive-test-org-entry-create
                                             :public-key public-key :path path))
       (org-insert-link nil url desc)
+      ;; Disable the mode because on Emacs 27, `with-temp-buffer'
+      ;; calls kill-buffer hooks and stuff like that which cause
+      ;; prompting to kill the buffer when running the tests.
+      (hyperdrive-mode -1)
       (buffer-string))))
 
 (cl-defmacro hyperdrive-test-org-insert-link-deftest (name &key public-key path results)
