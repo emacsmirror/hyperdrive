@@ -115,7 +115,14 @@ Point is indicated by ★."
                      (hyperdrive-test-org-store-link content
                        :public-key public-key :path path)))
          (should (string= expected-url got-url))
-         (should (string= expected-desc got-desc))))))
+         (should (string= ,(if ;; TODO(deprecate-27): Remove this hack someday.
+                               (and (version<= org-version "9.4.4")
+                                    (equal scenario 'org-mode-before-heading))
+                               '(progn
+				  (ignore expected-desc)
+				  expected-url)
+                             'expected-desc)
+                          got-desc))))))
 
 ;; TODO: Loop through `hyperdrive-test-org-store-link-scenarios'?
 (hyperdrive-test-org-store-link-deftest org-mode-before-heading)
