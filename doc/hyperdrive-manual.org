@@ -58,7 +58,6 @@ NonGNU ELPA, MELPA, and ~package-vc~.
 
 *** NonGNU ELPA
 # TODO: use-package definition
-# TODO: package-refresh-contents after adding nongnu?
 
 ~hyperdrive.el~ is available on [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]]. On Emacs 28 or later,
 installation is as simple as ~M-x package-refresh-contents~ then ~M-x
