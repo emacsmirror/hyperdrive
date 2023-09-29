@@ -771,61 +771,69 @@ The return value of this function is the retrieval buffer."
 (transient-define-prefix hyperdrive-transient ()
   ;; FIXME: Docstring.
   ""
-  [("?" "Manual" hyperdrive-info-manual)]
-  [ :class transient-subgroups
-    ;; :pad-keys t
-    ["Gateway"
-     ("g s" "Start gateway" hyperdrive-start)
-     ("g S" "Stop gateway" hyperdrive-stop)
-     ("g v" "Show gateway version" hyperdrive-hyper-gateway-version)]
-    ["Drives"
-     ;; TODO: Consider showing current drive's public key or formatted name.
-     ("d n" "New" hyperdrive-new)
-     ("d d" "Describe" hyperdrive-describe-hyperdrive)
-     ("d p" "Purge" hyperdrive-purge)
-     ;; TODO: Show current names next to these.
-     ("d s p" "Set petname" hyperdrive-set-petname)
-     ("d s n" "Set nickname" hyperdrive-set-nickname)]
-    ["Bookmarks"
-     ("b j" "Jump" hyperdrive-bookmark-jump)
-     ("b l" "List" hyperdrive-bookmark-list)
-     ("b s" "Set" bookmark-set)]
-    [:class transient-subgroups
-            ["Files"
-             ("f f" "Find" hyperdrive-find-file)
-             ("f v" "View" hyperdrive-view-file)]
-            ["File" :if (lambda ()
-                          (or (and hyperdrive-current-entry
-                                   (not (hyperdrive--entry-directory-p hyperdrive-current-entry)))
-                              (and (eq major-mode 'hyperdrive-dir-mode)
-                                   (hyperdrive-dir--entry-at-point))))
-             ("f d" "Download" hyperdrive-download-entry)
-             ;; FIXME: Enable this as a command.
-             ;; ("f D" "Delete" hyperdrive-delete)
-             ("f h" "History" hyperdrive-history)
-             ("f ^" "Up to parent" hyperdrive-up)
-             ("f w" "Copy URL" hyperdrive-copy-url)
-             ("f g"
-              ;; TODO: Learn how to use `transient-setup-children' to
-              ;; set up this group at runtime and include the default
-              ;; `revert-buffer' binding.
-              revert-buffer :description "Revert")
-             ("f s"
-              ;; TODO: Learn how to use `transient-setup-children' to
-              ;; set up this group at runtime and include the default
-              ;; `save-buffer' binding.
-              save-buffer
-              :description (lambda ()
-                             (format "Save (bound to %s outside of transient)"
-                                     (substitute-command-keys "\\<global-map>\\[save-buffer]"))))
-             ("f W"
-              ;; TODO: Learn how to use `transient-setup-children' to
-              ;; set up this group at runtime and include the default
-              ;; `write-buffer' binding.
-              hyperdrive-write-buffer :description "Write")
-             ]]])
+  [("?" "Info manual" hyperdrive-info-manual)]
+  [ ;; :class transient-subgroups
+   ;; :pad-keys t
+   ["Gateway"
+    ("g s" "Start gateway" hyperdrive-start)
+    ("g S" "Stop gateway" hyperdrive-stop)
+    ("g v" "Show gateway version" hyperdrive-hyper-gateway-version)]
+   ["Drives"
+    ;; TODO: Consider showing current drive's public key or formatted name.
+    ("d n" "New" hyperdrive-new)
+    ("d d" "Describe" hyperdrive-describe-hyperdrive)
+    ("d p" "Purge" hyperdrive-purge)
+    ;; TODO: Show current names next to these.
+    ("d s p" "Set petname" hyperdrive-set-petname)
+    ("d s n" "Set nickname" hyperdrive-set-nickname)]
+   ["Bookmarks"
+    ("b j" "Jump" hyperdrive-bookmark-jump)
+    ("b l" "List" hyperdrive-bookmark-list)
+    ("b s" "Set" bookmark-set)]
+   ["Versioning"
+    ("v h" "History" hyperdrive-history)
+    ("v n" "Next" hyperdrive-next-version)
+    ("v p" "Previous" hyperdrive-previous-version)]
+   ["Upload"
+    ("u f" "File" hyperdrive-upload-file)
+    ("u F" "Files" hyperdrive-upload-files)
+    ("u m" "Mirror" hyperdrive-mirror)]]
+  [["Files"
+    ("f f" "Find" hyperdrive-find-file)
+    ("f v" "View" hyperdrive-view-file)
+    ("f o" "Open URL" hyperdrive-open-url)
+    ("o" "Sort" hyperdrive-dir-sort
+     :if (lambda ()
+           (eq major-mode 'hyperdrive-dir-mode)))]
+   ["File" :if (lambda ()
+                 (or (and hyperdrive-current-entry
+                          (not (hyperdrive--entry-directory-p hyperdrive-current-entry)))
+                     (and (eq major-mode 'hyperdrive-dir-mode)
+                          (hyperdrive-dir--entry-at-point))))
+    ("f d" "Download" hyperdrive-download-entry)
+    ;; FIXME: Enable this as a command.
+    ;; ("f D" "Delete" hyperdrive-delete)
 
-:if (lambda () hyperdrive-current-entry)
+    ("f ^" "Up to parent" hyperdrive-up)
+    ("f w" "Copy URL" hyperdrive-copy-url)
+    ("f g"
+     ;; TODO: Learn how to use `transient-setup-children' to
+     ;; set up this group at runtime and include the default
+     ;; `revert-buffer' binding.
+     revert-buffer :description "Revert")
+    ("f s"
+     ;; TODO: Learn how to use `transient-setup-children' to
+     ;; set up this group at runtime and include the default
+     ;; `save-buffer' binding.
+     save-buffer
+     :description (lambda ()
+                    (format "Save (bound to %s outside of transient)"
+                            (substitute-command-keys "\\<global-map>\\[save-buffer]"))))
+    ("f W"
+     ;; TODO: Learn how to use `transient-setup-children' to
+     ;; set up this group at runtime and include the default
+     ;; `write-buffer' binding.
+     hyperdrive-write-buffer :description "Write")]])
 
 ;;;; Footer
 
