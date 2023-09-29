@@ -990,11 +990,11 @@ Path and target fragment are URI-encoded."
 
 (cl-defun hyperdrive--format-host (hyperdrive &key format with-label (with-faces t))
   "Return HYPERDRIVE's formatted hostname, or nil.
-FORMAT should be a list of symbols; see
+FORMAT should be one or a list of symbols; see
 `hyperdrive-default-host-format' for choices.  If the specified
 FORMAT is not available, returns nil.  If WITH-LABEL, prepend a
-label for the kind of format used (e.g. \"petname:\").
-When WITH-FACES is nil, don't add face text properties."
+label for the kind of format used (e.g. \"petname:\").  When
+WITH-FACES is nil, don't add face text properties."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
@@ -1004,7 +1004,7 @@ When WITH-FACES is nil, don't add face text properties."
                         (if with-faces
                             (propertize string 'face face)
                           string))))
-      (cl-loop for f in format
+      (cl-loop for f in (ensure-list format)
                when (pcase f
                       ((and 'petname (guard petname))
                        (fmt petname "petname:" 'hyperdrive-petname))
