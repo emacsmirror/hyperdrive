@@ -248,7 +248,7 @@ With point on header, returns directory entry."
   "D"   #'hyperdrive-dir-delete
   "H"   #'hyperdrive-dir-history
   "o"   #'hyperdrive-dir-sort
-  "?"   #'hyperdrive-describe-hyperdrive
+  "?"   #'hyperdrive-menu
   "+"   #'hyperdrive-create-directory-no-op)
 
 (define-derived-mode hyperdrive-dir-mode hyperdrive-ewoc-mode
