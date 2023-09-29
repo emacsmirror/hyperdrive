@@ -845,18 +845,29 @@ The return value of this function is the retrieval buffer."
     ("v h" "History" hyperdrive-history)
     ("v n" "Next" hyperdrive-next-version
      :if-non-nil hyperdrive-current-entry
+     :inapt-if-not (lambda  ()
+                     (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry)))
      :description (lambda ()
                     (if-let ((hyperdrive-current-entry)
                              (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                        (concat (propertize "Version: "
-                                            'face 'transient-heading)
-                                (propertize (format "%s"
-                                                    (or (hyperdrive-entry-version hyperdrive-current-entry)
-                                                        "latest"))
-                                            'face 'transient-value))
+                        (concat "Next" (when (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry))
+                                          (concat ": "
+                                                  (propertize (format "%s"
+                                                                      (or (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry))
+                                                                          ""))
+                                                              'face 'transient-value))))
                       "Version")))
     ("v p" "Previous" hyperdrive-previous-version
      :if-non-nil hyperdrive-current-entry
+     :description (lambda ()
+                    (if-let ((hyperdrive-current-entry)
+                             (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                        (concat "Previous: "
+                                (propertize (format "%s"
+                                                    (or (hyperdrive-entry-version (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t))
+                                                        "latest"))
+                                            'face 'transient-value))
+                      "Version"))
      )]
    ["Upload"
     ("u f" "File" hyperdrive-upload-file)
