@@ -769,49 +769,41 @@ The return value of this function is the retrieval buffer."
 (require 'transient)
 
 (transient-define-prefix hyperdrive-menu ()
-  ;; FIXME: Docstring.
-  ""
-  [:class transient-row
-          :description (lambda ()
-                         (when-let ((hyperdrive-current-entry)
-                                    (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                           (format "Public key:%s%s"
-                                   (hyperdrive--format-host
-                                    (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
-                                    :format '(short-key))
-                                   (if (hyperdrive-writablep hyperdrive)
-                                       (format "  Seed:%s"
-                                               (hyperdrive--format-host
-                                                (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
-                                                :format '(seed)))
-                                     ""))))
-          ;; public-key: 12fef3 seed: my-seed petname ("set" s p): Adam nickname: alphapapa
-          ("?" "Info manual" hyperdrive-info-manual)
-          ("s p" "Petname" hyperdrive-set-petname
-           :if (lambda () hyperdrive-current-entry)
-           :description (lambda ()
-                          (format "Petname: %s"
-                                  (pcase (hyperdrive-petname
-                                          (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
-                                    (`nil (propertize "none"
-                                                      'face 'transient-inactive-value))
-                                    (it (propertize it
-                                                    'face 'transient-value))))))
-          ("s n" "Nickname" hyperdrive-set-nickname
-           :if (lambda () hyperdrive-current-entry)
-           :description (lambda ()
-                          (format "Nickname: %s"
-                                  ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
-                                  (pcase (alist-get 'name
-                                                    (hyperdrive-metadata
-                                                     (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                                    (`nil (propertize "none"
-                                                      'face 'transient-inactive-value))
-                                    (it (propertize it
-                                                    'face 'transient-value))))))]
-  [ ;; :class transient-subgroups
-   ;; :pad-keys t
-   ["Gateway"
+  "Show the hyperdrive transient menu."
+  [ :class transient-row
+    ("w" "Public key" hyperdrive-copy-url
+     :if (lambda () hyperdrive-current-entry)
+     :description (lambda ()
+                    (let ((hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                      (format "Public key:%s%s"
+                              (hyperdrive--format-host hyperdrive :format '(public-key))
+                              (if-let ((seed (hyperdrive--format-host hyperdrive :format '(seed))))
+                                  (format "  Seed:%s" seed) "")))))
+
+    ("s p" "Petname" hyperdrive-set-petname
+     :if (lambda () hyperdrive-current-entry)
+     :description (lambda ()
+                    (format "Petname: %s"
+                            (pcase (hyperdrive-petname
+                                    (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                              (`nil (propertize "none"
+                                                'face 'transient-inactive-value))
+                              (it (propertize it
+                                              'face 'transient-value))))))
+    ("s n" "Nickname" hyperdrive-set-nickname
+     :if (lambda () hyperdrive-current-entry)
+     :description (lambda ()
+                    (format "Nickname: %s"
+                            ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
+                            (pcase (alist-get 'name
+                                              (hyperdrive-metadata
+                                               (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                              (`nil (propertize "none"
+                                                'face 'transient-inactive-value))
+                              (it (propertize it
+                                              'face 'transient-value))))))
+    ("?" "Info manual" hyperdrive-info-manual)]
+  [["Gateway"
     ("g s" "Start gateway" hyperdrive-start)
     ("g S" "Stop gateway" hyperdrive-stop)
     ("g v" "Show gateway version" hyperdrive-hyper-gateway-version)]
