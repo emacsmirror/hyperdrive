@@ -770,16 +770,17 @@ The return value of this function is the retrieval buffer."
 
 (transient-define-prefix hyperdrive-menu ()
   "Show the hyperdrive transient menu."
-  [ :class transient-row
-    ("w" "Public key" hyperdrive-copy-url
-     :if (lambda () hyperdrive-current-entry)
-     :description (lambda ()
-                    (let ((hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                      (format "Public key:%s%s"
-                              (hyperdrive--format-host hyperdrive :format '(public-key))
-                              (if-let ((seed (hyperdrive--format-host hyperdrive :format '(seed))))
-                                  (format "  Seed:%s" seed) "")))))
 
+  [ :class transient-row
+    :description
+    (lambda ()
+      (let ((hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+        (format "Public key:%s%s%s"
+                (hyperdrive--format-host hyperdrive :format '(public-key))
+                (if-let ((seed (hyperdrive--format-host hyperdrive :format '(seed))))
+                    (format "  Seed:%s" seed) "")
+                (if-let ((domain (hyperdrive--format-host hyperdrive :format '(domain))))
+                    (format "  Domain:%s" domain) ""))))
     ("s p" "Petname" hyperdrive-set-petname
      :if (lambda () hyperdrive-current-entry)
      :description (lambda ()
@@ -819,7 +820,16 @@ The return value of this function is the retrieval buffer."
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
     ("b s" "Set" bookmark-set)]
-   ["Versioning"
+   ["Version"
+    :description (lambda ()
+                   (if-let ((hyperdrive-current-entry)
+                            (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                       (concat (propertize "Version: "
+                                           'face 'transient-heading)
+                               (propertize (prin1-to-string
+                                            (hyperdrive-latest-version hyperdrive))
+                                           'face 'transient-value))
+                     "Version"))
     ("v h" "History" hyperdrive-history)
     ("v n" "Next" hyperdrive-next-version)
     ("v p" "Previous" hyperdrive-previous-version)]
