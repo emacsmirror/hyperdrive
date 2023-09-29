@@ -370,9 +370,7 @@ With universal prefix argument \\[universal-argument], prompts
 for more information.  See `hyperdrive-read-entry' and
 `hyperdrive-complete-hyperdrive'."
   (interactive
-   (pcase-let* ((entry (if hyperdrive-mode
-                           hyperdrive-current-entry
-                         (hyperdrive-read-entry :force-prompt current-prefix-arg)))
+   (pcase-let* ((entry (hyperdrive--context-entry))
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
