@@ -1053,11 +1053,14 @@ case, when PREDICATE, only offer hyperdrives matching it."
         (or (alist-get selected candidates nil nil #'equal)
             (hyperdrive-user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))))
 
-(cl-defun hyperdrive--format-hyperdrive (hyperdrive)
-  "Return HYPERDRIVE formatted for completion."
+(cl-defun hyperdrive--format-hyperdrive
+    (hyperdrive &key (formats '(petname nickname domain seed short-key)) (with-label t))
+  "Return HYPERDRIVE formatted for completion.
+For each of FORMATS, concats the value separated by two spaces,
+optionally WITH-LABEL."
   (string-trim
-   (cl-loop for format in '(petname nickname domain seed short-key)
-            when (hyperdrive--format-host hyperdrive :format (list format) :with-label t)
+   (cl-loop for format in formats
+            when (hyperdrive--format-host hyperdrive :format format :with-label with-label)
             concat (concat it "  "))))
 
 (cl-defun hyperdrive-read-entry (&key predicate default-path (allow-version-p t) force-prompt)
