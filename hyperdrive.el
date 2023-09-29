@@ -775,7 +775,8 @@ The return value of this function is the retrieval buffer."
     :description
     (lambda ()
       (let ((hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-        (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain nickname petname))
+        (concat (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
+                (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))
         ;; (format "Public key:%s%s%s"
         ;;         (hyperdrive--format-host hyperdrive :format '(public-key))
         ;;         (if-let ((seed (hyperdrive--format-host hyperdrive :format '(seed))))
@@ -826,8 +827,9 @@ The return value of this function is the retrieval buffer."
                             (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
                        (concat (propertize "Version: "
                                            'face 'transient-heading)
-                               (propertize (prin1-to-string
-                                            (hyperdrive-latest-version hyperdrive))
+                               (propertize (format "%s"
+                                                   (or (hyperdrive-entry-version hyperdrive-current-entry)
+                                                       "latest"))
                                            'face 'transient-value))
                      "Version"))
     ("v h" "History" hyperdrive-history)
