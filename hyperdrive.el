@@ -786,7 +786,7 @@ The return value of this function is the retrieval buffer."
         ;;             (format "  Domain:%s" domain) ""))
         ))
     ("s p" "Petname" hyperdrive-set-petname
-     :if (lambda () hyperdrive-current-entry)
+     :if-non-nil hyperdrive-current-entry
      :description (lambda ()
                     (format "Petname: %s"
                             (pcase (hyperdrive-petname
@@ -834,8 +834,21 @@ The return value of this function is the retrieval buffer."
                                            'face 'transient-value))
                      "Version"))
     ("v h" "History" hyperdrive-history)
-    ("v n" "Next" hyperdrive-next-version)
-    ("v p" "Previous" hyperdrive-previous-version)]
+    ("v n" "Next" hyperdrive-next-version
+     :if-non-nil hyperdrive-current-entry
+     :description (lambda ()
+                    (if-let ((hyperdrive-current-entry)
+                             (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                        (concat (propertize "Version: "
+                                            'face 'transient-heading)
+                                (propertize (format "%s"
+                                                    (or (hyperdrive-entry-version hyperdrive-current-entry)
+                                                        "latest"))
+                                            'face 'transient-value))
+                      "Version")))
+    ("v p" "Previous" hyperdrive-previous-version
+     :if-non-nil hyperdrive-current-entry
+     )]
    ["Upload"
     ("u f" "File" hyperdrive-upload-file)
     ("u F" "Files" hyperdrive-upload-files)
@@ -845,8 +858,7 @@ The return value of this function is the retrieval buffer."
     ("f v" "View" hyperdrive-view-file)
     ("f o" "Open URL" hyperdrive-open-url)
     ("o" "Sort" hyperdrive-dir-sort
-     :if (lambda ()
-           (eq major-mode 'hyperdrive-dir-mode)))]
+     :if-mode hyperdrive-dir-mode)]
    ["File" :if (lambda ()
                  (or (and hyperdrive-current-entry
                           (not (hyperdrive--entry-directory-p hyperdrive-current-entry)))
