@@ -847,6 +847,7 @@ The return value of this function is the retrieval buffer."
      :if-non-nil hyperdrive-current-entry
      :inapt-if-not (lambda  ()
                      (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry)))
+     ;; :transient t
      :description (lambda ()
                     (if-let ((hyperdrive-current-entry)
                              (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
@@ -856,14 +857,17 @@ The return value of this function is the retrieval buffer."
                       "Next")))
     ("v p" "Previous" hyperdrive-previous-version
      :if-non-nil hyperdrive-current-entry
+     :inapt-if-not (lambda  ()
+                     (pcase (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
+                       ('unknown nil)
+                       (it (hyperdrive-entry-version it))))
+     ;; :transient t
      :description (lambda ()
                     (if-let ((hyperdrive-current-entry)
                              (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                        (concat "Previous: "
-                                (propertize (format "%s"
-                                                    (or (hyperdrive-entry-version (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t))
-                                                        "latest"))
-                                            'face 'transient-value))
+                        (concat "Previous" (when-let ((version (hyperdrive-entry-version (hyperdrive-entry-previous hyperdrive-current-entry))))
+                                             (concat ": " (propertize (number-to-string version)
+                                                                      'face 'transient-value))))
                       "Previous")))]
    ["Upload"
     ("u f" "File" hyperdrive-upload-file)
