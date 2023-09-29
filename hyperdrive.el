@@ -768,7 +768,7 @@ The return value of this function is the retrieval buffer."
 
 (require 'transient)
 
-(transient-define-prefix hyperdrive-transient ()
+(transient-define-prefix hyperdrive-menu ()
   ;; FIXME: Docstring.
   ""
   [("?" "Info manual" hyperdrive-info-manual)]
