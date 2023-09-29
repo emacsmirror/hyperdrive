@@ -850,12 +850,9 @@ The return value of this function is the retrieval buffer."
      :description (lambda ()
                     (if-let ((hyperdrive-current-entry)
                              (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                        (concat "Next" (when (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry))
-                                          (concat ": "
-                                                  (propertize (format "%s"
-                                                                      (or (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry))
-                                                                          ""))
-                                                              'face 'transient-value))))
+                        (concat "Next" (when-let ((version (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry))))
+                                         (concat ": " (propertize (number-to-string version)
+                                                                  'face 'transient-value))))
                       "Version")))
     ("v p" "Previous" hyperdrive-previous-version
      :if-non-nil hyperdrive-current-entry
