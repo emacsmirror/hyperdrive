@@ -850,14 +850,11 @@ The return value of this function is the retrieval buffer."
      ;; set up this group at runtime and include the default
      ;; `revert-buffer' binding.
      revert-buffer :description "Revert")
-    ("f s"
+    ("f s" "Save"
      ;; TODO: Learn how to use `transient-setup-children' to
      ;; set up this group at runtime and include the default
      ;; `save-buffer' binding.
-     save-buffer
-     :description (lambda ()
-                    (format "Save (bound to %s outside of transient)"
-                            (substitute-command-keys "\\<global-map>\\[save-buffer]"))))
+     save-buffer)
     ("f W"
      ;; TODO: Learn how to use `transient-setup-children' to
      ;; set up this group at runtime and include the default
