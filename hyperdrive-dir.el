@@ -234,6 +234,7 @@ With point on header, returns directory entry."
 (declare-function hyperdrive-find-file "hyperdrive")
 (declare-function hyperdrive-up "hyperdrive")
 (declare-function hyperdrive-describe-hyperdrive "hyperdrive-describe")
+(declare-function hyperdrive-menu "hyperdrive")
 
 (defvar-keymap hyperdrive-dir-mode-map
   :parent hyperdrive-ewoc-mode-map
