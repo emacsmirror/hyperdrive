@@ -768,6 +768,15 @@ The return value of this function is the retrieval buffer."
 
 (require 'transient)
 
+;; TODO: Use something like this later.
+;; (defmacro hyperdrive-transient-lambda (&rest body)
+;;   (declare (indent defun))
+;;   `(lambda ()
+;;      (when hyperdrive-current-entry
+;;        (pcase-let (((cl-struct hyperdrive-entry hyperdrive)
+;;                     hyperdrive-current-entry))
+;;          ,@body))))
+
 (transient-define-prefix hyperdrive-menu ()
   "Show the hyperdrive transient menu."
 
