@@ -775,6 +775,8 @@ The return value of this function is the retrieval buffer."
 ;;                     hyperdrive-current-entry))
 ;;          ,@body))))
 
+(declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
+
 (transient-define-prefix hyperdrive-menu ()
   "Show the hyperdrive transient menu."
 
