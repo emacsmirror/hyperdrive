@@ -775,12 +775,14 @@ The return value of this function is the retrieval buffer."
     :description
     (lambda ()
       (let ((hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-        (format "Public key:%s%s%s"
-                (hyperdrive--format-host hyperdrive :format '(public-key))
-                (if-let ((seed (hyperdrive--format-host hyperdrive :format '(seed))))
-                    (format "  Seed:%s" seed) "")
-                (if-let ((domain (hyperdrive--format-host hyperdrive :format '(domain))))
-                    (format "  Domain:%s" domain) ""))))
+        (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain nickname petname))
+        ;; (format "Public key:%s%s%s"
+        ;;         (hyperdrive--format-host hyperdrive :format '(public-key))
+        ;;         (if-let ((seed (hyperdrive--format-host hyperdrive :format '(seed))))
+        ;;             (format "  Seed:%s" seed) "")
+        ;;         (if-let ((domain (hyperdrive--format-host hyperdrive :format '(domain))))
+        ;;             (format "  Domain:%s" domain) ""))
+        ))
     ("s p" "Petname" hyperdrive-set-petname
      :if (lambda () hyperdrive-current-entry)
      :description (lambda ()
@@ -792,7 +794,8 @@ The return value of this function is the retrieval buffer."
                               (it (propertize it
                                               'face 'transient-value))))))
     ("s n" "Nickname" hyperdrive-set-nickname
-     :if (lambda () hyperdrive-current-entry)
+     :if (lambda () (and hyperdrive-current-entry
+                         (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
      :description (lambda ()
                     (format "Nickname: %s"
                             ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
@@ -812,10 +815,7 @@ The return value of this function is the retrieval buffer."
     ;; TODO: Consider showing current drive's public key or formatted name.
     ("d n" "New" hyperdrive-new)
     ("d d" "Describe" hyperdrive-describe-hyperdrive)
-    ("d p" "Purge" hyperdrive-purge)
-    ;; TODO: Show current names next to these.
-    ("d s p" "Set petname" hyperdrive-set-petname)
-    ("d s n" "Set nickname" hyperdrive-set-nickname)]
+    ("d p" "Purge" hyperdrive-purge)]
    ["Bookmarks"
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
