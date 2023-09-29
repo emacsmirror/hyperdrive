@@ -775,7 +775,8 @@ The return value of this function is the retrieval buffer."
     :description
     (lambda ()
       (let ((hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-        (concat (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
+        (concat (propertize "Drive: " 'face 'transient-heading)
+                (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))
         ;; (format "Public key:%s%s%s"
         ;;         (hyperdrive--format-host hyperdrive :format '(public-key))
@@ -809,9 +810,9 @@ The return value of this function is the retrieval buffer."
                                               'face 'transient-value))))))
     ("?" "Info manual" hyperdrive-info-manual)]
   [["Gateway"
-    ("g s" "Start gateway" hyperdrive-start)
-    ("g S" "Stop gateway" hyperdrive-stop)
-    ("g v" "Show gateway version" hyperdrive-hyper-gateway-version)]
+    ("g s" "Start" hyperdrive-start)
+    ("g S" "Stop" hyperdrive-stop)
+    ("g v" "Version" hyperdrive-hyper-gateway-version)]
    ["Drives"
     ;; TODO: Consider showing current drive's public key or formatted name.
     ("d n" "New" hyperdrive-new)
