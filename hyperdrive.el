@@ -815,7 +815,7 @@ The return value of this function is the retrieval buffer."
     ;; TODO: Consider showing current drive's public key or formatted name.
     ("d n" "New" hyperdrive-new)
     ("d d" "Describe" hyperdrive-describe-hyperdrive)
-    ("d p" "Purge" hyperdrive-purge)]
+    ("d P" "Purge" hyperdrive-purge)]
    ["Bookmarks"
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
