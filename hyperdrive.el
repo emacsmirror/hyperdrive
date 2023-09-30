@@ -781,6 +781,11 @@ The return value of this function is the retrieval buffer."
 
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
+(transient-define-suffix hyperdrive-menu-up ()
+  ;; :transient 'transient--do-call
+  (interactive)
+  (hyperdrive-menu (hyperdrive-parent (oref transient-current-prefix scope))))
+
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
 
@@ -859,7 +864,7 @@ The return value of this function is the retrieval buffer."
     ;; FIXME: Enable this as a command.
     ;; ("f D" "Delete" hyperdrive-delete)
 
-    ("f ^" "Up to parent" hyperdrive-up)
+    ("f ^" "Up to parent" hyperdrive-menu-up)
     ("f w" "Copy URL" hyperdrive-copy-url)
     ;; ("f g"
     ;; TODO: Consider whether we want to have a menu entry for revert-buffer.
