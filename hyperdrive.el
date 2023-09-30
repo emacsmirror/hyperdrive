@@ -820,7 +820,7 @@ The return value of this function is the retrieval buffer."
     ("d n" "New" hyperdrive-new)
     ("d d" "Describe" hyperdrive-describe-hyperdrive)
     ("d P" "Purge" hyperdrive-purge)]
-   ["Bookmarks"
+   ["Bookmark"
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
     ("b s" "Set" bookmark-set)]
