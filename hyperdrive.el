@@ -781,13 +781,13 @@ The return value of this function is the retrieval buffer."
 
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
-(transient-define-prefix hyperdrive-menu ()
+(transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
 
   [ :class transient-row
     :description
     (lambda ()
-      (let ((hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+      (let ((hyperdrive (hyperdrive-entry-hyperdrive (oref transient--prefix scope))))
         (concat (propertize "Drive: " 'face 'transient-heading)
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
@@ -796,20 +796,20 @@ The return value of this function is the retrieval buffer."
      :description (lambda ()
                     (format "Petname: %s"
                             (pcase (hyperdrive-petname
-                                    (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                                    (hyperdrive-entry-hyperdrive (oref transient--prefix scope)))
                               (`nil (propertize "none"
                                                 'face 'transient-inactive-value))
                               (it (propertize it
                                               'face 'transient-value))))))
     ("s n" "Nickname" hyperdrive-set-nickname
-     :if (lambda () (and hyperdrive-current-entry
-                         (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
+     :if (lambda () (and (oref transient--prefix scope)
+                         (hyperdrive-writablep (hyperdrive-entry-hyperdrive (oref transient--prefix scope)))))
      :description (lambda ()
                     (format "Nickname: %s"
                             ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
                             (pcase (alist-get 'name
                                               (hyperdrive-metadata
-                                               (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                                               (hyperdrive-entry-hyperdrive (oref transient--prefix scope))))
                               (`nil (propertize "none"
                                                 'face 'transient-inactive-value))
                               (it (propertize it
@@ -841,18 +841,20 @@ The return value of this function is the retrieval buffer."
   [ ;; :class transient-row
    :description
    (lambda ()
-     (concat (propertize (if (hyperdrive--entry-directory-p hyperdrive-current-entry)
-                             "Directory" "File")
-                         'face 'transient-heading)
-             ": "
-             (propertize (hyperdrive--format-path (hyperdrive-entry-path hyperdrive-current-entry))
-                         'face 'transient-value)))
-   [;; "File"
+     (let ((entry (oref transient--prefix scope)))
+       (concat (propertize (if (hyperdrive--entry-directory-p entry)
+                               "Directory" "File")
+                           'face 'transient-heading)
+               ": "
+               (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
+                           'face 'transient-value))))
+   [ ;; "File"
     :if (lambda ()
-          (or (and hyperdrive-current-entry
-                   (not (hyperdrive--entry-directory-p hyperdrive-current-entry)))
-              (and (eq major-mode 'hyperdrive-dir-mode)
-                   (hyperdrive-dir--entry-at-point))))
+          (let ((entry (oref transient--prefix scope)))
+            (or (and entry
+                     (not (hyperdrive--entry-directory-p entry)))
+                (and (eq major-mode 'hyperdrive-dir-mode)
+                     (hyperdrive-dir--entry-at-point)))))
     ("f d" "Download" hyperdrive-download)
     ;; FIXME: Enable this as a command.
     ;; ("f D" "Delete" hyperdrive-delete)
@@ -876,43 +878,44 @@ The return value of this function is the retrieval buffer."
      hyperdrive-write-buffer :description "Write")]
    ["Version"
     :description (lambda ()
-                   (if-let ((hyperdrive-current-entry)
-                            (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                   (if-let ((entry (oref transient--prefix scope))
+                            (hyperdrive (hyperdrive-entry-hyperdrive entry)))
                        (concat (propertize "Version: "
                                            'face 'transient-heading)
                                (propertize (format "%s"
-                                                   (or (hyperdrive-entry-version hyperdrive-current-entry)
+                                                   (or (hyperdrive-entry-version entry)
                                                        "latest"))
                                            'face 'transient-value))
                      "Version"))
     ("v h" "History" hyperdrive-history)
     ("v n" "Next" hyperdrive-next-version
-     :if-non-nil hyperdrive-current-entry
+     :if-not (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda  ()
-                     (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry)))
+                     (hyperdrive-entry-version (hyperdrive-entry-next (oref transient--prefix scope))))
      ;; :transient t
      :description (lambda ()
-                    (if-let ((hyperdrive-current-entry)
-                             (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                        (concat "Next" (when-let ((version (hyperdrive-entry-version (hyperdrive-entry-next hyperdrive-current-entry))))
+                    (if-let ((entry (oref transient--prefix scope))
+                             (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                        (concat "Next" (when-let ((version (hyperdrive-entry-version (hyperdrive-entry-next entry))))
                                          (concat ": " (propertize (number-to-string version)
                                                                   'face 'transient-value))))
                       "Next")))
     ("v p" "Previous" hyperdrive-previous-version
-     :if-non-nil hyperdrive-current-entry
+     :if-not (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda  ()
-                     (pcase (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
+                     (pcase (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t)
                        ('unknown nil)
                        (it (hyperdrive-entry-version it))))
      ;; :transient t
      :description (lambda ()
-                    (if-let ((hyperdrive-current-entry)
-                             (hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
-                        (concat "Previous" (when-let ((version (hyperdrive-entry-version (hyperdrive-entry-previous hyperdrive-current-entry))))
+                    (if-let ((entry (oref transient--prefix scope))
+                             (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                        (concat "Previous" (when-let ((version (hyperdrive-entry-version (hyperdrive-entry-previous entry))))
                                              (concat ": " (propertize (number-to-string version)
                                                                       'face 'transient-value))))
-                      "Previous")))] ]
-  )
+                      "Previous")))]]
+  (interactive (list (hyperdrive--context-entry)))
+  (transient-setup 'hyperdrive-menu nil nil :scope entry))
 
 ;;;; Footer
 
