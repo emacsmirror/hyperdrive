@@ -828,6 +828,52 @@ The return value of this function is the retrieval buffer."
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
     ("b s" "Set" bookmark-set)]
+   ["Files"
+    ("f f" "Find" hyperdrive-find-file)
+    ("f v" "View" hyperdrive-view-file)
+    ("f o" "Open URL" hyperdrive-open-url)
+    ("o" "Sort" hyperdrive-dir-sort
+     :if-mode hyperdrive-dir-mode)]
+   ["Upload"
+    ("u f" "File" hyperdrive-upload-file)
+    ("u F" "Files" hyperdrive-upload-files)
+    ("u m" "Mirror" hyperdrive-mirror)]]
+  [ ;; :class transient-row
+   :description
+   (lambda ()
+     (concat (propertize (if (hyperdrive--entry-directory-p hyperdrive-current-entry)
+                             "Directory" "File")
+                         'face 'transient-heading)
+             ": "
+             (propertize (hyperdrive--format-path (hyperdrive-entry-path hyperdrive-current-entry))
+                         'face 'transient-value)))
+   [;; "File"
+    :if (lambda ()
+          (or (and hyperdrive-current-entry
+                   (not (hyperdrive--entry-directory-p hyperdrive-current-entry)))
+              (and (eq major-mode 'hyperdrive-dir-mode)
+                   (hyperdrive-dir--entry-at-point))))
+    ("f d" "Download" hyperdrive-download)
+    ;; FIXME: Enable this as a command.
+    ;; ("f D" "Delete" hyperdrive-delete)
+
+    ("f ^" "Up to parent" hyperdrive-up)
+    ("f w" "Copy URL" hyperdrive-copy-url)
+    ("f g"
+     ;; TODO: Learn how to use `transient-setup-children' to
+     ;; set up this group at runtime and include the default
+     ;; `revert-buffer' binding.
+     revert-buffer :description "Revert")
+    ("f s" "Save"
+     ;; TODO: Learn how to use `transient-setup-children' to
+     ;; set up this group at runtime and include the default
+     ;; `save-buffer' binding.
+     save-buffer)
+    ("f W"
+     ;; TODO: Learn how to use `transient-setup-children' to
+     ;; set up this group at runtime and include the default
+     ;; `write-buffer' binding.
+     hyperdrive-write-buffer :description "Write")]
    ["Version"
     :description (lambda ()
                    (if-let ((hyperdrive-current-entry)
@@ -865,43 +911,8 @@ The return value of this function is the retrieval buffer."
                         (concat "Previous" (when-let ((version (hyperdrive-entry-version (hyperdrive-entry-previous hyperdrive-current-entry))))
                                              (concat ": " (propertize (number-to-string version)
                                                                       'face 'transient-value))))
-                      "Previous")))]
-   ["Upload"
-    ("u f" "File" hyperdrive-upload-file)
-    ("u F" "Files" hyperdrive-upload-files)
-    ("u m" "Mirror" hyperdrive-mirror)]]
-  [["Files"
-    ("f f" "Find" hyperdrive-find-file)
-    ("f v" "View" hyperdrive-view-file)
-    ("f o" "Open URL" hyperdrive-open-url)
-    ("o" "Sort" hyperdrive-dir-sort
-     :if-mode hyperdrive-dir-mode)]
-   ["File" :if (lambda ()
-                 (or (and hyperdrive-current-entry
-                          (not (hyperdrive--entry-directory-p hyperdrive-current-entry)))
-                     (and (eq major-mode 'hyperdrive-dir-mode)
-                          (hyperdrive-dir--entry-at-point))))
-    ("f d" "Download" hyperdrive-download)
-    ;; FIXME: Enable this as a command.
-    ;; ("f D" "Delete" hyperdrive-delete)
-
-    ("f ^" "Up to parent" hyperdrive-up)
-    ("f w" "Copy URL" hyperdrive-copy-url)
-    ("f g"
-     ;; TODO: Learn how to use `transient-setup-children' to
-     ;; set up this group at runtime and include the default
-     ;; `revert-buffer' binding.
-     revert-buffer :description "Revert")
-    ("f s" "Save"
-     ;; TODO: Learn how to use `transient-setup-children' to
-     ;; set up this group at runtime and include the default
-     ;; `save-buffer' binding.
-     save-buffer)
-    ("f W"
-     ;; TODO: Learn how to use `transient-setup-children' to
-     ;; set up this group at runtime and include the default
-     ;; `write-buffer' binding.
-     hyperdrive-write-buffer :description "Write")]])
+                      "Previous")))] ]
+  )
 
 ;;;; Footer
 
