@@ -1028,9 +1028,10 @@ WITH-FACES is nil, don't add face text properties."
 (defun hyperdrive--context-entry ()
   "Return the current entry in the current context."
   (pcase major-mode
+    ((guard current-prefix-arg)
+     (hyperdrive-read-entry :force-prompt current-prefix-arg))
     ('hyperdrive-dir-mode (hyperdrive-dir--entry-at-point))
-    (_ (or hyperdrive-current-entry
-           (hyperdrive-read-entry :force-prompt current-prefix-arg)))))
+    (_ (or hyperdrive-current-entry (hyperdrive-read-entry)))))
 
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate force-prompt)
   "Return hyperdrive for current entry when it matches PREDICATE.
