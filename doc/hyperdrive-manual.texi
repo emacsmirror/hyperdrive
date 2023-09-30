@@ -579,11 +579,11 @@ audio/video file is stored locally.
 @node Download hyperdrive files
 @section Download hyperdrive files
 
-@findex hyperdrive-download-entry
+@findex hyperdrive-download
 @findex hyperdrive-download-url
 
 You can download a hyperdrive file to your local filesystem. Download
-the current hyperdrive file with @code{hyperdrive-download-entry} or paste
+the current hyperdrive file with @code{hyperdrive-download} or paste
 in a @code{hyper://} URL after @code{hyperdrive-download-url}.
 
 @node Upload files from your filesystem

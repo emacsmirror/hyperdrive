@@ -360,7 +360,7 @@ for more information.  See `hyperdrive-read-entry' and
   (hyperdrive-open (hyperdrive-url-entry url)))
 
 ;;;###autoload
-(defun hyperdrive-download-entry (entry filename)
+(defun hyperdrive-download (entry filename)
   "Download ENTRY to FILENAME on disk.
 Interactively, downloads current hyperdrive file.  If current
 buffer is not a hyperdrive file, prompts with
@@ -877,7 +877,7 @@ The return value of this function is the retrieval buffer."
                           (not (hyperdrive--entry-directory-p hyperdrive-current-entry)))
                      (and (eq major-mode 'hyperdrive-dir-mode)
                           (hyperdrive-dir--entry-at-point))))
-    ("f d" "Download" hyperdrive-download-entry)
+    ("f d" "Download" hyperdrive-download)
     ;; FIXME: Enable this as a command.
     ;; ("f D" "Delete" hyperdrive-delete)
 

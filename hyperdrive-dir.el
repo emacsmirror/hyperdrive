@@ -233,7 +233,7 @@ With point on header, returns directory entry."
 
 (declare-function hyperdrive-find-file "hyperdrive")
 (declare-function hyperdrive-up "hyperdrive")
-(declare-function hyperdrive-download-entry "hyperdrive")
+(declare-function hyperdrive-download "hyperdrive")
 (declare-function hyperdrive-describe-hyperdrive "hyperdrive-describe")
 (declare-function hyperdrive-menu "hyperdrive")
 
@@ -245,7 +245,7 @@ With point on header, returns directory entry."
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
-  "d"   #'hyperdrive-download-entry
+  "d"   #'hyperdrive-download
   "^"   #'hyperdrive-up
   "D"   #'hyperdrive-dir-delete
   "H"   #'hyperdrive-dir-history
