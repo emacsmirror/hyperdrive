@@ -233,6 +233,7 @@ With point on header, returns directory entry."
 
 (declare-function hyperdrive-find-file "hyperdrive")
 (declare-function hyperdrive-up "hyperdrive")
+(declare-function hyperdrive-download-entry "hyperdrive")
 (declare-function hyperdrive-describe-hyperdrive "hyperdrive-describe")
 (declare-function hyperdrive-menu "hyperdrive")
 
@@ -244,7 +245,7 @@ With point on header, returns directory entry."
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
-  "d"   #'hyperdrive-dir-download-file
+  "d"   #'hyperdrive-download-entry
   "^"   #'hyperdrive-up
   "D"   #'hyperdrive-dir-delete
   "H"   #'hyperdrive-dir-history
@@ -289,18 +290,6 @@ Interactively, opens file or directory at point in
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-copy-url entry))
-
-(declare-function hyperdrive-download-entry "hyperdrive")
-
-(defun hyperdrive-dir-download-file (entry filename)
-  "Download ENTRY at point to FILENAME on disk."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive
-   (pcase-let* ((entry (hyperdrive-dir--entry-at-point))
-                ((cl-struct hyperdrive-entry name) entry)
-                (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
-     (list entry read-filename)))
-  (hyperdrive-download-entry entry filename))
 
 (defun hyperdrive-dir-delete (entry)
   "Delete ENTRY."
