@@ -861,11 +861,12 @@ The return value of this function is the retrieval buffer."
 
     ("f ^" "Up to parent" hyperdrive-up)
     ("f w" "Copy URL" hyperdrive-copy-url)
-    ("f g"
-     ;; TODO: Learn how to use `transient-setup-children' to
-     ;; set up this group at runtime and include the default
-     ;; `revert-buffer' binding.
-     revert-buffer :description "Revert")
+    ;; ("f g"
+    ;; TODO: Consider whether we want to have a menu entry for revert-buffer.
+    ;;  ;; TODO: Learn how to use `transient-setup-children' to
+    ;;  ;; set up this group at runtime and include the default
+    ;;  ;; `revert-buffer' binding.
+    ;;  revert-buffer :description "Revert")
     ("f s" "Save"
      ;; TODO: Learn how to use `transient-setup-children' to
      ;; set up this group at runtime and include the default
