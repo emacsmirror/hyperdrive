@@ -212,8 +212,8 @@
                               (it (propertize it
                                               'face 'transient-value))))))
     ("n" "set nickname" hyperdrive-menu-set-nickname
-     :if (lambda ()
-           (hyperdrive-writablep (oref transient--prefix scope)))
+     :inapt-if-not (lambda ()
+                     (hyperdrive-writablep (oref transient--prefix scope)))
      :description (lambda ()
                     (format "Nickname: %s"
                             ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
