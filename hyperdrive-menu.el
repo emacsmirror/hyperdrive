@@ -95,6 +95,8 @@
     ("w" "Copy URL" hyperdrive-copy-url
      :if (lambda ()
            (not (eq major-mode 'hyperdrive-dir-mode))))
+    ;; FIXME: Enable this as a command.
+    ;; ("D" "Delete" hyperdrive-delete)
     ("d" "Download" hyperdrive-download
      :if (lambda ()
            (not (eq major-mode 'hyperdrive-dir-mode))))]
@@ -115,7 +117,7 @@
 
              (not (hyperdrive--entry-directory-p entry-at-point)))))
     ;; FIXME: Enable this as a command.
-    ;; ("f D" "Delete" hyperdrive-delete)
+    ;; ("D" "Delete" hyperdrive-delete)
     ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
     ("w" "Copy URL" hyperdrive-copy-url)
     ("RET" "Open" hyperdrive-dir-find-file)
