@@ -102,7 +102,8 @@
     ;; FIXME: Enable this as a command.
     ;; ("f D" "Delete" hyperdrive-delete)
     ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
-    ("w" "Copy URL" hyperdrive-copy-url)]
+    ("w" "Copy URL" hyperdrive-copy-url)
+    ("RET" "Open" hyperdrive-dir-find-file)]
    ["Version"
     :description (lambda ()
                    (if-let ((entry (oref transient--prefix scope))
