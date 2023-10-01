@@ -64,6 +64,7 @@
       (let ((hyperdrive (hyperdrive-entry-hyperdrive (oref transient--prefix scope))))
         (concat (propertize "Drive: " 'face 'transient-heading)
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
+                ;; TODO: Consider moving the latest version number into the "Version" group.
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
     ("e" "Edit hyperdrive" hyperdrive-menu-hyperdrive)
     ;; TODO: Hook into transient-show-help?
