@@ -165,9 +165,13 @@
      :description (lambda ()
                     (if-let ((entry (oref transient--prefix scope))
                              (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                        (concat "Previous" (when-let ((version (hyperdrive-entry-version (hyperdrive-entry-previous entry))))
-                                             (concat ": " (propertize (number-to-string version)
-                                                                      'face 'transient-value))))
+                        (concat "Previous"
+                                (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
+                                  ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
+                                  ('nil nil)
+                                  ((cl-struct hyperdrive-entry version)
+                                   (concat ": " (propertize (number-to-string version)
+                                                            'face 'transient-value)))))
                       "Previous")))]]
   (interactive (list hyperdrive-current-entry))
   (transient-setup 'hyperdrive-menu nil nil :scope entry))
