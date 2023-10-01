@@ -157,7 +157,7 @@
                       "Next")))
     ("v p" "Previous" hyperdrive-previous-version
      :if (lambda () (oref transient--prefix scope))
-     :inapt-if-not (lambda  ()
+     :inapt-if-not (lambda ()
                      (pcase (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t)
                        ('unknown nil)
                        (it (hyperdrive-entry-version it))))
