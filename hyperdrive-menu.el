@@ -149,9 +149,9 @@
     ("g v" "Version" hyperdrive-hyper-gateway-version)]
    ["Drives"
     ;; TODO: Consider showing current drive's public key or formatted name.
-    ("d n" "New" hyperdrive-new)
-    ("d d" "Describe" hyperdrive-describe-hyperdrive)
-    ("d P" "Purge" hyperdrive-purge)]
+    ("h n" "New" hyperdrive-new)
+    ("h d" "Describe" hyperdrive-describe-hyperdrive)
+    ("h P" "Purge" hyperdrive-purge)]
    ["Bookmark"
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
