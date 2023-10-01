@@ -67,7 +67,8 @@
         (concat (propertize "Inside: " 'face 'transient-heading)
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
                 ;; TODO: Consider moving the latest version number into the "Version" group.
-                (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
+                (format "  latest:%s" (hyperdrive-latest-version hyperdrive))
+                "\n")))
     [ ;; Visiting
      :description
      (lambda ()
