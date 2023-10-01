@@ -106,10 +106,9 @@
                 (eq major-mode 'hyperdrive-dir-mode)))
      :description
      (lambda ()
-       (let ((entry (oref transient--prefix scope)))
-         (concat (propertize "At point: " 'face 'transient-heading)
-                 (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
-                             'face 'transient-value))))
+       (concat (propertize "At point: " 'face 'transient-heading)
+               (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
+                           'face 'transient-value)))
      ("d" "Download" hyperdrive-download
       :if (lambda ()
             (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
