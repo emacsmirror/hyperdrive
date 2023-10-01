@@ -196,7 +196,8 @@
 
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for editing HYPERDRIVE."
-  [ :description
+  [ :class transient-row
+    :description
     (lambda ()
       (let ((hyperdrive (oref transient--prefix scope)))
         (concat (propertize "Drive: " 'face 'transient-heading)
