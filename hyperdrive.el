@@ -234,16 +234,12 @@ Universal prefix argument \\[universal-argument] forces
           (cl-callf map-delete (hyperdrive-metadata hyperdrive) 'name)
           (hyperdrive-put-metadata hyperdrive
             :then (pcase-lambda ((cl-struct plz-response headers))
-                    (hyperdrive-message "Unset nickname")
                     (hyperdrive--fill-latest-version hyperdrive headers)
                     (hyperdrive-persist hyperdrive)
                     (funcall then hyperdrive))))
       (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
       (hyperdrive-put-metadata hyperdrive
         :then (pcase-lambda ((cl-struct plz-response headers))
-                (hyperdrive-message "Set nickname for «%s» to %s"
-                                    (hyperdrive--format-hyperdrive hyperdrive)
-                                    (hyperdrive--format-host hyperdrive :format '(nickname)))
                 (hyperdrive--fill-latest-version hyperdrive headers)
                 (hyperdrive-persist hyperdrive)
                 (funcall then hyperdrive))))
