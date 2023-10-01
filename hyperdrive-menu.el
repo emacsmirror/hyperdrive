@@ -160,9 +160,7 @@
     ("v p" "Previous" hyperdrive-previous-version
      :if (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda ()
-                     (pcase (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t)
-                       ('unknown nil)
-                       (it (hyperdrive-entry-version it))))
+                     (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
      ;; :transient t
      :description (lambda ()
                     (if-let ((entry (oref transient--prefix scope))
