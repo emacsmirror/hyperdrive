@@ -80,35 +80,24 @@
                             'face 'transient-value))))
     ("d ^" "Up to parent" hyperdrive-menu-up)
     ("o" "Sort" hyperdrive-dir-sort)]
-   [ ;; "File"
+   [ ;; File at point
     :if (lambda ()
           (let ((entry (oref transient--prefix scope)))
-            (or (and entry
-                     (not (hyperdrive--entry-directory-p entry)))
-                (and (eq major-mode 'hyperdrive-dir-mode)
-                     (hyperdrive-dir--entry-at-point)))))
+            (and (oref transient--prefix scope)
+                 (eq major-mode 'hyperdrive-dir-mode)
+                 (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                   (not (hyperdrive--entry-directory-p entry-at-point))))))
+    :description
+    (lambda ()
+      (let ((entry (oref transient--prefix scope)))
+        (concat (propertize "File at point: " 'face 'transient-heading)
+                (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
+                            'face 'transient-value))))
     ("f d" "Download" hyperdrive-download)
     ;; FIXME: Enable this as a command.
     ;; ("f D" "Delete" hyperdrive-delete)
-
-    ("f ^" "Up to parent" hyperdrive-menu-up)
-    ("f w" "Copy URL" hyperdrive-copy-url)
-    ;; ("f g"
-    ;; TODO: Consider whether we want to have a menu entry for revert-buffer.
-    ;;  ;; TODO: Learn how to use `transient-setup-children' to
-    ;;  ;; set up this group at runtime and include the default
-    ;;  ;; `revert-buffer' binding.
-    ;;  revert-buffer :description "Revert")
-    ("f s" "Save"
-     ;; TODO: Learn how to use `transient-setup-children' to
-     ;; set up this group at runtime and include the default
-     ;; `save-buffer' binding.
-     save-buffer)
-    ("f W"
-     ;; TODO: Learn how to use `transient-setup-children' to
-     ;; set up this group at runtime and include the default
-     ;; `write-buffer' binding.
-     hyperdrive-write-buffer :description "Write")]
+    ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
+    ("f w" "Copy URL" hyperdrive-copy-url)]
    ["Version"
     :description (lambda ()
                    (if-let ((entry (oref transient--prefix scope))
