@@ -38,6 +38,8 @@
 ;;;; Declarations
 
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
+(declare-function hyperdrive-set-nickname "hyperdrive")
+(declare-function hyperdrive-set-petname "hyperdrive")
 
 ;;;;; hyperdrive-menu: Transient for entries
 

@@ -177,6 +177,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
       :else (lambda (plz-error)
               (hyperdrive-error "Unable to purge drive: %s %S" (hyperdrive--format-hyperdrive hyperdrive) plz-error)))))
 
+;;;###autoload
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
 Entering an empty or blank string unsets PETNAME.
@@ -207,6 +208,7 @@ Universal prefix argument \\[universal-argument] forces
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
+;;;###autoload
 (cl-defun hyperdrive-set-nickname (nickname hyperdrive &key (then #'ignore))
   "Set HYPERDRIVE's NICKNAME.
 Returns HYPERDRIVE.
