@@ -150,13 +150,16 @@
                             (hyperdrive-entry-next entry))))
      ;; :transient t
      :description (lambda ()
-                    (if-let ((entry (oref transient--prefix scope))
-                             (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                        (concat "Next" (when-let* ((next-entry (hyperdrive-entry-next entry))
-                                                   (version (hyperdrive-entry-version next-entry)))
-                                         (concat ": " (propertize (number-to-string version)
-                                                                  'face 'transient-value))))
-                      "Next")))
+                    (concat "Next"
+                            (when-let* ((entry (oref transient--prefix scope))
+                                        (hyperdrive (hyperdrive-entry-hyperdrive entry))
+                                        (next-entry (hyperdrive-entry-next entry))
+                                        ;; Don't add ": latest" if we're already at the latest version
+                                        ((not (eq entry next-entry)))
+                                        (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
+                                                             (number-to-string next-version)
+                                                           "latest")))
+                              (concat ": " (propertize display-version 'face 'transient-value))))))
     ("v p" "Previous" hyperdrive-previous-version
      :if (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda ()
