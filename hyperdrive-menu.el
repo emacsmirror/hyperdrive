@@ -115,8 +115,8 @@
                                                        "latest"))
                                            'face 'transient-value))
                      "Version"))
-    ("v h" "History" hyperdrive-history)
-    ("v n" "Next" hyperdrive-next-version
+    ("V h" "History" hyperdrive-history)
+    ("V n" "Next" hyperdrive-next-version
      :if (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda  ()
                      (let ((entry (oref transient--prefix scope)))
@@ -134,7 +134,7 @@
                                                              (number-to-string next-version)
                                                            "latest")))
                               (concat ": " (propertize display-version 'face 'transient-value))))))
-    ("v p" "Previous" hyperdrive-previous-version
+    ("V p" "Previous" hyperdrive-previous-version
      :if (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda ()
                      (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
