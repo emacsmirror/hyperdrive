@@ -88,7 +88,7 @@
         (concat (propertize "At point: " 'face 'transient-heading)
                 (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
                             'face 'transient-value))))
-    ("f d" "Download" hyperdrive-download
+    ("d" "Download" hyperdrive-download
      :if (lambda ()
            (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
 
