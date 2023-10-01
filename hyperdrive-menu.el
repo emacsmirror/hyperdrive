@@ -145,7 +145,9 @@
     ("v n" "Next" hyperdrive-next-version
      :if (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda  ()
-                     (hyperdrive-entry-version (oref transient--prefix scope)))
+                     (let ((entry (oref transient--prefix scope)))
+                       (and (hyperdrive-entry-version entry)
+                            (hyperdrive-entry-next entry))))
      ;; :transient t
      :description (lambda ()
                     (if-let ((entry (oref transient--prefix scope))
