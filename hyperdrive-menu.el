@@ -102,9 +102,8 @@
            (not (eq major-mode 'hyperdrive-dir-mode))))]
    [ ;; At point
     :if (lambda ()
-          (let ((entry (oref transient--prefix scope)))
-            (and (oref transient--prefix scope)
-                 (eq major-mode 'hyperdrive-dir-mode))))
+          (and (oref transient--prefix scope)
+               (eq major-mode 'hyperdrive-dir-mode)))
     :description
     (lambda ()
       (let ((entry (oref transient--prefix scope)))
