@@ -93,6 +93,23 @@
     ;; ("f D" "Delete" hyperdrive-delete)
     ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
     ("f w" "Copy URL" hyperdrive-copy-url)]
+   [ ;; Directory at point
+    :if (lambda ()
+          (let ((entry (oref transient--prefix scope)))
+            (and (oref transient--prefix scope)
+                 (eq major-mode 'hyperdrive-dir-mode)
+                 (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                   (hyperdrive--entry-directory-p entry-at-point)))))
+    :description
+    (lambda ()
+      (let ((entry (oref transient--prefix scope)))
+        (concat (propertize "Directory at point: " 'face 'transient-heading)
+                (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
+                            'face 'transient-value))))
+    ;; FIXME: Enable this as a command.
+    ;; ("f D" "Delete" hyperdrive-delete)
+    ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
+    ("f w" "Copy URL" hyperdrive-copy-url)]
    ["Version"
     :description (lambda ()
                    (if-let ((entry (oref transient--prefix scope))
