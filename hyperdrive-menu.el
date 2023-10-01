@@ -66,6 +66,7 @@
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
     ("e" "Edit hyperdrive" hyperdrive-menu-hyperdrive)
+    ;; TODO: Hook into transient-show-help?
     ("?" "Info manual" hyperdrive-info-manual)]
   [["Gateway"
     ("g s" "Start" hyperdrive-start)
