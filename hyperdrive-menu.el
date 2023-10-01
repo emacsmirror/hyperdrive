@@ -202,7 +202,7 @@
         (concat (propertize "Drive: " 'face 'transient-heading)
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
-    ("n" "set nickname" hyperdrive-menu-hyperdrive-set-nickname
+    ("n" "set nickname" hyperdrive-menu-set-nickname
      :if (lambda ()
            (hyperdrive-writablep (oref transient--prefix scope)))
      :description (lambda ()
@@ -218,7 +218,7 @@
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
-(transient-define-suffix hyperdrive-menu-hyperdrive-set-nickname (nickname)
+(transient-define-suffix hyperdrive-menu-set-nickname (nickname)
   ;; TODO: Offer current nickname as default value; note that
   ;; transient--prefix and transient-current-prefix are both nil here.
   (interactive (list (hyperdrive-read-name :prompt "New nickname")))
