@@ -39,7 +39,7 @@
 
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
-;;;;; Transient support
+;;;;; hyperdrive-menu: Transient for entries
 
 ;; TODO: Use something like this later.
 ;; (defmacro hyperdrive-menu-lambda (&rest body)
@@ -49,39 +49,6 @@
 ;;        (pcase-let (((cl-struct hyperdrive-entry hyperdrive)
 ;;                     hyperdrive-current-entry))
 ;;          ,@body))))
-
-
-(transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
-  "Show menu for editing HYPERDRIVE."
-  [ :description
-    (lambda ()
-      (let ((hyperdrive (oref transient--prefix scope)))
-        (concat (propertize "Drive: " 'face 'transient-heading)
-                (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
-                (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
-    ("n" "set nickname" hyperdrive-menu-hyperdrive-set-nickname
-     :if (lambda ()
-           (hyperdrive-writablep (oref transient--prefix scope)))
-     :description (lambda ()
-                    (format "Nickname: %s"
-                            ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
-                            (pcase (alist-get 'name
-                                              (hyperdrive-metadata
-                                               (oref transient--prefix scope)))
-                              ('nil (propertize "none"
-                                                'face 'transient-inactive-value))
-                              (it (propertize it
-                                              'face 'transient-value))))))]
-  (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
-  (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
-
-(transient-define-suffix hyperdrive-menu-hyperdrive-set-nickname (nickname)
-  ;; TODO: Offer current nickname as default value; note that
-  ;; transient--prefix and transient-current-prefix are both nil here.
-  (interactive (list (hyperdrive-read-name :prompt "New nickname")))
-  (hyperdrive-set-nickname nickname (oref transient-current-prefix scope)
-                           :then (lambda (hyperdrive)
-                                   (hyperdrive-menu-hyperdrive hyperdrive))))
 
 (transient-define-suffix hyperdrive-menu-up ()
   ;; :transient 'transient--do-call
@@ -224,6 +191,40 @@
                       "Previous")))]]
   (interactive (list (hyperdrive--context-entry)))
   (transient-setup 'hyperdrive-menu nil nil :scope entry))
+
+;;;;; hyperdrive-menu-hyperdrive: Transient for hyperdrives
+
+(transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
+  "Show menu for editing HYPERDRIVE."
+  [ :description
+    (lambda ()
+      (let ((hyperdrive (oref transient--prefix scope)))
+        (concat (propertize "Drive: " 'face 'transient-heading)
+                (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
+                (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
+    ("n" "set nickname" hyperdrive-menu-hyperdrive-set-nickname
+     :if (lambda ()
+           (hyperdrive-writablep (oref transient--prefix scope)))
+     :description (lambda ()
+                    (format "Nickname: %s"
+                            ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
+                            (pcase (alist-get 'name
+                                              (hyperdrive-metadata
+                                               (oref transient--prefix scope)))
+                              ('nil (propertize "none"
+                                                'face 'transient-inactive-value))
+                              (it (propertize it
+                                              'face 'transient-value))))))]
+  (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
+  (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
+
+(transient-define-suffix hyperdrive-menu-hyperdrive-set-nickname (nickname)
+  ;; TODO: Offer current nickname as default value; note that
+  ;; transient--prefix and transient-current-prefix are both nil here.
+  (interactive (list (hyperdrive-read-name :prompt "New nickname")))
+  (hyperdrive-set-nickname nickname (oref transient-current-prefix scope)
+                           :then (lambda (hyperdrive)
+                                   (hyperdrive-menu-hyperdrive hyperdrive))))
 
 ;;;; Footer
 
