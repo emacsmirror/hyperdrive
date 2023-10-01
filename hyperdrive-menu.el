@@ -89,7 +89,15 @@
            (eq major-mode 'hyperdrive-dir-mode))
      :transient t)
     ("n" "next" hyperdrive-ewoc-next
-     :transient t)]
+     :if (lambda ()
+           (eq major-mode 'hyperdrive-dir-mode))
+     :transient t)
+    ("w" "Copy URL" hyperdrive-copy-url
+     :if (lambda ()
+           (not (eq major-mode 'hyperdrive-dir-mode))))
+    ("d" "Download" hyperdrive-download
+     :if (lambda ()
+           (not (eq major-mode 'hyperdrive-dir-mode))))]
    [ ;; At point
     :if (lambda ()
           (let ((entry (oref transient--prefix scope)))
