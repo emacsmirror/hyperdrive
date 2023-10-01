@@ -76,7 +76,12 @@
     ("^" "Up to parent" hyperdrive-up
      :inapt-if-not (lambda ()
                      (hyperdrive-parent (oref transient--prefix scope))))
-    ("o" "Sort" hyperdrive-dir-sort)]
+    ("o" "Sort" hyperdrive-dir-sort)
+    ;; TODO: Combine previous and next commands
+    ("p" "previous" hyperdrive-ewoc-previous
+     :transient t)
+    ("n" "next" hyperdrive-ewoc-next
+     :transient t)]
    [ ;; At point
     :if (lambda ()
           (let ((entry (oref transient--prefix scope)))
