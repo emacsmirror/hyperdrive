@@ -202,6 +202,15 @@
         (concat (propertize "Drive: " 'face 'transient-heading)
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
+    ("p" "Petname" hyperdrive-menu-set-petname
+     :description (lambda ()
+                    (format "Petname: %s"
+                            (pcase (hyperdrive-petname
+                                    (oref transient--prefix scope))
+                              (`nil (propertize "none"
+                                                'face 'transient-inactive-value))
+                              (it (propertize it
+                                              'face 'transient-value))))))
     ("n" "set nickname" hyperdrive-menu-set-nickname
      :if (lambda ()
            (hyperdrive-writablep (oref transient--prefix scope)))
@@ -217,6 +226,14 @@
                                               'face 'transient-value))))))]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
+
+(transient-define-suffix hyperdrive-menu-set-petname (petname)
+  ;; TODO: Offer current petname as default value; note that
+  ;; transient--prefix and transient-current-prefix are both nil here.
+  (interactive (list (hyperdrive-read-name :prompt "New petname")))
+  (let ((hyperdrive (oref transient-current-prefix scope)))
+    (hyperdrive-set-petname petname hyperdrive)
+    (hyperdrive-menu-hyperdrive hyperdrive)))
 
 (transient-define-suffix hyperdrive-menu-set-nickname (nickname)
   ;; TODO: Offer current nickname as default value; note that
