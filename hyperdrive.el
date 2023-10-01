@@ -207,9 +207,12 @@ Universal prefix argument \\[universal-argument] forces
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
-(defun hyperdrive-set-nickname (nickname hyperdrive)
+(cl-defun hyperdrive-set-nickname (nickname hyperdrive &key (then #'ignore))
   "Set HYPERDRIVE's NICKNAME.
 Returns HYPERDRIVE.
+
+Asynchronous callback calls THEN with the updated hyperdrive as
+its only argument.
 
 Universal prefix argument \\[universal-argument] forces
 `hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
@@ -233,7 +236,8 @@ Universal prefix argument \\[universal-argument] forces
             :then (pcase-lambda ((cl-struct plz-response headers))
                     (hyperdrive-message "Unset nickname")
                     (hyperdrive--fill-latest-version hyperdrive headers)
-                    (hyperdrive-persist hyperdrive))))
+                    (hyperdrive-persist hyperdrive)
+                    (funcall then hyperdrive))))
       (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
       (hyperdrive-put-metadata hyperdrive
         :then (pcase-lambda ((cl-struct plz-response headers))
@@ -241,7 +245,8 @@ Universal prefix argument \\[universal-argument] forces
                                     (hyperdrive--format-hyperdrive hyperdrive)
                                     (hyperdrive--format-host hyperdrive :format '(nickname)))
                 (hyperdrive--fill-latest-version hyperdrive headers)
-                (hyperdrive-persist hyperdrive))))
+                (hyperdrive-persist hyperdrive)
+                (funcall then hyperdrive))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
     )
   hyperdrive)
