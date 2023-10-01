@@ -50,11 +50,6 @@
 ;;                     hyperdrive-current-entry))
 ;;          ,@body))))
 
-(transient-define-suffix hyperdrive-menu-up ()
-  ;; :transient 'transient--do-call
-  (interactive)
-  (hyperdrive-menu (hyperdrive-parent (oref transient-current-prefix scope))))
-
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
 
@@ -78,7 +73,7 @@
         (concat (propertize "Current directory: " 'face 'transient-heading)
                 (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                             'face 'transient-value))))
-    ("d ^" "Up to parent" hyperdrive-menu-up)
+    ("d ^" "Up to parent" hyperdrive-up)
     ("o" "Sort" hyperdrive-dir-sort)]
    [ ;; File at point
     :if (lambda ()
