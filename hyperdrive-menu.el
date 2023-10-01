@@ -103,7 +103,11 @@
     ;; ("f D" "Delete" hyperdrive-delete)
     ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
     ("w" "Copy URL" hyperdrive-copy-url)
-    ("RET" "Open" hyperdrive-dir-find-file)]
+    ("RET" "Open" hyperdrive-dir-find-file)
+    ("v" "View" hyperdrive-dir-view-file
+     :if (lambda ()
+           (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+             (not (hyperdrive--entry-directory-p entry-at-point)))))]
    ["Version"
     :description (lambda ()
                    (if-let ((entry (oref transient--prefix scope))
