@@ -29,6 +29,7 @@
 
 (require 'cl-lib)
 (require 'pcase)
+(require 'transient)
 (require 'compat)
 
 (require 'hyperdrive-vars)
@@ -39,8 +40,6 @@
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
 ;;;;; Transient support
-
-(require 'transient)
 
 ;; TODO: Use something like this later.
 ;; (defmacro hyperdrive-menu-lambda (&rest body)
