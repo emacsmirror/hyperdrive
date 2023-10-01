@@ -68,29 +68,6 @@
     ("e" "Edit hyperdrive" hyperdrive-menu-hyperdrive)
     ;; TODO: Hook into transient-show-help?
     ("?" "Info manual" hyperdrive-info-manual)]
-  [["Gateway"
-    ("g s" "Start" hyperdrive-start)
-    ("g S" "Stop" hyperdrive-stop)
-    ("g v" "Version" hyperdrive-hyper-gateway-version)]
-   ["Drives"
-    ;; TODO: Consider showing current drive's public key or formatted name.
-    ("d n" "New" hyperdrive-new)
-    ("d d" "Describe" hyperdrive-describe-hyperdrive)
-    ("d P" "Purge" hyperdrive-purge)]
-   ["Bookmark"
-    ("b j" "Jump" hyperdrive-bookmark-jump)
-    ("b l" "List" hyperdrive-bookmark-list)
-    ("b s" "Set" bookmark-set)]
-   ["Files"
-    ("f f" "Find" hyperdrive-find-file)
-    ("f v" "View" hyperdrive-view-file)
-    ("f o" "Open URL" hyperdrive-open-url)
-    ("o" "Sort" hyperdrive-dir-sort
-     :if-mode hyperdrive-dir-mode)]
-   ["Upload"
-    ("u f" "File" hyperdrive-upload-file)
-    ("u F" "Files" hyperdrive-upload-files)
-    ("u m" "Mirror" hyperdrive-mirror)]]
   [ ;; :class transient-row
    :description
    (lambda ()
@@ -176,6 +153,29 @@
                                    (concat ": " (propertize (number-to-string version)
                                                             'face 'transient-value)))))
                       "Previous")))]]
+  [["Gateway"
+    ("g s" "Start" hyperdrive-start)
+    ("g S" "Stop" hyperdrive-stop)
+    ("g v" "Version" hyperdrive-hyper-gateway-version)]
+   ["Drives"
+    ;; TODO: Consider showing current drive's public key or formatted name.
+    ("d n" "New" hyperdrive-new)
+    ("d d" "Describe" hyperdrive-describe-hyperdrive)
+    ("d P" "Purge" hyperdrive-purge)]
+   ["Bookmark"
+    ("b j" "Jump" hyperdrive-bookmark-jump)
+    ("b l" "List" hyperdrive-bookmark-list)
+    ("b s" "Set" bookmark-set)]
+   ["Files"
+    ("f f" "Find" hyperdrive-find-file)
+    ("f v" "View" hyperdrive-view-file)
+    ("f o" "Open URL" hyperdrive-open-url)
+    ("o" "Sort" hyperdrive-dir-sort
+     :if-mode hyperdrive-dir-mode)]
+   ["Upload"
+    ("u f" "File" hyperdrive-upload-file)
+    ("u F" "Files" hyperdrive-upload-files)
+    ("u m" "Mirror" hyperdrive-mirror)]]
   (interactive (list hyperdrive-current-entry))
   (transient-setup 'hyperdrive-menu nil nil :scope entry))
 
