@@ -61,7 +61,10 @@
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
                 ;; TODO: Consider moving the latest version number into the "Version" group.
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
-    ("e" "Edit hyperdrive" hyperdrive-menu-hyperdrive)
+    ("H e" "Edit hyperdrive" hyperdrive-menu-hyperdrive)
+    ("H n" "New" hyperdrive-new)
+    ("H d" "Describe" hyperdrive-describe-hyperdrive)
+    ("H P" "Purge" hyperdrive-purge)
     ;; TODO: Hook into transient-show-help?
     ("?" "Info manual" hyperdrive-info-manual)]
   [[ ;; Current directory
@@ -158,11 +161,6 @@
     ("g s" "Start" hyperdrive-start)
     ("g S" "Stop" hyperdrive-stop)
     ("g v" "Version" hyperdrive-hyper-gateway-version)]
-   ["Drives"
-    ;; TODO: Consider showing current drive's public key or formatted name.
-    ("h n" "New" hyperdrive-new)
-    ("h d" "Describe" hyperdrive-describe-hyperdrive)
-    ("h P" "Purge" hyperdrive-purge)]
    ["Bookmark"
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
