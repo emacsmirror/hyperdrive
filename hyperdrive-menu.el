@@ -77,37 +77,22 @@
      :inapt-if-not (lambda ()
                      (hyperdrive-parent (oref transient--prefix scope))))
     ("o" "Sort" hyperdrive-dir-sort)]
-   [ ;; File at point
+   [ ;; At point
     :if (lambda ()
           (let ((entry (oref transient--prefix scope)))
             (and (oref transient--prefix scope)
-                 (eq major-mode 'hyperdrive-dir-mode)
-                 (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-                   (not (hyperdrive--entry-directory-p entry-at-point))))))
+                 (eq major-mode 'hyperdrive-dir-mode))))
     :description
     (lambda ()
       (let ((entry (oref transient--prefix scope)))
-        (concat (propertize "File at point: " 'face 'transient-heading)
+        (concat (propertize "At point: " 'face 'transient-heading)
                 (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
                             'face 'transient-value))))
-    ("f d" "Download" hyperdrive-download)
-    ;; FIXME: Enable this as a command.
-    ;; ("f D" "Delete" hyperdrive-delete)
-    ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
-    ("w" "Copy URL" hyperdrive-copy-url)]
-   [ ;; Directory at point
-    :if (lambda ()
-          (let ((entry (oref transient--prefix scope)))
-            (and (oref transient--prefix scope)
-                 (eq major-mode 'hyperdrive-dir-mode)
-                 (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-                   (hyperdrive--entry-directory-p entry-at-point)))))
-    :description
-    (lambda ()
-      (let ((entry (oref transient--prefix scope)))
-        (concat (propertize "Directory at point: " 'face 'transient-heading)
-                (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
-                            'face 'transient-value))))
+    ("f d" "Download" hyperdrive-download
+     :if (lambda ()
+           (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+
+             (not (hyperdrive--entry-directory-p entry-at-point)))))
     ;; FIXME: Enable this as a command.
     ;; ("f D" "Delete" hyperdrive-delete)
     ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
