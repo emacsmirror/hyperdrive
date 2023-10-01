@@ -69,16 +69,17 @@
     ("e" "Edit hyperdrive" hyperdrive-menu-hyperdrive)
     ;; TODO: Hook into transient-show-help?
     ("?" "Info manual" hyperdrive-info-manual)]
-  [ ;; :class transient-row
-   :description
-   (lambda ()
-     (let ((entry (oref transient--prefix scope)))
-       (concat (propertize (if (hyperdrive--entry-directory-p entry)
-                               "Directory" "File")
-                           'face 'transient-heading)
-               ": "
-               (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
-                           'face 'transient-value))))
+  [[ ;; Current directory
+    :if (lambda ()
+          (and (oref transient--prefix scope) (eq major-mode 'hyperdrive-dir-mode)))
+    :description
+    (lambda ()
+      (let ((entry (oref transient--prefix scope)))
+        (concat (propertize "Current directory: " 'face 'transient-heading)
+                (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
+                            'face 'transient-value))))
+    ("d ^" "Up to parent" hyperdrive-menu-up)
+    ("o" "Sort" hyperdrive-dir-sort)]
    [ ;; "File"
     :if (lambda ()
           (let ((entry (oref transient--prefix scope)))
@@ -170,9 +171,7 @@
    ["Files"
     ("f f" "Find" hyperdrive-find-file)
     ("f v" "View" hyperdrive-view-file)
-    ("f o" "Open URL" hyperdrive-open-url)
-    ("o" "Sort" hyperdrive-dir-sort
-     :if-mode hyperdrive-dir-mode)]
+    ("f o" "Open URL" hyperdrive-open-url)]
    ["Upload"
     ("u f" "File" hyperdrive-upload-file)
     ("u F" "Files" hyperdrive-upload-files)
