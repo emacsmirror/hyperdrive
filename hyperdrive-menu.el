@@ -213,6 +213,10 @@
   (interactive (list (hyperdrive-read-name :prompt "New petname")))
   (let ((hyperdrive (oref transient-current-prefix scope)))
     (hyperdrive-set-petname petname hyperdrive)
+    ;; TODO: Pass scope to `hyperdrive-menu-hyperdrive' so that, e.g.,
+    ;; C-g correctly returns the user back to the the
+    ;; `hyperdrive-menu' if that's where we came from. Same in
+    ;; `hyperdrive-menu-set-nickname'.
     (hyperdrive-menu-hyperdrive hyperdrive)))
 
 (transient-define-suffix hyperdrive-menu-set-nickname (nickname)
