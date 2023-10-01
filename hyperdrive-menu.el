@@ -65,29 +65,7 @@
         (concat (propertize "Drive: " 'face 'transient-heading)
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
-    ("s p" "Petname" hyperdrive-set-petname
-     :if-non-nil hyperdrive-current-entry
-     :description (lambda ()
-                    (format "Petname: %s"
-                            (pcase (hyperdrive-petname
-                                    (hyperdrive-entry-hyperdrive (oref transient--prefix scope)))
-                              (`nil (propertize "none"
-                                                'face 'transient-inactive-value))
-                              (it (propertize it
-                                              'face 'transient-value))))))
-    ("s n" "Nickname" hyperdrive-set-nickname
-     :if (lambda () (and (oref transient--prefix scope)
-                         (hyperdrive-writablep (hyperdrive-entry-hyperdrive (oref transient--prefix scope)))))
-     :description (lambda ()
-                    (format "Nickname: %s"
-                            ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
-                            (pcase (alist-get 'name
-                                              (hyperdrive-metadata
-                                               (hyperdrive-entry-hyperdrive (oref transient--prefix scope))))
-                              (`nil (propertize "none"
-                                                'face 'transient-inactive-value))
-                              (it (propertize it
-                                              'face 'transient-value))))))
+    ("e" "Edit hyperdrive" hyperdrive-menu-hyperdrive)
     ("?" "Info manual" hyperdrive-info-manual)]
   [["Gateway"
     ("g s" "Start" hyperdrive-start)
