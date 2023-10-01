@@ -143,7 +143,7 @@
                      "Version"))
     ("v h" "History" hyperdrive-history)
     ("v n" "Next" hyperdrive-next-version
-     :if-not (lambda () (oref transient--prefix scope))
+     :if (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda  ()
                      (hyperdrive-entry-version (hyperdrive-entry-next (oref transient--prefix scope))))
      ;; :transient t
@@ -155,7 +155,7 @@
                                                                   'face 'transient-value))))
                       "Next")))
     ("v p" "Previous" hyperdrive-previous-version
-     :if-not (lambda () (oref transient--prefix scope))
+     :if (lambda () (oref transient--prefix scope))
      :inapt-if-not (lambda  ()
                      (pcase (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t)
                        ('unknown nil)
