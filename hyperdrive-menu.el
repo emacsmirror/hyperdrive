@@ -67,22 +67,26 @@
     ("H P" "Purge" hyperdrive-purge)
     ;; TODO: Hook into transient-show-help?
     ("?" "Info manual" hyperdrive-info-manual)]
-  [[ ;; Current directory
+  [[ ;; Visiting
     :if (lambda ()
-          (and (oref transient--prefix scope) (eq major-mode 'hyperdrive-dir-mode)))
+          (oref transient--prefix scope))
     :description
     (lambda ()
       (let ((entry (oref transient--prefix scope)))
-        (concat (propertize "Current directory: " 'face 'transient-heading)
+        (concat (propertize "Visiting: " 'face 'transient-heading)
                 (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                             'face 'transient-value))))
     ("^" "Up to parent" hyperdrive-up
      :inapt-if-not (lambda ()
                      (hyperdrive-parent (oref transient--prefix scope))))
     ("o" "Sort" hyperdrive-dir-sort
+     :if (lambda ()
+           (eq major-mode 'hyperdrive-dir-mode))
      :transient t)
     ;; TODO: Combine previous and next commands
     ("p" "previous" hyperdrive-ewoc-previous
+     :if (lambda ()
+           (eq major-mode 'hyperdrive-dir-mode))
      :transient t)
     ("n" "next" hyperdrive-ewoc-next
      :transient t)]
