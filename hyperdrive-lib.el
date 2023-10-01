@@ -450,6 +450,9 @@ Sends a request to the gateway for hyperdrive's latest version."
     ;; ENTRY is a directory: increment the version number by one.
     (when (hyperdrive--entry-directory-p entry)
       (cl-incf (hyperdrive-entry-version next-entry))
+      (when (eq latest-version (hyperdrive-entry-version next-entry))
+        ;; Next ENTRY is the latest version: return ENTRY with nil version.
+        (setf (hyperdrive-entry-version next-entry) nil))
       (cl-return-from hyperdrive-entry-next next-entry))
 
     ;; ENTRY is a file...
