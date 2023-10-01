@@ -168,7 +168,7 @@
                                              (concat ": " (propertize (number-to-string version)
                                                                       'face 'transient-value))))
                       "Previous")))]]
-  (interactive (list (hyperdrive--context-entry)))
+  (interactive (list hyperdrive-current-entry))
   (transient-setup 'hyperdrive-menu nil nil :scope entry))
 
 ;;;;; hyperdrive-menu-hyperdrive: Transient for hyperdrives
