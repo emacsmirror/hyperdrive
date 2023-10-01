@@ -73,7 +73,7 @@
         (concat (propertize "Current directory: " 'face 'transient-heading)
                 (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                             'face 'transient-value))))
-    ("d ^" "Up to parent" hyperdrive-up)
+    ("^" "Up to parent" hyperdrive-up)
     ("o" "Sort" hyperdrive-dir-sort)]
    [ ;; File at point
     :if (lambda ()
