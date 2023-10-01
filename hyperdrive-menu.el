@@ -61,7 +61,7 @@
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
                 ;; TODO: Consider moving the latest version number into the "Version" group.
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
-    ("H e" "Edit hyperdrive" hyperdrive-menu-hyperdrive)
+    ("H e" "Edit" hyperdrive-menu-hyperdrive)
     ("H n" "New" hyperdrive-new)
     ("H d" "Describe" hyperdrive-describe-hyperdrive)
     ("H P" "Purge" hyperdrive-purge)
