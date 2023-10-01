@@ -53,122 +53,120 @@
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
   [ :class transient-row
-    :description
-    (lambda ()
-      (let ((hyperdrive (hyperdrive-entry-hyperdrive (oref transient--prefix scope))))
-        (concat (propertize "Drive: " 'face 'transient-heading)
-                (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
-                ;; TODO: Consider moving the latest version number into the "Version" group.
-                (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
+    :description "Hyperdrive"
     ("H e" "Edit" hyperdrive-menu-hyperdrive)
     ("H n" "New" hyperdrive-new)
     ("H d" "Describe" hyperdrive-describe-hyperdrive)
     ("H P" "Purge" hyperdrive-purge)
     ;; TODO: Hook into transient-show-help?
     ("?" "Info manual" hyperdrive-info-manual)]
-  [[ ;; Visiting
-    :if (lambda ()
-          (oref transient--prefix scope))
+  [ :if (lambda () (oref transient--prefix scope))
     :description
     (lambda ()
-      (let ((entry (oref transient--prefix scope)))
-        (concat (propertize "Visiting: " 'face 'transient-heading)
-                (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
-                            'face 'transient-value))))
-    ("^" "Up to parent" hyperdrive-up
-     :inapt-if-not (lambda ()
-                     (hyperdrive-parent (oref transient--prefix scope))))
-    ("o" "Sort" hyperdrive-dir-sort
+      (let ((hyperdrive (hyperdrive-entry-hyperdrive (oref transient--prefix scope))))
+        (concat (propertize "Inside: " 'face 'transient-heading)
+                (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
+                ;; TODO: Consider moving the latest version number into the "Version" group.
+                (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
+    [ ;; Visiting
+     :description
+     (lambda ()
+       (let ((entry (oref transient--prefix scope)))
+         (concat (propertize "Visiting: " 'face 'transient-heading)
+                 (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
+                             'face 'transient-value))))
+     ("^" "Up to parent" hyperdrive-up
+      :inapt-if-not (lambda ()
+                      (hyperdrive-parent (oref transient--prefix scope))))
+     ("o" "Sort" hyperdrive-dir-sort
+      :if (lambda ()
+            (eq major-mode 'hyperdrive-dir-mode))
+      :transient t)
+     ;; TODO: Combine previous and next commands
+     ("p" "previous" hyperdrive-ewoc-previous
+      :if (lambda ()
+            (eq major-mode 'hyperdrive-dir-mode))
+      :transient t)
+     ("n" "next" hyperdrive-ewoc-next
+      :if (lambda ()
+            (eq major-mode 'hyperdrive-dir-mode))
+      :transient t)
+     ("w" "Copy URL" hyperdrive-copy-url
+      :if (lambda ()
+            (not (eq major-mode 'hyperdrive-dir-mode))))
+     ;; FIXME: Enable this as a command.
+     ;; ("D" "Delete" hyperdrive-delete)
+     ("d" "Download" hyperdrive-download
+      :if (lambda ()
+            (not (eq major-mode 'hyperdrive-dir-mode))))]
+    [ ;; At point
      :if (lambda ()
-           (eq major-mode 'hyperdrive-dir-mode))
-     :transient t)
-    ;; TODO: Combine previous and next commands
-    ("p" "previous" hyperdrive-ewoc-previous
-     :if (lambda ()
-           (eq major-mode 'hyperdrive-dir-mode))
-     :transient t)
-    ("n" "next" hyperdrive-ewoc-next
-     :if (lambda ()
-           (eq major-mode 'hyperdrive-dir-mode))
-     :transient t)
-    ("w" "Copy URL" hyperdrive-copy-url
-     :if (lambda ()
-           (not (eq major-mode 'hyperdrive-dir-mode))))
-    ;; FIXME: Enable this as a command.
-    ;; ("D" "Delete" hyperdrive-delete)
-    ("d" "Download" hyperdrive-download
-     :if (lambda ()
-           (not (eq major-mode 'hyperdrive-dir-mode))))]
-   [ ;; At point
-    :if (lambda ()
-          (and (oref transient--prefix scope)
-               (eq major-mode 'hyperdrive-dir-mode)))
-    :description
-    (lambda ()
-      (let ((entry (oref transient--prefix scope)))
-        (concat (propertize "At point: " 'face 'transient-heading)
-                (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
-                            'face 'transient-value))))
-    ("d" "Download" hyperdrive-download
-     :if (lambda ()
-           (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+           (and (oref transient--prefix scope)
+                (eq major-mode 'hyperdrive-dir-mode)))
+     :description
+     (lambda ()
+       (let ((entry (oref transient--prefix scope)))
+         (concat (propertize "At point: " 'face 'transient-heading)
+                 (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
+                             'face 'transient-value))))
+     ("d" "Download" hyperdrive-download
+      :if (lambda ()
+            (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
 
-             (not (hyperdrive--entry-directory-p entry-at-point)))))
-    ;; FIXME: Enable this as a command.
-    ;; ("D" "Delete" hyperdrive-delete)
-    ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
-    ("w" "Copy URL" hyperdrive-copy-url)
-    ("RET" "Open" hyperdrive-dir-find-file)
-    ("v" "View" hyperdrive-dir-view-file
-     :if (lambda ()
-           (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-             (not (hyperdrive--entry-directory-p entry-at-point)))))]
-   ["Version"
-    :description (lambda ()
-                   (if-let ((entry (oref transient--prefix scope))
-                            (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                       (concat (propertize "Version: "
-                                           'face 'transient-heading)
-                               (propertize (format "%s"
-                                                   (or (hyperdrive-entry-version entry)
-                                                       "latest"))
-                                           'face 'transient-value))
-                     "Version"))
-    ("V h" "History" hyperdrive-history)
-    ("V n" "Next" hyperdrive-next-version
-     :if (lambda () (oref transient--prefix scope))
-     :inapt-if-not (lambda  ()
-                     (let ((entry (oref transient--prefix scope)))
-                       (and (hyperdrive-entry-version entry)
-                            (hyperdrive-entry-next entry))))
-     ;; :transient t
-     :description (lambda ()
-                    (concat "Next"
-                            (when-let* ((entry (oref transient--prefix scope))
-                                        (hyperdrive (hyperdrive-entry-hyperdrive entry))
-                                        (next-entry (hyperdrive-entry-next entry))
-                                        ;; Don't add ": latest" if we're already at the latest version
-                                        ((not (eq entry next-entry)))
-                                        (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
-                                                             (number-to-string next-version)
-                                                           "latest")))
-                              (concat ": " (propertize display-version 'face 'transient-value))))))
-    ("V p" "Previous" hyperdrive-previous-version
-     :if (lambda () (oref transient--prefix scope))
-     :inapt-if-not (lambda ()
-                     (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
-     ;; :transient t
+              (not (hyperdrive--entry-directory-p entry-at-point)))))
+     ;; FIXME: Enable this as a command.
+     ;; ("D" "Delete" hyperdrive-delete)
+     ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
+     ("w" "Copy URL" hyperdrive-copy-url)
+     ("RET" "Open" hyperdrive-dir-find-file)
+     ("v" "View" hyperdrive-dir-view-file
+      :if (lambda ()
+            (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+              (not (hyperdrive--entry-directory-p entry-at-point)))))]
+    ["Version"
      :description (lambda ()
                     (if-let ((entry (oref transient--prefix scope))
                              (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                        (concat "Previous"
-                                (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
-                                  ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
-                                  ('nil nil)
-                                  ((cl-struct hyperdrive-entry version)
-                                   (concat ": " (propertize (number-to-string version)
-                                                            'face 'transient-value)))))
-                      "Previous")))]]
+                        (concat (propertize "Version: "
+                                            'face 'transient-heading)
+                                (propertize (format "%s"
+                                                    (or (hyperdrive-entry-version entry)
+                                                        "latest"))
+                                            'face 'transient-value))
+                      "Version"))
+     ("V h" "History" hyperdrive-history)
+     ("V n" "Next" hyperdrive-next-version
+      :inapt-if-not (lambda  ()
+                      (let ((entry (oref transient--prefix scope)))
+                        (and (hyperdrive-entry-version entry)
+                             (hyperdrive-entry-next entry))))
+      ;; :transient t
+      :description (lambda ()
+                     (concat "Next"
+                             (when-let* ((entry (oref transient--prefix scope))
+                                         (hyperdrive (hyperdrive-entry-hyperdrive entry))
+                                         (next-entry (hyperdrive-entry-next entry))
+                                         ;; Don't add ": latest" if we're already at the latest version
+                                         ((not (eq entry next-entry)))
+                                         (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
+                                                              (number-to-string next-version)
+                                                            "latest")))
+                               (concat ": " (propertize display-version 'face 'transient-value))))))
+     ("V p" "Previous" hyperdrive-previous-version
+      :inapt-if-not (lambda ()
+                      (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
+      ;; :transient t
+      :description (lambda ()
+                     (if-let ((entry (oref transient--prefix scope))
+                              (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                         (concat "Previous"
+                                 (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
+                                   ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
+                                   ('nil nil)
+                                   ((cl-struct hyperdrive-entry version)
+                                    (concat ": " (propertize (number-to-string version)
+                                                             'face 'transient-value)))))
+                       "Previous")))]]
   [["Gateway"
     ("g s" "Start" hyperdrive-start)
     ("g S" "Stop" hyperdrive-stop)
