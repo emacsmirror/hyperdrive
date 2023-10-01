@@ -34,6 +34,10 @@
 (require 'hyperdrive-vars)
 (require 'hyperdrive-lib)
 
+;;;; Declarations
+
+(declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
+
 ;;;;; Transient support
 
 (require 'transient)
@@ -47,7 +51,6 @@
 ;;                     hyperdrive-current-entry))
 ;;          ,@body))))
 
-(declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
 
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for editing HYPERDRIVE."
