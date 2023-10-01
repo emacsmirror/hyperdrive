@@ -52,7 +52,6 @@
 
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
-
   [ :class transient-row
     :description
     (lambda ()
