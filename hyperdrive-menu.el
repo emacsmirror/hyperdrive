@@ -61,7 +61,7 @@
     ("H d" "Describe" hyperdrive-describe-hyperdrive)
     ("H P" "Purge" hyperdrive-purge)
     ;; TODO: Hook into transient-show-help?
-    ("?" "Info manual" hyperdrive-info-manual)]
+    ("?" "Help" hyperdrive-info-manual)]
   [ :if (lambda () (oref transient--prefix scope))
     :description
     (lambda ()
