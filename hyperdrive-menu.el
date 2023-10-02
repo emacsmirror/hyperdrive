@@ -71,11 +71,11 @@
                 ;; TODO: Consider moving the latest version number into the "Version" group.
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive))
                 "\n")))
-    [ ;; Visiting
+    [ ;; Current
      :description
      (lambda ()
        (let ((entry (oref transient--prefix scope)))
-         (concat (propertize "Visiting: " 'face 'transient-heading)
+         (concat (propertize "Current: " 'face 'transient-heading)
                  (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                              'face 'transient-value))))
      ("^" "Up to parent" hyperdrive-up
