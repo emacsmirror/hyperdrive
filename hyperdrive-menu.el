@@ -196,7 +196,7 @@
     :description
     (lambda ()
       (let ((hyperdrive (oref transient--prefix scope)))
-        (concat (propertize "Drive: " 'face 'transient-heading)
+        (concat (propertize "Hyperdrive: " 'face 'transient-heading)
                 (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
                 (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
     ("p" "Petname" hyperdrive-menu-set-petname
