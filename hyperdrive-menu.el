@@ -102,13 +102,13 @@
      ("d" "Download" hyperdrive-download
       :if (lambda ()
             (not (eq major-mode 'hyperdrive-dir-mode))))]
-    [ ;; At point
+    [ ;; Selected
      :if (lambda ()
            (and (oref transient--prefix scope)
                 (eq major-mode 'hyperdrive-dir-mode)))
      :description
      (lambda ()
-       (concat (propertize "At point: " 'face 'transient-heading)
+       (concat (propertize "Selected: " 'face 'transient-heading)
                (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
                            'face 'transient-value)))
      ("d" "Download" hyperdrive-download
