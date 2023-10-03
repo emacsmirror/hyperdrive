@@ -175,7 +175,9 @@
    ["Bookmark"
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
-    ("b s" "Set" bookmark-set)]
+    ("b s" "Set" bookmark-set
+     :if (lambda ()
+           (oref transient--prefix scope)))]
    ["Files"
     ("f f" "Find" hyperdrive-find-file)
     ("f v" "View" hyperdrive-view-file)
