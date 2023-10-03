@@ -81,7 +81,21 @@
                                                         "latest"))
                                             'face 'transient-value))
                       "Version"))
-     ("V h" "History" hyperdrive-history)
+     ("V p" "Previous" hyperdrive-previous-version
+      :inapt-if-not (lambda ()
+                      (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
+      ;; :transient t
+      :description (lambda ()
+                     (if-let ((entry (oref transient--prefix scope))
+                              (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                         (concat "Previous"
+                                 (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
+                                   ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
+                                   ('nil nil)
+                                   ((cl-struct hyperdrive-entry version)
+                                    (concat ": " (propertize (number-to-string version)
+                                                             'face 'transient-value)))))
+                       "Previous")))
      ("V n" "Next" hyperdrive-next-version
       :inapt-if-not (lambda  ()
                       (let ((entry (oref transient--prefix scope)))
@@ -99,21 +113,7 @@
                                                               (number-to-string next-version)
                                                             "latest")))
                                (concat ": " (propertize display-version 'face 'transient-value))))))
-     ("V p" "Previous" hyperdrive-previous-version
-      :inapt-if-not (lambda ()
-                      (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
-      ;; :transient t
-      :description (lambda ()
-                     (if-let ((entry (oref transient--prefix scope))
-                              (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                         (concat "Previous"
-                                 (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
-                                   ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
-                                   ('nil nil)
-                                   ((cl-struct hyperdrive-entry version)
-                                    (concat ": " (propertize (number-to-string version)
-                                                             'face 'transient-value)))))
-                       "Previous")))]
+     ("V h" "History" hyperdrive-history)]
     [ ;; Current
      :description
      (lambda ()
