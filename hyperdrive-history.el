@@ -176,8 +176,7 @@ Universal prefix argument \\[universal-argument] forces
                (queue) (ewoc))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s %s*"
-                                  (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
-                                                           :with-label t)
+                                  (hyperdrive--format-host hyperdrive :with-label t)
                                   (url-unhex-string path)))
       (with-silent-modifications
         (hyperdrive-history-mode)

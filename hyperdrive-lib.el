@@ -930,9 +930,7 @@ FORMAT-PATH is `name', use only last part of path, as in
 
 When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path name) entry)
-               (handle (hyperdrive--format-host hyperdrive
-                                                :format hyperdrive-default-host-format
-                                                :with-label t)))
+               (handle (hyperdrive--format-host hyperdrive :with-label t)))
     (propertize (concat (format "[%s] " handle)
                         (pcase format-path
                           ('path (url-unhex-string path))
@@ -991,13 +989,14 @@ Path and target fragment are URI-encoded."
                                 :with-faces with-faces))
       url)))
 
-(cl-defun hyperdrive--format-host (hyperdrive &key format with-label (with-faces t))
+(cl-defun hyperdrive--format-host
+    (hyperdrive &key with-label (format hyperdrive-default-host-format) (with-faces t))
   "Return HYPERDRIVE's formatted hostname, or nil.
-FORMAT should be one or a list of symbols; see
-`hyperdrive-default-host-format' for choices.  If the specified
-FORMAT is not available, returns nil.  If WITH-LABEL, prepend a
-label for the kind of format used (e.g. \"petname:\").  When
-WITH-FACES is nil, don't add face text properties."
+FORMAT should be one or a list of symbols, by default
+`hyperdrive-default-host-format', which see for choices.  If the
+specified FORMAT is not available, returns nil.  If WITH-LABEL,
+prepend a label for the kind of format used (e.g. \"petname:\").
+When WITH-FACES is nil, don't add face text properties."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
