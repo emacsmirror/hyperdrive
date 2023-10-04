@@ -52,6 +52,8 @@
 ;;                     hyperdrive-current-entry))
 ;;          ,@body))))
 
+;; TODO: Add macro that expands `entry' into (oref transient--prefix scope)
+;; or (oref transient-current-prefix scope) as appropriate.
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
   [ :class transient-row
