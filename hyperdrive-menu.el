@@ -68,6 +68,7 @@
                   (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))
         "Hyperdrive"))
     ("h" "Hyperdrive menu" hyperdrive-menu-hyperdrive)
+    ("N" "New drive" hyperdrive-new)
     ;; TODO: Hook into transient-show-help?
     ("?" "Help" hyperdrive-info-manual)]
   [ :if (lambda () (oref transient--prefix scope))
@@ -198,14 +199,15 @@
 
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for editing HYPERDRIVE."
-  [ :class transient-row
-    :description
-    (lambda ()
-      (let ((hyperdrive (oref transient--prefix scope)))
-        (concat (propertize "Hyperdrive: " 'face 'transient-heading)
-                (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
-                (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))))
-    ("p" "Petname" hyperdrive-menu-set-petname
+  [:description
+   (lambda ()
+     (let ((hyperdrive (oref transient--prefix scope)))
+       (concat (propertize "Hyperdrive: " 'face 'transient-heading)
+               (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
+               (format "  latest-version:%s" (hyperdrive-latest-version hyperdrive)))))
+   [("d" "Describe" hyperdrive-describe-hyperdrive)
+    ("C-M-P" "Purge" hyperdrive-purge)]
+   [("p" "Petname" hyperdrive-menu-set-petname
      :description (lambda ()
                     (format "Petname: %s"
                             (pcase (hyperdrive-petname
@@ -226,10 +228,7 @@
                               ('nil (propertize "none"
                                                 'face 'transient-inactive-value))
                               (it (propertize it
-                                              'face 'transient-value))))))
-    ("N" "New" hyperdrive-new)
-    ("d" "Describe" hyperdrive-describe-hyperdrive)
-    ("C-M-P" "Purge" hyperdrive-purge)]
+                                              'face 'transient-value))))))]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
