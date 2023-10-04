@@ -123,6 +123,7 @@
                  (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                              'face 'transient-value))))
      ("^" "Up to parent" hyperdrive-up
+      ;; TODO: Keep transient open.  Directory contents load asynchronously, so this is tricky.
       :inapt-if-not (lambda ()
                       (hyperdrive-parent (oref transient--prefix scope))))
      ("o" "Sort" hyperdrive-dir-sort
