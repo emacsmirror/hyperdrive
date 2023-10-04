@@ -206,6 +206,7 @@
    [("d" "Describe" hyperdrive-describe-hyperdrive)
     ("C-M-P" "Purge" hyperdrive-purge)]
    [("p" "Petname" hyperdrive-menu-set-petname
+     :transient t
      :description (lambda ()
                     (format "Petname: %s"
                             (pcase (hyperdrive-petname
@@ -215,6 +216,7 @@
                               (it (propertize it
                                               'face 'transient-value))))))
     ("n" "set nickname" hyperdrive-menu-set-nickname
+     :transient t
      :inapt-if-not (lambda ()
                      (hyperdrive-writablep (oref transient--prefix scope)))
      :description (lambda ()
@@ -236,12 +238,7 @@
           :prompt "New petname"
           :initial-input (hyperdrive-petname (oref transient-current-prefix scope)))))
   (let ((hyperdrive (oref transient-current-prefix scope)))
-    (hyperdrive-set-petname petname hyperdrive)
-    ;; TODO: Pass scope to `hyperdrive-menu-hyperdrive' so that, e.g.,
-    ;; C-g correctly returns the user back to the the
-    ;; `hyperdrive-menu' if that's where we came from. Same in
-    ;; `hyperdrive-menu-set-nickname'.
-    (hyperdrive-menu-hyperdrive hyperdrive)))
+    (hyperdrive-set-petname petname hyperdrive)))
 
 (transient-define-suffix hyperdrive-menu-set-nickname (nickname)
   (interactive
