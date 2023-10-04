@@ -235,6 +235,8 @@
                                                 'face 'transient-inactive-value))
                               (it (propertize it
                                               'face 'transient-value))))))]]
+  ;; FIXME: `keyboard-quit' in the `hyperdrive-complete-hyperdrive'
+  ;; prompt should go back to the previous transient in the stack.
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
