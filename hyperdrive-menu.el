@@ -64,7 +64,7 @@
       (if-let* ((entry (oref transient--prefix scope))
                 (hyperdrive (hyperdrive-entry-hyperdrive entry)))
           (concat (propertize "Hyperdrive: " 'face 'transient-heading)
-                  (hyperdrive--format-host hyperdrive))
+                  (hyperdrive--format-host hyperdrive :with-label t))
         "Hyperdrive"))
     ("h" "Hyperdrive menu" hyperdrive-menu-hyperdrive)
     ("N" "New drive" hyperdrive-new)]
