@@ -157,6 +157,7 @@
        (concat (propertize "Selected: " 'face 'transient-heading)
                (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
                            'face 'transient-value)))
+     :pad-keys t
      ("d" "Download" hyperdrive-download
       :if (lambda ()
             (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
