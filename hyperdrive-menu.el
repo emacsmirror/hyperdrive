@@ -160,7 +160,6 @@
      ("d" "Download" hyperdrive-download
       :if (lambda ()
             (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-
               (not (hyperdrive--entry-directory-p entry-at-point)))))
      ;; FIXME: Enable this as a command.
      ;; ("D" "Delete" hyperdrive-delete)
