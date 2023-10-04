@@ -63,9 +63,7 @@
       (if-let* ((entry (oref transient--prefix scope))
                 (hyperdrive (hyperdrive-entry-hyperdrive entry)))
           (concat (propertize "Hyperdrive: " 'face 'transient-heading)
-                  (hyperdrive--format-hyperdrive hyperdrive :formats '(short-key seed domain nickname petname))
-                  ;; TODO: Consider moving the latest version number into the "Version" group.
-                  (format "  latest:%s" (hyperdrive-latest-version hyperdrive)))
+                  (hyperdrive--format-host hyperdrive))
         "Hyperdrive"))
     ("h" "Hyperdrive menu" hyperdrive-menu-hyperdrive)
     ("N" "New drive" hyperdrive-new)
