@@ -131,6 +131,7 @@
             (eq major-mode 'hyperdrive-dir-mode))
       :transient t)
      ;; TODO: Combine previous and next commands
+     ;; FIXME: Refresh transient when navigating between files and directories.
      ("p" "previous" hyperdrive-ewoc-previous
       :if (lambda ()
             (eq major-mode 'hyperdrive-dir-mode))
