@@ -130,12 +130,18 @@
             (eq major-mode 'hyperdrive-dir-mode))
       :transient t)
      ;; TODO: Combine previous and next commands
-     ;; FIXME: Refresh transient when navigating between files and directories.
-     ("p" "previous" hyperdrive-ewoc-previous
+     ;; TODO: See "predicate refreshing" <https://github.com/magit/transient/issues/157>.
+     ("p" "previous" (lambda ()
+                       (interactive)
+                       (hyperdrive-ewoc-previous)
+                       (hyperdrive-menu (oref transient--prefix scope)))
       :if (lambda ()
             (eq major-mode 'hyperdrive-dir-mode))
       :transient t)
-     ("n" "next" hyperdrive-ewoc-next
+     ("n" "next" (lambda ()
+                   (interactive)
+                   (hyperdrive-ewoc-next)
+                   (hyperdrive-menu (oref transient--prefix scope)))
       :if (lambda ()
             (eq major-mode 'hyperdrive-dir-mode))
       :transient t)
