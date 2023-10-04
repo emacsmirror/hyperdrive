@@ -230,9 +230,10 @@
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
 (transient-define-suffix hyperdrive-menu-set-petname (petname)
-  ;; TODO: Offer current petname as default value; note that
-  ;; transient--prefix and transient-current-prefix are both nil here.
-  (interactive (list (hyperdrive-read-name :prompt "New petname")))
+  (interactive
+   (list (hyperdrive-read-name
+          :prompt "New petname"
+          :initial-input (hyperdrive-petname (oref transient-current-prefix scope)))))
   (let ((hyperdrive (oref transient-current-prefix scope)))
     (hyperdrive-set-petname petname hyperdrive)
     ;; TODO: Pass scope to `hyperdrive-menu-hyperdrive' so that, e.g.,
@@ -242,9 +243,10 @@
     (hyperdrive-menu-hyperdrive hyperdrive)))
 
 (transient-define-suffix hyperdrive-menu-set-nickname (nickname)
-  ;; TODO: Offer current nickname as default value; note that
-  ;; transient--prefix and transient-current-prefix are both nil here.
-  (interactive (list (hyperdrive-read-name :prompt "New nickname")))
+  (interactive
+   (list (hyperdrive-read-name
+          :prompt "New nickname"
+          :initial-input (alist-get 'name (hyperdrive-metadata (oref transient-current-prefix scope))))))
   (hyperdrive-set-nickname nickname (oref transient-current-prefix scope)
                            :then (lambda (hyperdrive)
                                    (hyperdrive-menu-hyperdrive hyperdrive))))
