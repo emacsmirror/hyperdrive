@@ -166,6 +166,7 @@
      ;; ("D" "Delete" hyperdrive-delete)
      ;; FIXME: Copy entry at point, not `hyperdrive-current-entry'.
      ("w" "Copy URL" hyperdrive-copy-url)
+     ;; FIXME: The sequence "? ? RET" says "Unbound suffix" instead of showing the help for that command.  Might be an issue in Transient.
      ("RET" "Open" hyperdrive-dir-find-file)
      ("v" "View" hyperdrive-dir-view-file
       :if (lambda ()
