@@ -57,6 +57,7 @@
 ;;;###autoload (autoload 'hyperdrive-menu "hyperdrive-menu" nil t)
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
+  :info-manual "(Hyperdrive)"
   [ :class transient-row
     :description
     (lambda ()
@@ -66,9 +67,7 @@
                   (hyperdrive--format-host hyperdrive))
         "Hyperdrive"))
     ("h" "Hyperdrive menu" hyperdrive-menu-hyperdrive)
-    ("N" "New drive" hyperdrive-new)
-    ;; TODO: Hook into transient-show-help?
-    ("?" "Help" hyperdrive-info-manual)]
+    ("N" "New drive" hyperdrive-new)]
   [ :if (lambda () (oref transient--prefix scope))
 
     ["Version"
