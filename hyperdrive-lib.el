@@ -1091,8 +1091,8 @@ case, when PREDICATE, only offer hyperdrives matching it."
 (cl-defun hyperdrive--format-hyperdrive
     (hyperdrive &key (formats '(petname nickname domain seed short-key)) (with-label t))
   "Return HYPERDRIVE formatted for completion.
-For each of FORMATS, concats the value separated by two spaces,
-optionally WITH-LABEL."
+For each of FORMATS, concatenates the value separated by two
+spaces, optionally WITH-LABEL."
   (string-trim
    (cl-loop for format in formats
             when (hyperdrive--format-host hyperdrive :format format :with-label with-label)
