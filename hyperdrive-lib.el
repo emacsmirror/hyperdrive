@@ -887,9 +887,12 @@ Call ELSE with `plz-error' struct if request fails."
             (pcase-let* (((cl-struct plz-response headers) response)
                          ((map etag) headers)
                          (nonexistent-entry (hyperdrive-copy-tree entry t)))
-              (setf (hyperdrive-entry-version nonexistent-entry) (string-to-number etag))
-              (hyperdrive--fill-latest-version (hyperdrive-entry-hyperdrive entry) headers)
-              (hyperdrive-update-nonexistent-version-range nonexistent-entry)
+              (unless (hyperdrive--entry-directory-p entry)
+                ;; FIXME: hypercore-fetch bug doesn't update version
+                ;; number when deleting a directory.
+                (setf (hyperdrive-entry-version nonexistent-entry) (string-to-number etag))
+                (hyperdrive--fill-latest-version (hyperdrive-entry-hyperdrive entry) headers)
+                (hyperdrive-update-nonexistent-version-range nonexistent-entry))
               (funcall then response)))
     :else else))
 
