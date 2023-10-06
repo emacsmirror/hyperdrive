@@ -251,7 +251,7 @@ With point on header, returns directory entry."
   ;; TODO(doc): hyperdrive-dir-delete replaced by hyperdrive-delete
   "D"   #'hyperdrive-delete
   "H"   #'hyperdrive-dir-history
-  "o"   #'hyperdrive-dir-sort
+  "s"   #'hyperdrive-dir-sort
   "?"   #'hyperdrive-menu
   "+"   #'hyperdrive-create-directory-no-op)
 
