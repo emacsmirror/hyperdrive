@@ -61,7 +61,7 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                             (propertize " " 'display '(space :width hyperdrive-timestamp-width)))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    (format "%7s  %13s  %6s  %s"
+    (format "%7s  %19s  %6s  %s"
             (propertize exists-marker
                         'face (pcase-exhaustive existsp
                                 ('t 'hyperdrive-history-existent)
@@ -167,9 +167,9 @@ Universal prefix argument \\[universal-argument] forces
                         (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
                (main-header (hyperdrive-entry-description entry :with-version nil))
                (header (concat main-header "\n"
-                               (format "%7s  %13s  %6s  %s"
+                               (format "%7s  %19s  %6s  %s"
                                        (propertize "Exists?" 'face 'hyperdrive-column-header)
-                                       (propertize "Version Range" 'face 'hyperdrive-column-header)
+                                       (propertize "Drive Version Range" 'face 'hyperdrive-column-header)
                                        (propertize "Size" 'face 'hyperdrive-column-header)
                                        (format (format "%%%ds" hyperdrive-timestamp-width)
                                                (propertize "Last Modified" 'face 'hyperdrive-column-header)))))
