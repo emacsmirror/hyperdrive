@@ -39,7 +39,6 @@
 ;;;; Commands
 
 (declare-function org-table-align "org-table")
-(declare-function hyperdrive-purge "hyperdrive")
 
 ;;;###autoload
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
@@ -89,12 +88,7 @@ Universal prefix argument \\[universal-argument] forces
                        (forward-line -1)
                        (org-table-align)
                        (buffer-string))
-                   "[none]"))
-         "\n")
-        (hyperdrive-insert-button "=== PURGE DATA ==="
-                                  'action (lambda (_button)
-                                            (hyperdrive-purge hyperdrive))
-                                  'face 'hyperdrive-button-dangerous)))
+                   "[none]")))))
     (setq buffer-read-only t)
     (pop-to-buffer (current-buffer))))
 
