@@ -136,7 +136,7 @@ Columns are suffixed with up/down arrows according to
              (format-str (pcase column
                            ('size "%6s")
                            ('mtime (format "%%%ds" hyperdrive-timestamp-width))
-                           ('name (format "%%-%ds" (- (window-width) 6 2 hyperdrive-timestamp-width 2)))))
+                           ('name "%s")))
              (desc (concat (and selected (not left-aligned) (concat arrow " "))
                            (propertize desc 'face (if selected
                                                       'hyperdrive-selected-column-header
