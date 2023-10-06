@@ -310,7 +310,10 @@ Interactively, opens file or directory at point in
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
 DIRECTORY-SORT should be a valid value of
 `hyperdrive-directory-sort'."
-  (interactive (list (hyperdrive-dir-complete-sort)))
+  (interactive (list (if current-prefix-arg
+                         (hyperdrive-dir-complete-sort)
+                       (hyperdrive-dir-toggle-sort-direction
+                        (car hyperdrive-directory-sort) hyperdrive-directory-sort))))
   (setq-local hyperdrive-directory-sort directory-sort)
   (with-silent-modifications
     (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
