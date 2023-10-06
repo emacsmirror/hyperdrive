@@ -247,7 +247,8 @@ With point on header, returns directory entry."
   "w"   #'hyperdrive-dir-copy-url
   "d"   #'hyperdrive-download
   "^"   #'hyperdrive-up
-  "D"   #'hyperdrive-dir-delete
+  ;; TODO(doc): hyperdrive-dir-delete replaced by hyperdrive-delete
+  "D"   #'hyperdrive-delete
   "H"   #'hyperdrive-dir-history
   "o"   #'hyperdrive-dir-sort
   "?"   #'hyperdrive-menu
@@ -290,28 +291,6 @@ Interactively, opens file or directory at point in
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-copy-url entry))
-
-(defun hyperdrive-dir-delete (entry)
-  "Delete ENTRY."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (when (or (eq entry hyperdrive-current-entry)
-            (string= ".." (alist-get 'display-name
-                                     (hyperdrive-entry-etc entry))))
-    (hyperdrive-user-error "Won't delete from within"))
-  (pcase-let (((cl-struct hyperdrive-entry name) entry)
-              (buffer (current-buffer)))
-    (when (and (yes-or-no-p (format "Delete %S? " name))
-               (or (not (hyperdrive--entry-directory-p entry))
-                   (yes-or-no-p (format "Recursively delete %S? " name))))
-      (hyperdrive-delete entry
-        :then (lambda (_)
-                (when (buffer-live-p buffer)
-                  (with-current-buffer buffer
-                    (revert-buffer)))
-                (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
-        :else (lambda (plz-error)
-                (hyperdrive-message "Unable to delete: %S: %S" name plz-error))))))
 
 (declare-function hyperdrive-history "hyperdrive-history")
 
