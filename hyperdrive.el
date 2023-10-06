@@ -429,7 +429,12 @@ for more information.  See `hyperdrive-read-entry' and
           (name (hyperdrive-entry-name (hyperdrive-url-entry read-url)))
           (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list read-url read-filename)))
-  (hyperdrive-api 'get url :as `(file ,filename)))
+  (when (or (not (file-exists-p filename))
+            (yes-or-no-p (format "File %s already exists; overwrite anyway? " (expand-file-name filename))))
+    (when (file-exists-p filename)
+      ;; plz.el will not overwrite existing files: ensure there's no file there.
+      (delete-file filename))
+    (hyperdrive-api 'get url :as `(file ,filename))))
 
 ;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)
