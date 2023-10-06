@@ -582,6 +582,7 @@ it to `hyperdrive-open'."
 
 ;;;; Bookmark support
 
+;; TODO: Display entry description instead of full URL in bookmark list view.
 (require 'bookmark)
 
 (defun hyperdrive-bookmark-make-record ()
