@@ -153,7 +153,9 @@
      ("w" "Copy URL" hyperdrive-copy-url
       :if (lambda ()
             (not (eq major-mode 'hyperdrive-dir-mode))))
-     ("D" "Delete" hyperdrive-delete)
+     ("D" "Delete" hyperdrive-delete
+      :if (lambda ()
+            (not (eq major-mode 'hyperdrive-dir-mode))))
      ("d" "Download" hyperdrive-download
       :if (lambda ()
             (not (eq major-mode 'hyperdrive-dir-mode))))]
