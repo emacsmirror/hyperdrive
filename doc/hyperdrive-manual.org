@@ -338,9 +338,6 @@ petname, nickname, domains, writable, or other metadata, run
 ~hyperdrive-describe-hyperdrive~. For more on what this information
 means, see [[*Naming]].
 
-It is possible to purge a hyperdrive from the ~hyperdrive-describe-mode~
-buffer (see [[*Purge a hyperdrive]]).
-
 ** Bookmark a hyperdrive
 #+findex: hyperdrive-bookmark-jump
 #+findex: hyperdrive-bookmark-list
