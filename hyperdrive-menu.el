@@ -174,7 +174,11 @@
       :if (lambda ()
             (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
               (not (hyperdrive--entry-directory-p entry-at-point)))))
-     ("D" "Delete" hyperdrive-delete)
+     ("D" "Delete" hyperdrive-delete
+      :inapt-if-not (lambda ()
+                      (hyperdrive-writablep
+                       (hyperdrive-entry-hyperdrive
+                        (oref transient--prefix scope)))))
      ("w" "Copy URL" (lambda ()
                        (interactive)
                        (hyperdrive-copy-url (hyperdrive--context-entry))))
