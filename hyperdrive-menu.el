@@ -38,6 +38,7 @@
 ;;;; Declarations
 
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
+(declare-function hyperdrive-delete "hyperdrive")
 (declare-function hyperdrive-set-nickname "hyperdrive")
 (declare-function hyperdrive-set-petname "hyperdrive")
 

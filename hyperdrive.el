@@ -363,6 +363,47 @@ for more information.  See `hyperdrive-read-entry' and
   (hyperdrive-open (hyperdrive-url-entry url)))
 
 ;;;###autoload
+(cl-defun hyperdrive-delete (entry &key (then #'ignore) (else #'ignore))
+  "Delete ENTRY, then call THEN with response.
+Call ELSE with `plz-error' struct if request fails.
+Interactively, read ENTRY with `hyperdrive-read-entry'."
+  (declare (indent defun))
+  (interactive
+   (let* ((entry (hyperdrive--context-entry))
+          (description (hyperdrive-entry-description entry))
+          (buffer (current-buffer)))
+     (when (and (hyperdrive--entry-directory-p entry)
+                (or (eq entry hyperdrive-current-entry)
+                    (string= ".." (alist-get 'display-name (hyperdrive-entry-etc entry)))))
+       (hyperdrive-user-error "Won't delete from within"))
+     (when (and (yes-or-no-p (format "Delete «%s»? " description))
+                (or (not (hyperdrive--entry-directory-p entry))
+                    (yes-or-no-p (format "Recursively delete «%s»? " description))))
+       (list entry
+             :then (lambda (_)
+                     (when (and (buffer-live-p buffer)
+                                (eq 'hyperdrive-dir-mode (buffer-local-value 'major-mode buffer)))
+                       (with-current-buffer buffer
+                         (revert-buffer)))
+                     (hyperdrive-message "Deleted: «%s» (Deleted files can be accessed from prior versions of the hyperdrive.)" description))
+             :else (lambda (plz-error)
+                     (hyperdrive-message "Unable to delete «%s»: %S" description plz-error))))))
+  (hyperdrive-api 'delete (hyperdrive-entry-url entry)
+    :as 'response
+    :then (lambda (response)
+            (pcase-let* (((cl-struct plz-response headers) response)
+                         ((map etag) headers)
+                         (nonexistent-entry (hyperdrive-copy-tree entry t)))
+              (unless (hyperdrive--entry-directory-p entry)
+                ;; FIXME: hypercore-fetch bug doesn't update version
+                ;; number when deleting a directory.
+                (setf (hyperdrive-entry-version nonexistent-entry) (string-to-number etag))
+                (hyperdrive--fill-latest-version (hyperdrive-entry-hyperdrive entry) headers)
+                (hyperdrive-update-nonexistent-version-range nonexistent-entry))
+              (funcall then response)))
+    :else else))
+
+;;;###autoload
 (defun hyperdrive-download (entry filename)
   "Download ENTRY to FILENAME on disk.
 Interactively, downloads current hyperdrive file.  If current
