@@ -7,7 +7,7 @@
 ;; Maintainer: Joseph Turner <~ushin/ushin@lists.sr.ht>
 ;; Created: 2022
 ;; Version: 0.2-pre
-;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5"))
+;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5") (transient "0.4.3"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
@@ -177,6 +177,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
       :else (lambda (plz-error)
               (hyperdrive-error "Unable to purge drive: %s %S" (hyperdrive--format-hyperdrive hyperdrive) plz-error)))))
 
+;;;###autoload
 (defun hyperdrive-set-petname (petname hyperdrive)
   "Set HYPERDRIVE's PETNAME.
 Entering an empty or blank string unsets PETNAME.
@@ -207,9 +208,13 @@ Universal prefix argument \\[universal-argument] forces
   ;; TODO: Consider refreshing buffer names, directory headers, etc.
   hyperdrive)
 
-(defun hyperdrive-set-nickname (nickname hyperdrive)
+;;;###autoload
+(cl-defun hyperdrive-set-nickname (nickname hyperdrive &key (then #'ignore))
   "Set HYPERDRIVE's NICKNAME.
 Returns HYPERDRIVE.
+
+Asynchronous callback calls THEN with the updated hyperdrive as
+its only argument.
 
 Universal prefix argument \\[universal-argument] forces
 `hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
@@ -231,17 +236,15 @@ Universal prefix argument \\[universal-argument] forces
           (cl-callf map-delete (hyperdrive-metadata hyperdrive) 'name)
           (hyperdrive-put-metadata hyperdrive
             :then (pcase-lambda ((cl-struct plz-response headers))
-                    (hyperdrive-message "Unset nickname")
                     (hyperdrive--fill-latest-version hyperdrive headers)
-                    (hyperdrive-persist hyperdrive))))
+                    (hyperdrive-persist hyperdrive)
+                    (funcall then hyperdrive))))
       (setf (alist-get 'name (hyperdrive-metadata hyperdrive)) nickname)
       (hyperdrive-put-metadata hyperdrive
         :then (pcase-lambda ((cl-struct plz-response headers))
-                (hyperdrive-message "Set nickname for «%s» to %s"
-                                    (hyperdrive--format-hyperdrive hyperdrive)
-                                    (hyperdrive--format-host hyperdrive :format '(nickname)))
                 (hyperdrive--fill-latest-version hyperdrive headers)
-                (hyperdrive-persist hyperdrive))))
+                (hyperdrive-persist hyperdrive)
+                (funcall then hyperdrive))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
     )
   hyperdrive)
@@ -360,7 +363,7 @@ for more information.  See `hyperdrive-read-entry' and
   (hyperdrive-open (hyperdrive-url-entry url)))
 
 ;;;###autoload
-(defun hyperdrive-download-entry (entry filename)
+(defun hyperdrive-download (entry filename)
   "Download ENTRY to FILENAME on disk.
 Interactively, downloads current hyperdrive file.  If current
 buffer is not a hyperdrive file, prompts with
@@ -370,9 +373,7 @@ With universal prefix argument \\[universal-argument], prompts
 for more information.  See `hyperdrive-read-entry' and
 `hyperdrive-complete-hyperdrive'."
   (interactive
-   (pcase-let* ((entry (if hyperdrive-mode
-                           hyperdrive-current-entry
-                         (hyperdrive-read-entry :force-prompt current-prefix-arg)))
+   (pcase-let* ((entry (hyperdrive--context-entry))
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
      (list entry read-filename)))
@@ -484,13 +485,18 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
     (kill-new url)
     (hyperdrive-message "%s" url)))
 
-(defun hyperdrive-up ()
-  "Go up to parent directory."
+(cl-defun hyperdrive-up (entry &key then)
+  "Go up to parent directory of ENTRY.
+Interactively, use the `hyperdrive-current-entry'.  If THEN, pass
+it to `hyperdrive-open'."
   (declare (modes hyperdrive-mode))
-  (interactive)
-  (if-let ((parent (hyperdrive-parent hyperdrive-current-entry)))
+  (interactive (progn
+                 (unless (and hyperdrive-mode hyperdrive-current-entry)
+                   (user-error "Not a hyperdrive buffer"))
+                 (list hyperdrive-current-entry)))
+  (if-let ((parent (hyperdrive-parent entry)))
       ;; TODO: Go to entry in parent directory.
-      (hyperdrive-open parent)
+      (hyperdrive-open parent :then then)
     (hyperdrive-user-error "At root directory")))
 
 (defvar-keymap hyperdrive-up-map

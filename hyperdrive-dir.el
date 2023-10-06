@@ -233,7 +233,11 @@ With point on header, returns directory entry."
 
 (declare-function hyperdrive-find-file "hyperdrive")
 (declare-function hyperdrive-up "hyperdrive")
+(declare-function hyperdrive-download "hyperdrive")
 (declare-function hyperdrive-describe-hyperdrive "hyperdrive-describe")
+;; `hyperdrive-menu' is defined with `transient-define-prefix', which
+;; `check-declare' doesn't recognize.
+(declare-function hyperdrive-menu "hyperdrive-menu" nil t)
 
 (defvar-keymap hyperdrive-dir-mode-map
   :parent hyperdrive-ewoc-mode-map
@@ -243,12 +247,13 @@ With point on header, returns directory entry."
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
-  "d"   #'hyperdrive-dir-download-file
+  "d"   #'hyperdrive-download
   "^"   #'hyperdrive-up
-  "D"   #'hyperdrive-dir-delete
+  ;; TODO(doc): hyperdrive-dir-delete replaced by hyperdrive-delete
+  "D"   #'hyperdrive-delete
   "H"   #'hyperdrive-dir-history
   "o"   #'hyperdrive-dir-sort
-  "?"   #'hyperdrive-describe-hyperdrive
+  "?"   #'hyperdrive-menu
   "+"   #'hyperdrive-create-directory-no-op)
 
 (define-derived-mode hyperdrive-dir-mode hyperdrive-ewoc-mode
@@ -288,40 +293,6 @@ Interactively, opens file or directory at point in
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (hyperdrive-copy-url entry))
-
-(declare-function hyperdrive-download-entry "hyperdrive")
-
-(defun hyperdrive-dir-download-file (entry filename)
-  "Download ENTRY at point to FILENAME on disk."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive
-   (pcase-let* ((entry (hyperdrive-dir--entry-at-point))
-                ((cl-struct hyperdrive-entry name) entry)
-                (read-filename (read-file-name "Filename: " (expand-file-name name hyperdrive-download-directory))))
-     (list entry read-filename)))
-  (hyperdrive-download-entry entry filename))
-
-(defun hyperdrive-dir-delete (entry)
-  "Delete ENTRY."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (when (or (eq entry hyperdrive-current-entry)
-            (string= ".." (alist-get 'display-name
-                                     (hyperdrive-entry-etc entry))))
-    (hyperdrive-user-error "Won't delete from within"))
-  (pcase-let (((cl-struct hyperdrive-entry name) entry)
-              (buffer (current-buffer)))
-    (when (and (yes-or-no-p (format "Delete %S? " name))
-               (or (not (hyperdrive--entry-directory-p entry))
-                   (yes-or-no-p (format "Recursively delete %S? " name))))
-      (hyperdrive-delete entry
-        :then (lambda (_)
-                (when (buffer-live-p buffer)
-                  (with-current-buffer buffer
-                    (revert-buffer)))
-                (hyperdrive-message "Deleted: %S (Deleted files can be accessed from prior versions of the hyperdrive.)" name))
-        :else (lambda (plz-error)
-                (hyperdrive-message "Unable to delete: %S: %S" name plz-error))))))
 
 (declare-function hyperdrive-history "hyperdrive-history")
 

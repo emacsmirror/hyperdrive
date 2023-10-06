@@ -176,8 +176,7 @@ Universal prefix argument \\[universal-argument] forces
                (queue) (ewoc))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s %s*"
-                                  (hyperdrive--format-host hyperdrive :format hyperdrive-default-host-format
-                                                           :with-label t)
+                                  (hyperdrive--format-host hyperdrive :with-label t)
                                   (url-unhex-string path)))
       (with-silent-modifications
         (hyperdrive-history-mode)
@@ -310,7 +309,7 @@ buffer."
      ;; Not known to exist: warn user.
      (hyperdrive-user-error "File not known to exist!"))))
 
-(declare-function hyperdrive-download-entry "hyperdrive")
+(declare-function hyperdrive-download "hyperdrive")
 
 (defun hyperdrive-history-download-file (range-entry filename)
   "Download entry in RANGE-ENTRY at point to FILENAME on disk."
@@ -332,7 +331,7 @@ buffer."
   (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: download it.
-     (hyperdrive-download-entry (cdr range-entry) filename))
+     (hyperdrive-download (cdr range-entry) filename))
     ('nil
      ;; Known to not exist: warn user.
      (hyperdrive-user-error "File does not exist!"))

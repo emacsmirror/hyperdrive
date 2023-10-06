@@ -450,6 +450,9 @@ Sends a request to the gateway for hyperdrive's latest version."
     ;; ENTRY is a directory: increment the version number by one.
     (when (hyperdrive--entry-directory-p entry)
       (cl-incf (hyperdrive-entry-version next-entry))
+      (when (eq latest-version (hyperdrive-entry-version next-entry))
+        ;; Next ENTRY is the latest version: return ENTRY with nil version.
+        (setf (hyperdrive-entry-version next-entry) nil))
       (cl-return-from hyperdrive-entry-next next-entry))
 
     ;; ENTRY is a file...
@@ -876,17 +879,41 @@ HYPERDRIVE's public metadata file."
 
 (cl-defun hyperdrive-delete (entry &key (then #'ignore) (else #'ignore))
   "Delete ENTRY, then call THEN with response.
-Call ELSE with `plz-error' struct if request fails."
+Call ELSE with `plz-error' struct if request fails.
+Interactively, read ENTRY with `hyperdrive-read-entry'."
   (declare (indent defun))
+  (interactive
+   (let* ((entry (hyperdrive--context-entry))
+          (description (hyperdrive-entry-description entry))
+          (buffer (current-buffer)))
+     (when (and (hyperdrive--entry-directory-p entry)
+                (or (eq entry hyperdrive-current-entry)
+                    (string= ".." (alist-get 'display-name (hyperdrive-entry-etc entry)))))
+       (hyperdrive-user-error "Won't delete from within"))
+     (when (and (yes-or-no-p (format "Delete «%s»? " description))
+                (or (not (hyperdrive--entry-directory-p entry))
+                    (yes-or-no-p (format "Recursively delete «%s»? " description))))
+       (list entry
+             :then (lambda (_)
+                     (when (and (buffer-live-p buffer)
+                                (eq 'hyperdrive-dir-mode (buffer-local-value 'major-mode buffer)))
+                       (with-current-buffer buffer
+                         (revert-buffer)))
+                     (hyperdrive-message "Deleted: «%s» (Deleted files can be accessed from prior versions of the hyperdrive.)" description))
+             :else (lambda (plz-error)
+                     (hyperdrive-message "Unable to delete «%s»: %S" description plz-error))))))
   (hyperdrive-api 'delete (hyperdrive-entry-url entry)
     :as 'response
     :then (lambda (response)
             (pcase-let* (((cl-struct plz-response headers) response)
                          ((map etag) headers)
                          (nonexistent-entry (hyperdrive-copy-tree entry t)))
-              (setf (hyperdrive-entry-version nonexistent-entry) (string-to-number etag))
-              (hyperdrive--fill-latest-version (hyperdrive-entry-hyperdrive entry) headers)
-              (hyperdrive-update-nonexistent-version-range nonexistent-entry)
+              (unless (hyperdrive--entry-directory-p entry)
+                ;; FIXME: hypercore-fetch bug doesn't update version
+                ;; number when deleting a directory.
+                (setf (hyperdrive-entry-version nonexistent-entry) (string-to-number etag))
+                (hyperdrive--fill-latest-version (hyperdrive-entry-hyperdrive entry) headers)
+                (hyperdrive-update-nonexistent-version-range nonexistent-entry))
               (funcall then response)))
     :else else))
 
@@ -927,9 +954,7 @@ FORMAT-PATH is `name', use only last part of path, as in
 
 When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path name) entry)
-               (handle (hyperdrive--format-host hyperdrive
-                                                :format hyperdrive-default-host-format
-                                                :with-label t)))
+               (handle (hyperdrive--format-host hyperdrive :with-label t)))
     (propertize (concat (format "[%s] " handle)
                         (pcase format-path
                           ('path (url-unhex-string path))
@@ -988,12 +1013,13 @@ Path and target fragment are URI-encoded."
                                 :with-faces with-faces))
       url)))
 
-(cl-defun hyperdrive--format-host (hyperdrive &key format with-label (with-faces t))
+(cl-defun hyperdrive--format-host
+    (hyperdrive &key with-label (format hyperdrive-default-host-format) (with-faces t))
   "Return HYPERDRIVE's formatted hostname, or nil.
-FORMAT should be a list of symbols; see
-`hyperdrive-default-host-format' for choices.  If the specified
-FORMAT is not available, returns nil.  If WITH-LABEL, prepend a
-label for the kind of format used (e.g. \"petname:\").
+FORMAT should be one or a list of symbols, by default
+`hyperdrive-default-host-format', which see for choices.  If the
+specified FORMAT is not available, returns nil.  If WITH-LABEL,
+prepend a label for the kind of format used (e.g. \"petname:\").
 When WITH-FACES is nil, don't add face text properties."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
@@ -1004,7 +1030,7 @@ When WITH-FACES is nil, don't add face text properties."
                         (if with-faces
                             (propertize string 'face face)
                           string))))
-      (cl-loop for f in format
+      (cl-loop for f in (ensure-list format)
                when (pcase f
                       ((and 'petname (guard petname))
                        (fmt petname "petname:" 'hyperdrive-petname))
@@ -1023,6 +1049,15 @@ When WITH-FACES is nil, don't add face text properties."
                return it))))
 
 ;;;; Reading from the user
+
+(declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
+(defun hyperdrive--context-entry ()
+  "Return the current entry in the current context."
+  (pcase major-mode
+    ((guard current-prefix-arg)
+     (hyperdrive-read-entry :force-prompt current-prefix-arg))
+    ('hyperdrive-dir-mode (hyperdrive-dir--entry-at-point))
+    (_ (or hyperdrive-current-entry (hyperdrive-read-entry)))))
 
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate force-prompt)
   "Return hyperdrive for current entry when it matches PREDICATE.
@@ -1053,11 +1088,14 @@ case, when PREDICATE, only offer hyperdrives matching it."
         (or (alist-get selected candidates nil nil #'equal)
             (hyperdrive-user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))))
 
-(cl-defun hyperdrive--format-hyperdrive (hyperdrive)
-  "Return HYPERDRIVE formatted for completion."
+(cl-defun hyperdrive--format-hyperdrive
+    (hyperdrive &key (formats '(petname nickname domain seed short-key)) (with-label t))
+  "Return HYPERDRIVE formatted for completion.
+For each of FORMATS, concatenates the value separated by two
+spaces, optionally WITH-LABEL."
   (string-trim
-   (cl-loop for format in '(petname nickname domain seed short-key)
-            when (hyperdrive--format-host hyperdrive :format (list format) :with-label t)
+   (cl-loop for format in formats
+            when (hyperdrive--format-host hyperdrive :format format :with-label with-label)
             concat (concat it "  "))))
 
 (cl-defun hyperdrive-read-entry (&key predicate default-path (allow-version-p t) force-prompt)
