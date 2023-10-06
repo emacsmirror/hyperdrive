@@ -122,8 +122,11 @@
          (concat (propertize "Current: " 'face 'transient-heading)
                  (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                              'face 'transient-value))))
-     ("^" "Up to parent" hyperdrive-up
-      ;; TODO: Keep transient open.  Directory contents load asynchronously, so this is tricky.
+     ("^" "Up to parent" (lambda ()
+                           (interactive)
+                           (hyperdrive-up (oref transient-current-prefix scope)
+                                          :then (lambda ()
+                                                  (call-interactively #'hyperdrive-menu))))
       :inapt-if-not (lambda ()
                       (hyperdrive-parent (oref transient--prefix scope))))
      ("o" "Sort" hyperdrive-dir-sort
