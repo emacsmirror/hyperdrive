@@ -165,7 +165,8 @@
     [ ;; Selected
      :if (lambda ()
            (and (oref transient--prefix scope)
-                (eq major-mode 'hyperdrive-dir-mode)))
+                (eq major-mode 'hyperdrive-dir-mode)
+                (hyperdrive-dir--entry-at-point)))
      :description
      (lambda ()
        (concat (propertize "Selected: " 'face 'transient-heading)
