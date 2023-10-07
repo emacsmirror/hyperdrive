@@ -99,12 +99,9 @@ Then follow the [[*NonGNU ELPA][NonGNU ELPA]] installation instructions.
 
 #+begin_src emacs-lisp
   (unless (package-installed-p 'hyperdrive)
-    (require 'package-vc)
     ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
     (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-    (package-vc-install '(hyperdrive
-                          :url "https://git.sr.ht/~ushin/hyperdrive.el"
-                          :doc "doc/hyperdrive-manual.org")))
+    (package-vc-install 'hyperdrive))
 #+end_src
 
 Alternatively, if you have already cloned the ~hyperdrive.el~ repository,
@@ -115,10 +112,6 @@ you can use the following snippet to install from that repository:
     (require 'package-vc)
     ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
     (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-    (add-to-list 'package-vc-selected-packages
-                 '(hyperdrive
-                          :url "https://git.sr.ht/~ushin/hyperdrive.el"
-                          :doc "doc/hyperdrive-manual.org"))
     ;; Change the path below to the location of your local hyperdrive.el repository.
     (package-vc-install-from-checkout "~/.local/src/hyperdrive.el" "hyperdrive"))
 #+end_src
