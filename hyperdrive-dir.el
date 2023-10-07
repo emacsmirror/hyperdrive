@@ -215,17 +215,13 @@ To be used as the pretty-printer for `ewoc-create'."
 With point below last entry, returns nil.
 With point on header, returns directory entry."
   (let ((current-line (line-number-at-pos))
-        (last-line (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
-        (entry-at-point (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+        (last-line (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1)))))
     (cond ((= 1 current-line)
-           ;; Point on header: return directory's entry.
            hyperdrive-current-entry)
           ((or (> current-line last-line) (= 2 current-line))
-           ;; Point is below the last entry or on column headers: signal error.
-           (hyperdrive-user-error "No file on this line"))
+           nil)
           (t
-           ;; Point on a file entry: return its entry.
-           entry-at-point))))
+           (ewoc-data (ewoc-locate hyperdrive-ewoc))))))
 
 ;;;; Mode
 
@@ -274,6 +270,7 @@ Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
+  (cl-assert entry nil "No file/directory at point")
   (hyperdrive-open entry))
 
 (declare-function hyperdrive-view-file "hyperdrive")
@@ -283,6 +280,7 @@ Interactively, opens file or directory at point in
 `hyperdrive-dir' buffer."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
+  (cl-assert entry nil "No file/directory at point")
   (hyperdrive-view-file entry))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
@@ -291,6 +289,7 @@ Interactively, opens file or directory at point in
   "Copy URL of ENTRY into the kill ring."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
+  (cl-assert entry nil "No file/directory at point")
   (hyperdrive-copy-url entry))
 
 (declare-function hyperdrive-history "hyperdrive-history")
@@ -298,6 +297,7 @@ Interactively, opens file or directory at point in
 (defun hyperdrive-dir-history (entry)
   "Display version history for ENTRY at point."
   (interactive (list (hyperdrive-dir--entry-at-point)))
+  (cl-assert entry nil "No file/directory at point")
   (hyperdrive-history entry))
 
 (defun hyperdrive-create-directory-no-op ()
