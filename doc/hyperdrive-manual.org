@@ -5,7 +5,7 @@
 #+setupfile: doc-setup.org
 
 #+texinfo_dir_category: Communication
-#+texinfo_dir_title: Hyperdrive.el
+#+texinfo_dir_title: Hyperdrive
 #+texinfo_dir_desc: P2P filesystem in Emacs
 
 [[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is a P2P, real-time, local-first, versioned filesystem
