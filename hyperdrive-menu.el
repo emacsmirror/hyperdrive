@@ -178,10 +178,14 @@
             (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
               (not (hyperdrive--entry-directory-p entry-at-point)))))
      ("D" "Delete" hyperdrive-delete
-      :inapt-if-not (lambda ()
-                      (hyperdrive-writablep
-                       (hyperdrive-entry-hyperdrive
-                        (oref transient--prefix scope)))))
+      :inapt-if (lambda ()
+                  (let ((current-entry (oref transient--prefix scope))
+                        (selected-entry (hyperdrive--context-entry)))
+                    (or (not (hyperdrive-writablep
+                              (hyperdrive-entry-hyperdrive current-entry)))
+                        (eq selected-entry current-entry)
+                        (string= ".." (alist-get 'display-name
+                                                 (hyperdrive-entry-etc selected-entry)))))))
      ("w" "Copy URL" (lambda ()
                        (interactive)
                        (hyperdrive-copy-url (hyperdrive--context-entry))))
