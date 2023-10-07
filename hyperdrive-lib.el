@@ -220,6 +220,13 @@ PLZ-ERR should be a `plz-error' struct."
     (_
      (signal 'plz-error (list "plz error" plz-err)))))
 
+;;;###autoload
+(defun hyperdrive-status ()
+  "Return non-nil if `hyper-gateway' is running and accessible."
+  (condition-case nil
+      (plz 'get (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/"))
+    (error nil)))
+
 (defun hyperdrive--httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
   (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/hyper/"
