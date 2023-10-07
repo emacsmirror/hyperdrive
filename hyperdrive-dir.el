@@ -248,7 +248,6 @@ With point on header, returns directory entry."
   "w"   #'hyperdrive-dir-copy-url
   "d"   #'hyperdrive-download
   "^"   #'hyperdrive-up
-  ;; TODO(doc): hyperdrive-dir-delete replaced by hyperdrive-delete
   "D"   #'hyperdrive-delete
   "H"   #'hyperdrive-dir-history
   "s"   #'hyperdrive-dir-sort
