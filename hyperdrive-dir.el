@@ -233,7 +233,6 @@ With point on header, returns directory entry."
 (declare-function hyperdrive-up "hyperdrive")
 (declare-function hyperdrive-delete "hyperdrive")
 (declare-function hyperdrive-download "hyperdrive")
-(declare-function hyperdrive-describe-hyperdrive "hyperdrive-describe")
 ;; `hyperdrive-menu' is defined with `transient-define-prefix', which
 ;; `check-declare' doesn't recognize.
 (declare-function hyperdrive-menu "hyperdrive-menu" nil t)
