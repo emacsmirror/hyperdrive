@@ -7,6 +7,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 ** Added
 
+- ~hyperdrive-menu~ is the new control panel. Bind it a convenient key!
 - ~org-insert-link~ automatically inserts relative links to hyperdrive
   files within the same drive
 - ~yank-media~ support (on Emacs 29 or later)
@@ -22,6 +23,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Fewer buffers are created by default (see ~hyperdrive-reuse-buffers~)
 - ~hyperdrive-mode~ keybindings now work when viewing =hyper://= files in EWW
 - History buffer displays right away; press ~+~ to load an unknown range
+- ~hyperdrive-delete~ now works in hyperdrive file buffers
 
 ** Fixed
 
