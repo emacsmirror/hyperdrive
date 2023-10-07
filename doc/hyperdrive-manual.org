@@ -297,6 +297,15 @@ in org-mode), then typing ~hyper:~ and ~RET~.  To change how
 ~org-insert-link~ inserts links to files within the same hyperdrive,
 adjust ~hyperdrive-org-link-full-url~ and ~org-link-file-path-type~.
 
+** Delete a hyperdrive file
+#+findex: hyperdrive-delete
+
+You can use ~hyperdrive-delete~ to delete the hyperdrive file in the
+current buffer.  This command has a keybinding in the [[*Directory view][directory view]].
+
+*Note that deleted files can be accessed by [[*View the hyperdrive version history][loading a prior version]] of
+the hyperdrive.*
+
 ** View the hyperdrive version history
 #+findex: hyperdrive-previous-version
 #+findex: hyperdrive-next-version
