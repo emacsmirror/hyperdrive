@@ -51,6 +51,7 @@ This manual is for @code{hyperdrive.el} version 0.2-pre.
 @menu
 * Freedom to copy::
 * Installation::
+* Example configuration::
 * Usage::
 * Customization::
 * Concepts::
@@ -79,11 +80,13 @@ hyperdrive.el
 
 Usage
 
+* hyperdrive-menu::
 * Start/stop the gateway::
 * Create a hyperdrive::
 * Open a hyperdrive::
 * Write to a hyperdrive::
 * Link to a hyperdrive::
+* Delete a hyperdrive file::
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Bookmark a hyperdrive::
@@ -257,12 +260,9 @@ Add the following lines to your @code{init.el} startup file:
 
 @lisp
 (unless (package-installed-p 'hyperdrive)
-  (require 'package-vc)
   ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
   (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-  (package-vc-install '(hyperdrive
-                        :url "https://git.sr.ht/~ushin/hyperdrive.el"
-                        :doc "doc/hyperdrive-manual.org")))
+  (package-vc-install 'hyperdrive))
 @end lisp
 
 Alternatively, if you have already cloned the @code{hyperdrive.el} repository,
@@ -273,10 +273,6 @@ you can use the following snippet to install from that repository:
   (require 'package-vc)
   ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
   (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-  (add-to-list 'package-vc-selected-packages
-               '(hyperdrive
-                        :url "https://git.sr.ht/~ushin/hyperdrive.el"
-                        :doc "doc/hyperdrive-manual.org"))
   ;; Change the path below to the location of your local hyperdrive.el repository.
   (package-vc-install-from-checkout "~/.local/src/hyperdrive.el" "hyperdrive"))
 @end lisp
@@ -291,6 +287,25 @@ After installing with @code{package-vc}, you can later upgrade to a newer
 version of @code{hyperdrive.el} by running @code{M-x package-vc-upgrade RET
 hyperdrive RET}.
 
+@node Example configuration
+@chapter Example configuration
+
+After following the @ref{Installation, , installation instructions}, you can add this
+snippet to your @code{~/.emacs.d/init.el} file to make the keyboard short @code{C-c
+h} (hold the @code{Control} key and tap @code{c}, then release both and tap @code{h}) to
+open @ref{hyperdrive-menu}:
+
+@lisp
+(global-set-key (kbd "C-c h") #'hyperdrive-menu)
+@end lisp
+
+With @ref{Top,use-package,,use-package,}:
+
+@lisp
+(use-package hyperdrive
+  :bind ("C-c h" . hyperdrive-menu))
+@end lisp
+
 @node Usage
 @chapter Usage
 
@@ -299,11 +314,13 @@ your published files from you, your friend, or anyone else who has
 them.
 
 @menu
+* hyperdrive-menu::
 * Start/stop the gateway::
 * Create a hyperdrive::
 * Open a hyperdrive::
 * Write to a hyperdrive::
 * Link to a hyperdrive::
+* Delete a hyperdrive file::
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Bookmark a hyperdrive::
@@ -313,6 +330,31 @@ them.
 * Purge a hyperdrive::
 * Non-interactive use::
 @end menu
+
+@node hyperdrive-menu
+@section hyperdrive-menu
+
+@findex hyperdrive-menu
+
+@code{M-x hyperdrive-menu} offers quick access to many @code{hyperdrive.el}
+commands.  With the menu open, press one of highlit keys or key
+combinations to invoke the command displayed next to it.  Different
+commands are available in @code{hyperdrive-menu} when you're inside a
+hyperdrive file, directory, or neither.
+
+While inside the @code{hyperdrive-menu}, press @code{?} twice to open this
+@code{hyperdrive.el} info manual.  You can also press @code{?} followed by a
+command's key sequence to get help for that command. (@ref{Quick documentation access, , more tips on
+getting help})
+
+If you press @code{C-u} (universal prefix argument) before a key sequence,
+the command may behave differently, e.g., by prompting for more
+information.  You can jump between @code{hyperdrive-menu} commands with the
+@code{up} and @code{down} arrow keys.  Press @code{C-g} to close the menu.
+
+For more on this type of user interface, please refer to the @ref{Introduction,Transient
+documentation,,transient,}.  To learn about the commands available in
+@code{hyperdrive-menu}, read on!
 
 @node Start/stop the gateway
 @section Start/stop the gateway
@@ -406,7 +448,7 @@ prefix argument)
 @item
 @code{d} downloads the file at point to disk
 @end itemize
-@kindex hyperdrive-dir-delete
+@kindex hyperdrive-delete
 @itemize
 @item
 @code{D} deletes the file or directory (recursively) at point
@@ -426,10 +468,10 @@ prefix argument)
 @item
 @code{j} opens @code{imenu} to quickly jump to a file in the current directory
 @end itemize
-@kindex hyperdrive-describe-hyperdrive
+@kindex hyperdrive-menu
 @itemize
 @item
-@code{?} opens a buffer describing the current hyperdrive
+@code{?} opens @code{hyperdrive-menu} (see @ref{hyperdrive-menu})
 @end itemize
 @kindex hyperdrive-create-directory-no-op
 @itemize
@@ -541,6 +583,17 @@ to a hyperdrive file/folder by running @code{M-x org-insert-link} (or @code{C-c 
 in org-mode), then typing @code{hyper:} and @code{RET}.  To change how
 @code{org-insert-link} inserts links to files within the same hyperdrive,
 adjust @code{hyperdrive-org-link-full-url} and @code{org-link-file-path-type}.
+
+@node Delete a hyperdrive file
+@section Delete a hyperdrive file
+
+@findex hyperdrive-delete
+
+You can use @code{hyperdrive-delete} to delete the hyperdrive file in the
+current buffer.  This command has a keybinding in the @ref{Directory view, , directory view}.
+
+@strong{Note that deleted files can be accessed by @ref{View the hyperdrive version history, , loading a prior version} of
+the hyperdrive.}
 
 @node View the hyperdrive version history
 @section View the hyperdrive version history
@@ -1246,9 +1299,8 @@ display the @code{bar} entry but not the @code{bar/} entry prefix.
 @node Quick documentation access
 @section Quick documentation access
 
-@findex hyperdrive-info-manual
-You can open the @code{hyperdrive.el} manual with @code{M-x
-hyperdrive-info-manual}.
+You can open the @code{hyperdrive.el} info manual from @code{hyperdrive-menu} by
+pressing @code{?} twice.
 
 To view documentation for @code{hyperdrive.el} commands, functions, and
 variables, press @code{C-h o} (@code{describe-symbol}). Inside the @code{*Help*}
