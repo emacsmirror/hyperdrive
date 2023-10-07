@@ -135,6 +135,24 @@ After installing with ~package-vc~, you can later upgrade to a newer
 version of ~hyperdrive.el~ by running ~M-x package-vc-upgrade RET
 hyperdrive RET~.
 
+* Example configuration
+
+After following the [[*Installation][installation instructions]], you can add this
+snippet to your ~~/.emacs.d/init.el~ file to make the keyboard short ~C-c
+h~ (hold the ~Control~ key and tap ~c~, then release both and tap ~h~) to
+open [[*hyperdrive-menu][hyperdrive-menu]]:
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c h") #'hyperdrive-menu)
+#+end_src
+
+With [[info:use-package][use-package]]:
+
+#+begin_src emacs-lisp
+  (use-package hyperdrive
+    :bind ("C-c h" . hyperdrive-menu))
+#+end_src
+
 * Usage
 
 *Be careful what you publish!* Anyone with your public key can download
