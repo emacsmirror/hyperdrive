@@ -196,9 +196,17 @@
             (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
               (not (hyperdrive--entry-directory-p entry-at-point)))))]]
   [["Gateway"
-    ("g s" "Start" hyperdrive-start)
-    ("g S" "Stop" hyperdrive-stop)
-    ("g v" "Version" hyperdrive-hyper-gateway-version)]
+    :description
+    (lambda ()
+      (concat (propertize "Gateway: " 'face 'transient-heading)
+              (propertize (if (hyperdrive-status) "on" "off")
+                          'face 'transient-value)))
+    ("g s" "Start" hyperdrive-start
+     :transient t)
+    ("g S" "Stop" hyperdrive-stop
+     :transient t)
+    ("g v" "Version" hyperdrive-hyper-gateway-version
+     :transient t)]
    ["Bookmark"
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
