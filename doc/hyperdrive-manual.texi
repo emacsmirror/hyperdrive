@@ -14,7 +14,7 @@
 
 @dircategory Communication
 @direntry
-* Hyperdrive.el.        P2P filesystem in Emacs.
+* Hyperdrive.           P2P filesystem in Emacs.
 @end direntry
 
 @finalout
@@ -49,7 +49,7 @@ This manual is for @code{hyperdrive.el} version 0.2-pre.
 @end ifnottex
 
 @menu
-* Copying::
+* Freedom to copy::
 * Installation::
 * Usage::
 * Customization::
@@ -73,6 +73,7 @@ Installation
 
 hyperdrive.el
 
+* NonGNU ELPA::
 * MELPA::
 * package-vc::
 
@@ -137,6 +138,7 @@ Naming
 
 Known limitations
 
+* No empty directories::
 * Files and folders can have the same name::
 
 Tips
@@ -153,8 +155,8 @@ Indices
 @end detailmenu
 @end menu
 
-@node Copying
-@chapter Copying
+@node Freedom to copy
+@chapter Freedom to copy
 
 Copyright @copyright{} 2023 USHIN, Inc.
 
@@ -183,40 +185,61 @@ modify this GNU manual.''
 @node Emacs
 @section Emacs
 
-@code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, Emacs} version 27.1 or later.
+@code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, GNU Emacs} version 27.1 or later.
 
 @node hyper-gateway
 @section hyper-gateway
 
-@code{hyperdrive.el} relies on
-@uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for
-talking to the hypercore network
-(@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation
-instructions}).
+@strong{NOTICE}: Soon @code{hyperdrive.el} will depend on @uref{https://github.com/RangerMauve/hyper-sdk-rpc, hyper-sdk-rpc} instead of
+hyper-gateway.
+
+@code{hyperdrive.el} relies on @uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for talking to the hypercore
+network (@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation instructions}).
 
 @node hyperdriveel
 @section hyperdrive.el
 
-There are two recommended options for installing @code{hyperdrive.el}: MELPA
-and @code{package-vc}.
+There are three recommended options for installing @code{hyperdrive.el}:
+NonGNU ELPA, MELPA, and @code{package-vc}.
 
 @menu
+* NonGNU ELPA::
 * MELPA::
 * package-vc::
 @end menu
 
+@node NonGNU ELPA
+@subsection NonGNU ELPA
+
+@code{hyperdrive.el} is available on @uref{https://elpa.nongnu.org/nongnu/hyperdrive.html, NonGNU ELPA}. On Emacs 28 or later,
+installation is as simple as @code{M-x package-refresh-contents} then @code{M-x
+package-install RET hyperdrive RET}.
+
+On Emacs 27, you'll first have to add the NonGNU ELPA repository:
+
+@lisp
+(with-eval-after-load 'package
+  (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+@end lisp
+
+After installing with NonGNU ELPA, you can later upgrade to a newer
+version of @code{hyperdrive.el} by running @code{M-x package-refresh-contents}
+then @code{M-x package-upgrade RET hyperdrive}. If @code{package-upgrade} is not
+available as a command, display the list of packages with @code{M-x
+list-packages}, select @code{hyperdrive}, and click the @code{Install} button.
+
 @node MELPA
 @subsection MELPA
 
-@code{hyperdrive.el} is available on
-@uref{https://melpa.org/#/getting-started, MELPA}. Once you've set up
-MELPA, you can run @code{M-x package-install RET hyperdrive RET}.
+@code{hyperdrive.el} is also available on
+@uref{https://melpa.org/#/hyperdrive, MELPA}. First add the MELPA repository:
 
-After installing with MELPA, you can later upgrade to a newer version
-of @code{hyperdrive.el} by running @code{M-x package-refresh-contents} then @code{M-x
-package-upgrade RET hyperdrive}. If @code{package-upgrade} is not available
-as a command, display the list of packages with @code{M-x list-packages},
-select @code{hyperdrive}, and click the @code{Install} button.
+@lisp
+(with-eval-after-load 'package
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/")))
+@end lisp
+
+Then follow the @ref{NonGNU ELPA} installation instructions.
 
 @node package-vc
 @subsection package-vc
@@ -324,11 +347,14 @@ seed cannot be changed.
 
 @findex hyperdrive-open-url
 @findex hyperdrive-find-file
+@findex hyperdrive-view-file
 
-You can open a hyperdrive folder or file by pasting in a @code{hyper://} URL
-after @code{M-x hyperdrive-open-url}. Alternatively, @code{M-x hyperdrive-find-file}
-remembers hyperdrives you have already created or visited. It will
-prompt you for a known hyperdrive and a path inside it.
+You can open a hyperdrive folder or file by pasting in a @code{hyper://}
+URL after @code{M-x hyperdrive-open-url}. Alternatively, @code{M-x
+hyperdrive-find-file} remembers hyperdrives you have already created
+or visited. It will prompt you for a known hyperdrive and a path
+inside it. @code{hyperdrive-view-file} is like @code{hyperdrive-find-file}, but
+it opens the file in @ref{View Mode,view-mode,,emacs,}.
 
 @menu
 * Directory view::
@@ -353,6 +379,11 @@ default:
 @item
 @code{RET} opens file or directory at point
 @end itemize
+@kindex hyperdrive-dir-view-file
+@itemize
+@item
+@code{v} opens file or directory at point in @ref{View Mode,view-mode,,emacs,}.
+@end itemize
 @kindex hyperdrive-up
 @itemize
 @item
@@ -362,6 +393,13 @@ default:
 @itemize
 @item
 @code{g} refreshes the directory to display potential updates
+@end itemize
+@kindex hyperdrive-dir-sort
+@itemize
+@item
+@code{o} sorts directory contents by column (to sort by a different
+column, click on the column header or use the `C-u` universal
+prefix argument)
 @end itemize
 @kindex hyperdrive-dir-download-file
 @itemize
@@ -392,6 +430,11 @@ default:
 @itemize
 @item
 @code{?} opens a buffer describing the current hyperdrive
+@end itemize
+@kindex hyperdrive-create-directory-no-op
+@itemize
+@item
+@code{+} signals an error, because you cannot create empty directories (@ref{No empty directories})
 @end itemize
 
 @node File view
@@ -448,6 +491,7 @@ URL@.
 @findex hyperdrive-write-buffer
 @findex save-buffer
 @findex save-some-buffers
+@vindex save-some-buffers-default-predicate
 
 You can write a buffer to a hyperdrive with @code{hyperdrive-write-buffer},
 which will prompt you for one of hyperdrives you have created as well
@@ -455,8 +499,10 @@ as the path in that hyperdrive where you want to store the file. If
 you are editing an existing hyperdrive file, @code{save-buffer} will
 silently update the current hyperdrive entry with the new content.
 
-On Emacs version 29.1 or later, @code{save-some-buffers} will save hyperdrive
-files in addition to regular files.
+@code{hyperdrive.el} will prompt to save modified hyperdrive files before
+exiting Emacs. If you want the command @code{save-some-buffers} to always
+prompt to save hyperdrive files in addition to regular files, set
+@code{save-some-buffers-default-predicate} to @code{t}.
 
 @node Link to a hyperdrive
 @section Link to a hyperdrive
@@ -491,8 +537,10 @@ filesystem, explicitly add the @code{file:} link type prefix:
 @code{file:~/.emacs.d/init.el}.
 
 Org-mode hyperdrive link completion allows you to interactively link
-to a hyperdrive file/folder by running @code{M-x org-insert-link} (or @code{C-c
-C-l} in org-mode), then typing @code{hyper:} and @code{RET}.
+to a hyperdrive file/folder by running @code{M-x org-insert-link} (or @code{C-c C-l}
+in org-mode), then typing @code{hyper:} and @code{RET}.  To change how
+@code{org-insert-link} inserts links to files within the same hyperdrive,
+adjust @code{hyperdrive-org-link-full-url} and @code{org-link-file-path-type}.
 
 @node View the hyperdrive version history
 @section View the hyperdrive version history
@@ -519,10 +567,20 @@ For an explanation of the history buffer, see @ref{Partial version data}.
 The following keybindings are available inside the directory view by
 default:
 
+@kindex hyperdrive-history-fill-version-ranges
+@itemize
+@item
+@code{+} loads version history for unknown ranges
+@end itemize
 @kindex hyperdrive-history-find-file
 @itemize
 @item
 @code{RET} opens the file at the start of the range at point
+@end itemize
+@kindex hyperdrive-history-view-file
+@itemize
+@item
+@code{v} opens the file at the start of the range at point in @ref{View Mode,view-mode,,emacs,}
 @end itemize
 @kindex hyperdrive-history-copy-url
 @itemize
@@ -553,9 +611,6 @@ To see information about a hyperdrive, such as its public key, seed,
 petname, nickname, domains, writable, or other metadata, run
 @code{hyperdrive-describe-hyperdrive}. For more on what this information
 means, see @ref{Naming}.
-
-It is possible to purge a hyperdrive from the @code{hyperdrive-describe-mode}
-buffer (see @ref{Purge a hyperdrive}).
 
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
@@ -754,12 +809,14 @@ Display buffer action
 for hyperdrive directories. Passed to @code{display-buffer}, which see.
 @end table
 
-@vindex hyperdrive-column-headers
+@vindex hyperdrive-directory-sort
 @table @asis
-@item @code{hyperdrive-column-headers}
-Display column headers in
-@code{hyperdrive-dir} and @code{hyperdrive-history} buffers. Defaults to @code{t}.
+@item @code{hyperdrive-directory-sort}
+Column by which directory entries are sorted.
 @end table
+Internally, a cons cell of (COLUMN . DIRECTION), the COLUMn being one
+of the directory listing columns (@code{name}, @code{size}, or @code{mtime}) and
+DIRECTION being one of @code{:ascending} or @code{:descending}.
 
 @vindex hyperdrive-history-display-buffer-action
 @table @asis
@@ -783,11 +840,18 @@ URLs externally. Default uses @uref{https://mpv.io/, mpv}. There also exists a p
 option for @uref{https://www.videolan.org/vlc/, VLC media player}.
 @end table
 
-@vindex hyperdrive-queue-size
+@vindex hyperdrive-queue-limit
 @table @asis
-@item @code{hyperdrive-queue-size}
+@item @code{hyperdrive-queue-limit}
 Default number of request sent to
-@code{hyper-gateway} at a time in a queues. Defaults to @code{2}.
+@code{hyper-gateway} at a time in a queues. Defaults to @code{20}.
+@end table
+
+@vindex hyperdrive-fill-version-ranges-limit
+@table @asis
+@item @code{hyperdrive-queue-limit}
+Default maximum number of requests when
+filling version history. Defaults to @code{10}.
 @end table
 
 @vindex hyperdrive-render-html
@@ -1135,27 +1199,42 @@ this issue by remembering which public key the DNS record resolved to,
 so that peers can use the stored public key itself for subsequent
 connections.
 
+DNS domains are checked for suspicious characters (see
+@ref{Suspicious Text,,,elisp,}).
+
 @node Known limitations
 @chapter Known limitations
 
 @menu
+* No empty directories::
 * Files and folders can have the same name::
 @end menu
+
+@node No empty directories
+@section No empty directories
+
+Instead of files and folders, Hyperdrive technically has entries and
+entry prefixes.  In other words, folders don't exist unless they
+contain files.  This results in potentially unexpected behavior:
+
+@itemize
+@item
+it is not possible to create empty directories
+@item
+deleting the last file in a folder deletes the folder as well
+@end itemize
+
+When a hyperdrive file or folder is not found, @code{hyperdrive.el} prompts
+you for an action (see @ref{Unknown paths}).
 
 @node Files and folders can have the same name
 @section Files and folders can have the same name
 
-Instead of files and folders, Hyperdrive technically has entries and
-entry prefixes. In other words, ``folders'' don't exist unless they
-contain files. It's possible for a ``file'' entry and a ``folder'' entry
-prefix to have the same name, like @code{hyper://PUBLIC-KEY/foo/bar/} (a
-``folder'') and @code{hyper://PUBLIC-KEY/foo/bar} (a ``file''). In this case, the
-folder listing for @code{hyper://PUBLIC-KEY/path/} would display the @code{to} entry
-but not the @code{to/} entry prefix. Because entry prefixes only exist when
-they prefix an entry, deleting the last ``file'' in a ``folder'' causes
-the ``folder'' to disappear as well.  When a hyperdrive ``file'' or
-``folder'' is not found, @code{hyperdrive.el} prompts you for an action
-(see @ref{Unknown paths}).
+In the current implementation of Hyperdrive, it's possible for an
+entry (folder) and an entry prefix (folder) to have the same name,
+e.g., @code{hyper://PUBLIC-KEY/foo/bar/} and @code{hyper://PUBLIC-KEY/foo/bar}. In
+this case, the folder listing for @code{hyper://PUBLIC-KEY/foo/} would
+display the @code{bar} entry but not the @code{bar/} entry prefix.
 
 @node Tips
 @chapter Tips
@@ -1221,6 +1300,9 @@ world of p2p as well as the development of @code{hyper-gateway}.
 @uref{https://karl-voit.at/, Karl Voit} for his feedback, especially the
 suggestion that we allow for a non-splitting approach for uploading
 files from the filesystem.
+
+@uref{https://www.sanityinc.com/, Steve Purcell} and @uref{https://github.com/akirak, Akira Komamura} for suggestion to improve our CI
+build manifests.
 
 @node Indices
 @chapter Indices
