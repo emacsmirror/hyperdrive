@@ -133,7 +133,7 @@
       :inapt-if-not (lambda ()
                       (hyperdrive-parent (oref transient--prefix scope)))
       :transient t)
-     ("o" "Sort" hyperdrive-dir-sort
+     ("s" "Sort" hyperdrive-dir-sort
       :if (lambda ()
             (eq major-mode 'hyperdrive-dir-mode))
       :transient t)
