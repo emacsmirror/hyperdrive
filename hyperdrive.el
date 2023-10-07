@@ -796,6 +796,48 @@ The return value of this function is the retrieval buffer."
 
 (cl-pushnew #'hyperdrive-kill-buffer-query-function kill-buffer-query-functions)
 
+;;;;; `easy-menu' integration
+
+(defvar hyperdrive--easy-menu-contents
+  '("Hyperdrive"
+    ["New Drive" hyperdrive-new
+     :help "Create a new hyperdrive"]
+    ("Current Drive"
+     :active hyperdrive-current-entry
+     :label (if-let* ((entry hyperdrive-current-entry)
+                      (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                (concat "Current drive: "
+                        (hyperdrive--format-host hyperdrive :with-label t))
+              "Current drive")
+     ["Petname" hyperdrive-set-petname
+      :help "Set petname for hyperdrive"
+      :label
+      (format "Set petname: %s"
+              (pcase (hyperdrive-petname (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                (`nil "none")
+                (it it)))]
+     ["Nickname" hyperdrive-set-nickname
+      :help "Set nickname for hyperdrive"
+      :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+      :label
+      (format "Set nickname: %s"
+              (pcase (alist-get 'name
+                                (hyperdrive-metadata
+                                 (hyperdrive-entry-hyperdrive
+                                  hyperdrive-current-entry)))
+                (`nil "none")
+                (it it)))]
+     "---"
+     ["Describe" hyperdrive-describe-hyperdrive
+      :help "Display information about hyperdrive"]
+     ["Purge" hyperdrive-purge
+      :help "Purge all local data about hyperdrive"]))
+  "Contents of the Hyperdrive menu.")
+
+(easy-menu-define hyperdrive-global-easy-menu global-map
+  "Menu with all Hyperdrive commands."
+  hyperdrive--easy-menu-contents)
+
 ;;;; Footer
 
 (provide 'hyperdrive)
