@@ -98,12 +98,6 @@
 ;; TODO(A): Command to rename paths.
 
 ;;;###autoload
-(defun hyperdrive-info-manual ()
-  "Show the hyperdrive Info manual."
-  (interactive)
-  (info "(hyperdrive)"))
-
-;;;###autoload
 (defun hyperdrive-start ()
   "Start `hyper-gateway' systemd service if not already running."
   (interactive)

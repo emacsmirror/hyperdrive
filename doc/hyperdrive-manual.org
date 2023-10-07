@@ -851,9 +851,8 @@ display the ~bar~ entry but not the ~bar/~ entry prefix.
 
 ** Quick documentation access
 
-#+findex: hyperdrive-info-manual
-You can open the ~hyperdrive.el~ manual with ~M-x
-hyperdrive-info-manual~.
+You can open the ~hyperdrive.el~ info manual from ~hyperdrive-menu~ by
+pressing ~?~ twice.
 
 To view documentation for ~hyperdrive.el~ commands, functions, and
 variables, press ~C-h o~ (~describe-symbol~). Inside the ~*Help*~
