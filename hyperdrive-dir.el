@@ -215,12 +215,16 @@ To be used as the pretty-printer for `ewoc-create'."
 With point below last entry, returns nil.
 With point on header, returns directory entry."
   (let ((current-line (line-number-at-pos))
-        (last-line (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1)))))
-    (cond ((= 1 current-line)
+        (last-entry (ewoc-nth hyperdrive-ewoc -1)))
+    (cond ((or (not last-entry) (= 1 current-line))
+           ;; Hyperdrive is empty or point is on header line
            hyperdrive-current-entry)
-          ((or (> current-line last-line) (= 2 current-line))
+          ((or (> current-line (line-number-at-pos (ewoc-location last-entry)))
+               (= 2 current-line))
+           ;; Point is below the last entry or on column headers
            nil)
           (t
+           ;; Point on a file entry: return its entry.
            (ewoc-data (ewoc-locate hyperdrive-ewoc))))))
 
 ;;;; Mode
