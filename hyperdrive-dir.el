@@ -315,7 +315,6 @@ DIRECTORY-SORT should be a valid value of
 `hyperdrive-directory-sort'."
   (interactive (list (if current-prefix-arg
                          (hyperdrive-dir-complete-sort)
-                       ;; TODO(doc): Document hyperdrive-dir-sort behavior and binding
                        (hyperdrive-dir-toggle-sort-direction
                         (car hyperdrive-directory-sort) hyperdrive-directory-sort))))
   (setq-local hyperdrive-directory-sort directory-sort)
