@@ -200,7 +200,7 @@ default:
   prefix argument)
 #+kindex: hyperdrive-dir-download-file
 - ~d~ downloads the file at point to disk
-#+kindex: hyperdrive-dir-delete
+#+kindex: hyperdrive-delete
 - ~D~ deletes the file or directory (recursively) at point
 #+kindex: hyperdrive-dir-history
 - ~H~ opens the [[*View the hyperdrive version history][version history]] of file at point
