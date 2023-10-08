@@ -668,9 +668,9 @@ for more information.  See `hyperdrive-read-entry' and
 Universal prefix argument \\[universal-argument] forces
 `hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
   (interactive
-   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
+   (let* ((files (hyperdrive-read-files))
+          (hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
                                                       :force-prompt current-prefix-arg))
-          (files (hyperdrive-read-files))
           ;; TODO: Consider offering target dirs in hyperdrive with completion.
           (target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in «%s»" :default "/")))
      (list files hyperdrive :target-directory target-dir)))
