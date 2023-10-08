@@ -841,7 +841,15 @@ The return value of this function is the retrieval buffer."
      ["Stop Gateway" hyperdrive-stop
       :help "Stop hyper-gateway"]
      ["Gateway version" hyperdrive-hyper-gateway-version
-      :help "Say hyper-gateway version"]))
+      :help "Say hyper-gateway version"])
+    ("Bookmark"
+     ["Bookmark Jump" hyperdrive-bookmark-jump
+      :help "Jump to hyperdrive bookmark"]
+     ["Bookmark List" hyperdrive-bookmark-list
+      :help "List hyperdrive bookmarks"]
+     ["Bookmark Set" bookmark-set
+      :visible hyperdrive-current-entry
+      :help "Create a new hyperdrive bookmark"]))
   "Contents of the Hyperdrive menu.")
 
 (easy-menu-define hyperdrive-global-easy-menu global-map
