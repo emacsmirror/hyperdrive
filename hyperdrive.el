@@ -857,7 +857,12 @@ The return value of this function is the retrieval buffer."
       :help "List hyperdrive bookmarks"]
      ["Bookmark Set" bookmark-set
       :visible hyperdrive-current-entry
-      :help "Create a new hyperdrive bookmark"]))
+      :help "Create a new hyperdrive bookmark"])
+    "---"
+    ["Customize" hyperdrive-customize
+     :help "Customize hyperdrive options"]
+    ["Info Manual" hyperdrive-info-manual
+     :help "Open hyperdrive.el info manual"])
   "Contents of the Hyperdrive menu.")
 
 (easy-menu-define hyperdrive-global-easy-menu global-map
