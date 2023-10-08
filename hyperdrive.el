@@ -842,6 +842,13 @@ The return value of this function is the retrieval buffer."
       :help "Stop hyper-gateway"]
      ["Gateway version" hyperdrive-hyper-gateway-version
       :help "Say hyper-gateway version"])
+    ("Upload"
+     ["Upload File" hyperdrive-upload-file
+      :help "Upload a file to a hyperdrive"]
+     ["Upload Files" hyperdrive-upload-files
+      :help "Upload multiple files to a hyperdrive"]
+     ["Mirror" hyperdrive-mirror
+      :help "Mirror a directory to a hyperdrive"])
     ("Bookmark"
      ["Bookmark Jump" hyperdrive-bookmark-jump
       :help "Jump to hyperdrive bookmark"]
