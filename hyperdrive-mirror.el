@@ -164,6 +164,7 @@ predicate and set NO-CONFIRM to t."
             (setq-local hyperdrive-mirror-query
                         `(,source ,hyperdrive :target-dir ,target-dir :predicate ,predicate)
                         hyperdrive-mirror-parent-entry parent-entry)
+            ;; TODO: Add command to clear plz queue.
             (setf metadata-queue (make-plz-queue
                                   :limit hyperdrive-queue-limit
                                   :finally (lambda ()
