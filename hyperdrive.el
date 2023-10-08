@@ -864,6 +864,20 @@ The return value of this function is the retrieval buffer."
   "Menu with all Hyperdrive commands."
   hyperdrive--easy-menu-contents)
 
+;;;;; Miscellaneous commands
+
+;;;###autoload
+(defun hyperdrive-customize ()
+  "Customize Hyperdrive options."
+  (interactive)
+  (customize-group 'hyperdrive))
+
+;;;###autoload
+(defun hyperdrive-info-manual ()
+  "Open hyperdrive.el info manual."
+  (interactive)
+  (info "hyperdrive"))
+
 ;;;; Footer
 
 (provide 'hyperdrive)
