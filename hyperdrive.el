@@ -831,7 +831,17 @@ The return value of this function is the retrieval buffer."
      ["Describe" hyperdrive-describe-hyperdrive
       :help "Display information about hyperdrive"]
      ["Purge" hyperdrive-purge
-      :help "Purge all local data about hyperdrive"]))
+      :help "Purge all local data about hyperdrive"])
+    "---"
+    ("Gateway"
+     :label
+     (concat "Gateway: " (if (hyperdrive-status) "on" "off"))
+     ["Start Gateway" hyperdrive-start
+      :help "Start hyper-gateway"]
+     ["Stop Gateway" hyperdrive-stop
+      :help "Stop hyper-gateway"]
+     ["Gateway version" hyperdrive-hyper-gateway-version
+      :help "Say hyper-gateway version"]))
   "Contents of the Hyperdrive menu.")
 
 (easy-menu-define hyperdrive-global-easy-menu global-map
