@@ -187,19 +187,6 @@ hyperdrive-start~ and ~M-x hyperdrive-stop~. Otherwise, follow [[https://github.
 instructions]] to
 run ~hyper-gateway~ manually.
 
-** Create a hyperdrive
-#+findex: hyperdrive-new
-
-You can have multiple hyperdrives, each one containing its own set of
-files. Run ~M-x hyperdrive-new~ then type in a ~seed~ (see [[*Seeds]]) to
-create a new hyperdrive. That seed will be combined with your secret
-master key, which is generated for you by ~hyper-gateway~, to produce a
-public key (see [[*Public keys]]) that uniquely identifies that
-hyperdrive. ~hyperdrive-new~ is idempotent since the same seed will
-always produce the same public key. For this reason, a hyperdrive's
-seed cannot be changed.
-# TODO: Move conceptual master key stuff into *Concepts
-
 ** Open a hyperdrive
 #+findex: hyperdrive-open-url
 #+findex: hyperdrive-find-file
@@ -282,6 +269,19 @@ anyone who knows about it.
 If you attempt to load a file or directory for a hyperdrive with a
 malformed public key, ~hyperdrive.el~ should ask you to double-check the
 URL.
+
+** Create a hyperdrive
+#+findex: hyperdrive-new
+
+You can have multiple hyperdrives, each one containing its own set of
+files. Run ~M-x hyperdrive-new~ then type in a ~seed~ (see [[*Seeds]]) to
+create a new hyperdrive. That seed will be combined with your secret
+master key, which is generated for you by ~hyper-gateway~, to produce a
+public key (see [[*Public keys]]) that uniquely identifies that
+hyperdrive. ~hyperdrive-new~ is idempotent since the same seed will
+always produce the same public key. For this reason, a hyperdrive's
+seed cannot be changed.
+# TODO: Move conceptual master key stuff into *Concepts
 
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
