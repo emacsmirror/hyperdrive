@@ -800,6 +800,16 @@ The return value of this function is the retrieval buffer."
 
 (defvar hyperdrive--easy-menu-contents
   '("Hyperdrive"
+    ("Gateway"
+     :label
+     (concat "Gateway: " (if (hyperdrive-status) "on" "off"))
+     ["Start Gateway" hyperdrive-start
+      :help "Start hyper-gateway"]
+     ["Stop Gateway" hyperdrive-stop
+      :help "Stop hyper-gateway"]
+     ["Gateway version" hyperdrive-hyper-gateway-version
+      :help "Say hyper-gateway version"])
+    "---"
     ["New Drive" hyperdrive-new
      :help "Create a new hyperdrive"]
     ("Current Drive"
@@ -833,15 +843,6 @@ The return value of this function is the retrieval buffer."
      ["Purge" hyperdrive-purge
       :help "Purge all local data about hyperdrive"])
     "---"
-    ("Gateway"
-     :label
-     (concat "Gateway: " (if (hyperdrive-status) "on" "off"))
-     ["Start Gateway" hyperdrive-start
-      :help "Start hyper-gateway"]
-     ["Stop Gateway" hyperdrive-stop
-      :help "Stop hyper-gateway"]
-     ["Gateway version" hyperdrive-hyper-gateway-version
-      :help "Say hyper-gateway version"])
     ("Upload"
      ["Upload File" hyperdrive-upload-file
       :help "Upload a file to a hyperdrive"]
