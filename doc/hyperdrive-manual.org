@@ -90,10 +90,10 @@ Then follow the [[*NonGNU ELPA][NonGNU ELPA]] installation instructions.
 
 *** package-vc
 
-/package-vc is only available on Emacs 29.1 or later./
+/package-vc only works on Emacs 29.2 or later./
 
 1. Ensure you have ~git~, ~makeinfo~ (part of the ~texinfo~ package), and
-   Emacs 29.1 or newer.
+   Emacs 29.2 or newer.
 
 2. Add the following lines to your ~init.el~ startup file:
 
