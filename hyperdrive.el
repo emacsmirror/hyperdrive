@@ -355,10 +355,11 @@ With universal prefix argument \\[universal-argument], prompt for version."
   "Delete ENTRY, then call THEN with response.
 Call ELSE with `plz-error' struct if request fails.
 Interactively, delete current file ENTRY or ENTRY at point in a
-directory.  Otherwise, prompts for ENTRY."
+directory.  Otherwise, or with universal prefix argument
+\\[universal-argument], prompt for ENTRY."
   (declare (indent defun))
   (interactive
-   (let* ((entry (hyperdrive--context-entry))
+   (let* ((entry (hyperdrive--context-entry :latest-version t))
           (description (hyperdrive-entry-description entry))
           (buffer (current-buffer)))
      (when (and (hyperdrive--entry-directory-p entry)
