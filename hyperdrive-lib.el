@@ -1044,9 +1044,7 @@ case, when PREDICATE, only offer hyperdrives matching it."
       (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
              (default (when (and hyperdrive-current-entry (funcall predicate current-hyperdrive))
                         (hyperdrive--format-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
-             (prompt (if default
-                         (format "Hyperdrive (default %s): " default)
-                       "Hyperdrive: "))
+             (prompt (format-prompt "Hyperdrive" default))
              (candidates (mapcar (lambda (hyperdrive)
                                    (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
                                  hyperdrives))
