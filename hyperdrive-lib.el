@@ -1115,8 +1115,7 @@ INITIAL-INPUT-NUMBER is converted to a string and passed to
   "Return path read from user.
 HYPERDRIVE and VERSION are used to fill in the prompt's format %s
 sequence.  PROMPT is passed to `format-prompt', which see.  DEFAULT
-is passed to `read-string' as both its INITIAL-INPUT and
-DEFAULT-VALUE arguments."
+is passed to `read-string' as its DEFAULT-VALUE argument."
   (let ((prompt (or prompt
                     (if version
                         "Path in «%s» (version:%s)"
@@ -1124,7 +1123,7 @@ DEFAULT-VALUE arguments."
     ;; TODO: Provide a `find-file'-like auto-completing UI
     (read-string (format-prompt prompt default
                                 (hyperdrive--format-hyperdrive hyperdrive) version)
-                 default 'hyperdrive--path-history default)))
+                 nil 'hyperdrive--path-history default)))
 
 (defvar hyperdrive--url-history nil
   "Minibuffer history of `hyperdrive-read-url'.")
