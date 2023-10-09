@@ -360,7 +360,8 @@ for more information.  See `hyperdrive-read-entry' and
 (cl-defun hyperdrive-delete (entry &key (then #'ignore) (else #'ignore))
   "Delete ENTRY, then call THEN with response.
 Call ELSE with `plz-error' struct if request fails.
-Interactively, read ENTRY with `hyperdrive-read-entry'."
+Interactively, delete current file ENTRY or ENTRY at point in a
+directory.  Otherwise, prompts for ENTRY."
   (declare (indent defun))
   (interactive
    (let* ((entry (hyperdrive--context-entry))
