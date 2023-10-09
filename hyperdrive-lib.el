@@ -1068,17 +1068,20 @@ spaces, optionally WITH-LABEL."
                                       latest-version read-version)
   "Return new hyperdrive entry with path and hyperdrive read from user.
 Prompts user for a hyperdrive and signals an error if no such
-hyperdrive is known.  If DEFAULT-PATH, offer it as the default entry path.
+hyperdrive is known.
+
+If DEFAULT-PATH, offer it as the default entry path.  Otherwise,
+offer the path of `hyperdrive-current-entry' when it is in the
+hyperdrive chosen with completion.
 
 PREDICATE and FORCE-PROMPT-DRIVE passed to
 `hyperdrive-complete-hyperdrive', which see.
 
 When LATEST-VERSION is non-nil, returned entry's version is nil.
 When LATEST-VERSION is nil, READ-VERSION is non-nil, and
-`hyperdrive-current-entry' in the hyperdrive chosen with
+`hyperdrive-current-entry' is in the hyperdrive chosen with
 completion, returned entry has the same version.
 Otherwise, prompt for a version number."
-  (cl-callf hyperdrive--format-path default-path)
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate
                                                      :force-prompt force-prompt-drive))
          (default-version (when (and (not latest-version)
@@ -1089,6 +1092,12 @@ Otherwise, prompt for a version number."
                     (if read-version
                         (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number default-version)
                       default-version)))
+         (default-path (hyperdrive--format-path
+                        (or default-path
+                            (and hyperdrive-current-entry
+                                 (hyperdrive-equal-p
+                                  hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                                 (hyperdrive-entry-path hyperdrive-current-entry)))))
          (path (hyperdrive-read-path :hyperdrive hyperdrive :version version :default default-path)))
     (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version)))
 
