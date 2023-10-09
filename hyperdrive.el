@@ -802,7 +802,7 @@ The return value of this function is the retrieval buffer."
   '("Hyperdrive"
     ("Gateway"
      :label
-     (concat "Gateway: " (if (hyperdrive-status) "on" "off"))
+     (format "Gateway (%s)" (if (hyperdrive-status) "on" "off"))
      ["Start Gateway" hyperdrive-start
       :help "Start hyper-gateway"]
      ["Stop Gateway" hyperdrive-stop
@@ -816,8 +816,7 @@ The return value of this function is the retrieval buffer."
      :active hyperdrive-current-entry
      :label (if-let* ((entry hyperdrive-current-entry)
                       (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                (concat "Current drive: "
-                        (hyperdrive--format-host hyperdrive :with-label t))
+                (format "Current drive (%s)" (hyperdrive--format-host hyperdrive :with-label t))
               "Current drive")
      ["Petname" hyperdrive-set-petname
       :help "Set petname for hyperdrive"
