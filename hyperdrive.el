@@ -861,7 +861,7 @@ The return value of this function is the retrieval buffer."
     "---"
     ["Customize" hyperdrive-customize
      :help "Customize hyperdrive options"]
-    ["Info Manual" hyperdrive-info-manual
+    ["Manual" hyperdrive-info-manual
      :help "Open hyperdrive.el info manual"])
   "Contents of the Hyperdrive menu.")
 
