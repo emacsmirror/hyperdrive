@@ -235,9 +235,9 @@ predicate and set NO-CONFIRM to t."
   :group 'hyperdrive
   :interactive nil
   ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29) (or maybe taxy-magit-section)
-  (setq tabulated-list-format [("From file" 60 t)
+  (setq tabulated-list-format [("Upload file" 60 t)
                                ("Status" 10 t)
-                               ("To URL" 60 t)]
+                               ("To hyperdrive" 60 t)]
         revert-buffer-function #'hyperdrive-mirror-revert-buffer)
   (tabulated-list-init-header))
 
