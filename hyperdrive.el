@@ -325,12 +325,8 @@ calling `kill-all-local-variables')."
 ;;;###autoload
 (defun hyperdrive-find-file (entry)
   "Find hyperdrive ENTRY.
-Interactively, prompts for known hyperdrive and path.
-
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'."
-  (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
+Interactively, prompts for known hyperdrive and path."
+  (interactive (list (hyperdrive-read-entry :force-prompt t)))
   (hyperdrive-open entry))
 
 ;;;###autoload
