@@ -57,7 +57,6 @@ There are three recommended options for installing ~hyperdrive.el~:
 NonGNU ELPA, MELPA, and ~package-vc~.
 
 *** NonGNU ELPA
-# TODO: use-package definition
 
 ~hyperdrive.el~ is available on [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]]. On Emacs 28 or later,
 installation is as simple as ~M-x package-refresh-contents~ then ~M-x
