@@ -625,18 +625,13 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
                       (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry)))))
   "Upload FILENAME to ENTRY.
 Interactively, read FILENAME and ENTRY from the user.
-After successful upload, call THEN.  When QUEUE, use it.
-
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'."
+After successful upload, call THEN.  When QUEUE, use it."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: ")))
                  (list filename
                        (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                               :default-path (file-name-nondirectory filename)
-                                              :force-prompt current-prefix-arg
-                                              :allow-version-p nil))))
+                                              :force-prompt t :allow-version-p nil))))
   (let ((url (hyperdrive-entry-url entry)))
     (hyperdrive-api 'put url :queue queue
       :body `(file ,filename)
