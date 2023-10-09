@@ -1022,7 +1022,7 @@ When WITH-FACES is nil, don't add face text properties."
   "Return the current entry in the current context."
   (pcase major-mode
     ((guard current-prefix-arg)
-     (hyperdrive-read-entry :force-prompt current-prefix-arg))
+     (hyperdrive-read-entry :force-prompt t))
     ('hyperdrive-dir-mode (hyperdrive-dir--entry-at-point))
     (_ (or hyperdrive-current-entry (hyperdrive-read-entry)))))
 
