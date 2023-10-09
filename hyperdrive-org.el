@@ -123,7 +123,7 @@ TARGET may be a CUSTOM_ID or a headline."
 (defun hyperdrive-org-link-complete ()
   "Create a hyperdrive org link."
   ;; TODO: Support other hyper:// links like diffs when implemented.
-  (hyperdrive-entry-url (hyperdrive-read-entry :force-prompt t)))
+  (hyperdrive-entry-url (hyperdrive-read-entry :read-version t)))
 
 ;; TODO: hyperdrive--org-* or hyperdrive-org--*?
 

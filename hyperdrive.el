@@ -325,18 +325,20 @@ calling `kill-all-local-variables')."
 ;;;###autoload
 (defun hyperdrive-find-file (entry)
   "Find hyperdrive ENTRY.
-Interactively, prompts for known hyperdrive and path."
-  (interactive (list (hyperdrive-read-entry :force-prompt t)))
+Interactively, prompt for known hyperdrive and path.
+With universal prefix argument \\[universal-argument], prompt for version."
+  (interactive (list (hyperdrive-read-entry :read-version current-prefix-arg)))
   (hyperdrive-open entry))
 
 ;;;###autoload
 (defun hyperdrive-view-file (entry)
   "View ENTRY in `view-mode', returning to previous buffer when done.
-Interactively, prompts for known hyperdrive and path."
+Interactively, prompt for known hyperdrive and path.
+With universal prefix argument \\[universal-argument], prompt for version."
   ;; TODO: Stay in `view-mode' after
   ;; `hyperdrive-previous-version'/`hyperdrive-next-version'. This may
   ;; require another minor mode.
-  (interactive (list (hyperdrive-read-entry :force-prompt t)))
+  (interactive (list (hyperdrive-read-entry :read-version current-prefix-arg)))
   (hyperdrive-open entry
     ;; `view-buffer' checks the mode-class symbol property of
     ;; `major-mode' and avoids putting directory buffers in `view-mode'.
@@ -431,10 +433,9 @@ without prompting.
 This function is for interactive use only; for non-interactive
 use, see `hyperdrive-write'."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
-                                            :force-prompt t
                                             :default-path (when hyperdrive-current-entry
                                                             (hyperdrive-entry-path hyperdrive-current-entry))
-                                            :allow-version-p nil)
+                                            :latest-version t)
                      current-prefix-arg))
   (unless (or overwritep (not (hyperdrive-entry-at nil entry)))
     (unless (y-or-n-p
@@ -631,7 +632,7 @@ After successful upload, call THEN.  When QUEUE, use it."
                  (list filename
                        (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                               :default-path (file-name-nondirectory filename)
-                                              :force-prompt t :allow-version-p nil))))
+                                              :latest-version t))))
   (let ((url (hyperdrive-entry-url entry)))
     (hyperdrive-api 'put url :queue queue
       :body `(file ,filename)
