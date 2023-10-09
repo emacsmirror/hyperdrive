@@ -401,13 +401,9 @@ directory.  Otherwise, prompts for ENTRY."
 ;;;###autoload
 (defun hyperdrive-download (entry filename)
   "Download ENTRY to FILENAME on disk.
-Interactively, downloads current hyperdrive file.  If current
-buffer is not a hyperdrive file, prompts with
-`hyperdrive-read-entry'.
-
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'."
+Interactively, download current hyperdrive file or file at point
+in a directory.  Otherwise, or with universal prefix argument
+\\[universal-argument], prompt for ENTRY."
   (interactive
    (pcase-let* ((entry (hyperdrive--context-entry))
                 ((cl-struct hyperdrive-entry name) entry)
