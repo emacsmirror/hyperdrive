@@ -229,7 +229,6 @@ With point on header, returns directory entry."
 
 ;;;; Mode
 
-(declare-function hyperdrive-find-file "hyperdrive")
 (declare-function hyperdrive-up "hyperdrive")
 (declare-function hyperdrive-delete "hyperdrive")
 (declare-function hyperdrive-download "hyperdrive")
@@ -241,7 +240,6 @@ With point on header, returns directory entry."
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
-  "f"   #'hyperdrive-find-file ;; Alternatively, define new function which fills in name of entry at point.
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
