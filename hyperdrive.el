@@ -842,6 +842,13 @@ The return value of this function is the retrieval buffer."
      ["Purge" hyperdrive-purge
       :help "Purge all local data about hyperdrive"])
     "---"
+    ("Files"
+     ["Find File" hyperdrive-find-file
+      :help "Find a file in a hyperdrive"]
+     ["View File" hyperdrive-view-file
+      :help "View a file in a hyperdrive"]
+     ["Open URL" hyperdrive-open-url
+      :help "Load a hyperdrive URL"])
     ("Upload"
      ["Upload File" hyperdrive-upload-file
       :help "Upload a file to a hyperdrive"]
