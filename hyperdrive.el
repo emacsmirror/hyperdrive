@@ -425,18 +425,17 @@ in a directory.  Otherwise, or with universal prefix argument
 If file already exists and OVERWRITEP is nil, prompt the user to
 overwrite.
 
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'.  With two universal prefix
-arguments \\[universal-argument] \\[universal-argument],
-overwrite without prompting."
+With universal prefix argument \\[universal-argument], overwrite
+without prompting.
+
+This function is for interactive use only; for non-interactive
+use, see `hyperdrive-write'."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
-                                            :force-prompt current-prefix-arg
-                                            :default-path (when (and hyperdrive-current-entry
-                                                                     (not current-prefix-arg))
+                                            :force-prompt t
+                                            :default-path (when hyperdrive-current-entry
                                                             (hyperdrive-entry-path hyperdrive-current-entry))
                                             :allow-version-p nil)
-                     (equal '(16) current-prefix-arg)))
+                     current-prefix-arg))
   (unless (or overwritep (not (hyperdrive-entry-at nil entry)))
     (unless (y-or-n-p
 	     (format "File %s exists; overwrite?" (hyperdrive-entry-description entry)))
