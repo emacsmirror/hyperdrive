@@ -229,7 +229,6 @@ With point on header, returns directory entry."
 
 ;;;; Mode
 
-(declare-function hyperdrive-find-file "hyperdrive")
 (declare-function hyperdrive-up "hyperdrive")
 (declare-function hyperdrive-delete "hyperdrive")
 (declare-function hyperdrive-download "hyperdrive")
@@ -241,7 +240,6 @@ With point on header, returns directory entry."
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
-  "f"   #'hyperdrive-find-file ;; Alternatively, define new function which fills in name of entry at point.
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
@@ -352,7 +350,7 @@ see Info node `(elisp)Yanking Media'."
                     (hyperdrive--entry-directory-p hyperdrive-current-entry)))
     (let ((entry (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                         :default-path (hyperdrive-entry-path hyperdrive-current-entry)
-                                        :allow-version-p nil)))
+                                        :latest-version t)))
       (hyperdrive-api 'put (hyperdrive-entry-url entry)
         :body-type 'binary
         ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.

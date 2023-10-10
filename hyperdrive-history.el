@@ -143,11 +143,10 @@ and ENTRY's version are nil."
 (defun hyperdrive-history (entry)
   "Display version history for current hyperdrive ENTRY.
 
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-read-entry' to prompt for an entry."
-  (interactive (list (if (or current-prefix-arg (not hyperdrive-current-entry))
-                         (hyperdrive-read-entry :force-prompt t :allow-version-p nil)
-                       hyperdrive-current-entry)))
+Interactively, open version history for current file ENTRY or
+ENTRY at point in a directory.  Otherwise, or with universal
+prefix argument \\[universal-argument], prompt for ENTRY."
+  (interactive (list (hyperdrive--context-entry)))
   ;; TODO: Highlight range for ENTRY
   (when (hyperdrive--entry-directory-p entry)
     (hyperdrive-user-error "Directory history not implemented"))

@@ -181,7 +181,7 @@
      ("D" "Delete" hyperdrive-delete
       :inapt-if (lambda ()
                   (let ((current-entry (oref transient--prefix scope))
-                        (selected-entry (hyperdrive--context-entry)))
+                        (selected-entry (hyperdrive-dir--entry-at-point)))
                     (or (not (hyperdrive-writablep
                               (hyperdrive-entry-hyperdrive current-entry)))
                         (eq selected-entry current-entry)

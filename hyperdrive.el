@@ -325,26 +325,20 @@ calling `kill-all-local-variables')."
 ;;;###autoload
 (defun hyperdrive-find-file (entry)
   "Find hyperdrive ENTRY.
-Interactively, prompts for known hyperdrive and path.
-
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'."
-  (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
+Interactively, prompt for known hyperdrive and path.
+With universal prefix argument \\[universal-argument], prompt for version."
+  (interactive (list (hyperdrive-read-entry :read-version current-prefix-arg)))
   (hyperdrive-open entry))
 
 ;;;###autoload
 (defun hyperdrive-view-file (entry)
   "View ENTRY in `view-mode', returning to previous buffer when done.
-Interactively, prompts for known hyperdrive and path.
-
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'."
+Interactively, prompt for known hyperdrive and path.
+With universal prefix argument \\[universal-argument], prompt for version."
   ;; TODO: Stay in `view-mode' after
   ;; `hyperdrive-previous-version'/`hyperdrive-next-version'. This may
   ;; require another minor mode.
-  (interactive (list (hyperdrive-read-entry :force-prompt current-prefix-arg)))
+  (interactive (list (hyperdrive-read-entry :read-version current-prefix-arg)))
   (hyperdrive-open entry
     ;; `view-buffer' checks the mode-class symbol property of
     ;; `major-mode' and avoids putting directory buffers in `view-mode'.
@@ -361,10 +355,11 @@ for more information.  See `hyperdrive-read-entry' and
   "Delete ENTRY, then call THEN with response.
 Call ELSE with `plz-error' struct if request fails.
 Interactively, delete current file ENTRY or ENTRY at point in a
-directory.  Otherwise, prompts for ENTRY."
+directory.  Otherwise, or with universal prefix argument
+\\[universal-argument], prompt for ENTRY."
   (declare (indent defun))
   (interactive
-   (let* ((entry (hyperdrive--context-entry))
+   (let* ((entry (hyperdrive--context-entry :latest-version t))
           (description (hyperdrive-entry-description entry))
           (buffer (current-buffer)))
      (when (and (hyperdrive--entry-directory-p entry)
@@ -401,13 +396,9 @@ directory.  Otherwise, prompts for ENTRY."
 ;;;###autoload
 (defun hyperdrive-download (entry filename)
   "Download ENTRY to FILENAME on disk.
-Interactively, downloads current hyperdrive file.  If current
-buffer is not a hyperdrive file, prompts with
-`hyperdrive-read-entry'.
-
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'."
+Interactively, download current hyperdrive file or file at point
+in a directory.  Otherwise, or with universal prefix argument
+\\[universal-argument], prompt for ENTRY."
   (interactive
    (pcase-let* ((entry (hyperdrive--context-entry))
                 ((cl-struct hyperdrive-entry name) entry)
@@ -437,18 +428,16 @@ for more information.  See `hyperdrive-read-entry' and
 If file already exists and OVERWRITEP is nil, prompt the user to
 overwrite.
 
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'.  With two universal prefix
-arguments \\[universal-argument] \\[universal-argument],
-overwrite without prompting."
+With universal prefix argument \\[universal-argument], overwrite
+without prompting.
+
+This function is for interactive use only; for non-interactive
+use, see `hyperdrive-write'."
   (interactive (list (hyperdrive-read-entry :predicate #'hyperdrive-writablep
-                                            :force-prompt current-prefix-arg
-                                            :default-path (when (and hyperdrive-current-entry
-                                                                     (not current-prefix-arg))
+                                            :default-path (when hyperdrive-current-entry
                                                             (hyperdrive-entry-path hyperdrive-current-entry))
-                                            :allow-version-p nil)
-                     (equal '(16) current-prefix-arg)))
+                                            :latest-version t)
+                     current-prefix-arg))
   (unless (or overwritep (not (hyperdrive-entry-at nil entry)))
     (unless (y-or-n-p
 	     (format "File %s exists; overwrite?" (hyperdrive-entry-description entry)))
@@ -638,18 +627,13 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
                       (hyperdrive-message "Uploaded: \"%s\"." (hyperdrive-entry-url entry)))))
   "Upload FILENAME to ENTRY.
 Interactively, read FILENAME and ENTRY from the user.
-After successful upload, call THEN.  When QUEUE, use it.
-
-With universal prefix argument \\[universal-argument], prompts
-for more information.  See `hyperdrive-read-entry' and
-`hyperdrive-complete-hyperdrive'."
+After successful upload, call THEN.  When QUEUE, use it."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: ")))
                  (list filename
                        (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                               :default-path (file-name-nondirectory filename)
-                                              :force-prompt current-prefix-arg
-                                              :allow-version-p nil))))
+                                              :latest-version t))))
   (let ((url (hyperdrive-entry-url entry)))
     (hyperdrive-api 'put url :queue queue
       :body `(file ,filename)

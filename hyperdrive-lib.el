@@ -1017,13 +1017,15 @@ When WITH-FACES is nil, don't add face text properties."
 ;;;; Reading from the user
 
 (declare-function hyperdrive-dir--entry-at-point "hyperdrive-dir")
-(defun hyperdrive--context-entry ()
-  "Return the current entry in the current context."
+(cl-defun hyperdrive--context-entry (&key latest-version)
+  "Return the current entry in the current context.
+LATEST-VERSION is passed to `hyperdrive-read-entry'.
+With universal prefix argument \\[universal-argument], prompt for entry."
   (pcase major-mode
     ((guard current-prefix-arg)
-     (hyperdrive-read-entry :force-prompt t))
+     (hyperdrive-read-entry :read-version t :latest-version latest-version))
     ('hyperdrive-dir-mode (hyperdrive-dir--entry-at-point))
-    (_ (or hyperdrive-current-entry (hyperdrive-read-entry)))))
+    (_ (or hyperdrive-current-entry (hyperdrive-read-entry :latest-version latest-version)))))
 
 (cl-defun hyperdrive-complete-hyperdrive (&key predicate force-prompt)
   "Return hyperdrive for current entry when it matches PREDICATE.
@@ -1062,30 +1064,41 @@ spaces, optionally WITH-LABEL."
             when (hyperdrive--format-host hyperdrive :format format :with-label with-label)
             concat (concat it "  "))))
 
-(cl-defun hyperdrive-read-entry (&key predicate default-path (allow-version-p t) force-prompt)
+(cl-defun hyperdrive-read-entry (&key predicate default-path (force-prompt-drive t)
+                                      latest-version read-version)
   "Return new hyperdrive entry with path and hyperdrive read from user.
 Prompts user for a hyperdrive and signals an error if no such
-hyperdrive is known.  If DEFAULT-PATH, offer it as the default entry path.
+hyperdrive is known.
 
-PREDICATE and FORCE-PROMPT are passed to
+If DEFAULT-PATH, offer it as the default entry path.  Otherwise,
+offer the path of `hyperdrive-current-entry' when it is in the
+hyperdrive chosen with completion.
+
+PREDICATE and FORCE-PROMPT-DRIVE passed to
 `hyperdrive-complete-hyperdrive', which see.
 
-When ALLOW-VERSION-P is nil, returned entry's version slot will be
-nil.  When ALLOW-VERSION-P is non-nil, FORCE-PROMPT is nil and
-entry is for the same hyperdrive as `hyperdrive-current-entry',
-returned entry uses its version slot.  Otherwise, prompt for a
-version number."
-  (cl-callf hyperdrive--format-path default-path)
+When LATEST-VERSION is non-nil, returned entry's version is nil.
+When LATEST-VERSION is nil, READ-VERSION is non-nil, and
+`hyperdrive-current-entry' is in the hyperdrive chosen with
+completion, returned entry has the same version.
+Otherwise, prompt for a version number."
   (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate
-                                                     :force-prompt force-prompt))
-         (current-version (when (and allow-version-p
+                                                     :force-prompt force-prompt-drive))
+         (default-version (when (and (not latest-version)
                                      hyperdrive-current-entry
-                                     (equal hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                                     (hyperdrive-equal-p
+                                      hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
                             (hyperdrive-entry-version hyperdrive-current-entry)))
-         (version (when allow-version-p
-                    (if force-prompt
-                        (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number current-version)
-                      current-version)))
+         (version (unless latest-version
+                    (if read-version
+                        (hyperdrive-read-version :hyperdrive hyperdrive :initial-input-number default-version)
+                      default-version)))
+         (default-path (hyperdrive--format-path
+                        (or default-path
+                            (and hyperdrive-current-entry
+                                 (hyperdrive-equal-p
+                                  hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                                 (hyperdrive-entry-path hyperdrive-current-entry)))))
          (path (hyperdrive-read-path :hyperdrive hyperdrive :version version :default default-path)))
     (hyperdrive-entry-create :hyperdrive hyperdrive :path path :version version)))
 
@@ -1115,8 +1128,7 @@ INITIAL-INPUT-NUMBER is converted to a string and passed to
   "Return path read from user.
 HYPERDRIVE and VERSION are used to fill in the prompt's format %s
 sequence.  PROMPT is passed to `format-prompt', which see.  DEFAULT
-is passed to `read-string' as both its INITIAL-INPUT and
-DEFAULT-VALUE arguments."
+is passed to `read-string' as its DEFAULT-VALUE argument."
   (let ((prompt (or prompt
                     (if version
                         "Path in «%s» (version:%s)"
@@ -1124,7 +1136,7 @@ DEFAULT-VALUE arguments."
     ;; TODO: Provide a `find-file'-like auto-completing UI
     (read-string (format-prompt prompt default
                                 (hyperdrive--format-hyperdrive hyperdrive) version)
-                 default 'hyperdrive--path-history default)))
+                 nil 'hyperdrive--path-history default)))
 
 (defvar hyperdrive--url-history nil
   "Minibuffer history of `hyperdrive-read-url'.")
