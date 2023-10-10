@@ -875,7 +875,33 @@ The return value of this function is the retrieval buffer."
                         (format " (%s)" display-version)))
        :help "Open next version"]
       ["Version History" hyperdrive-history
-       :help "Open version history"]))
+       :help "Open version history"])
+     ("Current File/Directory"
+      :label (format "Current %s: «%s»"
+                     (if (hyperdrive--entry-directory-p hyperdrive-current-entry)
+                         "Directory"
+                       "File")
+                     (hyperdrive--format-path (hyperdrive-entry-path
+                                               hyperdrive-current-entry)))
+      ["Up to Parent" hyperdrive-up
+       :active (hyperdrive-parent hyperdrive-current-entry)
+       :help "Open parent directory"]
+      ["Sort Directory" hyperdrive-dir-sort
+       :active (eq major-mode 'hyperdrive-dir-mode)
+       :help "Sort directory contents"]
+      ;; TODO: Add command to copy directory URL
+      ["Copy URL" hyperdrive-copy-url
+       :active (not (eq major-mode 'hyperdrive-dir-mode))
+       :help "Copy URL of current file/directory"]
+      ["Delete" hyperdrive-delete
+       :active (pcase-let (((cl-struct hyperdrive-entry hyperdrive version) hyperdrive-current-entry))
+                 (and (not (eq major-mode 'hyperdrive-dir-mode))
+                      (not version)
+                      (hyperdrive-writablep hyperdrive)))
+       :help "Delete current file/directory"]
+      ["Download" hyperdrive-download
+       :active (not (eq major-mode 'hyperdrive-dir-mode))
+       :help "Download current file"]))
     "---"
     ("Files"
      ["Find File" hyperdrive-find-file
