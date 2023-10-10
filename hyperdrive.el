@@ -923,7 +923,7 @@ The return value of this function is the retrieval buffer."
      ["Bookmark List" hyperdrive-bookmark-list
       :help "List hyperdrive bookmarks"]
      ["Bookmark Set" bookmark-set
-      :visible hyperdrive-current-entry
+      :active hyperdrive-current-entry
       :help "Create a new hyperdrive bookmark"])
     "---"
     ["Customize" hyperdrive-customize
