@@ -1086,7 +1086,8 @@ Otherwise, prompt for a version number."
                                                      :force-prompt force-prompt-drive))
          (default-version (when (and (not latest-version)
                                      hyperdrive-current-entry
-                                     (equal hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+                                     (hyperdrive-equal-p
+                                      hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
                             (hyperdrive-entry-version hyperdrive-current-entry)))
          (version (unless latest-version
                     (if read-version
