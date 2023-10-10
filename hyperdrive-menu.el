@@ -155,7 +155,11 @@
             (not (eq major-mode 'hyperdrive-dir-mode))))
      ("D" "Delete" hyperdrive-delete
       :if (lambda ()
-            (not (eq major-mode 'hyperdrive-dir-mode))))
+            (not (eq major-mode 'hyperdrive-dir-mode)))
+      :inapt-if (lambda ()
+                  (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
+                               (oref transient--prefix scope)))
+                    (or version (not (hyperdrive-writablep hyperdrive))))))
      ("d" "Download" hyperdrive-download
       :if (lambda ()
             (not (eq major-mode 'hyperdrive-dir-mode))))]
