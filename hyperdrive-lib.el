@@ -122,17 +122,16 @@ generated from PATH."
    :path path
    ;; TODO: Is it necessary to store the name alongside the path?
    ;;       Instead, only store path and generate name on the fly.
-   :name (url-unhex-string
-          (pcase path
-            ("/"
-             ;; Root directory: use "/" for clarity.
-             "/")
-            ((pred (string-suffix-p "/"))
-             ;; A subdirectory: keep the trailing slash for clarity
-             (file-relative-name path (file-name-parent-directory path)))
-            (_
-             ;; A file: remove directory part.
-             (file-name-nondirectory path))))
+   :name (pcase path
+           ("/"
+            ;; Root directory: use "/" for clarity.
+            "/")
+           ((pred (string-suffix-p "/"))
+            ;; A subdirectory: keep the trailing slash for clarity
+            (file-relative-name path (file-name-parent-directory path)))
+           (_
+            ;; A file: remove directory part.
+            (file-name-nondirectory path)))
    :version version
    :etc etc))
 
@@ -924,7 +923,7 @@ When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
                (handle (hyperdrive--format-host hyperdrive :with-label t)))
     (propertize (concat (format "[%s] " handle)
                         (pcase format-path
-                          ('path (url-unhex-string path))
+                          ('path path)
                           ('name name))
                         (when (and version with-version)
                           (format " (version:%s)" version)))

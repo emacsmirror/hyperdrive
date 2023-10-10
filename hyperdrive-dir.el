@@ -56,7 +56,7 @@ the metadata has been loaded."
                (entries (mapcar (lambda (entry-name)
                                   (hyperdrive-entry-create
                                    :hyperdrive hyperdrive
-                                   :path (concat (url-unhex-string path) entry-name)
+                                   :path (concat path entry-name)
                                    :version version))
                                 entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
