@@ -899,6 +899,7 @@ The return value of this function is the retrieval buffer."
                       (not version)
                       (hyperdrive-writablep hyperdrive)))
        :help "Delete current file/directory"]
+      ;; TODO: Add command to download whole directories
       ["Download" hyperdrive-download
        :active (not (eq major-mode 'hyperdrive-dir-mode))
        :help "Download current file"]))
