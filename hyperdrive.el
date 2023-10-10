@@ -812,42 +812,44 @@ The return value of this function is the retrieval buffer."
     "---"
     ["New Drive" hyperdrive-new
      :help "Create a new hyperdrive"]
-    ("Current Drive"
-     :active hyperdrive-current-entry
-     :label (if-let* ((entry hyperdrive-current-entry)
-                      (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                (format "Current drive (%s)" (hyperdrive--format-host hyperdrive :with-label t))
-              "Current drive")
-     ["Petname" hyperdrive-set-petname
-      :help "Set petname for hyperdrive"
-      :label
-      (format "Set petname: %s"
-              (pcase (hyperdrive-petname (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
-                (`nil "none")
-                (it it)))]
-     ["Nickname" hyperdrive-set-nickname
-      :help "Set nickname for hyperdrive"
-      :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
-      :label
-      (format "Set nickname: %s"
-              (pcase (alist-get 'name
-                                (hyperdrive-metadata
-                                 (hyperdrive-entry-hyperdrive
-                                  hyperdrive-current-entry)))
-                (`nil "none")
-                (it it)))]
-     "---"
-     ["Describe" hyperdrive-describe-hyperdrive
-      :help "Display information about hyperdrive"]
-     ["Purge" hyperdrive-purge
-      :help "Purge all local data about hyperdrive"])
-    "---"
+    ;; TODO: Add "Drives" section with dynamically generated
+    ;; sub-submenus, e.g. "Drives">"petname:foo">(["Set Petname"
+    ;; :label (hyperdrive-entry-petname drive)] ["Purge"])
     ("Current"
      :active hyperdrive-current-entry
      :label (if-let* ((entry hyperdrive-current-entry))
                 (format "Current: «%s»"
                         (hyperdrive-entry-description entry))
               "Current")
+     ("Current Drive"
+      :active hyperdrive-current-entry
+      :label (if-let* ((entry hyperdrive-current-entry)
+                       (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                 (format "Current Drive «%s»" (hyperdrive--format-host hyperdrive :with-label t))
+               "Current Drive")
+      ["Petname" hyperdrive-set-petname
+       :help "Set petname for hyperdrive"
+       :label
+       (format "Set petname: «%s»"
+               (pcase (hyperdrive-petname (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                 (`nil "none")
+                 (it it)))]
+      ["Nickname" hyperdrive-set-nickname
+       :help "Set nickname for hyperdrive"
+       :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+       :label
+       (format "Set nickname: «%s»"
+               (pcase (alist-get 'name
+                                 (hyperdrive-metadata
+                                  (hyperdrive-entry-hyperdrive
+                                   hyperdrive-current-entry)))
+                 (`nil "none")
+                 (it it)))]
+      "---"
+      ["Describe" hyperdrive-describe-hyperdrive
+       :help "Display information about hyperdrive"]
+      ["Purge" hyperdrive-purge
+       :help "Purge all local data about hyperdrive"])
      ("Current File/Directory"
       :label (format "Current %s: «%s»"
                      (if (hyperdrive--entry-directory-p hyperdrive-current-entry)
