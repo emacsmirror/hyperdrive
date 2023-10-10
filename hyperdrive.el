@@ -902,7 +902,38 @@ The return value of this function is the retrieval buffer."
       ;; TODO: Add command to download whole directories
       ["Download" hyperdrive-download
        :active (not (eq major-mode 'hyperdrive-dir-mode))
-       :help "Download current file"]))
+       :help "Download current file"])
+     ("Selected"
+      :label (let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+               (format "Selected %s: «%s»"
+                       (if (hyperdrive--entry-directory-p entry-at-point)
+                           "Directory"
+                         "File")
+                       (hyperdrive-entry-name entry-at-point)))
+      :active (and (eq major-mode 'hyperdrive-dir-mode)
+                   (hyperdrive-dir--entry-at-point))
+      ["Download" hyperdrive-download
+       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                 (not (hyperdrive--entry-directory-p entry-at-point)))
+       ;; TODO: Change to "file/directory" when it's possible to download a whole directory
+       :help "Download file at point"]
+      ["Delete" hyperdrive-delete
+       :active (let ((selected-entry (hyperdrive-dir--entry-at-point)))
+                 (and (hyperdrive-writablep
+                       (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                      (not (eq selected-entry hyperdrive-current-entry))
+                      ;; TODO: Add `hyperdrive--parent-entry-p'
+                      (not (string= ".." (alist-get 'display-name
+                                                    (hyperdrive-entry-etc selected-entry))))))
+       :help "Delete file/directory at point"]
+      ["Copy URL" hyperdrive-dir-copy-url
+       :help "Copy URL of file/directory at point"]
+      ["Open" hyperdrive-dir-find-file
+       :help "Open file/directory at point"]
+      ["View" hyperdrive-dir-view-file
+       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                 (not (hyperdrive--entry-directory-p entry-at-point)))
+       :help "View file at point"]))
     "---"
     ("Files"
      ["Find File" hyperdrive-find-file
