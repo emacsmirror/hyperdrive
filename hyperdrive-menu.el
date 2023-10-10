@@ -76,8 +76,7 @@
     ["Version"
      :class transient-row
      :description (lambda ()
-                    (if-let ((entry (oref transient--prefix scope))
-                             (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                    (if-let ((entry (oref transient--prefix scope)))
                         (concat (propertize "Version: "
                                             'face 'transient-heading)
                                 (propertize (format "%s"
@@ -90,8 +89,7 @@
                       (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
       ;; :transient t
       :description (lambda ()
-                     (if-let ((entry (oref transient--prefix scope))
-                              (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                     (if-let ((entry (oref transient--prefix scope)))
                          (concat "Previous"
                                  (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
                                    ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
