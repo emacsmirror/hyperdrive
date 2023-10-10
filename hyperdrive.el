@@ -848,34 +848,6 @@ The return value of this function is the retrieval buffer."
                 (format "Current: «%s»"
                         (hyperdrive-entry-description entry))
               "Current")
-     ("Version"
-      :label (format "Version (%s)"
-                     (or (hyperdrive-entry-version hyperdrive-current-entry)
-                         "latest"))
-      ["Previous Version" hyperdrive-previous-version
-       :active (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
-       :label (concat "Previous Version"
-                      (pcase-exhaustive (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
-                        ('unknown (format " (?)"))
-                        ('nil nil)
-                        ((cl-struct hyperdrive-entry version)
-                         (format " (%s)" version))))
-       :help "Open previous version"]
-      ["Next Version" hyperdrive-next-version
-       :active (and (hyperdrive-entry-version hyperdrive-current-entry)
-                    (hyperdrive-entry-next hyperdrive-current-entry))
-       :label (concat "Next Version"
-                      (when-let* ((entry hyperdrive-current-entry)
-                                  (next-entry (hyperdrive-entry-next entry))
-                                  ;; Don't add ": latest" if we're already at the latest version
-                                  ((not (eq entry next-entry)))
-                                  (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
-                                                       (number-to-string next-version)
-                                                     "latest")))
-                        (format " (%s)" display-version)))
-       :help "Open next version"]
-      ["Version History" hyperdrive-history
-       :help "Open version history"])
      ("Current File/Directory"
       :label (format "Current %s: «%s»"
                      (if (hyperdrive--entry-directory-p hyperdrive-current-entry)
@@ -933,7 +905,35 @@ The return value of this function is the retrieval buffer."
       ["View" hyperdrive-dir-view-file
        :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
                  (not (hyperdrive--entry-directory-p entry-at-point)))
-       :help "View file at point"]))
+       :help "View file at point"])
+     ("Version"
+      :label (format "Version (%s)"
+                     (or (hyperdrive-entry-version hyperdrive-current-entry)
+                         "latest"))
+      ["Previous Version" hyperdrive-previous-version
+       :active (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
+       :label (concat "Previous Version"
+                      (pcase-exhaustive (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
+                        ('unknown (format " (?)"))
+                        ('nil nil)
+                        ((cl-struct hyperdrive-entry version)
+                         (format " (%s)" version))))
+       :help "Open previous version"]
+      ["Next Version" hyperdrive-next-version
+       :active (and (hyperdrive-entry-version hyperdrive-current-entry)
+                    (hyperdrive-entry-next hyperdrive-current-entry))
+       :label (concat "Next Version"
+                      (when-let* ((entry hyperdrive-current-entry)
+                                  (next-entry (hyperdrive-entry-next entry))
+                                  ;; Don't add ": latest" if we're already at the latest version
+                                  ((not (eq entry next-entry)))
+                                  (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
+                                                       (number-to-string next-version)
+                                                     "latest")))
+                        (format " (%s)" display-version)))
+       :help "Open next version"]
+      ["Version History" hyperdrive-history
+       :help "Open version history"]))
     "---"
     ("Files"
      ["Find File" hyperdrive-find-file
