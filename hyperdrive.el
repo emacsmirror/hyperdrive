@@ -842,6 +842,41 @@ The return value of this function is the retrieval buffer."
      ["Purge" hyperdrive-purge
       :help "Purge all local data about hyperdrive"])
     "---"
+    ("Current"
+     :active hyperdrive-current-entry
+     :label (if-let* ((entry hyperdrive-current-entry))
+                (format "Current: «%s»"
+                        (hyperdrive-entry-description entry))
+              "Current")
+     ("Version"
+      :label (format "Version (%s)"
+                     (or (hyperdrive-entry-version hyperdrive-current-entry)
+                         "latest"))
+      ["Previous Version" hyperdrive-previous-version
+       :active (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
+       :label (concat "Previous Version"
+                      (pcase-exhaustive (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
+                        ('unknown (format " (?)"))
+                        ('nil nil)
+                        ((cl-struct hyperdrive-entry version)
+                         (format " (%s)" version))))
+       :help "Open previous version"]
+      ["Next Version" hyperdrive-next-version
+       :active (and (hyperdrive-entry-version hyperdrive-current-entry)
+                    (hyperdrive-entry-next hyperdrive-current-entry))
+       :label (concat "Next Version"
+                      (when-let* ((entry hyperdrive-current-entry)
+                                  (next-entry (hyperdrive-entry-next entry))
+                                  ;; Don't add ": latest" if we're already at the latest version
+                                  ((not (eq entry next-entry)))
+                                  (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
+                                                       (number-to-string next-version)
+                                                     "latest")))
+                        (format " (%s)" display-version)))
+       :help "Open next version"]
+      ["Version History" hyperdrive-history
+       :help "Open version history"]))
+    "---"
     ("Files"
      ["Find File" hyperdrive-find-file
       :help "Find a file in a hyperdrive"]
