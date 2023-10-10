@@ -107,7 +107,6 @@
       :description (lambda ()
                      (concat "Next"
                              (when-let* ((entry (oref transient--prefix scope))
-                                         (hyperdrive (hyperdrive-entry-hyperdrive entry))
                                          (next-entry (hyperdrive-entry-next entry))
                                          ;; Don't add ": latest" if we're already at the latest version
                                          ((not (eq entry next-entry)))
