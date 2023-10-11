@@ -169,9 +169,16 @@
                 (hyperdrive-dir--entry-at-point)))
      :description
      (lambda ()
-       (concat (propertize "Selected: " 'face 'transient-heading)
-               (propertize (hyperdrive-entry-name (hyperdrive-dir--entry-at-point))
-                           'face 'transient-value)))
+       (let ((current-entry (oref transient--prefix scope))
+             (selected-entry (hyperdrive-dir--entry-at-point)))
+         (concat (propertize "Selected: " 'face 'transient-heading)
+                 (propertize
+                  (or (and (hyperdrive-entry-equal-p current-entry selected-entry)
+                           "./")
+                      (alist-get 'display-name
+                                 (hyperdrive-entry-etc selected-entry))
+                      (hyperdrive-entry-name selected-entry))
+                  'face 'transient-value))))
      :pad-keys t
      ("d" "Download" hyperdrive-download
       :if (lambda ()
