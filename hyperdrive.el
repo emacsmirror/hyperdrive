@@ -910,6 +910,7 @@ The return value of this function is the retrieval buffer."
       "---"
       ["Petname"
        ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when fixed.
+       ;;       This workaround prevents keybindings from displaying in the menu bar.
        (lambda ()
          (interactive)
          (call-interactively #'hyperdrive-set-petname))
