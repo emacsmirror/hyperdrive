@@ -61,12 +61,12 @@
   :info-manual "(Hyperdrive)"
   [["Hyperdrive"
     :description
-     (lambda ()
-       (if-let* ((entry (oref transient--prefix scope))
+    (lambda ()
+      (if-let* ((entry (oref transient--prefix scope))
                 (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                    (concat (propertize "Hyperdrive: " 'face 'transient-heading)
-                            (hyperdrive--format-host hyperdrive :with-label t))
-                  "Hyperdrive"))
+          (concat (propertize "Hyperdrive: " 'face 'transient-heading)
+                  (hyperdrive--format-host hyperdrive :with-label t))
+        "Hyperdrive"))
     ("h" "Hyperdrives" hyperdrive-menu-hyperdrive)
     ("N" "New drive" hyperdrive-new)
     ("L" "Open Link" hyperdrive-open-url)]
