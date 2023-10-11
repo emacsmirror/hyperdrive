@@ -235,6 +235,19 @@
        (concat (propertize "Hyperdrive: " 'face 'transient-heading)
                (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
                (format "  latest-version:%s" (hyperdrive-latest-version hyperdrive)))))
+   [("f" "Find file"
+     (lambda ()
+       (interactive)
+       (hyperdrive-open
+         (hyperdrive-read-entry
+          :hyperdrive (oref transient-current-prefix scope)
+          :read-version current-prefix-arg))))
+    ("v" "View file" (lambda ()
+                       (interactive)
+                       (hyperdrive-view-file
+                        (hyperdrive-read-entry
+                         :hyperdrive (oref transient-current-prefix scope)
+                         :read-version current-prefix-arg))))]
    [("d" "Describe" hyperdrive-describe-hyperdrive)
     ("C-M-P" "Purge" hyperdrive-purge)]
    [("p" "Petname" hyperdrive-menu-set-petname
