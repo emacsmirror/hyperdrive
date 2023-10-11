@@ -816,15 +816,27 @@ The return value of this function is the retrieval buffer."
     ("Drives"
      :filter (lambda (_)
                (cl-loop for drive in (hash-table-values hyperdrive-hyperdrives)
-        		collect (list (hyperdrive--format-host drive :with-label t)
-                                      (vector "Petname" #'hyperdrive-set-petname
+                        for entry = (hyperdrive-entry-create :hyperdrive drive)
+                        collect (list (hyperdrive--format-host drive :with-label t)
+                                      (vector "Petname"
+                                              ;; HACK: We have to unquote the value of the entry because it seems that the filter
+                                              ;; function is called in an environment that doesn't use lexical-binding...?
+                                              ;; TODO: Ask about this and/or file a bug report.
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-set-petname)))
                                               :help "Set petname for hyperdrive"
                                               :label
                                               (format "Set petname: «%s»"
                                                       (pcase (hyperdrive-petname drive)
                                                         (`nil "none")
                                                         (it it))))
-                                      (vector "Nickname" #'hyperdrive-set-nickname
+                                      (vector "Nickname"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-set-nickname)))
                                               :help "Set nickname for hyperdrive"
                                               :active (hyperdrive-writablep drive)
                                               :label
@@ -832,13 +844,19 @@ The return value of this function is the retrieval buffer."
                                                       (pcase (alist-get 'name (hyperdrive-metadata drive))
                                                         (`nil "none")
                                                         (it it))))
-                                      ;; FIXME: Enable these.
-                                      ;; "---"
-                                      ;; ["Describe" hyperdrive-describe-hyperdrive
-                                      ;;  :help "Display information about hyperdrive"]
-                                      ;; ["Purge" hyperdrive-purge
-                                      ;;  :help "Purge all local data about hyperdrive"]
-                                      ))))
+                                      "---"
+                                      (vector "Describe"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-describe-hyperdrive)))
+                                              :help "Display information about hyperdrive")
+                                      (vector "Purge"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-set-petname)))
+                                              :help "Purge all local data about hyperdrive")))))
     ;; TODO: Add "Drives" section with dynamically generated
     ;; sub-submenus, e.g. "Drives">"petname:foo">(["Set Petname"
     ;; :label (hyperdrive-entry-petname drive)] ["Purge"])
