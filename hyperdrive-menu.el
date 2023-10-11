@@ -225,9 +225,9 @@
      :if (lambda ()
            (oref transient--prefix scope)))]
    ["Upload"
-    ("u f" "File" hyperdrive-upload-file)
-    ("u F" "Files" hyperdrive-upload-files)
-    ("u m" "Mirror" hyperdrive-mirror)]]
+    ("P f" "File" hyperdrive-upload-file)
+    ("P F" "Files" hyperdrive-upload-files)
+    ("P m" "Mirror" hyperdrive-mirror)]]
   (interactive (list hyperdrive-current-entry))
   (transient-setup 'hyperdrive-menu nil nil :scope entry))
 
