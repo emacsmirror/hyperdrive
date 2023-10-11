@@ -73,7 +73,6 @@
   [ :if (lambda () (and (oref transient--prefix scope)
                         ;; TODO: Remove this check and add useful history transient UI.
                         (not (eq 'hyperdrive-history-mode major-mode))))
-
     ["Version"
      :description (lambda ()
                     (if-let ((entry (oref transient--prefix scope)))
