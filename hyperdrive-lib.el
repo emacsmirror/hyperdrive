@@ -1064,26 +1064,26 @@ spaces, optionally WITH-LABEL."
             when (hyperdrive--format-host hyperdrive :format format :with-label with-label)
             concat (concat it "  "))))
 
-(cl-defun hyperdrive-read-entry (&key predicate default-path (force-prompt-drive t)
-                                      latest-version read-version)
-  "Return new hyperdrive entry with path and hyperdrive read from user.
-Prompts user for a hyperdrive and signals an error if no such
-hyperdrive is known.
+(cl-defun hyperdrive-read-entry (&key hyperdrive predicate default-path
+                                      (force-prompt-drive t) latest-version read-version)
+  "Return new hyperdrive entry in HYPERDRIVE with path read from user.
+
+With nil HYPERDRIVE, prompt for one by passing PREDICATE and
+FORCE-PROMPT-DRIVE to `hyperdrive-complete-hyperdrive'.
 
 If DEFAULT-PATH, offer it as the default entry path.  Otherwise,
 offer the path of `hyperdrive-current-entry' when it is in the
 hyperdrive chosen with completion.
-
-PREDICATE and FORCE-PROMPT-DRIVE passed to
-`hyperdrive-complete-hyperdrive', which see.
 
 When LATEST-VERSION is non-nil, returned entry's version is nil.
 When LATEST-VERSION is nil, READ-VERSION is non-nil, and
 `hyperdrive-current-entry' is in the hyperdrive chosen with
 completion, returned entry has the same version.
 Otherwise, prompt for a version number."
-  (let* ((hyperdrive (hyperdrive-complete-hyperdrive :predicate predicate
-                                                     :force-prompt force-prompt-drive))
+  ;; TODO: Consider removing FORCE-PROMPT-DRIVE argument.
+  (let* ((hyperdrive (or hyperdrive
+                         (hyperdrive-complete-hyperdrive :predicate predicate
+                                                         :force-prompt force-prompt-drive)))
          (default-version (when (and (not latest-version)
                                      hyperdrive-current-entry
                                      (hyperdrive-equal-p
