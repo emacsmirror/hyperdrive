@@ -854,14 +854,20 @@ The return value of this function is the retrieval buffer."
                        (hyperdrive (hyperdrive-entry-hyperdrive entry)))
                  (format "Current Drive «%s»" (hyperdrive--format-host hyperdrive :with-label t))
                "Current Drive")
-      ["Petname" hyperdrive-set-petname
+      ["Petname"
+       ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when fixed.
+       (lambda ()
+         (interactive)
+         (call-interactively #'hyperdrive-set-petname))
        :help "Set petname for hyperdrive"
        :label
        (format "Set petname: «%s»"
                (pcase (hyperdrive-petname (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
                  (`nil "none")
                  (it it)))]
-      ["Nickname" hyperdrive-set-nickname
+      ["Nickname" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-set-nickname))
        :help "Set nickname for hyperdrive"
        :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
        :label
@@ -873,9 +879,13 @@ The return value of this function is the retrieval buffer."
                  (`nil "none")
                  (it it)))]
       "---"
-      ["Describe" hyperdrive-describe-hyperdrive
+      ["Describe" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-describe-hyperdrive))
        :help "Display information about hyperdrive"]
-      ["Purge" hyperdrive-purge
+      ["Purge" (lambda ()
+                 (interactive)
+                 (call-interactively #'hyperdrive-purge))
        :help "Purge all local data about hyperdrive"])
      ("Current File/Directory"
       :label (format "Current %s: «%s»"
@@ -884,24 +894,34 @@ The return value of this function is the retrieval buffer."
                        "File")
                      (hyperdrive--format-path (hyperdrive-entry-path
                                                hyperdrive-current-entry)))
-      ["Up to Parent" hyperdrive-up
+      ["Up to Parent" (lambda ()
+                        (interactive)
+                        (call-interactively #'hyperdrive-up))
        :active (hyperdrive-parent hyperdrive-current-entry)
        :help "Open parent directory"]
-      ["Sort Directory" hyperdrive-dir-sort
+      ["Sort Directory" (lambda ()
+                          (interactive)
+                          (call-interactively #'hyperdrive-dir-sort))
        :active (eq major-mode 'hyperdrive-dir-mode)
        :help "Sort directory contents"]
       ;; TODO: Add command to copy directory URL
-      ["Copy URL" hyperdrive-copy-url
+      ["Copy URL" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-copy-url))
        :active (not (eq major-mode 'hyperdrive-dir-mode))
        :help "Copy URL of current file/directory"]
-      ["Delete" hyperdrive-delete
+      ["Delete" (lambda ()
+                  (interactive)
+                  (call-interactively #'hyperdrive-delete))
        :active (pcase-let (((cl-struct hyperdrive-entry hyperdrive version) hyperdrive-current-entry))
                  (and (not (eq major-mode 'hyperdrive-dir-mode))
                       (not version)
                       (hyperdrive-writablep hyperdrive)))
        :help "Delete current file/directory"]
       ;; TODO: Add command to download whole directories
-      ["Download" hyperdrive-download
+      ["Download" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-download))
        :active (not (eq major-mode 'hyperdrive-dir-mode))
        :help "Download current file"])
      ("Selected"
@@ -913,12 +933,16 @@ The return value of this function is the retrieval buffer."
                        (hyperdrive-entry-name entry-at-point)))
       :active (and (eq major-mode 'hyperdrive-dir-mode)
                    (hyperdrive-dir--entry-at-point))
-      ["Download" hyperdrive-download
+      ["Download" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-download))
        :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
                  (not (hyperdrive--entry-directory-p entry-at-point)))
        ;; TODO: Change to "file/directory" when it's possible to download a whole directory
        :help "Download file at point"]
-      ["Delete" hyperdrive-delete
+      ["Delete" (lambda ()
+                  (interactive)
+                  (call-interactively #'hyperdrive-delete))
        :active (let ((selected-entry (hyperdrive-dir--entry-at-point)))
                  (and (hyperdrive-writablep
                        (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
@@ -927,11 +951,17 @@ The return value of this function is the retrieval buffer."
                       (not (string= ".." (alist-get 'display-name
                                                     (hyperdrive-entry-etc selected-entry))))))
        :help "Delete file/directory at point"]
-      ["Copy URL" hyperdrive-dir-copy-url
+      ["Copy URL" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-dir-copy-url))
        :help "Copy URL of file/directory at point"]
-      ["Open" hyperdrive-dir-find-file
+      ["Open" (lambda ()
+                (interactive)
+                (call-interactively #'hyperdrive-dir-find-file))
        :help "Open file/directory at point"]
-      ["View" hyperdrive-dir-view-file
+      ["View" (lambda ()
+                (interactive)
+                (call-interactively #'hyperdrive-dir-view-file))
        :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
                  (not (hyperdrive--entry-directory-p entry-at-point)))
        :help "View file at point"])
@@ -939,7 +969,9 @@ The return value of this function is the retrieval buffer."
       :label (format "Version (%s)"
                      (or (hyperdrive-entry-version hyperdrive-current-entry)
                          "latest"))
-      ["Previous Version" hyperdrive-previous-version
+      ["Previous Version" (lambda ()
+                            (interactive)
+                            (call-interactively #'hyperdrive-previous-version))
        :active (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
        :label (concat "Previous Version"
                       (pcase-exhaustive (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
@@ -948,7 +980,9 @@ The return value of this function is the retrieval buffer."
                         ((cl-struct hyperdrive-entry version)
                          (format " (%s)" version))))
        :help "Open previous version"]
-      ["Next Version" hyperdrive-next-version
+      ["Next Version" (lambda ()
+                        (interactive)
+                        (call-interactively #'hyperdrive-next-version))
        :active (and (hyperdrive-entry-version hyperdrive-current-entry)
                     (hyperdrive-entry-next hyperdrive-current-entry))
        :label (concat "Next Version"
@@ -961,7 +995,9 @@ The return value of this function is the retrieval buffer."
                                                      "latest")))
                         (format " (%s)" display-version)))
        :help "Open next version"]
-      ["Version History" hyperdrive-history
+      ["Version History" (lambda ()
+                           (interactive)
+                           (call-interactively #'hyperdrive-history))
        :help "Open version history"]))
     "---"
     ("Files"
