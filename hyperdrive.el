@@ -959,11 +959,9 @@ The return value of this function is the retrieval buffer."
                           (call-interactively #'hyperdrive-dir-sort))
        :active (eq major-mode 'hyperdrive-dir-mode)
        :help "Sort directory contents"]
-      ;; TODO: Add command to copy directory URL
       ["Copy URL" (lambda ()
                     (interactive)
                     (call-interactively #'hyperdrive-copy-url))
-       :active (not (eq major-mode 'hyperdrive-dir-mode))
        :help "Copy URL of current file/directory"]
       ["Delete" (lambda ()
                   (interactive)
