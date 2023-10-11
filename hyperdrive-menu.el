@@ -166,6 +166,8 @@
      ("d" "Download" hyperdrive-download
       :if (lambda ()
             (not (eq major-mode 'hyperdrive-dir-mode))))]
+    ;; TODO: Consider adding a defcustom to hide the "Selected" and
+    ;; "Current" groups when in a directory buffer.
     [ ;; Selected
      :if (lambda ()
            (and (oref transient--prefix scope)
