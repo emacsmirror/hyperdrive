@@ -66,7 +66,7 @@
            (concat (propertize "Hyperdrive: " 'face 'transient-heading)
                    (hyperdrive--format-host hyperdrive :with-label t))
          "Hyperdrive"))
-     ("h" "Hyperdrive menu" hyperdrive-menu-hyperdrive)
+     ("h" "Hyperdrives" hyperdrive-menu-hyperdrive)
      ("N" "New drive" hyperdrive-new)
      ("L" "Open Link" hyperdrive-open-url)]
    ["Version"
