@@ -817,7 +817,10 @@ The return value of this function is the retrieval buffer."
      :help "Create a new hyperdrive"]
     ("Drives"
      :filter (lambda (_)
-               (cl-loop for drive in (hash-table-values hyperdrive-hyperdrives)
+               (cl-loop for drive in (sort (hash-table-values hyperdrive-hyperdrives)
+                                           (lambda (a b)
+                                             (string< (hyperdrive--format-host a :with-label t)
+                                                      (hyperdrive--format-host b :with-label t))))
                         for entry = (hyperdrive-entry-create :hyperdrive drive)
                         collect (list (hyperdrive--format-host drive :with-label t)
                                       (vector "Describe"
