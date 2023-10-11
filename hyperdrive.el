@@ -796,6 +796,298 @@ The return value of this function is the retrieval buffer."
 
 (cl-pushnew #'hyperdrive-kill-buffer-query-function kill-buffer-query-functions)
 
+;;;;; `easy-menu' integration
+
+(easy-menu-define hyperdrive-global-easy-menu global-map
+  "Menu with all Hyperdrive commands."
+  '("Hyperdrive"
+    ("Gateway"
+     :label
+     (format "Gateway (%s)" (if (hyperdrive-status) "on" "off"))
+     ["Start Gateway" hyperdrive-start
+      :help "Start hyper-gateway"]
+     ["Stop Gateway" hyperdrive-stop
+      :help "Stop hyper-gateway"]
+     ["Gateway version" hyperdrive-hyper-gateway-version
+      :help "Say hyper-gateway version"])
+    "---"
+    ["Open URL" hyperdrive-open-url
+     :help "Load a hyperdrive URL"]
+    ["New Drive" hyperdrive-new
+     :help "Create a new hyperdrive"]
+    ("Drives"
+     :filter (lambda (_)
+               (cl-loop for drive in (sort (hash-table-values hyperdrive-hyperdrives)
+                                           (lambda (a b)
+                                             (string< (hyperdrive--format-host a :with-label t)
+                                                      (hyperdrive--format-host b :with-label t))))
+                        for entry = (hyperdrive-entry-create :hyperdrive drive)
+                        collect (list (hyperdrive--format-host drive :with-label t)
+                                      (vector "Describe"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-describe-hyperdrive)))
+                                              :help "Display information about hyperdrive")
+                                      (vector "Find File"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (hyperdrive-open
+                                                   (hyperdrive-read-entry
+                                                    :hyperdrive ,drive
+                                                    :read-version current-prefix-arg)))
+                                              :help "Find a file in hyperdrive")
+                                      (vector "View File"
+                                              (lambda ()
+                                                (interactive)
+                                                (hyperdrive-view-file
+                                                 (hyperdrive-read-entry
+                                                  :hyperdrive ,entry
+                                                  :read-version current-prefix-arg)))
+                                              :help "View a file in hyperdrive")
+                                      "---"
+                                      (vector "Petname"
+                                              ;; HACK: We have to unquote the value of the entry because it seems that the filter
+                                              ;; function is called in an environment that doesn't use lexical-binding...?
+                                              ;; TODO: Ask about this and/or file a bug report.
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-set-petname)))
+                                              :help "Set petname for hyperdrive"
+                                              :label
+                                              (format "Set petname: «%s»"
+                                                      (pcase (hyperdrive-petname drive)
+                                                        (`nil "none")
+                                                        (it it))))
+                                      (vector "Nickname"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-set-nickname)))
+                                              :help "Set nickname for hyperdrive"
+                                              :active (hyperdrive-writablep drive)
+                                              :label
+                                              (format "Set nickname: «%s»"
+                                                      (pcase (alist-get 'name (hyperdrive-metadata drive))
+                                                        (`nil "none")
+                                                        (it it))))
+                                      "---"
+                                      (vector "Purge"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-set-petname)))
+                                              :help "Purge all local data about hyperdrive")))))
+    ("Current"
+     :active hyperdrive-current-entry
+     :label (if-let* ((entry hyperdrive-current-entry))
+                (format "Current: «%s»"
+                        (hyperdrive-entry-description entry))
+              "Current")
+     ("Current Drive"
+      :active hyperdrive-current-entry
+      :label (if-let* ((entry hyperdrive-current-entry)
+                       (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+                 (format "Current Drive «%s»" (hyperdrive--format-host hyperdrive :with-label t))
+               "Current Drive")
+      ["Find File"
+       (lambda ()
+         (interactive)
+         (hyperdrive-open
+           (hyperdrive-read-entry
+            :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
+            :read-version current-prefix-arg)))
+       :help "Find a file in hyperdrive"]
+      ["View File"
+       (lambda ()
+         (interactive)
+         (hyperdrive-view-file
+          (hyperdrive-read-entry
+           :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
+           :read-version current-prefix-arg)))
+       :help "View a file in hyperdrive"]
+      "---"
+      ["Petname"
+       ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when fixed.
+       ;;       This workaround prevents keybindings from displaying in the menu bar.
+       (lambda ()
+         (interactive)
+         (call-interactively #'hyperdrive-set-petname))
+       :help "Set petname for hyperdrive"
+       :label
+       (format "Set petname: «%s»"
+               (pcase (hyperdrive-petname (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                 (`nil "none")
+                 (it it)))]
+      ["Nickname" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-set-nickname))
+       :help "Set nickname for hyperdrive"
+       :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+       :label
+       (format "Set nickname: «%s»"
+               (pcase (alist-get 'name
+                                 (hyperdrive-metadata
+                                  (hyperdrive-entry-hyperdrive
+                                   hyperdrive-current-entry)))
+                 (`nil "none")
+                 (it it)))]
+      "---"
+      ["Describe" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-describe-hyperdrive))
+       :help "Display information about hyperdrive"]
+      ["Purge" (lambda ()
+                 (interactive)
+                 (call-interactively #'hyperdrive-purge))
+       :help "Purge all local data about hyperdrive"])
+     ("Current File/Directory"
+      :label (format "Current %s: «%s»"
+                     (if (hyperdrive--entry-directory-p hyperdrive-current-entry)
+                         "Directory"
+                       "File")
+                     (hyperdrive--format-path (hyperdrive-entry-path
+                                               hyperdrive-current-entry)))
+      ["Up to Parent" (lambda ()
+                        (interactive)
+                        (call-interactively #'hyperdrive-up))
+       :active (hyperdrive-parent hyperdrive-current-entry)
+       :help "Open parent directory"]
+      ["Sort Directory" (lambda ()
+                          (interactive)
+                          (call-interactively #'hyperdrive-dir-sort))
+       :active (eq major-mode 'hyperdrive-dir-mode)
+       :help "Sort directory contents"]
+      ["Copy URL" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-copy-url))
+       :help "Copy URL of current file/directory"]
+      ["Delete" (lambda ()
+                  (interactive)
+                  (call-interactively #'hyperdrive-delete))
+       :active (pcase-let (((cl-struct hyperdrive-entry hyperdrive version) hyperdrive-current-entry))
+                 (and (not (eq major-mode 'hyperdrive-dir-mode))
+                      (not version)
+                      (hyperdrive-writablep hyperdrive)))
+       :help "Delete current file/directory"]
+      ;; TODO: Add command to download whole directories
+      ["Download" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-download))
+       :active (not (eq major-mode 'hyperdrive-dir-mode))
+       :help "Download current file"])
+     ("Selected"
+      :label (let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+               (format "Selected %s: «%s»"
+                       (if (hyperdrive--entry-directory-p entry-at-point)
+                           "Directory"
+                         "File")
+                       (hyperdrive-entry-name entry-at-point)))
+      :active (and (eq major-mode 'hyperdrive-dir-mode)
+                   (hyperdrive-dir--entry-at-point))
+      ["Download" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-download))
+       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                 (not (hyperdrive--entry-directory-p entry-at-point)))
+       ;; TODO: Change to "file/directory" when it's possible to download a whole directory
+       :help "Download file at point"]
+      ["Delete" (lambda ()
+                  (interactive)
+                  (call-interactively #'hyperdrive-delete))
+       :active (let ((selected-entry (hyperdrive-dir--entry-at-point)))
+                 (and (hyperdrive-writablep
+                       (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                      (not (eq selected-entry hyperdrive-current-entry))
+                      ;; TODO: Add `hyperdrive--parent-entry-p'
+                      (not (string= ".." (alist-get 'display-name
+                                                    (hyperdrive-entry-etc selected-entry))))))
+       :help "Delete file/directory at point"]
+      ["Copy URL" (lambda ()
+                    (interactive)
+                    (call-interactively #'hyperdrive-dir-copy-url))
+       :help "Copy URL of file/directory at point"]
+      ["Open" (lambda ()
+                (interactive)
+                (call-interactively #'hyperdrive-dir-find-file))
+       :help "Open file/directory at point"]
+      ["View" (lambda ()
+                (interactive)
+                (call-interactively #'hyperdrive-dir-view-file))
+       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                 (not (hyperdrive--entry-directory-p entry-at-point)))
+       :help "View file at point"])
+     ("Version"
+      :label (format "Version (%s)"
+                     (or (hyperdrive-entry-version hyperdrive-current-entry)
+                         "latest"))
+      ["Previous Version" (lambda ()
+                            (interactive)
+                            (call-interactively #'hyperdrive-previous-version))
+       :active (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
+       :label (concat "Previous Version"
+                      (pcase-exhaustive (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
+                        ('unknown (format " (?)"))
+                        ('nil nil)
+                        ((cl-struct hyperdrive-entry version)
+                         (format " (%s)" version))))
+       :help "Open previous version"]
+      ["Next Version" (lambda ()
+                        (interactive)
+                        (call-interactively #'hyperdrive-next-version))
+       :active (and (hyperdrive-entry-version hyperdrive-current-entry)
+                    (hyperdrive-entry-next hyperdrive-current-entry))
+       :label (concat "Next Version"
+                      (when-let* ((entry hyperdrive-current-entry)
+                                  (next-entry (hyperdrive-entry-next entry))
+                                  ;; Don't add ": latest" if we're already at the latest version
+                                  ((not (eq entry next-entry)))
+                                  (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
+                                                       (number-to-string next-version)
+                                                     "latest")))
+                        (format " (%s)" display-version)))
+       :help "Open next version"]
+      ["Version History" (lambda ()
+                           (interactive)
+                           (call-interactively #'hyperdrive-history))
+       :help "Open version history"]))
+    "---"
+    ("Upload"
+     ["Upload File" hyperdrive-upload-file
+      :help "Upload a file to a hyperdrive"]
+     ["Upload Files" hyperdrive-upload-files
+      :help "Upload multiple files to a hyperdrive"]
+     ["Mirror" hyperdrive-mirror
+      :help "Mirror a directory to a hyperdrive"])
+    ("Bookmark"
+     ["Bookmark Jump" hyperdrive-bookmark-jump
+      :help "Jump to hyperdrive bookmark"]
+     ["Bookmark List" hyperdrive-bookmark-list
+      :help "List hyperdrive bookmarks"]
+     ["Bookmark Set" bookmark-set
+      :active hyperdrive-current-entry
+      :help "Create a new hyperdrive bookmark"])
+    "---"
+    ["Customize" hyperdrive-customize
+     :help "Customize hyperdrive options"]
+    ["Manual" hyperdrive-info-manual
+     :help "Open hyperdrive.el info manual"]))
+
+;;;;; Miscellaneous commands
+
+;;;###autoload
+(defun hyperdrive-customize ()
+  "Customize Hyperdrive options."
+  (interactive)
+  (customize-group 'hyperdrive))
+
+;;;###autoload
+(defun hyperdrive-info-manual ()
+  "Open hyperdrive.el info manual."
+  (interactive)
+  (info "hyperdrive"))
+
 ;;;; Footer
 
 (provide 'hyperdrive)
