@@ -75,7 +75,6 @@
                         (not (eq 'hyperdrive-history-mode major-mode))))
 
     ["Version"
-     :class transient-row
      :description (lambda ()
                     (if-let ((entry (oref transient--prefix scope)))
                         (concat (propertize "Version: "
