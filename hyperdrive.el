@@ -811,6 +811,8 @@ The return value of this function is the retrieval buffer."
      ["Gateway version" hyperdrive-hyper-gateway-version
       :help "Say hyper-gateway version"])
     "---"
+    ["Open URL" hyperdrive-open-url
+     :help "Load a hyperdrive URL"]
     ["New Drive" hyperdrive-new
      :help "Create a new hyperdrive"]
     ("Drives"
@@ -1052,9 +1054,6 @@ The return value of this function is the retrieval buffer."
                            (call-interactively #'hyperdrive-history))
        :help "Open version history"]))
     "---"
-    ("Files"
-     ["Open URL" hyperdrive-open-url
-      :help "Load a hyperdrive URL"])
     ("Upload"
      ["Upload File" hyperdrive-upload-file
       :help "Upload a file to a hyperdrive"]
