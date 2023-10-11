@@ -1038,10 +1038,10 @@ case, when PREDICATE, only offer hyperdrives matching it."
     (setf predicate #'always))
 
   ;; Return current drive when appropriate.
-  (when-let* ((_ (not force-prompt))
-              (_ hyperdrive-current-entry)
+  (when-let* (((not force-prompt))
+              (hyperdrive-current-entry)
               (current-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
-              (_ (funcall predicate current-hyperdrive)))
+              ((funcall predicate current-hyperdrive)))
     (cl-return-from hyperdrive-complete-hyperdrive current-hyperdrive))
 
   ;; Otherwise, prompt for drive.
