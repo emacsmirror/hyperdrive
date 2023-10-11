@@ -879,9 +879,6 @@ The return value of this function is the retrieval buffer."
                                                  (let ((hyperdrive-current-entry ,entry))
                                                    (call-interactively #'hyperdrive-set-petname)))
                                               :help "Purge all local data about hyperdrive")))))
-    ;; TODO: Add "Drives" section with dynamically generated
-    ;; sub-submenus, e.g. "Drives">"petname:foo">(["Set Petname"
-    ;; :label (hyperdrive-entry-petname drive)] ["Purge"])
     ("Current"
      :active hyperdrive-current-entry
      :label (if-let* ((entry hyperdrive-current-entry))
