@@ -59,61 +59,63 @@
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
   :info-manual "(Hyperdrive)"
-  [ :class transient-row
-    :description
-    (lambda ()
-      (if-let* ((entry (oref transient--prefix scope))
-                (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-          (concat (propertize "Hyperdrive: " 'face 'transient-heading)
-                  (hyperdrive--format-host hyperdrive :with-label t))
-        "Hyperdrive"))
-    ("h" "Hyperdrive menu" hyperdrive-menu-hyperdrive)
-    ("N" "New drive" hyperdrive-new)
-    ("L" "Open Link" hyperdrive-open-url)]
+  [[ :description
+     (lambda ()
+       (if-let* ((entry (oref transient--prefix scope))
+                 (hyperdrive (hyperdrive-entry-hyperdrive entry)))
+           (concat (propertize "Hyperdrive: " 'face 'transient-heading)
+                   (hyperdrive--format-host hyperdrive :with-label t))
+         "Hyperdrive"))
+     ("h" "Hyperdrive menu" hyperdrive-menu-hyperdrive)
+     ("N" "New drive" hyperdrive-new)
+     ("L" "Open Link" hyperdrive-open-url)]
+   ["Version"
+    :if (lambda () (and (oref transient--prefix scope)
+                        ;; TODO: Remove this check and add useful history transient UI.
+                        (not (eq 'hyperdrive-history-mode major-mode))))
+    :description (lambda ()
+                   (if-let ((entry (oref transient--prefix scope)))
+                       (concat (propertize "Version: "
+                                           'face 'transient-heading)
+                               (propertize (format "%s"
+                                                   (or (hyperdrive-entry-version entry)
+                                                       "latest"))
+                                           'face 'transient-value))
+                     "Version"))
+    ("V p" "Previous" hyperdrive-previous-version
+     :inapt-if-not (lambda ()
+                     (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
+     ;; :transient t
+     :description (lambda ()
+                    (if-let ((entry (oref transient--prefix scope)))
+                        (concat "Previous"
+                                (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
+                                  ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
+                                  ('nil nil)
+                                  ((cl-struct hyperdrive-entry version)
+                                   (concat ": " (propertize (number-to-string version)
+                                                            'face 'transient-value)))))
+                      "Previous")))
+    ("V n" "Next" hyperdrive-next-version
+     :inapt-if-not (lambda  ()
+                     (let ((entry (oref transient--prefix scope)))
+                       (and (hyperdrive-entry-version entry)
+                            (hyperdrive-entry-next entry))))
+     ;; :transient t
+     :description (lambda ()
+                    (concat "Next"
+                            (when-let* ((entry (oref transient--prefix scope))
+                                        (next-entry (hyperdrive-entry-next entry))
+                                        ;; Don't add ": latest" if we're already at the latest version
+                                        ((not (eq entry next-entry)))
+                                        (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
+                                                             (number-to-string next-version)
+                                                           "latest")))
+                              (concat ": " (propertize display-version 'face 'transient-value))))))
+    ("V h" "History" hyperdrive-history)]]
   [ :if (lambda () (and (oref transient--prefix scope)
                         ;; TODO: Remove this check and add useful history transient UI.
                         (not (eq 'hyperdrive-history-mode major-mode))))
-    ["Version"
-     :description (lambda ()
-                    (if-let ((entry (oref transient--prefix scope)))
-                        (concat (propertize "Version: "
-                                            'face 'transient-heading)
-                                (propertize (format "%s"
-                                                    (or (hyperdrive-entry-version entry)
-                                                        "latest"))
-                                            'face 'transient-value))
-                      "Version"))
-     ("V p" "Previous" hyperdrive-previous-version
-      :inapt-if-not (lambda ()
-                      (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
-      ;; :transient t
-      :description (lambda ()
-                     (if-let ((entry (oref transient--prefix scope)))
-                         (concat "Previous"
-                                 (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
-                                   ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
-                                   ('nil nil)
-                                   ((cl-struct hyperdrive-entry version)
-                                    (concat ": " (propertize (number-to-string version)
-                                                             'face 'transient-value)))))
-                       "Previous")))
-     ("V n" "Next" hyperdrive-next-version
-      :inapt-if-not (lambda  ()
-                      (let ((entry (oref transient--prefix scope)))
-                        (and (hyperdrive-entry-version entry)
-                             (hyperdrive-entry-next entry))))
-      ;; :transient t
-      :description (lambda ()
-                     (concat "Next"
-                             (when-let* ((entry (oref transient--prefix scope))
-                                         (next-entry (hyperdrive-entry-next entry))
-                                         ;; Don't add ": latest" if we're already at the latest version
-                                         ((not (eq entry next-entry)))
-                                         (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
-                                                              (number-to-string next-version)
-                                                            "latest")))
-                               (concat ": " (propertize display-version 'face 'transient-value))))))
-     ("V h" "History" hyperdrive-history)]
     [ ;; Current
      :description
      (lambda ()
