@@ -181,9 +181,9 @@
                   'face 'transient-value))))
      :pad-keys t
      ("d" "Download" hyperdrive-download
-      :if (lambda ()
-            (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-              (not (hyperdrive--entry-directory-p entry-at-point)))))
+      :inapt-if (lambda ()
+                  (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                    (hyperdrive--entry-directory-p entry-at-point))))
      ("D" "Delete" hyperdrive-delete
       :inapt-if (lambda ()
                   (let ((current-entry (oref transient--prefix scope))
@@ -199,9 +199,9 @@
      ;; FIXME: The sequence "? ? RET" says "Unbound suffix" instead of showing the help for that command.  Might be an issue in Transient.
      ("RET" "Open" hyperdrive-dir-find-file)
      ("v" "View" hyperdrive-dir-view-file
-      :if (lambda ()
-            (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-              (not (hyperdrive--entry-directory-p entry-at-point)))))]]
+      :inapt-if (lambda ()
+                  (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                    (hyperdrive--entry-directory-p entry-at-point))))]]
   [["Gateway"
     :description
     (lambda ()
