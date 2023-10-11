@@ -228,7 +228,7 @@
 ;;;;; hyperdrive-menu-hyperdrive: Transient for hyperdrives
 
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
-  "Show menu for editing HYPERDRIVE."
+  "Show menu for HYPERDRIVE."
   [:description
    (lambda ()
      (let ((hyperdrive (oref transient--prefix scope)))
