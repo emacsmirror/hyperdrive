@@ -798,7 +798,8 @@ The return value of this function is the retrieval buffer."
 
 ;;;;; `easy-menu' integration
 
-(defvar hyperdrive--easy-menu-contents
+(easy-menu-define hyperdrive-global-easy-menu global-map
+  "Menu with all Hyperdrive commands."
   '("Hyperdrive"
     ("Gateway"
      :label
@@ -812,6 +813,32 @@ The return value of this function is the retrieval buffer."
     "---"
     ["New Drive" hyperdrive-new
      :help "Create a new hyperdrive"]
+    ("Drives"
+     :filter (lambda (_)
+               (cl-loop for drive in (hash-table-values hyperdrive-hyperdrives)
+        		collect (list (hyperdrive--format-host drive :with-label t)
+                                      (vector "Petname" #'hyperdrive-set-petname
+                                              :help "Set petname for hyperdrive"
+                                              :label
+                                              (format "Set petname: «%s»"
+                                                      (pcase (hyperdrive-petname drive)
+                                                        (`nil "none")
+                                                        (it it))))
+                                      (vector "Nickname" #'hyperdrive-set-nickname
+                                              :help "Set nickname for hyperdrive"
+                                              :active (hyperdrive-writablep drive)
+                                              :label
+                                              (format "Set nickname: «%s»"
+                                                      (pcase (alist-get 'name (hyperdrive-metadata drive))
+                                                        (`nil "none")
+                                                        (it it))))
+                                      ;; FIXME: Enable these.
+                                      ;; "---"
+                                      ;; ["Describe" hyperdrive-describe-hyperdrive
+                                      ;;  :help "Display information about hyperdrive"]
+                                      ;; ["Purge" hyperdrive-purge
+                                      ;;  :help "Purge all local data about hyperdrive"]
+                                      ))))
     ;; TODO: Add "Drives" section with dynamically generated
     ;; sub-submenus, e.g. "Drives">"petname:foo">(["Set Petname"
     ;; :label (hyperdrive-entry-petname drive)] ["Purge"])
@@ -963,12 +990,7 @@ The return value of this function is the retrieval buffer."
     ["Customize" hyperdrive-customize
      :help "Customize hyperdrive options"]
     ["Manual" hyperdrive-info-manual
-     :help "Open hyperdrive.el info manual"])
-  "Contents of the Hyperdrive menu.")
-
-(easy-menu-define hyperdrive-global-easy-menu global-map
-  "Menu with all Hyperdrive commands."
-  hyperdrive--easy-menu-contents)
+     :help "Open hyperdrive.el info manual"]))
 
 ;;;;; Miscellaneous commands
 
