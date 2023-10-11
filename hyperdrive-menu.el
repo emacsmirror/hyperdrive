@@ -210,11 +210,11 @@
       (concat (propertize "Gateway: " 'face 'transient-heading)
               (propertize (if (hyperdrive-status) "on" "off")
                           'face 'transient-value)))
-    ("g s" "Start" hyperdrive-start
+    ("G s" "Start" hyperdrive-start
      :transient t)
-    ("g S" "Stop" hyperdrive-stop
+    ("G S" "Stop" hyperdrive-stop
      :transient t)
-    ("g v" "Version" hyperdrive-hyper-gateway-version
+    ("G v" "Version" hyperdrive-hyper-gateway-version
      :transient t)]
    ["Bookmark"
     ("b j" "Jump" hyperdrive-bookmark-jump)
