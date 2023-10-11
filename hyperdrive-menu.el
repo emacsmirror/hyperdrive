@@ -184,8 +184,8 @@
                     (or (not (hyperdrive-writablep
                               (hyperdrive-entry-hyperdrive current-entry)))
                         (eq selected-entry current-entry)
-                        (string= ".." (alist-get 'display-name
-                                                 (hyperdrive-entry-etc selected-entry)))))))
+                        (string= "../" (alist-get 'display-name
+                                                  (hyperdrive-entry-etc selected-entry)))))))
      ("w" "Copy URL" (lambda ()
                        (interactive)
                        (hyperdrive-copy-url (hyperdrive--context-entry))))

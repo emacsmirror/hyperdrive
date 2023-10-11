@@ -364,7 +364,7 @@ directory.  Otherwise, or with universal prefix argument
           (buffer (current-buffer)))
      (when (and (hyperdrive--entry-directory-p entry)
                 (or (eq entry hyperdrive-current-entry)
-                    (string= ".." (alist-get 'display-name (hyperdrive-entry-etc entry)))))
+                    (string= "../" (alist-get 'display-name (hyperdrive-entry-etc entry)))))
        (hyperdrive-user-error "Won't delete from within"))
      (when (and (yes-or-no-p (format "Delete «%s»? " description))
                 (or (not (hyperdrive--entry-directory-p entry))

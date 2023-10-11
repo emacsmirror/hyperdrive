@@ -76,7 +76,7 @@ the metadata has been loaded."
       (hyperdrive-fill-metadata hyperdrive)
       (setf directory-entry (hyperdrive--fill directory-entry headers))
       (when parent-entry
-        (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "..")
+        (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "../")
         (push parent-entry entries))
       (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
         (with-silent-modifications
