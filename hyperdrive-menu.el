@@ -68,7 +68,8 @@
                   (hyperdrive--format-host hyperdrive :with-label t))
         "Hyperdrive"))
     ("h" "Hyperdrive menu" hyperdrive-menu-hyperdrive)
-    ("N" "New drive" hyperdrive-new)]
+    ("N" "New drive" hyperdrive-new)
+    ("L" "Open Link" hyperdrive-open-url)]
   [ :if (lambda () (and (oref transient--prefix scope)
                         ;; TODO: Remove this check and add useful history transient UI.
                         (not (eq 'hyperdrive-history-mode major-mode))))
@@ -214,10 +215,6 @@
     ("b s" "Set" bookmark-set
      :if (lambda ()
            (oref transient--prefix scope)))]
-   ["Files"
-    ("f f" "Find" hyperdrive-find-file)
-    ("f v" "View" hyperdrive-view-file)
-    ("f o" "Open URL" hyperdrive-open-url)]
    ["Upload"
     ("u f" "File" hyperdrive-upload-file)
     ("u F" "Files" hyperdrive-upload-files)
