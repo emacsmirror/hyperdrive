@@ -133,6 +133,7 @@
       :if (lambda ()
             (eq major-mode 'hyperdrive-dir-mode))
       :transient t)
+     ("j" "Jump" imenu)
      ;; TODO: Combine previous and next commands on the same line?
      ;; TODO: See "predicate refreshing" <https://github.com/magit/transient/issues/157>.
      ("p" "Previous" (lambda ()
