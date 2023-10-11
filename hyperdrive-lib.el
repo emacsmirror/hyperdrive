@@ -1036,23 +1036,28 @@ case, when PREDICATE, only offer hyperdrives matching it."
   (unless predicate
     ;; cl-defun default value doesn't work when nil predicate value is passed in.
     (setf predicate #'always))
-  (let ((current-hyperdrive (when hyperdrive-current-entry
-                              (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
-    (if (and (not force-prompt)
-             hyperdrive-current-entry
-             (funcall predicate current-hyperdrive))
-        current-hyperdrive
-      (let* ((hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
-             (default (when (and hyperdrive-current-entry (funcall predicate current-hyperdrive))
-                        (hyperdrive--format-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
-             (prompt (format-prompt "Hyperdrive" default))
-             (candidates (mapcar (lambda (hyperdrive)
-                                   (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
-                                 hyperdrives))
-             (completion-styles (cons 'substring completion-styles))
-             (selected (completing-read prompt candidates nil 'require-match nil nil default)))
-        (or (alist-get selected candidates nil nil #'equal)
-            (hyperdrive-user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))))
+
+  ;; Return current drive when appropriate.
+  (when-let* ((_ (not force-prompt))
+              (_ hyperdrive-current-entry)
+              (current-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+              (_ (funcall predicate current-hyperdrive)))
+    (cl-return-from hyperdrive-complete-hyperdrive current-hyperdrive))
+
+  ;; Otherwise, prompt for drive.
+  (let* ((current-hyperdrive (when hyperdrive-current-entry
+                               (hyperdrive-entry-hyperdrive hyperdrive-current-entry)))
+         (hyperdrives (cl-remove-if-not predicate (hash-table-values hyperdrive-hyperdrives)))
+         (default (when (and hyperdrive-current-entry (funcall predicate current-hyperdrive))
+                    (hyperdrive--format-hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))))
+         (prompt (format-prompt "Hyperdrive" default))
+         (candidates (mapcar (lambda (hyperdrive)
+                               (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
+                             hyperdrives))
+         (completion-styles (cons 'substring completion-styles))
+         (selected (completing-read prompt candidates nil 'require-match nil nil default)))
+    (or (alist-get selected candidates nil nil #'equal)
+        (hyperdrive-user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
 
 (cl-defun hyperdrive--format-hyperdrive
     (hyperdrive &key (formats '(petname nickname domain seed short-key)) (with-label t))
