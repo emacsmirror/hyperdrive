@@ -820,6 +820,12 @@ The return value of this function is the retrieval buffer."
                (cl-loop for drive in (hash-table-values hyperdrive-hyperdrives)
                         for entry = (hyperdrive-entry-create :hyperdrive drive)
                         collect (list (hyperdrive--format-host drive :with-label t)
+                                      (vector "Describe"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let ((hyperdrive-current-entry ,entry))
+                                                   (call-interactively #'hyperdrive-describe-hyperdrive)))
+                                              :help "Display information about hyperdrive")
                                       (vector "Find File"
                                               `(lambda ()
                                                  (interactive)
@@ -864,12 +870,6 @@ The return value of this function is the retrieval buffer."
                                                         (`nil "none")
                                                         (it it))))
                                       "---"
-                                      (vector "Describe"
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (let ((hyperdrive-current-entry ,entry))
-                                                   (call-interactively #'hyperdrive-describe-hyperdrive)))
-                                              :help "Display information about hyperdrive")
                                       (vector "Purge"
                                               `(lambda ()
                                                  (interactive)
