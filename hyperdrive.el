@@ -818,6 +818,23 @@ The return value of this function is the retrieval buffer."
                (cl-loop for drive in (hash-table-values hyperdrive-hyperdrives)
                         for entry = (hyperdrive-entry-create :hyperdrive drive)
                         collect (list (hyperdrive--format-host drive :with-label t)
+                                      (vector "Find File"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (hyperdrive-open
+                                                   (hyperdrive-read-entry
+                                                    :hyperdrive ,drive
+                                                    :read-version current-prefix-arg)))
+                                              :help "Find a file in hyperdrive")
+                                      (vector "View File"
+                                              (lambda ()
+                                                (interactive)
+                                                (hyperdrive-view-file
+                                                 (hyperdrive-read-entry
+                                                  :hyperdrive ,entry
+                                                  :read-version current-prefix-arg)))
+                                              :help "View a file in hyperdrive")
+                                      "---"
                                       (vector "Petname"
                                               ;; HACK: We have to unquote the value of the entry because it seems that the filter
                                               ;; function is called in an environment that doesn't use lexical-binding...?
@@ -872,6 +889,23 @@ The return value of this function is the retrieval buffer."
                        (hyperdrive (hyperdrive-entry-hyperdrive entry)))
                  (format "Current Drive «%s»" (hyperdrive--format-host hyperdrive :with-label t))
                "Current Drive")
+      ["Find File"
+       (lambda ()
+         (interactive)
+         (hyperdrive-open
+           (hyperdrive-read-entry
+            :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
+            :read-version current-prefix-arg)))
+       :help "Find a file in hyperdrive"]
+      ["View File"
+       (lambda ()
+         (interactive)
+         (hyperdrive-view-file
+          (hyperdrive-read-entry
+           :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
+           :read-version current-prefix-arg)))
+       :help "View a file in hyperdrive"]
+      "---"
       ["Petname"
        ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when fixed.
        (lambda ()
@@ -1019,10 +1053,6 @@ The return value of this function is the retrieval buffer."
        :help "Open version history"]))
     "---"
     ("Files"
-     ["Find File" hyperdrive-find-file
-      :help "Find a file in a hyperdrive"]
-     ["View File" hyperdrive-view-file
-      :help "View a file in a hyperdrive"]
      ["Open URL" hyperdrive-open-url
       :help "Load a hyperdrive URL"])
     ("Upload"
