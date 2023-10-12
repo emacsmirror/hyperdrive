@@ -877,7 +877,7 @@ The return value of this function is the retrieval buffer."
                                               `(lambda ()
                                                  (interactive)
                                                  (let ((hyperdrive-current-entry ,entry))
-                                                   (call-interactively #'hyperdrive-set-petname)))
+                                                   (call-interactively #'hyperdrive-purge)))
                                               :help "Purge all local data about hyperdrive")))))
     ("Current"
      :active hyperdrive-current-entry
