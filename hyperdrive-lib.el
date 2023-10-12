@@ -1033,6 +1033,8 @@ With universal prefix argument \\[universal-argument], prompt for entry."
 With FORCE-PROMPT or when current hyperdrive does not match
 PREDICATE, return a hyperdrive selected with completion.  In this
 case, when PREDICATE, only offer hyperdrives matching it."
+  (when (= 0 (hash-table-count hyperdrive-hyperdrives))
+    (hyperdrive-user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
   (unless predicate
     ;; cl-defun default value doesn't work when nil predicate value is passed in.
     (setf predicate #'always))
