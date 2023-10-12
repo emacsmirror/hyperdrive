@@ -1434,14 +1434,15 @@ When BUFFER is nil, act on current buffer."
 
 (defun hyperdrive-entry-equal-p (a b)
   "Return non-nil if hyperdrive entries A and B are equal.
-Compares only public key and path."
-  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
+Compares only public key, version, and path."
+  (pcase-let (((cl-struct hyperdrive-entry (path a-path) (version a-version)
                           (hyperdrive (cl-struct hyperdrive (public-key a-key))))
                a)
-              ((cl-struct hyperdrive-entry (path b-path)
+              ((cl-struct hyperdrive-entry (path b-path) (version b-version)
                           (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
                b))
-    (and (equal a-path b-path)
+    (and (eq a-version b-version)
+         (equal a-path b-path)
          (equal a-key b-key))))
 
 (defun hyperdrive-equal-p (a b)
