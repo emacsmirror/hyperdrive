@@ -240,7 +240,8 @@ With point on header, returns directory entry."
 (defvar-keymap hyperdrive-dir-mode-map
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
-  "<mouse-1>" #'hyperdrive-dir-find-file
+  ;; FIXME: Only make entry names clickable, not the whole line. What about history mode?
+  ;; "<mouse-1>" #'hyperdrive-dir-find-file
   "RET" #'hyperdrive-dir-find-file
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
