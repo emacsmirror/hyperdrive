@@ -1010,25 +1010,25 @@ The return value of this function is the retrieval buffer."
        :active (not (eq major-mode 'hyperdrive-dir-mode))
        :help "Download current file"])
      ("Selected"
-      :label (let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+      :label (let ((entry (hyperdrive--context-entry)))
                (format "Selected %s: «%s»"
-                       (if (hyperdrive--entry-directory-p entry-at-point)
+                       (if (hyperdrive--entry-directory-p entry)
                            "Directory"
                          "File")
-                       (hyperdrive-entry-name entry-at-point)))
+                       (hyperdrive-entry-name entry)))
       :active (and (eq major-mode 'hyperdrive-dir-mode)
-                   (hyperdrive-dir--entry-at-point))
+                   (hyperdrive-dir--entry))
       ["Download" (lambda ()
                     (interactive)
                     (call-interactively #'hyperdrive-download))
-       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-                 (not (hyperdrive--entry-directory-p entry-at-point)))
+       :active (when-let ((entry (hyperdrive--context-entry)))
+                 (not (hyperdrive--entry-directory-p entry)))
        ;; TODO: Change to "file/directory" when it's possible to download a whole directory
        :help "Download file at point"]
       ["Delete" (lambda ()
                   (interactive)
                   (call-interactively #'hyperdrive-delete))
-       :active (let ((selected-entry (hyperdrive-dir--entry-at-point)))
+       :active (let ((selected-entry (hyperdrive-dir--entry)))
                  (and (hyperdrive-writablep
                        (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
                       (not (eq selected-entry hyperdrive-current-entry))
@@ -1047,8 +1047,8 @@ The return value of this function is the retrieval buffer."
       ["View" (lambda ()
                 (interactive)
                 (call-interactively #'hyperdrive-dir-view-file))
-       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-                 (not (hyperdrive--entry-directory-p entry-at-point)))
+       :active (when-let ((entry (hyperdrive--context-entry)))
+                 (not (hyperdrive--entry-directory-p entry)))
        :help "View file at point"])
      ("Version"
       :label (format "Version (%s)"
