@@ -959,6 +959,10 @@ The return value of this function is the retrieval buffer."
                        "File")
                      (hyperdrive--format-path (hyperdrive-entry-path
                                                hyperdrive-current-entry)))
+      ["Refresh" (lambda ()
+                   (interactive)
+                   (call-interactively #'revert-buffer))
+       :help "Revert current hyperdrive file/directory"]
       ["Up to Parent" (lambda ()
                         (interactive)
                         (call-interactively #'hyperdrive-up))
