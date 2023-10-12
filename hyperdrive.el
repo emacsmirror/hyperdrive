@@ -279,6 +279,7 @@ without confirmation."
   "Previous state of buffer before `hyperdrive-mode' was activated.
 Intended to be passed to `buffer-local-restore-state'.")
 
+;;;###autoload
 (define-minor-mode hyperdrive-mode
   ;; TODO: Consider moving hyperdrive-mode definition to
   ;; hyperdrive-lib.el.  (Since it's used in multiple files.)
@@ -807,6 +808,7 @@ The return value of this function is the retrieval buffer."
 
 ;;;;; `easy-menu' integration
 
+;;;###autoload
 (defvar hyperdrive-menu-bar-menu
   '("Hyperdrive"
     ("Gateway"
@@ -1010,19 +1012,19 @@ The return value of this function is the retrieval buffer."
        :active (not (eq major-mode 'hyperdrive-dir-mode))
        :help "Download current file"])
      ("Selected"
-      :label (let ((entry (hyperdrive--context-entry)))
+      :label (let ((entry-at-point (hyperdrive-dir--entry-at-point)))
                (format "Selected %s: «%s»"
-                       (if (hyperdrive--entry-directory-p entry)
+                       (if (hyperdrive--entry-directory-p entry-at-point)
                            "Directory"
                          "File")
-                       (hyperdrive-entry-name entry)))
-      :active (and (eq major-mode 'hyperdrive-dir-mode)
-                   (hyperdrive-dir--entry-at-point))
+                       (hyperdrive-entry-name entry-at-point)))
+      :visible (and (eq major-mode 'hyperdrive-dir-mode)
+                    (hyperdrive-dir--entry-at-point))
       ["Download" (lambda ()
                     (interactive)
                     (call-interactively #'hyperdrive-download))
-       :active (when-let ((entry (hyperdrive--context-entry)))
-                 (not (hyperdrive--entry-directory-p entry)))
+       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                 (not (hyperdrive--entry-directory-p entry-at-point)))
        ;; TODO: Change to "file/directory" when it's possible to download a whole directory
        :help "Download file at point"]
       ["Delete" (lambda ()
@@ -1047,8 +1049,8 @@ The return value of this function is the retrieval buffer."
       ["View" (lambda ()
                 (interactive)
                 (call-interactively #'hyperdrive-dir-view-file))
-       :active (when-let ((entry (hyperdrive--context-entry)))
-                 (not (hyperdrive--entry-directory-p entry)))
+       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                 (not (hyperdrive--entry-directory-p entry-at-point)))
        :help "View file at point"])
      ("Version"
       :label (format "Version (%s)"
@@ -1106,10 +1108,11 @@ The return value of this function is the retrieval buffer."
     ["Manual" hyperdrive-info-manual
      :help "Open hyperdrive.el info manual"]))
 
+;;;###autoload
 (easy-menu-add-item menu-bar-tools-menu nil hyperdrive-menu-bar-menu
                     "Read Net News")
 
-(easy-menu-define hyperdrive-global-easy-menu hyperdrive-mode-map
+(easy-menu-define hyperdrive-easy-menu hyperdrive-mode-map
   "Menu with all Hyperdrive commands." hyperdrive-menu-bar-menu)
 
 ;;;;; Miscellaneous commands
