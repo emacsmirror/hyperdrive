@@ -279,6 +279,7 @@ without confirmation."
   "Previous state of buffer before `hyperdrive-mode' was activated.
 Intended to be passed to `buffer-local-restore-state'.")
 
+;;;###autoload
 (define-minor-mode hyperdrive-mode
   ;; TODO: Consider moving hyperdrive-mode definition to
   ;; hyperdrive-lib.el.  (Since it's used in multiple files.)
