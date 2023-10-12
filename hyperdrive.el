@@ -1012,19 +1012,19 @@ The return value of this function is the retrieval buffer."
        :active (not (eq major-mode 'hyperdrive-dir-mode))
        :help "Download current file"])
      ("Selected"
-      :label (let ((entry (hyperdrive--context-entry)))
+      :label (let ((entry-at-point (hyperdrive-dir--entry-at-point)))
                (format "Selected %s: «%s»"
-                       (if (hyperdrive--entry-directory-p entry)
+                       (if (hyperdrive--entry-directory-p entry-at-point)
                            "Directory"
                          "File")
-                       (hyperdrive-entry-name entry)))
-      :active (and (eq major-mode 'hyperdrive-dir-mode)
-                   (hyperdrive-dir--entry-at-point))
+                       (hyperdrive-entry-name entry-at-point)))
+      :visible (and (eq major-mode 'hyperdrive-dir-mode)
+                    (hyperdrive-dir--entry-at-point))
       ["Download" (lambda ()
                     (interactive)
                     (call-interactively #'hyperdrive-download))
-       :active (when-let ((entry (hyperdrive--context-entry)))
-                 (not (hyperdrive--entry-directory-p entry)))
+       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                 (not (hyperdrive--entry-directory-p entry-at-point)))
        ;; TODO: Change to "file/directory" when it's possible to download a whole directory
        :help "Download file at point"]
       ["Delete" (lambda ()
@@ -1049,8 +1049,8 @@ The return value of this function is the retrieval buffer."
       ["View" (lambda ()
                 (interactive)
                 (call-interactively #'hyperdrive-dir-view-file))
-       :active (when-let ((entry (hyperdrive--context-entry)))
-                 (not (hyperdrive--entry-directory-p entry)))
+       :active (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                 (not (hyperdrive--entry-directory-p entry-at-point)))
        :help "View file at point"])
      ("Version"
       :label (format "Version (%s)"
