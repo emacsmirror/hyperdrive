@@ -208,7 +208,8 @@ To be used as the pretty-printer for `ewoc-create'."
                         'face 'hyperdrive-timestamp)
             (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
                             (hyperdrive-entry-name entry))
-                        'face face))))
+                        'face face
+                        'mouse-face 'highlight))))
 
 (defun hyperdrive-dir--entry-at-point ()
   "Return entry at point.
