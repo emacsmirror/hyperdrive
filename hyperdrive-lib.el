@@ -1344,8 +1344,7 @@ Affected by option `hyperdrive-reuse-buffers', which see."
 
 (defun hyperdrive--buffer-visiting-entry-p (buffer entry)
   "Return non-nil when BUFFER is visiting ENTRY."
-  (and (buffer-local-value 'hyperdrive-mode buffer)
-       (buffer-local-value 'hyperdrive-current-entry buffer)
+  (and (buffer-local-value 'hyperdrive-current-entry buffer)
        (hyperdrive-entry-equal-p
         entry (buffer-local-value 'hyperdrive-current-entry buffer))))
 
