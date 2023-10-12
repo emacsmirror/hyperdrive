@@ -394,7 +394,7 @@ directory.  Otherwise, or with universal prefix argument
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
               ;; `save-buffer' re-saves files after they've been deleted.
               (dolist (buf (match-buffers (lambda (buf deleted-entry)
-                                            (when-let ((current-entry (buffer-local-value hyperdrive-current-entry buf)))
+                                            (when-let ((current-entry (buffer-local-value 'hyperdrive-current-entry buf)))
                                               (hyperdrive-entry-equal-p current-entry deleted-entry)))
                                           nil entry))
                 (with-current-buffer buf
