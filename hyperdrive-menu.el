@@ -124,6 +124,7 @@
          (concat (propertize "Current: " 'face 'transient-heading)
                  (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                              'face 'transient-value))))
+     ("g" "Refresh" revert-buffer)
      ("^" "Up to parent" (lambda ()
                            (interactive)
                            (hyperdrive-up (oref transient-current-prefix scope)
