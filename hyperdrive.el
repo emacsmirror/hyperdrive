@@ -954,11 +954,35 @@ The return value of this function is the retrieval buffer."
                         (call-interactively #'hyperdrive-up))
        :active (hyperdrive-parent hyperdrive-current-entry)
        :help "Open parent directory"]
-      ["Sort Directory" (lambda ()
-                          (interactive)
-                          (call-interactively #'hyperdrive-dir-sort))
+      ("Sort Directory"
        :active (eq major-mode 'hyperdrive-dir-mode)
-       :help "Sort directory contents"]
+       ["By Name" (lambda ()
+                    (interactive)
+                    (hyperdrive-dir-sort
+                     (hyperdrive-dir-toggle-sort-direction
+                      'name hyperdrive-directory-sort)))
+        :suffix (pcase-let ((`(,column . ,direction) hyperdrive-directory-sort))
+                  (when (eq 'name column)
+                    (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
+        :help "Sort directory by name"]
+       ["By Size" (lambda ()
+                    (interactive)
+                    (hyperdrive-dir-sort
+                     (hyperdrive-dir-toggle-sort-direction
+                      'size hyperdrive-directory-sort)))
+        :suffix (pcase-let ((`(,column . ,direction) hyperdrive-directory-sort))
+                  (when (string= 'size column)
+                    (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
+        :help "Sort directory by size"]
+       ["By Last Modified Time" (lambda ()
+                                  (interactive)
+                                  (hyperdrive-dir-sort
+                                   (hyperdrive-dir-toggle-sort-direction
+                                    'mtime hyperdrive-directory-sort)))
+        :suffix (pcase-let ((`(,column . ,direction) hyperdrive-directory-sort))
+                  (when (string= 'mtime column)
+                    (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
+        :help "Sort directory by last modified time"])
       ["Copy URL" (lambda ()
                     (interactive)
                     (call-interactively #'hyperdrive-copy-url))
