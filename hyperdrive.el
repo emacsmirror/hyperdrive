@@ -1017,7 +1017,7 @@ The return value of this function is the retrieval buffer."
                          "File")
                        (hyperdrive-entry-name entry)))
       :active (and (eq major-mode 'hyperdrive-dir-mode)
-                   (hyperdrive-dir--entry))
+                   (hyperdrive-dir--entry-at-point))
       ["Download" (lambda ()
                     (interactive)
                     (call-interactively #'hyperdrive-download))
@@ -1028,7 +1028,7 @@ The return value of this function is the retrieval buffer."
       ["Delete" (lambda ()
                   (interactive)
                   (call-interactively #'hyperdrive-delete))
-       :active (let ((selected-entry (hyperdrive-dir--entry)))
+       :active (let ((selected-entry (hyperdrive-dir--entry-at-point)))
                  (and (hyperdrive-writablep
                        (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
                       (not (eq selected-entry hyperdrive-current-entry))
