@@ -151,6 +151,13 @@ With [[info:use-package][use-package]]:
 your published files from you, your friend, or anyone else who has
 them.
 
+** Hyperdrive menu bar
+
+Once ~hyperdrive.el~ has loaded, the "Hyperdrive" menu should appear at
+the top of the screen, offering an overview of the available commands.
+If you don't see the "Hyperdrive" menu, please double check that
+~menu-bar-mode~ is enabled (it is enabled by default).
+
 ** hyperdrive-menu
 #+findex: hyperdrive-menu
 
