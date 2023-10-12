@@ -1325,7 +1325,7 @@ Affected by option `hyperdrive-reuse-buffers', which see."
          (buffer
           (or (when (eq 'any-version hyperdrive-reuse-buffers)
                 (cl-loop for buffer in (buffer-list)
-                         when (hyperdrive--entry-buffer-p entry buffer)
+                         when (hyperdrive--buffer-visiting-entry-p buffer entry)
                          return buffer))
               (get-buffer-create buffer-name))))
     (with-current-buffer buffer
@@ -1342,7 +1342,7 @@ Affected by option `hyperdrive-reuse-buffers', which see."
       (setq-local hyperdrive-current-entry entry)
       (current-buffer))))
 
-(defun hyperdrive--entry-buffer-p (entry buffer)
+(defun hyperdrive--buffer-visiting-entry-p (buffer entry)
   "Return non-nil when BUFFER is visiting ENTRY."
   (and (buffer-local-value 'hyperdrive-mode buffer)
        (buffer-local-value 'hyperdrive-current-entry buffer)
@@ -1352,7 +1352,7 @@ Affected by option `hyperdrive-reuse-buffers', which see."
 (defun hyperdrive--buffer-for-entry (entry)
   "Return a predicate to match buffer against ENTRY."
   ;; TODO: This function is a workaround for bug#65797
-  (lambda (buffer) (hyperdrive--entry-buffer-p entry buffer)))
+  (lambda (buffer) (hyperdrive--buffer-visiting-entry-p buffer entry)))
 
 (defun hyperdrive--entry-buffer-name (entry)
   "Return buffer name for ENTRY."
@@ -1434,14 +1434,15 @@ When BUFFER is nil, act on current buffer."
 
 (defun hyperdrive-entry-equal-p (a b)
   "Return non-nil if hyperdrive entries A and B are equal.
-Compares only public key and path."
-  (pcase-let (((cl-struct hyperdrive-entry (path a-path)
+Compares only public key, version, and path."
+  (pcase-let (((cl-struct hyperdrive-entry (path a-path) (version a-version)
                           (hyperdrive (cl-struct hyperdrive (public-key a-key))))
                a)
-              ((cl-struct hyperdrive-entry (path b-path)
+              ((cl-struct hyperdrive-entry (path b-path) (version b-version)
                           (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
                b))
-    (and (equal a-path b-path)
+    (and (eq a-version b-version)
+         (equal a-path b-path)
          (equal a-key b-key))))
 
 (defun hyperdrive-equal-p (a b)

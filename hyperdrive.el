@@ -390,6 +390,15 @@ directory.  Otherwise, or with universal prefix argument
                 (setf (hyperdrive-entry-version nonexistent-entry) (string-to-number etag))
                 (hyperdrive--fill-latest-version (hyperdrive-entry-hyperdrive entry) headers)
                 (hyperdrive-update-nonexistent-version-range nonexistent-entry))
+              ;; Since there's no way for `hyperdrive--write-contents' to run when
+              ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
+              ;; `save-buffer' re-saves files after they've been deleted.
+              (dolist (buf (match-buffers (lambda (buf deleted-entry)
+                                            (when-let ((current-entry (buffer-local-value 'hyperdrive-current-entry buf)))
+                                              (hyperdrive-entry-equal-p current-entry deleted-entry)))
+                                          nil entry))
+                (with-current-buffer buf
+                  (set-buffer-modified-p t)))
               (funcall then response)))
     :else else))
 
