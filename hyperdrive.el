@@ -807,8 +807,7 @@ The return value of this function is the retrieval buffer."
 
 ;;;;; `easy-menu' integration
 
-(easy-menu-define hyperdrive-global-easy-menu global-map
-  "Menu with all Hyperdrive commands."
+(defvar hyperdrive-menu-bar-menu
   '("Hyperdrive"
     ("Gateway"
      :label
@@ -1106,6 +1105,12 @@ The return value of this function is the retrieval buffer."
      :help "Customize hyperdrive options"]
     ["Manual" hyperdrive-info-manual
      :help "Open hyperdrive.el info manual"]))
+
+(easy-menu-add-item menu-bar-tools-menu nil hyperdrive-menu-bar-menu
+                    "Read Net News")
+
+(easy-menu-define hyperdrive-global-easy-menu hyperdrive-mode-map
+  "Menu with all Hyperdrive commands." hyperdrive-menu-bar-menu)
 
 ;;;;; Miscellaneous commands
 

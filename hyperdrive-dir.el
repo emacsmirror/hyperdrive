@@ -263,6 +263,10 @@ With point on header, returns directory entry."
               imenu-auto-rescan t
               imenu-space-replacement " "))
 
+(defvar hyperdrive-menu-bar-menu)
+(easy-menu-define hyperdrive-global-easy-menu hyperdrive-dir-mode-map
+  "Menu with all Hyperdrive commands." hyperdrive-menu-bar-menu)
+
 ;;;; Commands
 
 (defun hyperdrive-dir-find-file (entry)
