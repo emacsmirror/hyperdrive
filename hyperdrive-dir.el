@@ -239,6 +239,7 @@ With point on header, returns directory entry."
 (defvar-keymap hyperdrive-dir-mode-map
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
+  "<double-mouse-1>" #'hyperdrive-dir-find-file
   "RET" #'hyperdrive-dir-find-file
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
