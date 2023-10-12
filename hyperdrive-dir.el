@@ -264,7 +264,7 @@ With point on header, returns directory entry."
               imenu-space-replacement " "))
 
 (defvar hyperdrive-menu-bar-menu)
-(easy-menu-define hyperdrive-global-easy-menu hyperdrive-dir-mode-map
+(easy-menu-define hyperdrive-dir-easy-menu hyperdrive-dir-mode-map
   "Menu with all Hyperdrive commands." hyperdrive-menu-bar-menu)
 
 ;;;; Commands

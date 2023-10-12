@@ -1109,7 +1109,7 @@ The return value of this function is the retrieval buffer."
 (easy-menu-add-item menu-bar-tools-menu nil hyperdrive-menu-bar-menu
                     "Read Net News")
 
-(easy-menu-define hyperdrive-global-easy-menu hyperdrive-mode-map
+(easy-menu-define hyperdrive-easy-menu hyperdrive-mode-map
   "Menu with all Hyperdrive commands." hyperdrive-menu-bar-menu)
 
 ;;;;; Miscellaneous commands
