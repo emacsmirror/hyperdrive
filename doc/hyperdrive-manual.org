@@ -161,11 +161,11 @@ If you don't see the "Hyperdrive" menu, please double check that
 ** hyperdrive-menu
 #+findex: hyperdrive-menu
 
-~M-x hyperdrive-menu~ offers quick access to many ~hyperdrive.el~
-commands.  With the menu open, press one of highlit keys or key
-combinations to invoke the command displayed next to it.  Different
-commands are available in ~hyperdrive-menu~ when you're inside a
-hyperdrive file, directory, or neither.
+~M-x hyperdrive-menu~ is a keyboard-driven interface to many
+~hyperdrive.el~ commands.  With the menu open, press one of highlit keys
+or key combinations to invoke the command displayed next to it.
+Different commands are available in ~hyperdrive-menu~ when you're inside
+a hyperdrive file, directory, or neither.
 
 While inside the ~hyperdrive-menu~, press ~?~ twice to open this
 ~hyperdrive.el~ info manual.  You can also press ~?~ followed by a
