@@ -603,7 +603,8 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
              ;; name could change in the future, and that would make
              ;; the record invalid, which would cause
              ;; `bookmark-default-handler' to signal an error.
-             (append bookmark `((buffer . ,(current-buffer))))))))
+             (append bookmark `((buffer . ,(current-buffer)))))
+            (pop-to-buffer (current-buffer) '(display-buffer-same-window)))))
 (put 'hyperdrive-bookmark-handler 'bookmark-handler-type "hyperdrive")
 
 (defun hyperdrive-bookmark-jump (bookmark)
