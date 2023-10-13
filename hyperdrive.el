@@ -808,7 +808,6 @@ The return value of this function is the retrieval buffer."
 
 ;;;;; `easy-menu' integration
 
-;;;###autoload
 (defvar hyperdrive-menu-bar-menu
   '("Hyperdrive"
     ("Gateway"
@@ -1116,12 +1115,16 @@ The return value of this function is the retrieval buffer."
     ["User Manual" hyperdrive-info-manual
      :help "Open hyperdrive.el info manual"]))
 
-;;;###autoload
-(easy-menu-add-item menu-bar-tools-menu nil hyperdrive-menu-bar-menu
-                    "Read Net News")
-
 (easy-menu-define hyperdrive-easy-menu hyperdrive-mode-map
   "Menu with all Hyperdrive commands." hyperdrive-menu-bar-menu)
+
+;;;###autoload
+(define-minor-mode hyperdrive-menu-bar-mode "Show hyperdrive in global menu bar."
+  :global t :group 'hyperdrive
+  (if hyperdrive-menu-bar-mode
+      (easy-menu-add-item menu-bar-tools-menu nil hyperdrive-menu-bar-menu
+                          "Read Net News")
+    (easy-menu-remove-item menu-bar-tools-menu nil "Hyperdrive")))
 
 ;;;;; Miscellaneous commands
 
