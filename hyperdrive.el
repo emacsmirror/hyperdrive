@@ -827,7 +827,7 @@ The return value of this function is the retrieval buffer."
      :help "Create a new hyperdrive"]
     ("Drives"
      :active (< 0 (hash-table-count hyperdrive-hyperdrives))
-     :label (if (= 0 (hash-table-count hyperdrive-hyperdrives))
+     :label (if (zerop (hash-table-count hyperdrive-hyperdrives))
                 "Drives (empty)"
               "Drives")
      :filter (lambda (_)
