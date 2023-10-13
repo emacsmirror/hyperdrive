@@ -128,13 +128,9 @@
      ("^" "Up to parent"
       (lambda ()
         (interactive)
-        (hyperdrive-up (oref transient-current-prefix scope)
-                       :then (lambda ()
-                               (pop-to-buffer (current-buffer) '(display-buffer-same-window))
-                               (call-interactively #'hyperdrive-menu))))
+        (hyperdrive-up (oref transient-current-prefix scope)))
       :inapt-if-not (lambda ()
-                      (hyperdrive-parent (oref transient--prefix scope)))
-      :transient t)
+                      (hyperdrive-parent (oref transient--prefix scope))))
      ("s" "Sort" hyperdrive-dir-sort
       :if (lambda ()
             (eq major-mode 'hyperdrive-dir-mode))
