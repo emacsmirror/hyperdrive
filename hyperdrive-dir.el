@@ -241,7 +241,6 @@ With point on header, returns directory entry."
   "RET" #'hyperdrive-dir-find-file
   "o"   #'hyperdrive-dir-find-file-other-window
   "v"   #'hyperdrive-dir-view-file
-  "V"   #'hyperdrive-dir-view-file-other-window
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
   "d"   #'hyperdrive-download
@@ -305,16 +304,6 @@ Interactively, opens file or directory at point in
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (cl-assert entry nil "No file/directory at point")
   (hyperdrive-view-file entry))
-
-(defun hyperdrive-dir-view-file-other-window (entry)
-  "Open hyperdrive ENTRY at point in `view-mode' in other window.
-Interactively, opens file or directory at point in
-`hyperdrive-dir' buffer."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
-  (let ((hyperdrive-directory-display-buffer-action '(display-buffer-other-window)))
-    (hyperdrive-view-file entry)))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 
