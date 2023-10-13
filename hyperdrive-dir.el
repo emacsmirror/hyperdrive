@@ -41,8 +41,7 @@
 ;;;###autoload
 (cl-defun hyperdrive-dir-handler (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
-If THEN, call it in the directory buffer with no arguments after
-the metadata has been loaded."
+If THEN, call it in the directory buffer with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
   ;; in a couple of seconds (same in hyperdrive-handler-default)
@@ -98,9 +97,7 @@ the metadata has been loaded."
                                                (or (when prev-entry
                                                      (goto-entry prev-entry ewoc))
                                                    (goto-char prev-point)))
-                                             (set-buffer-modified-p nil)
-                                             (when then
-                                               (funcall then)))
+                                             (set-buffer-modified-p nil))
                                            ;; TODO: Remove this and the commented out `debug-start-time'
                                            ;; binding when we're done experimenting.
                                            ;; (message "Elapsed: %s"
@@ -117,7 +114,8 @@ the metadata has been loaded."
               :then (lambda (&rest _)
                       (update-footer (cl-incf num-filled) num-entries))))
           (plz-run metadata-queue)
-          (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action))))))
+          (when then
+            (funcall then)))))))
 
 (defun hyperdrive-dir-column-headers (prefix)
   "Return column headers as a string with PREFIX.
