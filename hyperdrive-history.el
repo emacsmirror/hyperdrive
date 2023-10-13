@@ -33,6 +33,12 @@
 
 ;;;; Functions
 
+(defun hyperdrive-history-find-at-point (event)
+  "Find entry at EVENT's position."
+  (interactive "e")
+  (mouse-set-point event)
+  (call-interactively #'hyperdrive-history-find-file))
+
 (defun hyperdrive-history-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."
@@ -69,11 +75,6 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                                 ('unknown 'hyperdrive-history-unknown)))
             (propertize formatted-range
                         'face 'hyperdrive-history-range
-                        'keymap
-                        (define-keymap
-                          "<mouse-1>" (lambda (&optional _e)
-                                        (interactive "e")
-                                        (hyperdrive-history-find-file range-entry)))
                         'mouse-face 'highlight)
             (propertize (or size "")
                         'face 'hyperdrive-size)
@@ -127,7 +128,9 @@ and ENTRY's version are nil."
   "="   #'hyperdrive-history-diff
   "+"   #'hyperdrive-history-fill-version-ranges
   "w"   #'hyperdrive-history-copy-url
-  "d"   #'hyperdrive-history-download-file)
+  "d"   #'hyperdrive-history-download-file
+  "<mouse-2>" #'hyperdrive-history-find-at-point
+  "<follow-link>" 'mouse-face)
 
 (define-derived-mode hyperdrive-history-mode hyperdrive-ewoc-mode
   `("Hyperdrive-history"

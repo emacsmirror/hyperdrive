@@ -209,12 +209,7 @@ To be used as the pretty-printer for `ewoc-create'."
             (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
                             (hyperdrive-entry-name entry))
                         'face face
-                        'mouse-face 'highlight
-                        'keymap
-                        (define-keymap
-                          "<mouse-1>" (lambda (&optional _e)
-                                        (interactive "e")
-                                        (hyperdrive-open entry)))))))
+                        'mouse-face 'highlight))))
 
 (defun hyperdrive-dir--entry-at-point ()
   "Return entry at point.
@@ -255,7 +250,9 @@ With point on header, returns directory entry."
   "H"   #'hyperdrive-dir-history
   "s"   #'hyperdrive-dir-sort
   "?"   #'hyperdrive-menu
-  "+"   #'hyperdrive-create-directory-no-op)
+  "+"   #'hyperdrive-create-directory-no-op
+  "<mouse-2>" #'hyperdrive-dir-find-at-point
+  "<follow-link>" 'mouse-face)
 
 (define-derived-mode hyperdrive-dir-mode hyperdrive-ewoc-mode
   `("Hyperdrive-dir"
@@ -269,6 +266,12 @@ With point on header, returns directory entry."
               imenu-space-replacement " "))
 
 ;;;; Commands
+
+(defun hyperdrive-dir-find-at-point (event)
+  "Find entry at EVENT's position."
+  (interactive "e")
+  (mouse-set-point event)
+  (call-interactively #'hyperdrive-dir-find-file))
 
 (defun hyperdrive-dir-find-file (entry)
   "Visit hyperdrive ENTRY at point.
