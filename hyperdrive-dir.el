@@ -209,7 +209,12 @@ To be used as the pretty-printer for `ewoc-create'."
             (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
                             (hyperdrive-entry-name entry))
                         'face face
-                        'mouse-face 'highlight))))
+                        'mouse-face 'highlight
+                        'keymap
+                        (define-keymap
+                          "<mouse-1>" (lambda (&optional _e)
+                                        (interactive "e")
+                                        (hyperdrive-open entry)))))))
 
 (defun hyperdrive-dir--entry-at-point ()
   "Return entry at point.
@@ -240,8 +245,6 @@ With point on header, returns directory entry."
 (defvar-keymap hyperdrive-dir-mode-map
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
-  ;; FIXME: Only make entry names clickable, not the whole line. What about history mode?
-  ;; "<mouse-1>" #'hyperdrive-dir-find-file
   "RET" #'hyperdrive-dir-find-file
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
