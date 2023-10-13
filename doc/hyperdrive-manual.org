@@ -147,9 +147,13 @@ With [[info:use-package][use-package]]:
 
 * Usage
 
-*Be careful what you publish!* Anyone with your public key can download
-your published files from you, your friend, or anyone else who has
-them.
+#+begin_example
+Be careful about what you share!
+When you upload a file, beware:
+  You may delete your own copy,
+  But gone it may not be.
+On the network it still may be there.
+#+end_example
 
 ** Menu bar support
 
