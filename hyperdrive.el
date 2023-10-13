@@ -525,7 +525,7 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
     (kill-new url)
     (hyperdrive-message "%s" url)))
 
-(cl-defun hyperdrive-up (entry &key then)
+(cl-defun hyperdrive-up (entry &key (then nil then-set-p))
   "Go up to parent directory of ENTRY.
 Interactively, use the `hyperdrive-current-entry'.  If THEN, pass
 it to `hyperdrive-open'."
@@ -536,7 +536,10 @@ it to `hyperdrive-open'."
                  (list hyperdrive-current-entry)))
   (if-let ((parent (hyperdrive-parent entry)))
       ;; TODO: Go to entry in parent directory.
-      (hyperdrive-open parent :then then)
+      (if then-set-p
+          (hyperdrive-open parent :then then)
+        ;; Allow default callback to be used.
+        (hyperdrive-open parent))
     (hyperdrive-user-error "At root directory")))
 
 (defvar-keymap hyperdrive-up-map
