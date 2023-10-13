@@ -239,7 +239,9 @@ With point on header, returns directory entry."
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
+  "o"   #'hyperdrive-dir-find-file-other-window
   "v"   #'hyperdrive-dir-view-file
+  "V"   #'hyperdrive-dir-view-file-other-window
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
   "d"   #'hyperdrive-download
@@ -271,6 +273,8 @@ With point on header, returns directory entry."
   (mouse-set-point event)
   (call-interactively #'hyperdrive-dir-find-file))
 
+;; FIXME: Update these docstrings regarding "Interactively...".
+
 (defun hyperdrive-dir-find-file (entry)
   "Visit hyperdrive ENTRY at point.
 Interactively, visit file or directory at point in
@@ -282,6 +286,16 @@ Interactively, visit file or directory at point in
     :then (lambda ()
             (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action))))
 
+(defun hyperdrive-dir-find-file-other-window (entry)
+  "Visit hyperdrive ENTRY at point in other window.
+Interactively, visit file or directory at point in
+`hyperdrive-dir' buffer."
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
+  (cl-assert entry nil "No file/directory at point")
+  (let ((hyperdrive-directory-display-buffer-action '(display-buffer-other-window)))
+    (hyperdrive-dir-find-file entry)))
+
 (declare-function hyperdrive-view-file "hyperdrive")
 (defun hyperdrive-dir-view-file (entry)
   "Open hyperdrive ENTRY at point in `view-mode'.
@@ -291,6 +305,16 @@ Interactively, opens file or directory at point in
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (cl-assert entry nil "No file/directory at point")
   (hyperdrive-view-file entry))
+
+(defun hyperdrive-dir-view-file-other-window (entry)
+  "Open hyperdrive ENTRY at point in `view-mode' in other window.
+Interactively, opens file or directory at point in
+`hyperdrive-dir' buffer."
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (hyperdrive-dir--entry-at-point)))
+  (cl-assert entry nil "No file/directory at point")
+  (let ((hyperdrive-directory-display-buffer-action '(display-buffer-other-window)))
+    (hyperdrive-view-file entry)))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
 
