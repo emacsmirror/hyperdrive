@@ -488,9 +488,10 @@ Sends a request to the gateway for hyperdrive's latest version."
         ('unknown 'unknown)))))
 
 (declare-function hyperdrive-history "hyperdrive-history")
-(cl-defun hyperdrive-open (entry &key recurse (createp t)
-                                 (then (lambda ()
-                                         (pop-to-buffer (current-buffer)))))
+(cl-defun hyperdrive-open
+    (entry &key recurse (createp t)
+           (then (lambda ()
+                   (pop-to-buffer (current-buffer) '(display-buffer-same-window)))))
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
 not found.  THEN is a function to pass to the handler which will
