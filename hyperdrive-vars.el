@@ -213,13 +213,13 @@ an existing buffer at the same version, or make a new buffer."
 (defface hyperdrive-history-range '((t (:inherit font-lock-escape-face)))
   "Version range in `hyperdrive-history' buffers.")
 
-(defface hyperdrive-history-existent '((t (:foreground "black" :background "green")))
+(defface hyperdrive-history-existent '((t :inherit success))
   "Marker for known existent entries in `hyperdrive-history'buffers.")
 
-(defface hyperdrive-history-nonexistent '((t (:foreground "black" :background "red")))
+(defface hyperdrive-history-nonexistent '((t :inherit error))
   "Marker for known nonexistent entries in `hyperdrive-history'buffers.")
 
-(defface hyperdrive-history-unknown '((t (:foreground "black" :background "yellow")))
+(defface hyperdrive-history-unknown '((t :inherit warning))
   "Marker for entries with unknown existence in `hyperdrive-history' buffers.")
 
 (defface hyperdrive-mirror-new '((t (:foreground "black" :background "green")))
