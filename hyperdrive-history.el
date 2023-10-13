@@ -68,7 +68,13 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                                 ('nil 'hyperdrive-history-nonexistent)
                                 ('unknown 'hyperdrive-history-unknown)))
             (propertize formatted-range
-                        'face 'hyperdrive-history-range)
+                        'face 'hyperdrive-history-range
+                        'keymap
+                        (define-keymap
+                          "<mouse-1>" (lambda (&optional _e)
+                                        (interactive "e")
+                                        (hyperdrive-history-find-file range-entry)))
+                        'mouse-face 'highlight)
             (propertize (or size "")
                         'face 'hyperdrive-size)
             (propertize (or timestamp "")
@@ -117,7 +123,6 @@ and ENTRY's version are nil."
   :parent  hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-history-mode' buffers."
   "RET" #'hyperdrive-history-find-file
-  "<mouse-1>" #'hyperdrive-history-find-file
   "v"   #'hyperdrive-history-view-file
   "="   #'hyperdrive-history-diff
   "+"   #'hyperdrive-history-fill-version-ranges
