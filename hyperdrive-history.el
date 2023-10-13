@@ -168,7 +168,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                (main-header (hyperdrive-entry-description entry :with-version nil))
                (header (concat main-header "\n"
                                (format "%7s  %19s  %6s  %s"
-                                       (propertize "Exists?" 'face 'hyperdrive-column-header)
+                                       (propertize "Exists" 'face 'hyperdrive-column-header)
                                        (propertize "Drive Version Range" 'face 'hyperdrive-column-header)
                                        (propertize "Size" 'face 'hyperdrive-column-header)
                                        (format (format "%%%ds" hyperdrive-timestamp-width)
