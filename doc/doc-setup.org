@@ -39,4 +39,4 @@
 # returns major.minor version number.  This is sufficient since bugfix
 # releases are not expected to add features and therefore imply manual
 # modifications.
-#+macro: version (eval (with-current-buffer (find-file-noselect "../hyperdrive.el") (org-with-point-at 1 (if (re-search-forward "Version: +\\([^\s\n]+\\)" nil t) (match-string-no-properties 1) (error "Missing \"Version\" keyword in \"org.el\"")))))
+#+macro: version (eval (progn (require 'lisp-mnt) (lm-version "../hyperdrive.el")))
