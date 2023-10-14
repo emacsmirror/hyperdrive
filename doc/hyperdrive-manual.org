@@ -160,12 +160,13 @@ On the network it still may be there.
 
 ** Menu bar support
 
-Once ~hyperdrive.el~ has loaded, the "Hyperdrive" menu should appear
-inside the "Tools" menu at the top of the screen.  When the current
-buffer is visiting a hyperdrive file/directory, the "Hyperdrive" menu
-will also be displayed as another top-level menu.  If you don't see
-the menu bar, please double check that ~menu-bar-mode~ is enabled (it is
-enabled by default).
+If you enabled ~hyperdrive-menu-bar-mode~ (either in your [[*Example configuration][configuration]]
+or with ~M-x hyperdrive-menu-bar-mode~), the "Hyperdrive" menu should
+appear inside the "Tools" menu at the top of the screen.  When the
+current buffer is visiting a hyperdrive file/directory, the
+"Hyperdrive" menu will also be displayed as a top-level menu.  If you
+don't see the menu bar, please double check that ~menu-bar-mode~ is
+enabled (it is enabled by default).
 
 ** Hyperdrive menu command
 #+findex: hyperdrive-menu
