@@ -130,9 +130,10 @@ hyperdrive RET~.
 * Example configuration
 
 After following the [[*Installation][installation instructions]], you can add this
-snippet to your ~~/.emacs.d/init.el~ file to make the keyboard shortcut
-~C-c h~ (hold the ~Control~ key and tap ~c~, then release both and tap ~h~)
-open [[*hyperdrive-menu][hyperdrive-menu]]:
+snippet to your ~~/.emacs.d/init.el~ file.  This code will make the
+keyboard shortcut ~C-c h~ (hold the ~Control~ key and tap ~c~, then release
+both and tap ~h~) open [[*Hyperdrive menu command][the hyperdrive menu command]].  It will also enable
+the [[*Menu bar support]["Hyperdrive" menu bar]]:
 
 #+begin_src emacs-lisp
   (when (package-installed-p 'hyperdrive)
@@ -159,6 +160,8 @@ On the network it still may be there.
 #+end_example
 
 ** Menu bar support
+#+findex: hyperdrive-menu-bar-mode
+#+findex: menu-bar-mode
 
 If you enabled ~hyperdrive-menu-bar-mode~ (either in your [[*Example configuration][configuration]]
 or with ~M-x hyperdrive-menu-bar-mode~), the "Hyperdrive" menu should
@@ -251,7 +254,7 @@ default:
 #+kindex: imenu
 - ~j~ opens ~imenu~ to quickly jump to a file in the current directory
 #+kindex: hyperdrive-menu
-- ~?~ opens ~hyperdrive-menu~ (see [[*hyperdrive-menu][hyperdrive-menu]])
+- ~?~ opens ~hyperdrive-menu~ (see [[*Hyperdrive menu command][Hyperdrive menu command]])
 #+kindex: hyperdrive-create-directory-no-op
 - ~+~ signals an error, because you cannot create empty directories ([[*No empty directories]])
 
