@@ -489,7 +489,7 @@ Sends a request to the gateway for hyperdrive's latest version."
 
 (declare-function hyperdrive-history "hyperdrive-history")
 (cl-defun hyperdrive-open
-    (entry &key recurse (createp t)
+    (entry &key recurse (createp t) (messagep t)
            (then (lambda ()
                    (pop-to-buffer (current-buffer) '(display-buffer-same-window)))))
   "Open hyperdrive ENTRY.
@@ -497,7 +497,8 @@ If RECURSE, proceed up the directory hierarchy if given path is
 not found.  THEN is a function to pass to the handler which will
 be called with no arguments in the buffer opened by the handler.
 When a writable ENTRY is not found and CREATEP is non-nil, create
-a new buffer for ENTRY."
+a new buffer for ENTRY.  When MESSAGEP, show a message in the
+echo area when the request for the file is made."
   (declare (indent defun))
   ;; TODO: Add `find-file'-like interface. See <https://todo.sr.ht/~ushin/ushin/16>
   ;; FIXME: Some of the synchronous filling functions we've added now cause this to be blocking,
@@ -562,7 +563,9 @@ a new buffer for ENTRY."
                    (hyperdrive-message "Generic hyper-gateway status 500 error. Is this URL correct? %s"
                                        (hyperdrive-entry-url entry)))
                   (_ (hyperdrive-message "Unable to load URL \"%s\": %S"
-                                         (hyperdrive-entry-url entry) err))))))))
+                                         (hyperdrive-entry-url entry) err))))))
+    (when messagep
+      (hyperdrive-message "Opening <%s>..." (hyperdrive-entry-url entry)))))
 
 (cl-defun hyperdrive-fill (entry &key queue then else)
   "Fill ENTRY's metadata and call THEN.
