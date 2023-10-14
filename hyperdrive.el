@@ -1119,7 +1119,7 @@ The return value of this function is the retrieval buffer."
   "Menu with all Hyperdrive commands." hyperdrive-menu-bar-menu)
 
 ;;;###autoload
-(define-minor-mode hyperdrive-menu-bar-mode "Show hyperdrive in global menu bar."
+(define-minor-mode hyperdrive-menu-bar-mode "Show hyperdrive in \"Tools\" menu bar."
   :global t :group 'hyperdrive
   (if hyperdrive-menu-bar-mode
       (easy-menu-add-item menu-bar-tools-menu nil hyperdrive-menu-bar-menu
