@@ -136,14 +136,16 @@ open [[*hyperdrive-menu][hyperdrive-menu]]:
 
 #+begin_src emacs-lisp
   (when (package-installed-p 'hyperdrive)
-    (global-set-key (kbd "C-c h") #'hyperdrive-menu))
+    (global-set-key (kbd "C-c h") #'hyperdrive-menu)
+    (hyperdrive-menu-bar-mode 1))
 #+end_src
 
 With [[info:use-package][use-package]]:
 
 #+begin_src emacs-lisp
   (use-package hyperdrive
-    :bind ("C-c h" . hyperdrive-menu))
+    :bind ("C-c h" . hyperdrive-menu)
+    :init (hyperdrive-menu-bar-mode 1))
 #+end_src
 
 * Usage
