@@ -232,7 +232,10 @@ default:
 #+kindex: hyperdrive-dir-next
 - ~n~ and ~p~ move between entries
 #+kindex: hyperdrive-dir-find-file
-- ~RET~ or left click opens file or directory at point
+- ~RET~ or opens file or directory at point
+#+kindex: hyperdrive-dir-find-file-other-window
+- ~o~, left click, or middle click opens the file or directory at point
+  in a new window
 #+kindex: hyperdrive-dir-view-file
 - ~v~ opens file or directory at point in [[info:emacs#View Mode][view-mode]].
 #+kindex: hyperdrive-up
@@ -384,7 +387,10 @@ default:
 #+kindex: hyperdrive-history-fill-version-ranges
 - ~+~ loads version history for unknown ranges
 #+kindex: hyperdrive-history-find-file
-- ~RET~ or left click opens the file at the start of the range at point
+- ~RET~ opens the file at the start of the range at point
+#+kindex: hyperdrive-history-find-file-other-window
+- ~o~, left click, or middle click opens the file at the start of the
+  range at point at point in a new window
 #+kindex: hyperdrive-history-view-file
 - ~v~ opens the file at the start of the range at point in [[info:emacs#View Mode][view-mode]]
 #+kindex: hyperdrive-history-copy-url
