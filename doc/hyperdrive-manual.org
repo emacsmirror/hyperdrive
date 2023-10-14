@@ -130,8 +130,8 @@ hyperdrive RET~.
 * Example configuration
 
 After following the [[*Installation][installation instructions]], you can add this
-snippet to your ~~/.emacs.d/init.el~ file to make the keyboard short ~C-c
-h~ (hold the ~Control~ key and tap ~c~, then release both and tap ~h~) to
+snippet to your ~~/.emacs.d/init.el~ file to make the keyboard shortcut
+~C-c h~ (hold the ~Control~ key and tap ~c~, then release both and tap ~h~)
 open [[*hyperdrive-menu][hyperdrive-menu]]:
 
 #+begin_src emacs-lisp
