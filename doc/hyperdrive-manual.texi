@@ -434,7 +434,13 @@ default:
 @kindex hyperdrive-dir-find-file
 @itemize
 @item
-@code{RET} or left click opens file or directory at point
+@code{RET} or opens file or directory at point
+@end itemize
+@kindex hyperdrive-dir-find-file-other-window
+@itemize
+@item
+@code{o}, left click, or middle click opens the file or directory at point
+in a new window
 @end itemize
 @kindex hyperdrive-dir-view-file
 @itemize
@@ -657,7 +663,13 @@ default:
 @kindex hyperdrive-history-find-file
 @itemize
 @item
-@code{RET} or left click opens the file at the start of the range at point
+@code{RET} opens the file at the start of the range at point
+@end itemize
+@kindex hyperdrive-history-find-file-other-window
+@itemize
+@item
+@code{o}, left click, or middle click opens the file at the start of the
+range at point at point in a new window
 @end itemize
 @kindex hyperdrive-history-view-file
 @itemize
