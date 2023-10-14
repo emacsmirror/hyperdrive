@@ -285,7 +285,7 @@ Interactively, visit file or directory at point in
   (cl-assert entry nil "No file/directory at point")
   (hyperdrive-open entry
     :then (lambda ()
-            (display-buffer (current-buffer) display-buffer-action))))
+            (pop-to-buffer (current-buffer) display-buffer-action))))
 
 (defun hyperdrive-dir-find-file-other-window (entry)
   "Visit hyperdrive ENTRY at point in other window.
