@@ -279,8 +279,8 @@ Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer.  DISPLAY-BUFFER-ACTION is passed to
 `pop-to-buffer'."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
   (hyperdrive-open entry
     :then (lambda ()
             (pop-to-buffer (current-buffer) display-buffer-action))))
@@ -290,8 +290,8 @@ Interactively, visit file or directory at point in
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
   (hyperdrive-dir-find-file entry :display-buffer-action t))
 
 (declare-function hyperdrive-view-file "hyperdrive")
@@ -300,8 +300,8 @@ Interactively, visit file or directory at point in
 Interactively, opens file or directory at point in
 `hyperdrive-dir' buffer."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
   (hyperdrive-view-file entry))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
@@ -309,16 +309,16 @@ Interactively, opens file or directory at point in
 (defun hyperdrive-dir-copy-url (entry)
   "Copy URL of ENTRY into the kill ring."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
   (hyperdrive-copy-url entry))
 
 (declare-function hyperdrive-history "hyperdrive-history")
 
 (defun hyperdrive-dir-history (entry)
   "Display version history for ENTRY at point."
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
   (hyperdrive-history entry))
 
 (defun hyperdrive-create-directory-no-op ()
