@@ -274,16 +274,18 @@ With point on header, returns directory entry."
 
 ;; FIXME: Update these docstrings regarding "Interactively...".
 
-(defun hyperdrive-dir-find-file (entry)
+(cl-defun hyperdrive-dir-find-file
+    (entry &key (display-buffer-action hyperdrive-directory-display-buffer-action))
   "Visit hyperdrive ENTRY at point.
 Interactively, visit file or directory at point in
-`hyperdrive-dir' buffer."
+`hyperdrive-dir' buffer.  DISPLAY-BUFFER-ACTION is passed to
+`display-buffer'."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (cl-assert entry nil "No file/directory at point")
   (hyperdrive-open entry
     :then (lambda ()
-            (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action))))
+            (display-buffer (current-buffer) display-buffer-action))))
 
 (defun hyperdrive-dir-find-file-other-window (entry)
   "Visit hyperdrive ENTRY at point in other window.
@@ -292,8 +294,7 @@ Interactively, visit file or directory at point in
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (cl-assert entry nil "No file/directory at point")
-  (let ((hyperdrive-directory-display-buffer-action '(display-buffer-other-window)))
-    (hyperdrive-dir-find-file entry)))
+  (hyperdrive-dir-find-file entry :display-buffer-action t))
 
 (declare-function hyperdrive-view-file "hyperdrive")
 (defun hyperdrive-dir-view-file (entry)
