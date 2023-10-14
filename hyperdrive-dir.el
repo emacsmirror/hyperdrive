@@ -272,14 +272,12 @@ With point on header, returns directory entry."
   (mouse-set-point event)
   (call-interactively #'hyperdrive-dir-find-file-other-window))
 
-;; FIXME: Update these docstrings regarding "Interactively...".
-
 (cl-defun hyperdrive-dir-find-file
     (entry &key (display-buffer-action hyperdrive-directory-display-buffer-action))
   "Visit hyperdrive ENTRY at point.
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer.  DISPLAY-BUFFER-ACTION is passed to
-`display-buffer'."
+`pop-to-buffer'."
   (declare (modes hyperdrive-dir-mode))
   (interactive (list (hyperdrive-dir--entry-at-point)))
   (cl-assert entry nil "No file/directory at point")
