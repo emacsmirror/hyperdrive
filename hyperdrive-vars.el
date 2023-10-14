@@ -47,6 +47,9 @@
   :type 'boolean)
 
 (defcustom hyperdrive-persist-location nil
+  ;; TODO: Consider using XDG locations for this, as well as storing
+  ;; -hyperdrives separately from -version-ranges.  (Note that
+  ;; xdg-state-home is only in Emacs 29+ and is not in compat.)
   "Location where `persist' will store data.
 
 - `hyperdrive-hyperdrives'
