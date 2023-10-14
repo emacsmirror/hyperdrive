@@ -38,11 +38,6 @@
   :group 'external
   :prefix "hyperdrive-")
 
-(defcustom hyperdrive-storage-location
-  (expand-file-name "~/.local/share/hyper-gateway-nodejs/")
-  "Location to store Hypercore data."
-  :type '(file :must-match t))
-
 (defcustom hyperdrive-hyper-gateway-port 4973
   "Port on which to run the hyper-gateway server."
   :type 'natnum)

@@ -780,10 +780,6 @@ DNS domains are checked for suspicious characters (see
 You can customize the following variables settings by running ~M-x
 customize-group RET hyperdrive RET~:
 
-#+vindex: hyperdrive-storage-location
-- ~hyperdrive-storage-location~ :: Location to store Hypercore
-  data. Defaults to ~"~/.local/share/hyper-gateway-nodejs/"~.
-
 #+vindex: hyperdrive-hyper-gateway-port
 - ~hyperdrive-hyper-gateway-port~ :: Port on which to run the
   hyper-gateway server. Defaults to ~4973~.

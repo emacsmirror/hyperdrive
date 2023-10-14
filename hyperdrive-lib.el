@@ -890,7 +890,6 @@ HYPERDRIVE's public metadata file."
   "Purge all data corresponding to HYPERDRIVE, then call THEN with response.
 
 - HYPERDRIVE file content and metadata managed by hyper-gateway
-  in `hyperdrive-storage-location'
 - hash table entry for HYPERDRIVE in `hyperdrive-hyperdrives'
 - hash table entries for HYPERDRIVE in `hyperdrive-version-ranges'
 
