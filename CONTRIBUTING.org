@@ -1,8 +1,8 @@
 * Release checklist
 
 1. Commit new version
-   - Update package main file header version
-   - Update CHANGELOG (with release date)
+   - [ ] Update package main file header version
+   - [ ] Update CHANGELOG (with release date)
 2. Commit new pre-release
-   - Update package main file header version
-   - Update CHANGELOG
+   - [ ] Update package main file header version
+   - [ ] Update CHANGELOG
