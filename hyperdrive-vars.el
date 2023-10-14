@@ -223,20 +223,16 @@ an existing buffer at the same version, or make a new buffer."
   "Marker for entries with unknown existence in `hyperdrive-history' buffers.")
 
 (defface hyperdrive-mirror-new '((t (:foreground "black" :background "green")))
-  "Face for files with \"new\" status in `hyperdrive-mirror' buffers."
-  :group 'hyperdrive-faces)
+  "Face for files with \"new\" status in `hyperdrive-mirror' buffers.")
 
 (defface hyperdrive-mirror-same '((t (:foreground "black" :background "red")))
-  "Face for files with \"same\" status in `hyperdrive-mirror' buffers."
-  :group 'hyperdrive-faces)
+  "Face for files with \"same\" status in `hyperdrive-mirror' buffers.")
 
 (defface hyperdrive-mirror-newer '((t (:foreground "black" :background "yellow")))
-  "Face for files with \"newer\" status in `hyperdrive-mirror' buffers."
-  :group 'hyperdrive-faces)
+  "Face for files with \"newer\" status in `hyperdrive-mirror' buffers.")
 
 (defface hyperdrive-mirror-older '((t (:foreground "black" :background "purple")))
-  "Face for files with \"older\" status in `hyperdrive-mirror' buffers."
-  :group 'hyperdrive-faces)
+  "Face for files with \"older\" status in `hyperdrive-mirror' buffers.")
 
 ;;;;; Regular expressions
 
