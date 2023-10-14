@@ -135,7 +135,8 @@ h~ (hold the ~Control~ key and tap ~c~, then release both and tap ~h~) to
 open [[*hyperdrive-menu][hyperdrive-menu]]:
 
 #+begin_src emacs-lisp
-  (global-set-key (kbd "C-c h") #'hyperdrive-menu)
+  (when (package-installed-p 'hyperdrive)
+    (global-set-key (kbd "C-c h") #'hyperdrive-menu))
 #+end_src
 
 With [[info:use-package][use-package]]:
