@@ -41,8 +41,7 @@
 ;;;###autoload
 (cl-defun hyperdrive-dir-handler (directory-entry &key then)
   "Show DIRECTORY-ENTRY.
-If THEN, call it in the directory buffer with no arguments after
-the metadata has been loaded."
+If THEN, call it in the directory buffer with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   ;; TODO: Set a timer and say "Opening URL..." if entry doesn't load
   ;; in a couple of seconds (same in hyperdrive-handler-default)
@@ -98,9 +97,7 @@ the metadata has been loaded."
                                                (or (when prev-entry
                                                      (goto-entry prev-entry ewoc))
                                                    (goto-char prev-point)))
-                                             (set-buffer-modified-p nil)
-                                             (when then
-                                               (funcall then)))
+                                             (set-buffer-modified-p nil))
                                            ;; TODO: Remove this and the commented out `debug-start-time'
                                            ;; binding when we're done experimenting.
                                            ;; (message "Elapsed: %s"
@@ -117,7 +114,8 @@ the metadata has been loaded."
               :then (lambda (&rest _)
                       (update-footer (cl-incf num-filled) num-entries))))
           (plz-run metadata-queue)
-          (display-buffer (current-buffer) hyperdrive-directory-display-buffer-action))))))
+          (when then
+            (funcall then)))))))
 
 (defun hyperdrive-dir-column-headers (prefix)
   "Return column headers as a string with PREFIX.
@@ -241,6 +239,7 @@ With point on header, returns directory entry."
   :parent hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
   "RET" #'hyperdrive-dir-find-file
+  "o"   #'hyperdrive-dir-find-file-other-window
   "v"   #'hyperdrive-dir-view-file
   "j"   #'imenu
   "w"   #'hyperdrive-dir-copy-url
@@ -271,16 +270,29 @@ With point on header, returns directory entry."
   "Find entry at EVENT's position."
   (interactive "e")
   (mouse-set-point event)
-  (call-interactively #'hyperdrive-dir-find-file))
+  (call-interactively #'hyperdrive-dir-find-file-other-window))
 
-(defun hyperdrive-dir-find-file (entry)
+(cl-defun hyperdrive-dir-find-file
+    (entry &key (display-buffer-action hyperdrive-directory-display-buffer-action))
   "Visit hyperdrive ENTRY at point.
+Interactively, visit file or directory at point in
+`hyperdrive-dir' buffer.  DISPLAY-BUFFER-ACTION is passed to
+`pop-to-buffer'."
+  (declare (modes hyperdrive-dir-mode))
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
+  (hyperdrive-open entry
+    :then (lambda ()
+            (pop-to-buffer (current-buffer) display-buffer-action))))
+
+(defun hyperdrive-dir-find-file-other-window (entry)
+  "Visit hyperdrive ENTRY at point in other window.
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
-  (hyperdrive-open entry))
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
+  (hyperdrive-dir-find-file entry :display-buffer-action t))
 
 (declare-function hyperdrive-view-file "hyperdrive")
 (defun hyperdrive-dir-view-file (entry)
@@ -288,8 +300,8 @@ Interactively, visit file or directory at point in
 Interactively, opens file or directory at point in
 `hyperdrive-dir' buffer."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
   (hyperdrive-view-file entry))
 
 (declare-function hyperdrive-copy-url "hyperdrive")
@@ -297,16 +309,16 @@ Interactively, opens file or directory at point in
 (defun hyperdrive-dir-copy-url (entry)
   "Copy URL of ENTRY into the kill ring."
   (declare (modes hyperdrive-dir-mode))
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
   (hyperdrive-copy-url entry))
 
 (declare-function hyperdrive-history "hyperdrive-history")
 
 (defun hyperdrive-dir-history (entry)
   "Display version history for ENTRY at point."
-  (interactive (list (hyperdrive-dir--entry-at-point)))
-  (cl-assert entry nil "No file/directory at point")
+  (interactive (list (or (hyperdrive-dir--entry-at-point)
+                         (hyperdrive-user-error "No file/directory at point"))))
   (hyperdrive-history entry))
 
 (defun hyperdrive-create-directory-no-op ()

@@ -37,7 +37,7 @@
   "Find entry at EVENT's position."
   (interactive "e")
   (mouse-set-point event)
-  (call-interactively #'hyperdrive-history-find-file))
+  (call-interactively #'hyperdrive-history-find-file-other-window))
 
 (defun hyperdrive-history-pp (thing)
   "Pretty-print THING.
@@ -124,6 +124,7 @@ and ENTRY's version are nil."
   :parent  hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-history-mode' buffers."
   "RET" #'hyperdrive-history-find-file
+  "o"   #'hyperdrive-history-find-file-other-window
   "v"   #'hyperdrive-history-view-file
   "="   #'hyperdrive-history-diff
   "+"   #'hyperdrive-history-fill-version-ranges
@@ -257,11 +258,13 @@ Interactively, diff range entry at point with previous entry."
     :then (lambda ()
             (pop-to-buffer (current-buffer)))))
 
-(defun hyperdrive-history-find-file (range-entry)
+(cl-defun hyperdrive-history-find-file
+    (range-entry &key (then (lambda ()
+                              (pop-to-buffer (current-buffer) '(display-buffer-same-window)))))
   "Visit hyperdrive entry in RANGE-ENTRY at point.
-When entry does not exist, does nothing and returns nil.
-When entry is not known to exist, attempts to load entry at
-RANGE-ENTRY's RANGE-END.
+Then call THEN.  When entry does not exist, does nothing and
+returns nil.  When entry is not known to exist, attempts to load
+entry at RANGE-ENTRY's RANGE-END.
 
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
@@ -270,13 +273,27 @@ buffer."
   (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: open it.
-     (hyperdrive-open (cdr range-entry)))
+     (hyperdrive-open (cdr range-entry) :then then))
     ('nil
      ;; Known to not exist: warn user.
      (hyperdrive-user-error "File does not exist!"))
     ('unknown
      ;; Not known to exist: fill version ranges:
      (hyperdrive-history-fill-version-ranges range-entry))))
+
+(defun hyperdrive-history-find-file-other-window (range-entry)
+  "Visit hyperdrive entry in RANGE-ENTRY at point in other window.
+Then call THEN.  When entry does not exist, does nothing and
+returns nil.  When entry is not known to exist, attempts to load
+entry at RANGE-ENTRY's RANGE-END.
+
+Interactively, visit entry at point in `hyperdrive-history'
+buffer."
+  (declare (modes hyperdrive-history-mode))
+  (interactive (list (hyperdrive-history-range-entry-at-point)))
+  (hyperdrive-history-find-file
+   range-entry :then (lambda ()
+                       (pop-to-buffer (current-buffer) t))))
 
 (declare-function hyperdrive-view-file "hyperdrive")
 (defun hyperdrive-history-view-file (range-entry)

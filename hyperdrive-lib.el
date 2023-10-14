@@ -488,7 +488,10 @@ Sends a request to the gateway for hyperdrive's latest version."
         ('unknown 'unknown)))))
 
 (declare-function hyperdrive-history "hyperdrive-history")
-(cl-defun hyperdrive-open (entry &key then recurse (createp t))
+(cl-defun hyperdrive-open
+    (entry &key recurse (createp t)
+           (then (lambda ()
+                   (pop-to-buffer (current-buffer) '(display-buffer-same-window)))))
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
 not found.  THEN is a function to pass to the handler which will
@@ -1242,11 +1245,6 @@ If then, then call THEN with no arguments.  Default handler."
                         buffer-read-only (or (not (hyperdrive-writablep hyperdrive)) version))
                   (set-buffer-modified-p nil)
                   (set-visited-file-modtime (current-time))))
-              ;; TODO: Option to defer showing buffer.
-              ;; It seems that `pop-to-buffer' is moving point, even
-              ;; though it shouldn't, so we call it here, before going
-              ;; to a link target.
-              (pop-to-buffer (current-buffer))
               (when target
                 (pcase major-mode
                   ('org-mode
@@ -1288,12 +1286,17 @@ If `hyperdrive-render-html' is non-nil, render HTML with
 `shr-insert-document', then calls THEN if given.  Otherwise, open
 with `hyperdrive-handler-default'."
   (if hyperdrive-render-html
-      (progn
-        (eww (hyperdrive-entry-url entry))
-        ;; Set `hyperdrive-current-entry' and use `hyperdrive-mode'
-        ;; for remapped keybindings for, e.g., `hyperdrive-up'.
-        (setq-local hyperdrive-current-entry entry)
-        (hyperdrive-mode)
+      (let (buffer)
+        (save-window-excursion
+          ;; Override EWW's calling `pop-to-buffer-same-window'; we
+          ;; want our callback to display the buffer.
+          (eww (hyperdrive-entry-url entry))
+          ;; Set `hyperdrive-current-entry' and use `hyperdrive-mode'
+          ;; for remapped keybindings for, e.g., `hyperdrive-up'.
+          (setq-local hyperdrive-current-entry entry)
+          (hyperdrive-mode)
+          (setq buffer (current-buffer)))
+        (set-buffer buffer)
         (when then
           (funcall then)))
     (hyperdrive-handler-default entry :then then)))
