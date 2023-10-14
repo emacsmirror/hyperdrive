@@ -293,7 +293,7 @@ buffer."
   (interactive (list (hyperdrive-history-range-entry-at-point)))
   (hyperdrive-history-find-file
    range-entry :then (lambda ()
-                       (pop-to-buffer (current-buffer) '(display-buffer-other-window)))))
+                       (pop-to-buffer (current-buffer) t))))
 
 (declare-function hyperdrive-view-file "hyperdrive")
 (defun hyperdrive-history-view-file (range-entry)
