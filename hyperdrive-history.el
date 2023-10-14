@@ -124,7 +124,7 @@ and ENTRY's version are nil."
   :parent  hyperdrive-ewoc-mode-map
   :doc "Local keymap for `hyperdrive-history-mode' buffers."
   "RET" #'hyperdrive-history-find-file
-  "o" #'hyperdrive-history-find-file-other-window
+  "o"   #'hyperdrive-history-find-file-other-window
   "v"   #'hyperdrive-history-view-file
   "="   #'hyperdrive-history-diff
   "+"   #'hyperdrive-history-fill-version-ranges
