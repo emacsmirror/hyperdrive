@@ -11,10 +11,14 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - ~hyperdrive-menu-bar-mode~ enables the "Hyperdrive" menu bar inside "Tools"
 - ~org-insert-link~ automatically inserts relative links to hyperdrive
   files within the same drive
-- ~yank-media~ support (on Emacs 29 or later)
+- ~hyperdrive-find-file-other-window~: Press ~o~ in the directory or
+  history buffer to open a new window
+- ~yank-media~: On Emacs 29 or later, run ~M-x yank-media~ in a
+  hyperdrive directory to upload the image in the clipboard.
+- ~info-look~: Press ~i~ in ~*help*~ to open the user manual.
 - ~save-some-buffers~ integration
-- ~info-look~ integration
-- ~view-mode~ integration
+- ~view-mode~: Press ~v~ in the directory or history buffer to
+  open a file in ~view-mode~.
 - Org-mode link completion
 - directory view sorting by column (with clickable headers)
 
@@ -25,9 +29,11 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - ~hyperdrive-mode~ keybindings now work when viewing =hyper://= files in EWW
 - History buffer displays right away; press ~+~ to load an unknown range
 - ~hyperdrive-delete~ now works in hyperdrive file buffers
+- Removed unused ~hyperdrive-storage-location~ defcustom
 
 ** Fixed
 
+- Fixed "Hyperdrive" listing in ~*info* dir (top)~
 - Fixed ~imenu~ face
 - Removed unused defcustom ~hyperdrive-hyper-gateway-p2p-port~
 - Fixed version history navigation in directories
