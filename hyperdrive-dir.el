@@ -270,7 +270,7 @@ With point on header, returns directory entry."
   "Find entry at EVENT's position."
   (interactive "e")
   (mouse-set-point event)
-  (call-interactively #'hyperdrive-dir-find-file))
+  (call-interactively #'hyperdrive-dir-find-file-other-window))
 
 ;; FIXME: Update these docstrings regarding "Interactively...".
 

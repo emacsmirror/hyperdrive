@@ -37,7 +37,7 @@
   "Find entry at EVENT's position."
   (interactive "e")
   (mouse-set-point event)
-  (call-interactively #'hyperdrive-history-find-file))
+  (call-interactively #'hyperdrive-history-find-file-other-window))
 
 (defun hyperdrive-history-pp (thing)
   "Pretty-print THING.
