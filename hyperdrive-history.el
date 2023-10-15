@@ -75,7 +75,12 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                                 ('unknown 'hyperdrive-history-unknown)))
             (propertize formatted-range
                         'face 'hyperdrive-history-range
-                        'mouse-face 'highlight)
+                        'mouse-face 'highlight
+                        'help-echo (format (pcase-exhaustive existsp
+                                             ('t "Open version %s")
+                                             ('nil "Nonexistent at version %s")
+                                             ('unknown "Load history at version %s"))
+                                           range-start))
             (propertize (or size "")
                         'face 'hyperdrive-size)
             (propertize (or timestamp "")
