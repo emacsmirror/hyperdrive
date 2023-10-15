@@ -115,6 +115,7 @@
                                                            "latest")))
                               (concat ": " (propertize display-version 'face 'transient-value)))))
      )
+    ("V l" "Latest" hyperdrive-open-latest-version)
     ("V h" "History" hyperdrive-history
      :inapt-if (lambda ()
                  (hyperdrive--entry-directory-p (oref transient--prefix scope))))]]
