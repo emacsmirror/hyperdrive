@@ -885,6 +885,12 @@ The return value of this function is the retrieval buffer."
                                                                             :target-directory target-dir)))
                                               :active `(hyperdrive-writablep ,drive)
                                               :help "Upload files to hyperdrive")
+                                      (vector "Mirror" #'hyperdrive-mirror
+                                              ;; TODO: `hyperdrive-mirror''s interactive form will also prompt
+                                              ;; for a drive. After changing `hyperdrive-mirror' to use
+                                              ;; Transient.el, we should pass in the default drive argument.
+                                              :active `(hyperdrive-writablep ,drive)
+                                              :help "Mirror a directory to hyperdrive")
                                       "---"
                                       (vector "Petname"
                                               ;; HACK: We have to unquote the value of the entry because it seems that the filter
@@ -971,6 +977,9 @@ The return value of this function is the retrieval buffer."
                                     :target-directory target-dir)))
        :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
        :help "Upload files to hyperdrive"]
+      ["Mirror" hyperdrive-mirror
+       :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+       :help "Mirror a directory to hyperdrive"]
       "---"
       ["Petname"
        ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when fixed.
