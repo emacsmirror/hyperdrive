@@ -165,7 +165,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                 (mapcar (lambda (range)
                           ;; Some entries may not exist at `range-start',
                           ;; as in the version before it was created, see:
-                          ;; (info "(hyperdrive)Versioning")
+                          ;; (info "(hyperdrive-manual)Versioning")
                           (cons range
                                 (hyperdrive-entry-create
                                  :hyperdrive hyperdrive

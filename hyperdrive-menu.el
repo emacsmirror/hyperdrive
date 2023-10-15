@@ -58,7 +58,7 @@
 ;;;###autoload (autoload 'hyperdrive-menu "hyperdrive-menu" nil t)
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
-  :info-manual "(Hyperdrive)"
+  :info-manual "(hyperdrive-manual)"
   [["Hyperdrive"
     :description
     (lambda ()

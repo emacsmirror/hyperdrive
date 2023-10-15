@@ -704,7 +704,7 @@ Universal prefix argument \\[universal-argument] forces
    :mode '(emacs-lisp-mode . "hyperdrive")
    :regexp (rx word-boundary "hyperdrive-" (1+ (not (any "	\n \"'(),[]`‘’"))))
    :doc-spec '((;; INFO-NODE
-	        "(hyperdrive)Function Index"
+	        "(hyperdrive-manual)Function Index"
 	        ;; TRANS-FUNC
 	        nil
 	        ;; PREFIX
@@ -712,7 +712,7 @@ Universal prefix argument \\[universal-argument] forces
 	        ;; SUFFIX
 	        "\\( \\|$\\)")
 	       (;; INFO-NODE
-	        "(hyperdrive)Variable Index"
+	        "(hyperdrive-manual)Variable Index"
 	        ;; TRANS-FUNC
 	        nil
 	        ;; PREFIX
@@ -720,7 +720,7 @@ Universal prefix argument \\[universal-argument] forces
 	        ;; SUFFIX
 	        "\\( \\|$\\)")
                (;; INFO-NODE
-	        "(hyperdrive)Keystroke Index"
+	        "(hyperdrive-manual)Keystroke Index"
 	        ;; TRANS-FUNC
 	        nil
 	        ;; PREFIX
@@ -1142,7 +1142,7 @@ The return value of this function is the retrieval buffer."
 (defun hyperdrive-info-manual ()
   "Open hyperdrive.el info manual."
   (interactive)
-  (info "hyperdrive"))
+  (info "(hyperdrive-manual) Top"))
 
 ;;;; Footer
 

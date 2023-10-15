@@ -14,7 +14,7 @@
 
 @dircategory Emacs
 @direntry
-* Hyperdrive: (hyperdrive). P2P filesystem in Emacs.
+* Hyperdrive: (hyperdrive-manual). P2P filesystem in Emacs.
 @end direntry
 
 @finalout
