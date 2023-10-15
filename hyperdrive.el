@@ -549,7 +549,7 @@ it to `hyperdrive-open'."
   "C-j" #'hyperdrive-up)
 
 (defun hyperdrive-previous-version (entry)
-  "Show previous version of ENTRY."
+  "Open previous version of ENTRY."
   (declare (modes hyperdrive-mode))
   (interactive (list hyperdrive-current-entry))
   (if-let ((previous-entry (hyperdrive-entry-previous entry)))
@@ -560,7 +560,7 @@ it to `hyperdrive-open'."
                                 (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry)))))))
 
 (defun hyperdrive-next-version (entry)
-  "Show next version of ENTRY."
+  "Open next version of ENTRY."
   (declare (modes hyperdrive-mode))
   (interactive (list hyperdrive-current-entry))
   (pcase-exhaustive (hyperdrive-entry-next entry)
