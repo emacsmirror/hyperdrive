@@ -101,14 +101,15 @@
      :inapt-if-not (lambda  ()
                      (let ((entry (oref transient--prefix scope)))
                        (and (hyperdrive-entry-version entry)
-                            (hyperdrive-entry-next entry))))
-     ;; :transient t
+                            (hyperdrive-entry-p (hyperdrive-entry-next entry)))))
      :description (lambda ()
                     (concat "Next"
                             (when-let* ((entry (oref transient--prefix scope))
                                         (next-entry (hyperdrive-entry-next entry))
-                                        ;; Don't add ": latest" if we're already at the latest version
-                                        ((not (eq entry next-entry)))
+                                        ;; Don't add ": latest" if we're already at the latest
+                                        ;; version or if the next version is `unknown'.
+                                        ((and (hyperdrive-entry-version entry)
+                                              (hyperdrive-entry-p (hyperdrive-entry-next entry))))
                                         (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
                                                              (number-to-string next-version)
                                                            "latest")))
