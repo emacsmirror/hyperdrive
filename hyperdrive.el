@@ -582,6 +582,15 @@ it to `hyperdrive-open'."
     ((and (pred hyperdrive-entry-p) next-entry)
      (hyperdrive-open next-entry))))
 
+(defun hyperdrive-open-latest-version (entry)
+  "Open latest version of ENTRY."
+  (declare (modes hyperdrive-mode))
+  (interactive (list hyperdrive-current-entry))
+  (if-let ((latest-entry (hyperdrive-entry-at nil entry)))
+      (hyperdrive-open latest-entry)
+    (hyperdrive-message (substitute-command-keys "%s does not exist at its hyperdrive's latest version. Try \\[hyperdrive-history]")
+                        (hyperdrive-entry-description entry :with-version nil))))
+
 ;;;; Bookmark support
 
 ;; TODO: Display entry description instead of full URL in bookmark list view.
