@@ -862,6 +862,7 @@ The return value of this function is the retrieval buffer."
                                                    :hyperdrive ,drive
                                                    :read-version current-prefix-arg)))
                                               :help "View a file in hyperdrive")
+                                      "---"
                                       (vector "Upload File"
                                               `(lambda ()
                                                  (interactive)
@@ -872,6 +873,18 @@ The return value of this function is the retrieval buffer."
                                                    (hyperdrive-upload-file filename entry)))
                                               :active `(hyperdrive-writablep ,drive)
                                               :help "Upload a file to hyperdrive")
+                                      (vector "Upload Files"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let* ((files (hyperdrive-read-files))
+                                                        (target-dir (hyperdrive-read-path
+                                                                     :hyperdrive ,drive
+                                                                     :prompt "Target directory in «%s»"
+                                                                     :default "/")))
+                                                   (hyperdrive-upload-files files ,drive
+                                                                            :target-directory target-dir)))
+                                              :active `(hyperdrive-writablep ,drive)
+                                              :help "Upload files to hyperdrive")
                                       "---"
                                       (vector "Petname"
                                               ;; HACK: We have to unquote the value of the entry because it seems that the filter
@@ -934,6 +947,7 @@ The return value of this function is the retrieval buffer."
            :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
            :read-version current-prefix-arg)))
        :help "View a file in hyperdrive"]
+      "---"
       ["Upload File"
        (lambda ()
          (interactive)
@@ -944,6 +958,19 @@ The return value of this function is the retrieval buffer."
            (hyperdrive-upload-file filename entry)))
        :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
        :help "Upload a file to hyperdrive"]
+      ["Upload Files"
+       (lambda ()
+         (interactive)
+         (let* ((files (hyperdrive-read-files))
+                (drive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                (target-dir (hyperdrive-read-path
+                             :hyperdrive drive
+                             :prompt "Target directory in «%s»"
+                             :default "/")))
+           (hyperdrive-upload-files files drive
+                                    :target-directory target-dir)))
+       :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+       :help "Upload files to hyperdrive"]
       "---"
       ["Petname"
        ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when fixed.
