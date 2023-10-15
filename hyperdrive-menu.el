@@ -112,8 +112,11 @@
                                         (display-version (if-let ((next-version (hyperdrive-entry-version next-entry)))
                                                              (number-to-string next-version)
                                                            "latest")))
-                              (concat ": " (propertize display-version 'face 'transient-value))))))
-    ("V h" "History" hyperdrive-history)]]
+                              (concat ": " (propertize display-version 'face 'transient-value)))))
+     )
+    ("V h" "History" hyperdrive-history
+     :inapt-if (lambda ()
+                 (hyperdrive--entry-directory-p (oref transient--prefix scope))))]]
   [ :if (lambda () (and (oref transient--prefix scope)
                         ;; TODO: Remove this check and add useful history transient UI.
                         (not (eq 'hyperdrive-history-mode major-mode))))
