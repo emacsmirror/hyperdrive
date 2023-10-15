@@ -859,7 +859,7 @@ The return value of this function is the retrieval buffer."
                                                  (interactive)
                                                  (hyperdrive-view-file
                                                   (hyperdrive-read-entry
-                                                   :hyperdrive ,entry
+                                                   :hyperdrive ,drive
                                                    :read-version current-prefix-arg)))
                                               :help "View a file in hyperdrive")
                                       "---"
