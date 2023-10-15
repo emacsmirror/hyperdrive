@@ -188,9 +188,8 @@ To be used as the pretty-printer for `ewoc-create'."
   (pcase-let* (((cl-struct hyperdrive-entry size mtime) entry)
                (size (when size
                        (file-size-human-readable size)))
-               (face (if (hyperdrive--entry-directory-p entry)
-                         'hyperdrive-directory
-                       'default))
+               (directoryp (hyperdrive--entry-directory-p entry))
+               (face (if directoryp 'hyperdrive-directory 'default))
                (timestamp (if mtime
                               (format-time-string hyperdrive-timestamp-format mtime)
                             (propertize " " 'display '(space :width hyperdrive-timestamp-width)))))
@@ -202,7 +201,9 @@ To be used as the pretty-printer for `ewoc-create'."
             (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
                             (hyperdrive-entry-name entry))
                         'face face
-                        'mouse-face 'highlight))))
+                        'mouse-face 'highlight
+                        'help-echo (format "Visit this %s in other window"
+                                           (if directoryp "directory ""file"))))))
 
 (defun hyperdrive-dir--entry-at-point ()
   "Return entry at point.
