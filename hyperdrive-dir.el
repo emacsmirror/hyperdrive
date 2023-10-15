@@ -145,7 +145,8 @@ Columns are suffixed with up/down arrows according to
                            (and selected left-aligned (concat " " arrow)))))
         (push (propertize (format format-str desc)
                           'hyperdrive-dir-column column
-                          'mouse-face 'highlight)
+                          'mouse-face 'highlight
+                          'help-echo (format "Sort directory contents by %s" desc))
               headers)
         (unless (eq column 'name)
           ;; These gap spaces are necessary to prevent display mouse-face
