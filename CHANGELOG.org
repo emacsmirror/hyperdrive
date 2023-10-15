@@ -5,6 +5,11 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 * 0.3-pre
 
+** Added
+
+- ~hyperdrive-open-latest-version~: Open the latest version of the
+  current file or directory
+
 ** Fixed
 
 - Fixed single click on directory column header
