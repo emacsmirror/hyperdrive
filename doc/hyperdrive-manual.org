@@ -370,10 +370,12 @@ the hyperdrive.*
 ** View the hyperdrive version history
 #+findex: hyperdrive-previous-version
 #+findex: hyperdrive-next-version
+#+findex: hyperdrive-open-latest-version
 
-Hyperdrives are versioned (see [[*Versioning]]).  To view the previous/next
-version of a hyperdrive file, run ~hyperdrive-previous-version~ or
-~hyperdrive-next-version~ inside the file's buffer.
+Hyperdrives are versioned (see [[*Versioning]]).  To open the
+previous/next version of a hyperdrive file or directory, run
+~hyperdrive-previous-version~ or ~hyperdrive-next-version~.  To open its
+latest version, run ~hyperdrive-open-latest-version~.
 
 *** History buffer
 #+findex: hyperdrive-history
