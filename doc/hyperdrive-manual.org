@@ -891,9 +891,11 @@ If you run into issues, please first try resetting the value of
 ~hyperdrive-hyperdrives~:
 
 #+begin_src elisp
-(progn
-  (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
-  (persist-save 'hyperdrive-hyperdrives))
+  (progn
+    (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
+    (persist-save 'hyperdrive-hyperdrives)
+    (setf hyperdrive-version-ranges (make-hash-table :test #'equal))
+    (persist-save 'hyperdrive-version-ranges))
 #+end_src
 
 Please ensure that your version of ~hyper-gateway~ (~M-x

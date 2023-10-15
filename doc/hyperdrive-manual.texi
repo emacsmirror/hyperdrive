@@ -1350,7 +1350,9 @@ If you run into issues, please first try resetting the value of
 @lisp
 (progn
   (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
-  (persist-save 'hyperdrive-hyperdrives))
+  (persist-save 'hyperdrive-hyperdrives)
+  (setf hyperdrive-version-ranges (make-hash-table :test #'equal))
+  (persist-save 'hyperdrive-version-ranges))
 @end lisp
 
 Please ensure that your version of @code{hyper-gateway} (@code{M-x
