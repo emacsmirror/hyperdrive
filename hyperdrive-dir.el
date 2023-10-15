@@ -144,13 +144,7 @@ Columns are suffixed with up/down arrows according to
                            ;; extended to the end of the window.
                            (and selected left-aligned (concat " " arrow)))))
         (push (propertize (format format-str desc)
-                          'keymap
-                          (define-keymap
-                            "<mouse-1>" (lambda (&optional _e)
-                                          (interactive "e")
-                                          (hyperdrive-dir-sort
-                                           (hyperdrive-dir-toggle-sort-direction
-                                            column hyperdrive-directory-sort))))
+                          'hyperdrive-dir-column column
                           'mouse-face 'highlight)
               headers)
         (unless (eq column 'name)
@@ -250,7 +244,7 @@ With point on header, returns directory entry."
   "s"   #'hyperdrive-dir-sort
   "?"   #'hyperdrive-menu
   "+"   #'hyperdrive-create-directory-no-op
-  "<mouse-2>" #'hyperdrive-dir-find-at-point
+  "<mouse-2>" #'hyperdrive-dir-follow-link
   "<follow-link>" 'mouse-face)
 
 (define-derived-mode hyperdrive-dir-mode hyperdrive-ewoc-mode
@@ -266,11 +260,14 @@ With point on header, returns directory entry."
 
 ;;;; Commands
 
-(defun hyperdrive-dir-find-at-point (event)
-  "Find entry at EVENT's position."
+(defun hyperdrive-dir-follow-link (event)
+  "Follow link at EVENT's position."
   (interactive "e")
-  (mouse-set-point event)
-  (call-interactively #'hyperdrive-dir-find-file-other-window))
+  (if-let ((column (get-char-property (mouse-set-point event) 'hyperdrive-dir-column)))
+      (hyperdrive-dir-sort
+       (hyperdrive-dir-toggle-sort-direction
+        column hyperdrive-directory-sort))
+    (call-interactively #'hyperdrive-dir-find-file-other-window)))
 
 (cl-defun hyperdrive-dir-find-file
     (entry &key (display-buffer-action hyperdrive-directory-display-buffer-action))
