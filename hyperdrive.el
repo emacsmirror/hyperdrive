@@ -1158,6 +1158,11 @@ The return value of this function is the retrieval buffer."
                                                      "latest")))
                         (format " (%s)" display-version)))
        :help "Open next version"]
+      ["Latest Version" (lambda ()
+                          (interactive)
+                          (call-interactively #'hyperdrive-open-latest-version))
+       :label "Latest Version"
+       :help "Open latest version"]
       ["Version History" (lambda ()
                            (interactive)
                            (call-interactively #'hyperdrive-history))
