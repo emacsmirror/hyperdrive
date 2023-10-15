@@ -616,9 +616,9 @@ is 53):
 
 | Version range | exists |
 |---------------+--------|
-|          1-50 | no     |
-|         51-52 | yes    |
 |            53 | yes    |
+|         51-52 | yes    |
+|          1-50 | no     |
 
 The table shows that ~/bar.org~ did not exist from the beginning of the
 hyperdrive history until version 51 (when it was created) and that it
@@ -644,8 +644,8 @@ the same data from the prior section would look like this:
 
 | Version range | exists  |
 |---------------+---------|
-|          1-52 | unknown |
 |            53 | yes     |
+|          1-52 | unknown |
 
 Running ~hyperdrive-previous~ inside of the buffer for the latest
 version of ~/bar.org~ will load ~/bar.org~ at version 52. The gateway will
@@ -654,9 +654,9 @@ started at 51:
 
 | Version range | exists  |
 |---------------+---------|
-|          1-50 | unknown |
-|         51-52 | yes     |
 |            53 | yes     |
+|         51-52 | yes     |
+|          1-50 | unknown |
 
 Running ~hyperdrive-previous~ inside of the buffer for ~/bar.org~ at
 version 51 or 52 will attempt to load ~/bar.org~ at
@@ -665,10 +665,10 @@ now look like:
 
 | Version range | exists  |
 |---------------+---------|
-|          1-49 | unknown |
-|            50 | no      |
-|         51-52 | yes     |
 |            53 | yes     |
+|         51-52 | yes     |
+|            50 | no      |
+|          1-49 | unknown |
 
 Crucially, when a file does not exist at a particular version, the
 gateway does not tell us whether it ever existed in the past.  In

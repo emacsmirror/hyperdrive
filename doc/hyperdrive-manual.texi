@@ -946,12 +946,12 @@ is 53):
 @multitable {aaaaaaaaaaaaa} {aaaaaa}
 @headitem Version range
 @tab exists
-@item 1-50
-@tab no
-@item 51-52
-@tab yes
 @item 53
 @tab yes
+@item 51-52
+@tab yes
+@item 1-50
+@tab no
 @end multitable
 
 The table shows that @code{/bar.org} did not exist from the beginning of the
@@ -985,10 +985,10 @@ the same data from the prior section would look like this:
 @multitable {aaaaaaaaaaaaa} {aaaaaaa}
 @headitem Version range
 @tab exists
-@item 1-52
-@tab unknown
 @item 53
 @tab yes
+@item 1-52
+@tab unknown
 @end multitable
 
 Running @code{hyperdrive-previous} inside of the buffer for the latest
@@ -999,12 +999,12 @@ started at 51:
 @multitable {aaaaaaaaaaaaa} {aaaaaaa}
 @headitem Version range
 @tab exists
-@item 1-50
-@tab unknown
-@item 51-52
-@tab yes
 @item 53
 @tab yes
+@item 51-52
+@tab yes
+@item 1-50
+@tab unknown
 @end multitable
 
 Running @code{hyperdrive-previous} inside of the buffer for @code{/bar.org} at
@@ -1015,14 +1015,14 @@ now look like:
 @multitable {aaaaaaaaaaaaa} {aaaaaaa}
 @headitem Version range
 @tab exists
-@item 1-49
-@tab unknown
-@item 50
-@tab no
-@item 51-52
-@tab yes
 @item 53
 @tab yes
+@item 51-52
+@tab yes
+@item 50
+@tab no
+@item 1-49
+@tab unknown
 @end multitable
 
 Crucially, when a file does not exist at a particular version, the
