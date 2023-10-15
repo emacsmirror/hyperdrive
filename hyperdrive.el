@@ -855,12 +855,12 @@ The return value of this function is the retrieval buffer."
                                                     :read-version current-prefix-arg)))
                                               :help "Find a file in hyperdrive")
                                       (vector "View File"
-                                              (lambda ()
-                                                (interactive)
-                                                (hyperdrive-view-file
-                                                 (hyperdrive-read-entry
-                                                  :hyperdrive ,entry
-                                                  :read-version current-prefix-arg)))
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (hyperdrive-view-file
+                                                  (hyperdrive-read-entry
+                                                   :hyperdrive ,entry
+                                                   :read-version current-prefix-arg)))
                                               :help "View a file in hyperdrive")
                                       "---"
                                       (vector "Petname"
