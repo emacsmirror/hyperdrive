@@ -862,6 +862,16 @@ The return value of this function is the retrieval buffer."
                                                    :hyperdrive ,drive
                                                    :read-version current-prefix-arg)))
                                               :help "View a file in hyperdrive")
+                                      (vector "Upload File"
+                                              `(lambda ()
+                                                 (interactive)
+                                                 (let* ((filename (read-file-name "Upload file: "))
+                                                        (entry (hyperdrive-read-entry :hyperdrive ,drive
+                                                                                      :default-path (file-name-nondirectory filename)
+                                                                                      :latest-version t)))
+                                                   (hyperdrive-upload-file filename entry)))
+                                              :active `(hyperdrive-writablep ,drive)
+                                              :help "Upload a file to hyperdrive")
                                       "---"
                                       (vector "Petname"
                                               ;; HACK: We have to unquote the value of the entry because it seems that the filter
@@ -924,6 +934,16 @@ The return value of this function is the retrieval buffer."
            :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
            :read-version current-prefix-arg)))
        :help "View a file in hyperdrive"]
+      ["Upload File"
+       (lambda ()
+         (interactive)
+         (let* ((filename (read-file-name "Upload file: "))
+                (entry (hyperdrive-read-entry :hyperdrive (hyperdrive-entry-hyperdrive hyperdrive-current-entry)
+                                              :default-path (file-name-nondirectory filename)
+                                              :latest-version t)))
+           (hyperdrive-upload-file filename entry)))
+       :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+       :help "Upload a file to hyperdrive"]
       "---"
       ["Petname"
        ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when fixed.
