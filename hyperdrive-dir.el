@@ -59,7 +59,11 @@ If THEN, call it in the directory buffer with no arguments."
                                    :version version))
                                 entry-names))
                (parent-entry (hyperdrive-parent directory-entry))
-               (header (hyperdrive-dir-column-headers (hyperdrive-entry-description directory-entry)))
+               (header
+                (progn
+                  ;; Fill metadata first to get the current nickname.
+                  (hyperdrive-fill-metadata hyperdrive)
+                  (hyperdrive-dir-column-headers (hyperdrive-entry-description directory-entry))))
                (num-entries (length entries)) (num-filled 0)
 	       ;; (debug-start-time (current-time))
                (metadata-queue) (ewoc) (prev-entry) (prev-point))
@@ -72,7 +76,6 @@ If THEN, call it in the directory buffer with no arguments."
                     (ewoc-set-hf ewoc header
                                  (propertize (format "Loading (%s/%s)..." num-filled num-of)
 					     'face 'font-lock-comment-face)))))
-      (hyperdrive-fill-metadata hyperdrive)
       (setf directory-entry (hyperdrive--fill directory-entry headers))
       (when parent-entry
         (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "../")
