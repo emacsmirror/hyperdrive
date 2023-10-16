@@ -588,7 +588,9 @@ Nil VERSION means open the entry at its hyperdrive's latest version."
   (declare (modes hyperdrive-mode))
   (interactive (let ((entry hyperdrive-current-entry))
                  (list entry (hyperdrive-read-version
-                              :hyperdrive (hyperdrive-entry-hyperdrive entry)))))
+                              :hyperdrive (hyperdrive-entry-hyperdrive entry)
+                              :prompt (format "Open «%s» at version (leave blank for latest version)"
+                                              (hyperdrive-entry-description entry :with-version nil))))))
   (if-let ((latest-entry (hyperdrive-entry-at version entry)))
       (hyperdrive-open latest-entry)
     (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
