@@ -10,6 +10,11 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - ~hyperdrive-open-at-version~: Open the current file or directory at a
   specific version.
 
+** Changed
+
+- simplified ~hyperdrive-menu~ by moving commands which required
+  selecting a hyperdrive into ~hyperdrive-menu-hyperdrive~.
+
 ** Fixed
 
 - Fixed single click on directory column header
