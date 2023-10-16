@@ -582,14 +582,18 @@ it to `hyperdrive-open'."
     ((and (pred hyperdrive-entry-p) next-entry)
      (hyperdrive-open next-entry))))
 
-(defun hyperdrive-open-latest-version (entry)
-  "Open latest version of ENTRY."
+(defun hyperdrive-open-at-version (entry version)
+  "Open ENTRY at VERSION.
+Nil VERSION means open the entry at its hyperdrive's latest version."
   (declare (modes hyperdrive-mode))
-  (interactive (list hyperdrive-current-entry))
-  (if-let ((latest-entry (hyperdrive-entry-at nil entry)))
+  (interactive (let ((entry hyperdrive-current-entry))
+                 (list entry (hyperdrive-read-version
+                              :hyperdrive (hyperdrive-entry-hyperdrive entry)))))
+  (if-let ((latest-entry (hyperdrive-entry-at version entry)))
       (hyperdrive-open latest-entry)
-    (hyperdrive-message (substitute-command-keys "%s does not exist at its hyperdrive's latest version. Try \\[hyperdrive-history]")
-                        (hyperdrive-entry-description entry :with-version nil))))
+    (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
+                        (hyperdrive-entry-description entry :with-version nil)
+                        version)))
 
 ;;;; Bookmark support
 
@@ -1158,11 +1162,10 @@ The return value of this function is the retrieval buffer."
                                                      "latest")))
                         (format " (%s)" display-version)))
        :help "Open next version"]
-      ["Latest Version" (lambda ()
+      ["Open Specific Version" (lambda ()
                           (interactive)
-                          (call-interactively #'hyperdrive-open-latest-version))
-       :label "Latest Version"
-       :help "Open latest version"]
+                          (call-interactively #'hyperdrive-open-at-version))
+       :help "Open specific version"]
       ["Version History" (lambda ()
                            (interactive)
                            (call-interactively #'hyperdrive-history))

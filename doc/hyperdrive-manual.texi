@@ -635,12 +635,14 @@ the hyperdrive.}
 
 @findex hyperdrive-previous-version
 @findex hyperdrive-next-version
-@findex hyperdrive-open-latest-version
+@findex hyperdrive-open-at-version
 
 Hyperdrives are versioned (see @ref{Versioning}).  To open the
 previous/next version of a hyperdrive file or directory, run
-@code{hyperdrive-previous-version} or @code{hyperdrive-next-version}.  To open its
-latest version, run @code{hyperdrive-open-latest-version}.
+@code{hyperdrive-previous-version} or @code{hyperdrive-next-version}.
+@code{hyperdrive-open-at-version} lets you specify a version number; leaving
+the version blank opens the current file or directory at its
+hyperdrive's latest version.
 
 @menu
 * History buffer::

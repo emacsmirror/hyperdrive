@@ -7,8 +7,8 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 ** Added
 
-- ~hyperdrive-open-latest-version~: Open the latest version of the
-  current file or directory
+- ~hyperdrive-open-at-version~: Open the current file or directory at a
+  specific version.
 
 ** Fixed
 
