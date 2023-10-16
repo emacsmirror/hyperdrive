@@ -827,8 +827,6 @@ The return value of this function is the retrieval buffer."
 
 ;;;;; `easy-menu' integration
 
-;; TODO: Separate writable/unwritable hyperdrives in sub-menu.
-
 (defvar hyperdrive-menu-bar-menu
   '("Hyperdrive"
     ("Gateway"
@@ -851,97 +849,108 @@ The return value of this function is the retrieval buffer."
                 "Drives (empty)"
               "Drives")
      :filter (lambda (_)
-               (cl-loop for drive in (sort (hash-table-values hyperdrive-hyperdrives)
-                                           (lambda (a b)
-                                             (string< (hyperdrive--format-host a :with-label t)
-                                                      (hyperdrive--format-host b :with-label t))))
-                        for entry = (hyperdrive-entry-create :hyperdrive drive)
-                        collect (list (hyperdrive--format-host drive :with-label t)
-                                      (vector "Describe"
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (let ((hyperdrive-current-entry ,entry))
-                                                   (call-interactively #'hyperdrive-describe-hyperdrive)))
-                                              :help "Display information about hyperdrive")
-                                      (vector "Find File"
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (hyperdrive-open
-                                                   (hyperdrive-read-entry
-                                                    :hyperdrive ,drive
-                                                    :read-version current-prefix-arg)))
-                                              :help "Find a file in hyperdrive")
-                                      (vector "View File"
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (hyperdrive-view-file
-                                                  (hyperdrive-read-entry
-                                                   :hyperdrive ,drive
-                                                   :read-version current-prefix-arg)))
-                                              :help "View a file in hyperdrive")
-                                      "---"
-                                      (vector "Upload File"
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (let* ((filename (read-file-name "Upload file: "))
-                                                        (entry (hyperdrive-read-entry :hyperdrive ,drive
-                                                                                      :default-path (file-name-nondirectory filename)
-                                                                                      :latest-version t)))
-                                                   (hyperdrive-upload-file filename entry)))
-                                              :active `(hyperdrive-writablep ,drive)
-                                              :help "Upload a file to hyperdrive")
-                                      (vector "Upload Files"
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (let* ((files (hyperdrive-read-files))
-                                                        (target-dir (hyperdrive-read-path
-                                                                     :hyperdrive ,drive
-                                                                     :prompt "Target directory in «%s»"
-                                                                     :default "/")))
-                                                   (hyperdrive-upload-files files ,drive
-                                                                            :target-directory target-dir)))
-                                              :active `(hyperdrive-writablep ,drive)
-                                              :help "Upload files to hyperdrive")
-                                      (vector "Mirror" #'hyperdrive-mirror
-                                              ;; TODO: `hyperdrive-mirror''s interactive form will also prompt
-                                              ;; for a drive. After changing `hyperdrive-mirror' to use
-                                              ;; Transient.el, we should pass in the default drive argument.
-                                              :active `(hyperdrive-writablep ,drive)
-                                              :help "Mirror a directory to hyperdrive")
-                                      "---"
-                                      (vector "Petname"
-                                              ;; HACK: We have to unquote the value of the entry because it seems that the filter
-                                              ;; function is called in an environment that doesn't use lexical-binding...?
-                                              ;; TODO: Ask about this and/or file a bug report.
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (let ((hyperdrive-current-entry ,entry))
-                                                   (call-interactively #'hyperdrive-set-petname)))
-                                              :help "Set petname for hyperdrive"
-                                              :label
-                                              (format "Set petname: «%s»"
-                                                      (pcase (hyperdrive-petname drive)
-                                                        (`nil "none")
-                                                        (it it))))
-                                      (vector "Nickname"
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (let ((hyperdrive-current-entry ,entry))
-                                                   (call-interactively #'hyperdrive-set-nickname)))
-                                              :help "Set nickname for hyperdrive"
-                                              :active (hyperdrive-writablep drive)
-                                              :label
-                                              (format "Set nickname: «%s»"
-                                                      (pcase (alist-get 'name (hyperdrive-metadata drive))
-                                                        (`nil "none")
-                                                        (it it))))
-                                      "---"
-                                      (vector "Purge"
-                                              `(lambda ()
-                                                 (interactive)
-                                                 (let ((hyperdrive-current-entry ,entry))
-                                                   (call-interactively #'hyperdrive-purge)))
-                                              :help "Purge all local data about hyperdrive")))))
+               (cl-labels ((list-drives (drives)
+                             (cl-loop for drive in drives
+                                      for entry = (hyperdrive-entry-create :hyperdrive drive)
+                                      collect (list (hyperdrive--format-host drive :with-label t)
+                                                    (vector "Describe"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (let ((hyperdrive-current-entry ,entry))
+                                                                 (call-interactively #'hyperdrive-describe-hyperdrive)))
+                                                            :help "Display information about hyperdrive")
+                                                    (vector "Find File"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (hyperdrive-open
+                                                                 (hyperdrive-read-entry
+                                                                  :hyperdrive ,drive
+                                                                  :read-version current-prefix-arg)))
+                                                            :help "Find a file in hyperdrive")
+                                                    (vector "View File"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (hyperdrive-view-file
+                                                                (hyperdrive-read-entry
+                                                                 :hyperdrive ,drive
+                                                                 :read-version current-prefix-arg)))
+                                                            :help "View a file in hyperdrive")
+                                                    "---"
+                                                    (vector "Upload File"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (let* ((filename (read-file-name "Upload file: "))
+                                                                      (entry (hyperdrive-read-entry :hyperdrive ,drive
+                                                                                                    :default-path (file-name-nondirectory filename)
+                                                                                                    :latest-version t)))
+                                                                 (hyperdrive-upload-file filename entry)))
+                                                            :active `(hyperdrive-writablep ,drive)
+                                                            :help "Upload a file to hyperdrive")
+                                                    (vector "Upload Files"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (let* ((files (hyperdrive-read-files))
+                                                                      (target-dir (hyperdrive-read-path
+                                                                                   :hyperdrive ,drive
+                                                                                   :prompt "Target directory in «%s»"
+                                                                                   :default "/")))
+                                                                 (hyperdrive-upload-files files ,drive
+                                                                                          :target-directory target-dir)))
+                                                            :active `(hyperdrive-writablep ,drive)
+                                                            :help "Upload files to hyperdrive")
+                                                    (vector "Mirror" #'hyperdrive-mirror
+                                                            ;; TODO: `hyperdrive-mirror''s interactive form will also prompt
+                                                            ;; for a drive. After changing `hyperdrive-mirror' to use
+                                                            ;; Transient.el, we should pass in the default drive argument.
+                                                            :active `(hyperdrive-writablep ,drive)
+                                                            :help "Mirror a directory to hyperdrive")
+                                                    "---"
+                                                    (vector "Petname"
+                                                            ;; HACK: We have to unquote the value of the entry because it seems that the filter
+                                                            ;; function is called in an environment that doesn't use lexical-binding...?
+                                                            ;; TODO: Ask about this and/or file a bug report.
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (let ((hyperdrive-current-entry ,entry))
+                                                                 (call-interactively #'hyperdrive-set-petname)))
+                                                            :help "Set petname for hyperdrive"
+                                                            :label
+                                                            (format "Set petname: «%s»"
+                                                                    (pcase (hyperdrive-petname drive)
+                                                                      (`nil "none")
+                                                                      (it it))))
+                                                    (vector "Nickname"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (let ((hyperdrive-current-entry ,entry))
+                                                                 (call-interactively #'hyperdrive-set-nickname)))
+                                                            :help "Set nickname for hyperdrive"
+                                                            :active (hyperdrive-writablep drive)
+                                                            :label
+                                                            (format "Set nickname: «%s»"
+                                                                    (pcase (alist-get 'name (hyperdrive-metadata drive))
+                                                                      (`nil "none")
+                                                                      (it it))))
+                                                    "---"
+                                                    (vector "Purge"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (let ((hyperdrive-current-entry ,entry))
+                                                                 (call-interactively #'hyperdrive-purge)))
+                                                            :help "Purge all local data about hyperdrive")))))
+                 (append (list ["Writable" :active nil])
+                         (or (list-drives (sort (cl-remove-if-not #'hyperdrive-writablep (hash-table-values hyperdrive-hyperdrives))
+                                                (lambda (a b)
+                                                  (string< (hyperdrive--format-host a :with-label t)
+                                                           (hyperdrive--format-host b :with-label t)))))
+                             (list ["none" :active nil]))
+                         (list "---")
+                         (list ["Read-only" :active nil])
+                         (or (list-drives (sort (cl-remove-if #'hyperdrive-writablep (hash-table-values hyperdrive-hyperdrives))
+                                                (lambda (a b)
+                                                  (string< (hyperdrive--format-host a :with-label t)
+                                                           (hyperdrive--format-host b :with-label t)))))
+                             (list ["none" :active nil]))))))
     ("Current"
      :active hyperdrive-current-entry
      :label (if-let* ((entry hyperdrive-current-entry))
