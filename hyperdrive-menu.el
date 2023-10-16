@@ -253,12 +253,11 @@
     :transient t
     :description (lambda ()
                    (format "Petname: %s"
-                           (pcase (hyperdrive-petname
-                                   (oref transient--prefix scope))
-                             (`nil (propertize "none"
-                                               'face 'transient-inactive-value))
-                             (it (propertize it
-                                             'face 'transient-value))))))
+                           (if-let ((petname (hyperdrive-petname
+                                              (oref transient--prefix scope))))
+                               (propertize petname
+                                           'face 'hyperdrive-petname)
+                             ""))))
    ("n" "set nickname" hyperdrive-menu-set-nickname
     :transient t
     :inapt-if-not (lambda ()
@@ -266,13 +265,12 @@
     :description (lambda ()
                    (format "Nickname: %s"
                            ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
-                           (pcase (alist-get 'name
-                                             (hyperdrive-metadata
-                                              (oref transient--prefix scope)))
-                             ('nil (propertize "none"
-                                               'face 'transient-inactive-value))
-                             (it (propertize it
-                                             'face 'transient-value))))))
+                           (if-let ((nickname (alist-get 'name
+                                                         (hyperdrive-metadata
+                                                          (oref transient--prefix scope)))))
+                               (propertize nickname
+                                           'face 'hyperdrive-nickname)
+                             ""))))
    ("" "Domain" ignore
     :description (lambda ()
                    (concat "Domain: " (hyperdrive--format-host (oref transient--prefix scope) :format 'domain)))
