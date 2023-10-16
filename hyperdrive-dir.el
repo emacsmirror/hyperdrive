@@ -62,6 +62,9 @@ If THEN, call it in the directory buffer with no arguments."
                (header
                 (progn
                   ;; Fill metadata first to get the current nickname.
+                  ;; TODO: Consider filling metadata earlier, outside
+                  ;; of this function (e.g. so it will be available if
+                  ;; the user loads a non-directory file directly).
                   (hyperdrive-fill-metadata hyperdrive)
                   (hyperdrive-dir-column-headers (hyperdrive-entry-description directory-entry))))
                (num-entries (length entries)) (num-filled 0)

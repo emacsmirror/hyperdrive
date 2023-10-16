@@ -222,6 +222,7 @@ PLZ-ERR should be a `plz-error' struct."
 ;;;###autoload
 (defun hyperdrive-status ()
   "Return non-nil if `hyper-gateway' is running and accessible."
+  ;; FIXME: Ensure a very short timeout for this request.
   (condition-case nil
       (plz 'get (concat "http://localhost:" (number-to-string hyperdrive-hyper-gateway-port) "/"))
     (error nil)))

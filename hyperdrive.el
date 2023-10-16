@@ -827,6 +827,8 @@ The return value of this function is the retrieval buffer."
 
 ;;;;; `easy-menu' integration
 
+;; TODO: Separate writable/unwritable hyperdrives in sub-menu.
+
 (defvar hyperdrive-menu-bar-menu
   '("Hyperdrive"
     ("Gateway"
