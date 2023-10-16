@@ -163,7 +163,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
 (defun hyperdrive-purge (hyperdrive)
   "Purge all data corresponding to HYPERDRIVE."
   (interactive (list (hyperdrive-complete-hyperdrive)))
-  (when (yes-or-no-p (format "Delete hyperdrive and all of its data: «%s»? "
+  (when (yes-or-no-p (format "Delete local copy of hyperdrive (data will likely not be recoverable—see manual): «%s»? "
                              (hyperdrive--format-hyperdrive hyperdrive)))
     (hyperdrive-purge-no-prompt hyperdrive
       :then (lambda (_response)
