@@ -1163,8 +1163,8 @@ The return value of this function is the retrieval buffer."
                         (format " (%s)" display-version)))
        :help "Open next version"]
       ["Open Specific Version" (lambda ()
-                          (interactive)
-                          (call-interactively #'hyperdrive-open-at-version))
+                                 (interactive)
+                                 (call-interactively #'hyperdrive-open-at-version))
        :help "Open specific version"]
       ["Version History" (lambda ()
                            (interactive)
