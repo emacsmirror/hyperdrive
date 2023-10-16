@@ -287,22 +287,23 @@
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
-(transient-define-suffix hyperdrive-menu-set-petname (petname)
+(transient-define-suffix hyperdrive-menu-set-petname (petname hyperdrive)
   (interactive
    (list (hyperdrive-read-name
           :prompt "New petname"
-          :initial-input (hyperdrive-petname (oref transient-current-prefix scope)))))
-  (let ((hyperdrive (oref transient-current-prefix scope)))
-    (hyperdrive-set-petname petname hyperdrive)))
+          :initial-input (hyperdrive-petname (oref transient-current-prefix scope)))
+         (oref transient-current-prefix scope)))
+  (hyperdrive-set-petname petname hyperdrive))
 
-(transient-define-suffix hyperdrive-menu-set-nickname (nickname)
+(transient-define-suffix hyperdrive-menu-set-nickname (nickname hyperdrive)
   (interactive
    (list (hyperdrive-read-name
           :prompt "New nickname"
-          :initial-input (alist-get 'name (hyperdrive-metadata (oref transient-current-prefix scope))))))
-  (hyperdrive-set-nickname nickname (oref transient-current-prefix scope)
-                           :then (lambda (hyperdrive)
-                                   (hyperdrive-menu-hyperdrive hyperdrive))))
+          :initial-input (alist-get 'name (hyperdrive-metadata (oref transient-current-prefix scope))))
+         (oref transient-current-prefix scope)))
+  (hyperdrive-set-nickname nickname hyperdrive
+                           :then (lambda (drive)
+                                   (hyperdrive-menu-hyperdrive drive))))
 
 ;;;; Footer
 
