@@ -1173,13 +1173,6 @@ The return value of this function is the retrieval buffer."
                            (call-interactively #'hyperdrive-history))
        :help "Open version history"]))
     "---"
-    ("Upload"
-     ["Upload File" hyperdrive-upload-file
-      :help "Upload a file to a hyperdrive"]
-     ["Upload Files" hyperdrive-upload-files
-      :help "Upload multiple files to a hyperdrive"]
-     ["Mirror" hyperdrive-mirror
-      :help "Mirror a directory to a hyperdrive"])
     ("Bookmark"
      ["Bookmark Jump" hyperdrive-bookmark-jump
       :help "Jump to hyperdrive bookmark"]
