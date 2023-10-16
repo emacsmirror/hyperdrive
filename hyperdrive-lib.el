@@ -424,6 +424,7 @@ When VERSION is nil, return latest version of ENTRY."
   (let ((entry (hyperdrive-copy-tree entry t)))
     (setf (hyperdrive-entry-version entry) version)
     (condition-case err
+        ;; FIXME: Requests to out of range version currently hang.
         (hyperdrive-fill entry :then 'sync)
       (plz-error
        (pcase (plz-response-status (plz-error-response (caddr err)))
