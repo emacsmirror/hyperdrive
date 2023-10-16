@@ -283,9 +283,42 @@
                               ('nil (propertize "none"
                                                 'face 'transient-inactive-value))
                               (it (propertize it
-                                              'face 'transient-value))))))]]
+                                              'face 'transient-value))))))]
+   ["Upload"
+    ("u f" "File" hyperdrive-menu-upload-file
+     :inapt-if-not (lambda ()
+                     (hyperdrive-writablep (oref transient--prefix scope))))
+    ("u F" "Files" hyperdrive-menu-upload-files
+     :inapt-if-not (lambda ()
+                     (hyperdrive-writablep (oref transient--prefix scope))))
+    ;; TODO: When `hyperdrive-mirror' is rewritten with transient.el, set the hyperdrive by default to the
+    ("u m" "Mirror" hyperdrive-mirror
+     :inapt-if-not (lambda ()
+                     (hyperdrive-writablep (oref transient--prefix scope))))]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
+
+(transient-define-suffix hyperdrive-menu-upload-file (filename entry)
+  (interactive
+   (let* ((filename (read-file-name "Upload file: "))
+          (entry (hyperdrive-read-entry :hyperdrive (oref transient-current-prefix scope)
+                                        :default-path (file-name-nondirectory filename)
+                                        :latest-version t)))
+     (list filename entry)))
+  (hyperdrive-upload-file filename entry))
+
+(transient-define-suffix hyperdrive-menu-upload-files (files hyperdrive &key target-directory)
+  (interactive
+   (let ((drive (oref transient-current-prefix scope)))
+     (list
+      (hyperdrive-read-files)
+      drive
+      :target-directory (hyperdrive-read-path
+                         :hyperdrive drive
+                         :prompt "Target directory in «%s»"
+                         :default "/"))))
+  (hyperdrive-upload-files files hyperdrive
+                           :target-directory target-directory))
 
 (transient-define-suffix hyperdrive-menu-set-petname (petname hyperdrive)
   (interactive
