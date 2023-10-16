@@ -227,11 +227,7 @@
     ("b l" "List" hyperdrive-bookmark-list)
     ("b s" "Set" bookmark-set
      :if (lambda ()
-           (oref transient--prefix scope)))]
-   ["Upload"
-    ("P f" "File" hyperdrive-upload-file)
-    ("P F" "Files" hyperdrive-upload-files)
-    ("P m" "Mirror" hyperdrive-mirror)]]
+           (oref transient--prefix scope)))]]
   (interactive (list hyperdrive-current-entry))
   (transient-setup 'hyperdrive-menu nil nil :scope entry))
 
