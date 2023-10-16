@@ -235,13 +235,54 @@
 
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for HYPERDRIVE."
-  [:description
-   (lambda ()
-     (let ((hyperdrive (oref transient--prefix scope)))
-       (concat (propertize "Hyperdrive: " 'face 'transient-heading)
-               (hyperdrive--format-hyperdrive hyperdrive :formats '(public-key seed domain))
-               (format "  latest-version:%s" (hyperdrive-latest-version hyperdrive)))))
-   [("f" "Find file"
+  ["Hyperdrive"
+   :pad-keys t
+   ("d" "Describe" (lambda ()
+                     (interactive)
+                     (hyperdrive-describe-hyperdrive (oref transient-current-prefix scope))))
+   ;; FIXME: Is there a better way to intersperse lines of description and commands?
+   ("" "Public key" ignore
+    :description (lambda ()
+                   (concat "Public key: " (hyperdrive--format-host (oref transient--prefix scope) :format 'public-key))))
+   ("" "Seed" ignore
+    :description (lambda ()
+                   (concat "Seed: " (hyperdrive--format-host (oref transient--prefix scope) :format 'seed)))
+    :if (lambda ()
+          (hyperdrive-seed (oref transient--prefix scope))))
+   ("p" "Petname" hyperdrive-menu-set-petname
+    :transient t
+    :description (lambda ()
+                   (format "Petname: %s"
+                           (pcase (hyperdrive-petname
+                                   (oref transient--prefix scope))
+                             (`nil (propertize "none"
+                                               'face 'transient-inactive-value))
+                             (it (propertize it
+                                             'face 'transient-value))))))
+   ("n" "set nickname" hyperdrive-menu-set-nickname
+    :transient t
+    :inapt-if-not (lambda ()
+                    (hyperdrive-writablep (oref transient--prefix scope)))
+    :description (lambda ()
+                   (format "Nickname: %s"
+                           ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
+                           (pcase (alist-get 'name
+                                             (hyperdrive-metadata
+                                              (oref transient--prefix scope)))
+                             ('nil (propertize "none"
+                                               'face 'transient-inactive-value))
+                             (it (propertize it
+                                             'face 'transient-value))))))
+   ("" "Domain" ignore
+    :description (lambda ()
+                   (concat "Domain: " (hyperdrive--format-host (oref transient--prefix scope) :format 'domain)))
+    :if (lambda ()
+          (hyperdrive-domains (oref transient--prefix scope))))
+   ("" "Latest version" ignore
+    :description (lambda ()
+                   (format "Latest version: %s" (hyperdrive-latest-version (oref transient--prefix scope)))))]
+  [["Open"
+    ("f" "Find file"
      (lambda ()
        (interactive)
        (hyperdrive-open
@@ -254,32 +295,6 @@
                         (hyperdrive-read-entry
                          :hyperdrive (oref transient-current-prefix scope)
                          :read-version current-prefix-arg))))]
-   [("d" "Describe" hyperdrive-describe-hyperdrive)
-    ("C-M-P" "Purge" hyperdrive-purge)]
-   [("p" "Petname" hyperdrive-menu-set-petname
-     :transient t
-     :description (lambda ()
-                    (format "Petname: %s"
-                            (pcase (hyperdrive-petname
-                                    (oref transient--prefix scope))
-                              (`nil (propertize "none"
-                                                'face 'transient-inactive-value))
-                              (it (propertize it
-                                              'face 'transient-value))))))
-    ("n" "set nickname" hyperdrive-menu-set-nickname
-     :transient t
-     :inapt-if-not (lambda ()
-                     (hyperdrive-writablep (oref transient--prefix scope)))
-     :description (lambda ()
-                    (format "Nickname: %s"
-                            ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
-                            (pcase (alist-get 'name
-                                              (hyperdrive-metadata
-                                               (oref transient--prefix scope)))
-                              ('nil (propertize "none"
-                                                'face 'transient-inactive-value))
-                              (it (propertize it
-                                              'face 'transient-value))))))]
    ["Upload"
     ("u f" "File" hyperdrive-menu-upload-file
      :inapt-if-not (lambda ()
