@@ -1424,7 +1424,8 @@ When PATH is nil or blank, return \"/\"."
 
 (defun hyperdrive-time-greater-p (a b)
   "Return non-nil if time value A is greater than B."
-  (not (time-less-p a b)))
+  (not (or (time-equal-p a b)
+           (time-less-p a b))))
 
 (defun hyperdrive--clean-buffer (&optional buffer)
   "Remove all local variables, overlays, and text properties in BUFFER.
