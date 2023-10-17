@@ -1,0 +1,5 @@
+#!/bin/sh
+git status -s | \
+    grep '^M  doc/hyperdrive.org$' > /dev/null && \
+    make doc && \
+    git add doc/hyperdrive.texi
