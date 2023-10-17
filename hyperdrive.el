@@ -710,7 +710,7 @@ Universal prefix argument \\[universal-argument] forces
         (hyperdrive-upload-file file entry :queue queue :then #'ignore)))
     (plz-run queue)))
 
-;;; Info lookup
+;;;; Info lookup
 
 (declare-function info-lookup-maybe-add-help "info-look")
 
