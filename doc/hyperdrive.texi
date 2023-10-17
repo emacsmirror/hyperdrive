@@ -1,6 +1,6 @@
 \input texinfo    @c -*- texinfo -*-
 @c %**start of header
-@setfilename hyperdrive-manual.info
+@setfilename hyperdrive.info
 @settitle Hyperdrive.el User Manual
 @documentencoding UTF-8
 @documentlanguage en
@@ -14,7 +14,7 @@
 
 @dircategory Emacs
 @direntry
-* Hyperdrive: (hyperdrive-manual). P2P filesystem in Emacs.
+* Hyperdrive: (hyperdrive). P2P filesystem in Emacs.
 @end direntry
 
 @finalout
