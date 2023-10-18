@@ -71,9 +71,10 @@
     ("N" "New drive" hyperdrive-new)
     ("L" "Open Link" hyperdrive-open-url)]
    ["Version"
-    :if (lambda () (and (oref transient--prefix scope)
-                        ;; TODO: Remove this check and add useful history transient UI.
-                        (not (eq 'hyperdrive-history-mode major-mode))))
+    :if (lambda ()
+          (and (oref transient--prefix scope)
+               ;; TODO: Remove this check and add useful history transient UI.
+               (not (eq 'hyperdrive-history-mode major-mode))))
     :description (lambda ()
                    (if-let ((entry (oref transient--prefix scope)))
                        (concat (propertize "Version: "
@@ -119,97 +120,98 @@
     ("V h" "History" hyperdrive-history
      :inapt-if (lambda ()
                  (hyperdrive--entry-directory-p (oref transient--prefix scope))))]]
-  [ :if (lambda () (and (oref transient--prefix scope)
-                        ;; TODO: Remove this check and add useful history transient UI.
-                        (not (eq 'hyperdrive-history-mode major-mode))))
-    [ ;; Current
-     :description
+  [:if (lambda ()
+         (and (oref transient--prefix scope)
+              ;; TODO: Remove this check and add useful history transient UI.
+              (not (eq 'hyperdrive-history-mode major-mode))))
+   [;; Current
+    :description
+    (lambda ()
+      (let ((entry (oref transient--prefix scope)))
+        (concat (propertize "Current: " 'face 'transient-heading)
+                (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
+                            'face 'transient-value))))
+    ("g" "Refresh" revert-buffer)
+    ("^" "Up to parent"
      (lambda ()
-       (let ((entry (oref transient--prefix scope)))
-         (concat (propertize "Current: " 'face 'transient-heading)
-                 (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
-                             'face 'transient-value))))
-     ("g" "Refresh" revert-buffer)
-     ("^" "Up to parent"
-      (lambda ()
-        (interactive)
-        (hyperdrive-up (oref transient-current-prefix scope)))
-      :inapt-if-not (lambda ()
-                      (hyperdrive-parent (oref transient--prefix scope))))
-     ("s" "Sort" hyperdrive-dir-sort
-      :if (lambda ()
-            (eq major-mode 'hyperdrive-dir-mode))
-      :transient t)
-     ("j" "Jump" imenu)
-     ;; TODO: Combine previous and next commands on the same line?
-     ;; TODO: See "predicate refreshing" <https://github.com/magit/transient/issues/157>.
-     ("p" "Previous" (lambda ()
-                       (interactive)
-                       (hyperdrive-ewoc-previous)
-                       (hyperdrive-menu (oref transient--prefix scope)))
-      :if (lambda ()
-            (eq major-mode 'hyperdrive-dir-mode))
-      :transient t)
-     ("n" "Next" (lambda ()
-                   (interactive)
-                   (hyperdrive-ewoc-next)
-                   (hyperdrive-menu (oref transient--prefix scope)))
-      :if (lambda ()
-            (eq major-mode 'hyperdrive-dir-mode))
-      :transient t)
-     ("w" "Copy URL" hyperdrive-copy-url
-      :if (lambda ()
-            (not (eq major-mode 'hyperdrive-dir-mode))))
-     ("D" "Delete" hyperdrive-delete
-      :if (lambda ()
-            (not (eq major-mode 'hyperdrive-dir-mode)))
-      :inapt-if (lambda ()
-                  (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
-                               (oref transient--prefix scope)))
-                    (or version (not (hyperdrive-writablep hyperdrive))))))
-     ("d" "Download" hyperdrive-download
-      :if (lambda ()
-            (not (eq major-mode 'hyperdrive-dir-mode))))]
-    ;; TODO: Consider adding a defcustom to hide the "Selected" and
-    ;; "Current" groups when in a directory buffer.
-    [ ;; Selected
+       (interactive)
+       (hyperdrive-up (oref transient-current-prefix scope)))
+     :inapt-if-not (lambda ()
+                     (hyperdrive-parent (oref transient--prefix scope))))
+    ("s" "Sort" hyperdrive-dir-sort
      :if (lambda ()
-           (and (oref transient--prefix scope)
-                (eq major-mode 'hyperdrive-dir-mode)
-                (hyperdrive-dir--entry-at-point)))
-     :description
-     (lambda ()
-       (let ((current-entry (oref transient--prefix scope))
-             (selected-entry (hyperdrive-dir--entry-at-point)))
-         (concat (propertize "Selected: " 'face 'transient-heading)
-                 (propertize
-                  (or (and (hyperdrive-entry-equal-p current-entry selected-entry)
-                           "./")
-                      (alist-get 'display-name
-                                 (hyperdrive-entry-etc selected-entry))
-                      (hyperdrive-entry-name selected-entry))
-                  'face 'transient-value))))
-     :pad-keys t
-     ("d" "Download" hyperdrive-download
-      :inapt-if (lambda ()
-                  (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-                    (hyperdrive--entry-directory-p entry-at-point))))
-     ("D" "Delete" hyperdrive-delete
-      :inapt-if (lambda ()
-                  (let ((current-entry (oref transient--prefix scope))
-                        (selected-entry (hyperdrive-dir--entry-at-point)))
-                    (or (not (hyperdrive-writablep
-                              (hyperdrive-entry-hyperdrive current-entry)))
-                        (eq selected-entry current-entry)
-                        (string= "../" (alist-get 'display-name
-                                                  (hyperdrive-entry-etc selected-entry)))))))
-     ("w" "Copy URL" hyperdrive-dir-copy-url)
-     ;; FIXME: The sequence "? ? RET" says "Unbound suffix" instead of showing the help for that command.  Might be an issue in Transient.
-     ("RET" "Open" hyperdrive-dir-find-file)
-     ("v" "View" hyperdrive-dir-view-file
-      :inapt-if (lambda ()
-                  (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-                    (hyperdrive--entry-directory-p entry-at-point))))]]
+           (eq major-mode 'hyperdrive-dir-mode))
+     :transient t)
+    ("j" "Jump" imenu)
+    ;; TODO: Combine previous and next commands on the same line?
+    ;; TODO: See "predicate refreshing" <https://github.com/magit/transient/issues/157>.
+    ("p" "Previous" (lambda ()
+                      (interactive)
+                      (hyperdrive-ewoc-previous)
+                      (hyperdrive-menu (oref transient--prefix scope)))
+     :if (lambda ()
+           (eq major-mode 'hyperdrive-dir-mode))
+     :transient t)
+    ("n" "Next" (lambda ()
+                  (interactive)
+                  (hyperdrive-ewoc-next)
+                  (hyperdrive-menu (oref transient--prefix scope)))
+     :if (lambda ()
+           (eq major-mode 'hyperdrive-dir-mode))
+     :transient t)
+    ("w" "Copy URL" hyperdrive-copy-url
+     :if (lambda ()
+           (not (eq major-mode 'hyperdrive-dir-mode))))
+    ("D" "Delete" hyperdrive-delete
+     :if (lambda ()
+           (not (eq major-mode 'hyperdrive-dir-mode)))
+     :inapt-if (lambda ()
+                 (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
+                              (oref transient--prefix scope)))
+                   (or version (not (hyperdrive-writablep hyperdrive))))))
+    ("d" "Download" hyperdrive-download
+     :if (lambda ()
+           (not (eq major-mode 'hyperdrive-dir-mode))))]
+   ;; TODO: Consider adding a defcustom to hide the "Selected" and
+   ;; "Current" groups when in a directory buffer.
+   [;; Selected
+    :if (lambda ()
+          (and (oref transient--prefix scope)
+               (eq major-mode 'hyperdrive-dir-mode)
+               (hyperdrive-dir--entry-at-point)))
+    :description
+    (lambda ()
+      (let ((current-entry (oref transient--prefix scope))
+            (selected-entry (hyperdrive-dir--entry-at-point)))
+        (concat (propertize "Selected: " 'face 'transient-heading)
+                (propertize
+                 (or (and (hyperdrive-entry-equal-p current-entry selected-entry)
+                          "./")
+                     (alist-get 'display-name
+                                (hyperdrive-entry-etc selected-entry))
+                     (hyperdrive-entry-name selected-entry))
+                 'face 'transient-value))))
+    :pad-keys t
+    ("d" "Download" hyperdrive-download
+     :inapt-if (lambda ()
+                 (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                   (hyperdrive--entry-directory-p entry-at-point))))
+    ("D" "Delete" hyperdrive-delete
+     :inapt-if (lambda ()
+                 (let ((current-entry (oref transient--prefix scope))
+                       (selected-entry (hyperdrive-dir--entry-at-point)))
+                   (or (not (hyperdrive-writablep
+                             (hyperdrive-entry-hyperdrive current-entry)))
+                       (eq selected-entry current-entry)
+                       (string= "../" (alist-get 'display-name
+                                                 (hyperdrive-entry-etc selected-entry)))))))
+    ("w" "Copy URL" hyperdrive-dir-copy-url)
+    ;; FIXME: The sequence "? ? RET" says "Unbound suffix" instead of showing the help for that command.  Might be an issue in Transient.
+    ("RET" "Open" hyperdrive-dir-find-file)
+    ("v" "View" hyperdrive-dir-view-file
+     :inapt-if (lambda ()
+                 (when-let ((entry-at-point (hyperdrive-dir--entry-at-point)))
+                   (hyperdrive--entry-directory-p entry-at-point))))]]
   [["Gateway"
     :description
     (lambda ()
