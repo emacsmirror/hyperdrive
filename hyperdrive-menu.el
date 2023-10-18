@@ -53,8 +53,6 @@
 ;;                     hyperdrive-current-entry))
 ;;          ,@body))))
 
-;; TODO: Add macro that expands `entry' into (oref transient--prefix scope)
-;; or (oref transient-current-prefix scope) as appropriate.
 ;;;###autoload (autoload 'hyperdrive-menu "hyperdrive-menu" nil t)
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
@@ -62,7 +60,7 @@
   [["Hyperdrive"
     :description
     (lambda ()
-      (if-let* ((entry (oref transient--prefix scope))
+      (if-let* ((entry (hyperdrive-menu--entry))
                 (hyperdrive (hyperdrive-entry-hyperdrive entry)))
           (concat (propertize "Hyperdrive: " 'face 'transient-heading)
                   (hyperdrive--format-host hyperdrive :with-label t))
@@ -72,11 +70,11 @@
     ("L" "Open Link" hyperdrive-open-url)]
    ["Version"
     :if (lambda ()
-          (and (oref transient--prefix scope)
+          (and (hyperdrive-menu--entry)
                ;; TODO: Remove this check and add useful history transient UI.
                (not (eq 'hyperdrive-history-mode major-mode))))
     :description (lambda ()
-                   (if-let ((entry (oref transient--prefix scope)))
+                   (if-let ((entry (hyperdrive-menu--entry)))
                        (concat (propertize "Version: "
                                            'face 'transient-heading)
                                (propertize (format "%s"
@@ -86,10 +84,10 @@
                      "Version"))
     ("V p" "Previous" hyperdrive-open-previous-version
      :inapt-if-not (lambda ()
-                     (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
+                     (hyperdrive-entry-previous (hyperdrive-menu--entry) :cache-only t))
      ;; :transient t
      :description (lambda ()
-                    (if-let ((entry (oref transient--prefix scope)))
+                    (if-let ((entry (hyperdrive-menu--entry)))
                         (concat "Previous"
                                 (pcase-exhaustive (hyperdrive-entry-previous entry :cache-only t)
                                   ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
@@ -100,12 +98,12 @@
                       "Previous")))
     ("V n" "Next" hyperdrive-open-next-version
      :inapt-if-not (lambda  ()
-                     (let ((entry (oref transient--prefix scope)))
+                     (let ((entry (hyperdrive-menu--entry)))
                        (and (hyperdrive-entry-version entry)
                             (hyperdrive-entry-p (hyperdrive-entry-next entry)))))
      :description (lambda ()
                     (concat "Next"
-                            (when-let* ((entry (oref transient--prefix scope))
+                            (when-let* ((entry (hyperdrive-menu--entry))
                                         (next-entry (hyperdrive-entry-next entry))
                                         ;; Don't add ": latest" if we're already at the latest
                                         ;; version or if the next version is `unknown'.
@@ -119,15 +117,15 @@
     ("V a" "At..." hyperdrive-open-at-version)
     ("V h" "History" hyperdrive-history
      :inapt-if (lambda ()
-                 (hyperdrive--entry-directory-p (oref transient--prefix scope))))]]
+                 (hyperdrive--entry-directory-p (hyperdrive-menu--entry))))]]
   [:if (lambda ()
-         (and (oref transient--prefix scope)
+         (and (hyperdrive-menu--entry)
               ;; TODO: Remove this check and add useful history transient UI.
               (not (eq 'hyperdrive-history-mode major-mode))))
    [;; Current
     :description
     (lambda ()
-      (let ((entry (oref transient--prefix scope)))
+      (let ((entry (hyperdrive-menu--entry)))
         (concat (propertize "Current: " 'face 'transient-heading)
                 (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                             'face 'transient-value))))
@@ -135,9 +133,9 @@
     ("^" "Up to parent"
      (lambda ()
        (interactive)
-       (hyperdrive-up (oref transient-current-prefix scope)))
+       (hyperdrive-up (hyperdrive-menu--entry)))
      :inapt-if-not (lambda ()
-                     (hyperdrive-parent (oref transient--prefix scope))))
+                     (hyperdrive-parent (hyperdrive-menu--entry))))
     ("s" "Sort" hyperdrive-dir-sort
      :if (lambda ()
            (eq major-mode 'hyperdrive-dir-mode))
@@ -148,14 +146,14 @@
     ("p" "Previous" (lambda ()
                       (interactive)
                       (hyperdrive-ewoc-previous)
-                      (hyperdrive-menu (oref transient--prefix scope)))
+                      (hyperdrive-menu (hyperdrive-menu--entry)))
      :if (lambda ()
            (eq major-mode 'hyperdrive-dir-mode))
      :transient t)
     ("n" "Next" (lambda ()
                   (interactive)
                   (hyperdrive-ewoc-next)
-                  (hyperdrive-menu (oref transient--prefix scope)))
+                  (hyperdrive-menu (hyperdrive-menu--entry)))
      :if (lambda ()
            (eq major-mode 'hyperdrive-dir-mode))
      :transient t)
@@ -167,7 +165,7 @@
            (not (eq major-mode 'hyperdrive-dir-mode)))
      :inapt-if (lambda ()
                  (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
-                              (oref transient--prefix scope)))
+                              (hyperdrive-menu--entry)))
                    (or version (not (hyperdrive-writablep hyperdrive))))))
     ("d" "Download" hyperdrive-download
      :if (lambda ()
@@ -176,12 +174,12 @@
    ;; "Current" groups when in a directory buffer.
    [;; Selected
     :if (lambda ()
-          (and (oref transient--prefix scope)
+          (and (hyperdrive-menu--entry)
                (eq major-mode 'hyperdrive-dir-mode)
                (hyperdrive-dir--entry-at-point)))
     :description
     (lambda ()
-      (let ((current-entry (oref transient--prefix scope))
+      (let ((current-entry (hyperdrive-menu--entry))
             (selected-entry (hyperdrive-dir--entry-at-point)))
         (concat (propertize "Selected: " 'face 'transient-heading)
                 (propertize
@@ -198,7 +196,7 @@
                    (hyperdrive--entry-directory-p entry-at-point))))
     ("D" "Delete" hyperdrive-delete
      :inapt-if (lambda ()
-                 (let ((current-entry (oref transient--prefix scope))
+                 (let ((current-entry (hyperdrive-menu--entry))
                        (selected-entry (hyperdrive-dir--entry-at-point)))
                    (or (not (hyperdrive-writablep
                              (hyperdrive-entry-hyperdrive current-entry)))
@@ -228,8 +226,7 @@
     ("b j" "Jump" hyperdrive-bookmark-jump)
     ("b l" "List" hyperdrive-bookmark-list)
     ("b s" "Set" bookmark-set
-     :if (lambda ()
-           (oref transient--prefix scope)))]]
+     :if hyperdrive-menu--entry)]]
   (interactive (list hyperdrive-current-entry))
   (transient-setup 'hyperdrive-menu nil nil :scope entry))
 
@@ -241,78 +238,78 @@
    :pad-keys t
    ("d" "Describe" (lambda ()
                      (interactive)
-                     (hyperdrive-describe-hyperdrive (oref transient-current-prefix scope))))
+                     (hyperdrive-describe-hyperdrive (hyperdrive-menu--entry))))
    ;; FIXME: Is there a better way to intersperse lines of description and commands?
    ("" "Public key" ignore
     :description (lambda ()
-                   (concat "Public key: " (hyperdrive--format-host (oref transient--prefix scope) :format 'public-key))))
+                   (concat "Public key: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'public-key))))
    ("" "Seed" ignore
     :description (lambda ()
-                   (concat "Seed: " (hyperdrive--format-host (oref transient--prefix scope) :format 'seed)))
+                   (concat "Seed: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'seed)))
     :if (lambda ()
-          (hyperdrive-seed (oref transient--prefix scope))))
+          (hyperdrive-seed (hyperdrive-menu--entry))))
    ("p" "Petname" hyperdrive-menu-set-petname
     :transient t
     :description (lambda ()
                    (format "Petname: %s"
                            (if-let ((petname (hyperdrive-petname
-                                              (oref transient--prefix scope))))
+                                              (hyperdrive-menu--entry))))
                                (propertize petname
                                            'face 'hyperdrive-petname)
                              ""))))
    ("n" "set nickname" hyperdrive-menu-set-nickname
     :transient t
     :inapt-if-not (lambda ()
-                    (hyperdrive-writablep (oref transient--prefix scope)))
+                    (hyperdrive-writablep (hyperdrive-menu--entry)))
     :description (lambda ()
                    (format "Nickname: %s"
                            ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
                            (if-let ((nickname (alist-get 'name
                                                          (hyperdrive-metadata
-                                                          (oref transient--prefix scope)))))
+                                                          (hyperdrive-menu--entry)))))
                                (propertize nickname
                                            'face 'hyperdrive-nickname)
                              ""))))
    ("" "Domain" ignore
     :description (lambda ()
-                   (concat "Domain: " (hyperdrive--format-host (oref transient--prefix scope) :format 'domain)))
+                   (concat "Domain: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'domain)))
     :if (lambda ()
-          (hyperdrive-domains (oref transient--prefix scope))))
+          (hyperdrive-domains (hyperdrive-menu--entry))))
    ("" "Latest version" ignore
     :description (lambda ()
-                   (format "Latest version: %s" (hyperdrive-latest-version (oref transient--prefix scope)))))]
+                   (format "Latest version: %s" (hyperdrive-latest-version (hyperdrive-menu--entry)))))]
   [["Open"
     ("f" "Find file"
      (lambda ()
        (interactive)
        (hyperdrive-open
          (hyperdrive-read-entry
-          :hyperdrive (oref transient-current-prefix scope)
+          :hyperdrive (hyperdrive-menu--entry)
           :read-version current-prefix-arg))))
     ("v" "View file" (lambda ()
                        (interactive)
                        (hyperdrive-view-file
                         (hyperdrive-read-entry
-                         :hyperdrive (oref transient-current-prefix scope)
+                         :hyperdrive (hyperdrive-menu--entry)
                          :read-version current-prefix-arg))))]
    ["Upload"
     ("u f" "File" hyperdrive-menu-upload-file
      :inapt-if-not (lambda ()
-                     (hyperdrive-writablep (oref transient--prefix scope))))
+                     (hyperdrive-writablep (hyperdrive-menu--entry))))
     ("u F" "Files" hyperdrive-menu-upload-files
      :inapt-if-not (lambda ()
-                     (hyperdrive-writablep (oref transient--prefix scope))))
+                     (hyperdrive-writablep (hyperdrive-menu--entry))))
     ;; TODO: When `hyperdrive-mirror' is rewritten with transient.el, set the hyperdrive by default to the
     ("u m" "Mirror" hyperdrive-mirror
      :inapt-if-not (lambda ()
-                     (hyperdrive-writablep (oref transient--prefix scope))))]]
+                     (hyperdrive-writablep (hyperdrive-menu--entry))))]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
 (transient-define-suffix hyperdrive-menu-upload-file (filename entry)
   (interactive
    (let* ((filename (read-file-name "Upload file: "))
-          (entry (hyperdrive-read-entry :hyperdrive (oref transient-current-prefix scope)
+          (entry (hyperdrive-read-entry :hyperdrive (hyperdrive-menu--entry)
                                         :default-path (file-name-nondirectory filename)
                                         :latest-version t)))
      (list filename entry)))
@@ -320,7 +317,7 @@
 
 (transient-define-suffix hyperdrive-menu-upload-files (files hyperdrive &key target-directory)
   (interactive
-   (let ((drive (oref transient-current-prefix scope)))
+   (let ((drive (hyperdrive-menu--entry)))
      (list
       (hyperdrive-read-files)
       drive
@@ -335,19 +332,25 @@
   (interactive
    (list (hyperdrive-read-name
           :prompt "New petname"
-          :initial-input (hyperdrive-petname (oref transient-current-prefix scope)))
-         (oref transient-current-prefix scope)))
+          :initial-input (hyperdrive-petname (hyperdrive-menu--entry)))
+         (hyperdrive-menu--entry)))
   (hyperdrive-set-petname petname hyperdrive))
 
 (transient-define-suffix hyperdrive-menu-set-nickname (nickname hyperdrive)
   (interactive
    (list (hyperdrive-read-name
           :prompt "New nickname"
-          :initial-input (alist-get 'name (hyperdrive-metadata (oref transient-current-prefix scope))))
-         (oref transient-current-prefix scope)))
+          :initial-input (alist-get 'name (hyperdrive-metadata (hyperdrive-menu--entry))))
+         (hyperdrive-menu--entry)))
   (hyperdrive-set-nickname nickname hyperdrive
                            :then (lambda (drive)
                                    (hyperdrive-menu-hyperdrive drive))))
+
+;;;;; Common Utilities
+
+(defun hyperdrive-menu--entry ()
+  "Return the current entry as understood by `hyperdrive-menu'."
+  (oref (or transient--prefix transient-current-prefix) scope))
 
 ;;;; Footer
 
