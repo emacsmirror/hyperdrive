@@ -206,7 +206,7 @@
                        (string= "../" (alist-get 'display-name
                                                  (hyperdrive-entry-etc selected-entry)))))))
     ("w" "Copy URL" hyperdrive-dir-copy-url)
-    ;; FIXME: The sequence "? ? RET" says "Unbound suffix" instead of showing the help for that command.  Might be an issue in Transient.
+    ;; FIXME: The sequence "? RET" says "Unbound suffix" instead of showing the help for that command.  Might be an issue in Transient.
     ("RET" "Open" hyperdrive-dir-find-file)
     ("v" "View" hyperdrive-dir-view-file
      :inapt-if (lambda ()
