@@ -1,3 +1,6 @@
+.DEFAULT_GOAL: doc
+.PHONY: doc
+
 EMACS := emacs
 EMACSQ := $(EMACS) -Q
 BATCH := $(EMACSQ) --batch \
@@ -19,3 +22,5 @@ TEXI2INFO := makeinfo
 hyperdrive.texi: hyperdrive.org
 	$(BATCH) --find-file $< --eval "(require 'ox-texinfo)" \
                             --eval '(org-texinfo-export-to-texinfo)'
+
+doc: hyperdrive.texi
