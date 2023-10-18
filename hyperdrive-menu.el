@@ -57,6 +57,7 @@
 (transient-define-prefix hyperdrive-menu (entry)
   "Show the hyperdrive transient menu."
   :info-manual "(hyperdrive)"
+  :refresh-suffixes t
   [["Hyperdrive"
     :description
     (lambda ()
@@ -141,17 +142,10 @@
      :transient t)
     ("j" "Jump" imenu)
     ;; TODO: Combine previous and next commands on the same line?
-    ;; TODO: See "predicate refreshing" <https://github.com/magit/transient/issues/157>.
-    ("p" "Previous" (lambda ()
-                      (interactive)
-                      (hyperdrive-ewoc-previous)
-                      (hyperdrive-menu (hyperdrive-menu--entry)))
+    ("p" "Previous" hyperdrive-ewoc-previous
      :if-mode hyperdrive-dir-mode
      :transient t)
-    ("n" "Next" (lambda ()
-                  (interactive)
-                  (hyperdrive-ewoc-next)
-                  (hyperdrive-menu (hyperdrive-menu--entry)))
+    ("n" "Next" hyperdrive-ewoc-next
      :if-mode hyperdrive-dir-mode
      :transient t)
     ("w" "Copy URL" hyperdrive-copy-url
@@ -228,6 +222,7 @@
 
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for HYPERDRIVE."
+  :refresh-suffixes t
   ["Hyperdrive"
    :pad-keys t
    ("d" "Describe" (lambda ()
