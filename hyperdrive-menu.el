@@ -137,8 +137,7 @@
      :inapt-if-not (lambda ()
                      (hyperdrive-parent (hyperdrive-menu--entry))))
     ("s" "Sort" hyperdrive-dir-sort
-     :if (lambda ()
-           (eq major-mode 'hyperdrive-dir-mode))
+     :if-mode hyperdrive-dir-mode
      :transient t)
     ("j" "Jump" imenu)
     ;; TODO: Combine previous and next commands on the same line?
@@ -147,29 +146,24 @@
                       (interactive)
                       (hyperdrive-ewoc-previous)
                       (hyperdrive-menu (hyperdrive-menu--entry)))
-     :if (lambda ()
-           (eq major-mode 'hyperdrive-dir-mode))
+     :if-mode hyperdrive-dir-mode
      :transient t)
     ("n" "Next" (lambda ()
                   (interactive)
                   (hyperdrive-ewoc-next)
                   (hyperdrive-menu (hyperdrive-menu--entry)))
-     :if (lambda ()
-           (eq major-mode 'hyperdrive-dir-mode))
+     :if-mode hyperdrive-dir-mode
      :transient t)
     ("w" "Copy URL" hyperdrive-copy-url
-     :if (lambda ()
-           (not (eq major-mode 'hyperdrive-dir-mode))))
+     :if-not-mode hyperdrive-dir-mode)
     ("D" "Delete" hyperdrive-delete
-     :if (lambda ()
-           (not (eq major-mode 'hyperdrive-dir-mode)))
+     :if-not-mode hyperdrive-dir-mode
      :inapt-if (lambda ()
                  (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
                               (hyperdrive-menu--entry)))
                    (or version (not (hyperdrive-writablep hyperdrive))))))
     ("d" "Download" hyperdrive-download
-     :if (lambda ()
-           (not (eq major-mode 'hyperdrive-dir-mode))))]
+     :if-not-mode hyperdrive-dir-mode)]
    ;; TODO: Consider adding a defcustom to hide the "Selected" and
    ;; "Current" groups when in a directory buffer.
    [;; Selected
