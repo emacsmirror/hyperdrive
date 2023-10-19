@@ -124,12 +124,7 @@ predicate and set NO-CONFIRM to t."
                                                            (read--expression "Lambda: " "(lambda (filename) )")))
                                     ("Named function" .
                                      (lambda ()
-                                       (completing-read "Named function: "
-                                                        (let ((functions))
-                                                          (mapatoms (lambda (atom)
-                                                                      (when (functionp atom)
-                                                                        (push atom functions))))
-                                                          functions))))))
+                                       (completing-read "Named function: " obarray #'functionp t)))))
                                  (choice (completing-read "Predicate type: " collection))
                                  (result (funcall (alist-get choice collection nil nil #'equal))))
                             result)
