@@ -233,15 +233,9 @@
    ("d" "Describe" (lambda ()
                      (interactive)
                      (hyperdrive-describe-hyperdrive (hyperdrive-menu--entry))))
-   ;; FIXME: Is there a better way to intersperse lines of description and commands?
-   ("" "Public key" ignore
-    :description (lambda ()
-                   (concat "Public key: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'public-key))))
-   ("" "Seed" ignore
-    :description (lambda ()
-                   (concat "Seed: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'seed)))
-    :if (lambda ()
-          (hyperdrive-seed (hyperdrive-menu--entry))))
+   (:info (lambda () (concat "Public key: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'public-key))))
+   (:info (lambda () (concat "Seed: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'seed)))
+    :if (lambda () (hyperdrive-seed (hyperdrive-menu--entry))))
    ("p" "Petname" hyperdrive-menu-set-petname
     :transient t
     :description (lambda ()
@@ -264,14 +258,9 @@
                                (propertize nickname
                                            'face 'hyperdrive-nickname)
                              ""))))
-   ("" "Domain" ignore
-    :description (lambda ()
-                   (concat "Domain: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'domain)))
-    :if (lambda ()
-          (hyperdrive-domains (hyperdrive-menu--entry))))
-   ("" "Latest version" ignore
-    :description (lambda ()
-                   (format "Latest version: %s" (hyperdrive-latest-version (hyperdrive-menu--entry)))))]
+   (:info (lambda () (concat "Domain: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'domain)))
+    :if (lambda () (hyperdrive-domains (hyperdrive-menu--entry))))
+   (:info (lambda () (format "Latest version: %s" (hyperdrive-latest-version (hyperdrive-menu--entry)))))]
   [["Open"
     ("f" "Find file"
      (lambda ()
