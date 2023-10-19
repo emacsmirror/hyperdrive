@@ -19,8 +19,8 @@ TEXI2INFO := makeinfo
 %.info: %.texi
 	$(TEXI2INFO) -o $@ $<
 
-hyperdrive.texi: hyperdrive.org
+doc/hyperdrive.texi: doc/hyperdrive.org
 	$(BATCH) --find-file $< --eval "(require 'ox-texinfo)" \
                             --eval '(org-texinfo-export-to-texinfo)'
 
-doc: hyperdrive.texi
+doc: doc/hyperdrive.texi
