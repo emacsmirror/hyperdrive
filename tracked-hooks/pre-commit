@@ -1,5 +1,11 @@
-#!/bin/sh
-git status -s | \
-    grep '^M  doc/hyperdrive.org$' > /dev/null && \
-    make doc && \
-    git add doc/hyperdrive.texi
+#!/bin/bash
+
+make doc
+
+if [[ $(git status --porcelain -- doc/hyperdrive.texi) ]]
+then
+    echo "hyperdrive.texi may need to be added"
+    exit 1
+else
+    exit 0
+fi
