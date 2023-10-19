@@ -46,3 +46,13 @@ These steps should be followed when releasing a new version:
    3. [ ] Rebuild .texi manual.
    4. [ ] Commit changes.
 
+* Git hooks
+
+Please consider using the following git hooks:
+
+- [[file:tracked-hooks/pre-commit]]
+
+  This ~pre-commit~ hook helps ensure that the ~hyperdrive.texi~ is
+  rebuilt and committed at the same time as ~hyperdrive.org~. It
+  rebuilds ~.texi~ whenever ~.org~ is about to be committed, and it
+  prevents ~.org~ from being committed while ~.texi~ has unstaged changes.
