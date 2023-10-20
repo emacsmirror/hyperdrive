@@ -193,7 +193,7 @@ predicate and set NO-CONFIRM to t."
 
 (defun hyperdrive-mirror-read-predicate ()
   "Read a function for filtering source files for mirroring."
-  (let* ((collection
+  (let* ((readers
           '(("Mirror all files" .
              (lambda () #'always))
             ("`rx' form" .
@@ -204,9 +204,8 @@ predicate and set NO-CONFIRM to t."
              (lambda () (read--expression "Lambda: " "(lambda (filename) )")))
             ("Named function"   .
              (lambda () (completing-read "Named function: " obarray #'functionp t)))))
-         (choice (completing-read "Predicate type: " collection))
-         (result (funcall (alist-get choice collection nil nil #'equal))))
-    result))
+         (reader (completing-read "Predicate type: " readers)))
+    (funcall (alist-get reader readers nil nil #'equal))))
 
 (defun hyperdrive-mirror-do-upload ()
   "Upload files in current \"*hyperdrive-mirror*\" buffer."
