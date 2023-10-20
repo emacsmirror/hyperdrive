@@ -1223,6 +1223,38 @@ The return value of this function is the retrieval buffer."
   (interactive)
   (info "(hyperdrive) Top"))
 
+;;;;; Markdown link support
+
+(defun hyperdrive--markdown-follow-link (url)
+  "Follow URL.
+For use in `markdown-follow-link-functions'."
+  (pcase (url-type (url-generic-parse-url url))
+    ((and `nil (guard (and hyperdrive-mode hyperdrive-current-entry)))
+     (hyperdrive-open (hyperdrive--markdown-url-entry url))
+     t)
+    (_ nil)))
+
+(defun hyperdrive--markdown-url-entry (url)
+  "Return hyperdrive entry for URL in `markdown-mode' buffer.
+Intended for relative (i.e. non-full) URLs."
+  (pcase-let (((cl-struct url filename) (url-generic-parse-url url))
+              ((cl-struct hyperdrive-entry hyperdrive path)
+               hyperdrive-current-entry))
+    ;; NOTE: Depending on the resolution of
+    ;; <https://github.com/jrblevin/markdown-mode/issues/805>, we may
+    ;; want to URL-decode paths.  For now, we won't.
+    (hyperdrive-entry-create
+     :hyperdrive hyperdrive
+     :path (expand-file-name filename (file-name-directory path))
+     ;; FIXME: Target.
+     ;; :etc `((target . ,FOO))
+     )))
+
+;;;###autoload
+(with-eval-after-load 'markdown-mode
+  (when (boundp 'markdown-follow-link-functions)
+    (cl-pushnew #'hyperdrive--markdown-follow-link markdown-follow-link-functions)))
+
 ;;;; Footer
 
 (provide 'hyperdrive)
