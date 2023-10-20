@@ -220,6 +220,12 @@
 
 ;;;; hyperdrive-menu-hyperdrive: Transient for hyperdrives
 
+(defvar hyperdrive-mirror-hyperdrive nil)
+(defvar hyperdrive-mirror-source nil)
+(defvar hyperdrive-mirror-target nil)
+(defvar hyperdrive-mirror-filter nil)
+(defvar hyperdrive-mirror-confirm t)
+
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for HYPERDRIVE."
   :refresh-suffixes t
@@ -236,19 +242,115 @@
     :if (lambda () (hyperdrive-domains (hyperdrive-menu--entry))))
    (:info (lambda () (format "Latest version: %s" (hyperdrive-latest-version (hyperdrive-menu--entry)))))]
   [["Open"
-    ("f" "Find file" hyperdrive-menu-open-file)
-    ("v" "View file" hyperdrive-menu-view-file)
+    ("f"   "Find file"    hyperdrive-menu-open-file)
+    ("v"   "View file"    hyperdrive-menu-view-file)
     "" "Upload"
-    ("u f" "File" hyperdrive-menu-upload-file
+    ("u f" "File"         hyperdrive-menu-upload-file
      :inapt-if-not (lambda () (hyperdrive-writablep (hyperdrive-menu--entry))))
     ("u F" "Files" hyperdrive-menu-upload-files
      :inapt-if-not (lambda () (hyperdrive-writablep (hyperdrive-menu--entry))))]
    ["Mirror"
-    ;; TODO: When `hyperdrive-mirror' is rewritten with transient.el, set the hyperdrive by default to the
-    ("u m" "Mirror" hyperdrive-mirror
-     :inapt-if-not (lambda () (hyperdrive-writablep (hyperdrive-menu--entry))))]]
+    :if (lambda () (hyperdrive-writablep (hyperdrive-menu--entry)))
+    ("u M" "Mirror using adhoc settings" hyperdrive-mirror)
+    ("u m" "Mirror using below settings" hyperdrive-mirror-configured)
+    ("u s" "Source"       hyperdrive-mirror-set-source)
+    ("u h" "Hyperdrive"   hyperdrive-mirror-set-hyperdrive)
+    ("u t" "Target"       hyperdrive-mirror-set-target)
+    ("u p" "Filter"       hyperdrive-mirror-set-filter)
+    ("u c" "Confirmation" hyperdrive-mirror-set-confirm)]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
+  ;; TODO: When `hyperdrive-mirror' is rewritten with transient.el,
+  ;; set the hyperdrive by default to the [hyperdrive-menu--entry?].
+  ;; This does that in a hacky way:
+  (setq hyperdrive-mirror-hyperdrive hyperdrive)
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
+
+(transient-define-suffix hyperdrive-mirror-configured ()
+  :inapt-if-not #'hyperdrive-mirror-configured-p
+  (interactive)
+  (unless (hyperdrive-mirror-configured-p)
+    (hyperdrive-user-error "Not all required mirror variables are set"))
+  (hyperdrive-mirror hyperdrive-mirror-source
+                     hyperdrive-mirror-hyperdrive
+                     :target-dir hyperdrive-mirror-target
+                     :predicate hyperdrive-mirror-filter
+                     :no-confirm (not hyperdrive-mirror-confirm)))
+
+(defun hyperdrive-mirror-configured-p ()
+  (and hyperdrive-mirror-hyperdrive
+       hyperdrive-mirror-source
+       hyperdrive-mirror-target))
+
+;; TODO(transient): Use a suffix class, so these commands can be invoked
+;; directly.  See magit-branch.<branch>.description et al.
+(defclass hyperdrive-mirror-variable (transient-lisp-variable)
+  ((format :initform " %k %d: %v")
+   (format-value :initarg :format-value :initform nil)
+   (value-face :initarg :value-face :initform nil)))
+
+(cl-defmethod transient-format-value ((obj hyperdrive-mirror-variable))
+  (if-let ((fn (oref obj format-value)))
+      (funcall fn obj)
+    (if-let ((value (oref obj value))
+             (value (if (stringp value)
+                        value
+                      (prin1-to-string value))))
+        (if-let ((face (oref obj value-face)))
+            (propertize value 'face face)
+          value)
+      (propertize "not set" 'face 'hyperdrive-dimmed))))
+
+(transient-define-infix hyperdrive-mirror-set-hyperdrive ()
+  :class 'hyperdrive-mirror-variable
+  :variable 'hyperdrive-mirror-hyperdrive
+  :format-value (lambda (_obj)
+                  (if hyperdrive-mirror-hyperdrive
+                      (hyperdrive--format-host hyperdrive-mirror-hyperdrive
+                                               :with-label t)
+                    (propertize "not set" 'face 'hyperdrive-dimmed)))
+  :reader (lambda (_prompt _default _history)
+            (hyperdrive-complete-hyperdrive
+             :predicate #'hyperdrive-writablep
+             :force-prompt t)))
+
+(transient-define-infix hyperdrive-mirror-set-source ()
+  :class 'hyperdrive-mirror-variable
+  :variable 'hyperdrive-mirror-source
+  :value-face 'hyperdrive-file-name
+  :reader (lambda (_prompt _default _history)
+            (read-directory-name "Mirror directory: " nil nil t)))
+
+(transient-define-infix hyperdrive-mirror-set-target ()
+  :class 'hyperdrive-mirror-variable
+  :variable 'hyperdrive-mirror-target
+  :value-face 'hyperdrive-file-name
+  :format-value (lambda (obj)
+                  (if-let ((value (oref obj value)))
+                      (propertize value 'face 'hyperdrive-file-name)
+                    (format (propertize "%s (default)" 'face 'hyperdrive-dimmed)
+                            (propertize "/" 'face 'hyperdrive-file-name))))
+  :reader (lambda (_prompt _default _history)
+            (hyperdrive-read-path
+             :hyperdrive hyperdrive-mirror-hyperdrive
+             :prompt "Target directory in «%s»"
+             :default "/")))
+
+(transient-define-infix hyperdrive-mirror-set-filter ()
+  :class 'hyperdrive-mirror-variable
+  :variable 'hyperdrive-mirror-filter
+  :reader (lambda (_prompt _default _history)
+            (hyperdrive-mirror-read-predicate)))
+
+(transient-define-infix hyperdrive-mirror-set-confirm ()
+  :class 'hyperdrive-mirror-variable
+  :variable 'hyperdrive-mirror-confirm
+  :format-value (lambda (obj)
+                  ;; TODO dedicated faces
+                  (if (oref obj value)
+                      (propertize "required" 'face 'hyperdrive-file-name)
+                    (propertize "not required" 'face 'font-lock-warning-face)))
+  :reader (lambda (_prompt _default _history)
+            (not hyperdrive-mirror-confirm)))
 
 (transient-define-suffix hyperdrive-menu-open-file ()
   (interactive)

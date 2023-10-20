@@ -186,6 +186,12 @@ an existing buffer at the same version, or make a new buffer."
 (defface hyperdrive-public-key '((t :inherit font-lock-function-name-face))
   "Applied to hyperdrive public keys.")
 
+(defface hyperdrive-file-name '((t :inherit font-lock-keyword-face)) ; TODO theme
+  "Applied to file names.")
+
+(defface hyperdrive-dimmed '((t :inherit shadow))
+  "Applied to text in transient menus that should be dimmed.")
+
 (defface hyperdrive-header '((t (:inherit dired-header)))
   "Directory path.")
 
