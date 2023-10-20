@@ -392,3 +392,17 @@ Assuming the ~CUSTOM_ID~ is ~heading-a~:
 
 + 
 
+* Markdown links
+
+** Angle-bracketed links (i.e. ~<URL>~)
+
+~markdown-follow-link-at-point~ does not allow the user to follow links in angle brackets, so we don't support them.
+
+** Path encoding
+
+Depending on the resolution of [[https://github.com/jrblevin/markdown-mode/issues/805][Should filename links be URI-decoded? · Issue #805 · jrblevin/markdown-mode · GitHub]], we may want to URL-decode paths.  For now, we won't.
+
+** Targets
+
+Targets are not currently implemented.
+
