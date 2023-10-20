@@ -113,21 +113,7 @@ predicate and set NO-CONFIRM to t."
            :target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in «%s»" :default "/")
            :no-confirm (equal '(16) current-prefix-arg)
            :predicate (if current-prefix-arg
-                          (let* ((collection
-                                  '(("Mirror all files" . (lambda ()
-                                                            #'always))
-                                    ("`rx' form" . (lambda ()
-                                                     (eval (read--expression "`rx' form: " "(rx )"))))
-                                    ("Regexp string" . (lambda ()
-                                                         (read-regexp "Regular expression: ")))
-                                    ("Lambda function" . (lambda ()
-                                                           (read--expression "Lambda: " "(lambda (filename) )")))
-                                    ("Named function" .
-                                     (lambda ()
-                                       (completing-read "Named function: " obarray #'functionp t)))))
-                                 (choice (completing-read "Predicate type: " collection))
-                                 (result (funcall (alist-get choice collection nil nil #'equal))))
-                            result)
+                          (hyperdrive-mirror-read-predicate)
                         #'always))))
   (cl-callf expand-file-name source)
   (setf target-dir (hyperdrive--format-path target-dir :directoryp t))
@@ -204,6 +190,23 @@ predicate and set NO-CONFIRM to t."
                                (hyperdrive-error "Unable to get metadata for URL \"%s\": %S"
                                                  (hyperdrive-entry-url entry) plz-error))))))))
             (pop-to-buffer (current-buffer))))))))
+
+(defun hyperdrive-mirror-read-predicate ()
+  "Read a function for filtering source files for mirroring."
+  (let* ((collection
+          '(("Mirror all files" .
+             (lambda () #'always))
+            ("`rx' form" .
+             (lambda () (eval (read--expression "`rx' form: " "(rx )"))))
+            ("Regexp string" .
+             (lambda () (read-regexp "Regular expression: ")))
+            ("Lambda function" .
+             (lambda () (read--expression "Lambda: " "(lambda (filename) )")))
+            ("Named function"   .
+             (lambda () (completing-read "Named function: " obarray #'functionp t)))))
+         (choice (completing-read "Predicate type: " collection))
+         (result (funcall (alist-get choice collection nil nil #'equal))))
+    result))
 
 (defun hyperdrive-mirror-do-upload ()
   "Upload files in current \"*hyperdrive-mirror*\" buffer."
