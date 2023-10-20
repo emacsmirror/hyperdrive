@@ -548,7 +548,7 @@ it to `hyperdrive-open'."
   "j"   #'hyperdrive-up
   "C-j" #'hyperdrive-up)
 
-(defun hyperdrive-previous-version (entry)
+(defun hyperdrive-open-previous-version (entry)
   "Open previous version of ENTRY."
   (declare (modes hyperdrive-mode))
   (interactive (list hyperdrive-current-entry))
@@ -559,7 +559,7 @@ it to `hyperdrive-open'."
                         (1- (or (hyperdrive-entry-version entry)
                                 (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry)))))))
 
-(defun hyperdrive-next-version (entry)
+(defun hyperdrive-open-next-version (entry)
   "Open next version of ENTRY."
   (declare (modes hyperdrive-mode))
   (interactive (list hyperdrive-current-entry))
@@ -1151,7 +1151,7 @@ The return value of this function is the retrieval buffer."
                          "latest"))
       ["Previous Version" (lambda ()
                             (interactive)
-                            (call-interactively #'hyperdrive-previous-version))
+                            (call-interactively #'hyperdrive-open-previous-version))
        :active (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
        :label (concat "Previous Version"
                       (pcase-exhaustive (hyperdrive-entry-previous hyperdrive-current-entry :cache-only t)
@@ -1162,7 +1162,7 @@ The return value of this function is the retrieval buffer."
        :help "Open previous version"]
       ["Next Version" (lambda ()
                         (interactive)
-                        (call-interactively #'hyperdrive-next-version))
+                        (call-interactively #'hyperdrive-open-next-version))
        :active (and (hyperdrive-entry-version hyperdrive-current-entry)
                     (hyperdrive-entry-next hyperdrive-current-entry))
        :label (concat "Next Version"

@@ -100,10 +100,10 @@
 
     + Time machine :: Allowing the user to "go back in time" (and forward) and view various versions of entries.
 
-      + ~hyperdrive-previous-version~ :: Show the previous version of the file.
+      + ~hyperdrive-open-previous-version~ :: Show the previous version of the file.
         + [ ] If the current version of the file is the earliest, show a useful error.
 
-      + ~hyperdrive-next-version~ :: Show the next version of the file.
+      + ~hyperdrive-open-next-version~ :: Show the next version of the file.
         + *NOTE*: The hyper-gateway API doesn't seem to currently offer a way to retrieve the /next/ version of an entry, given an entry at a version.  Iterating backward from the latest version would be impractical.
 
         + [ ] If that version is also the current version, it should act as if the user requested the file without specifying a version.  See [[https://github.com/RangerMauve/hypercore-fetch/issues/72]].

@@ -83,7 +83,7 @@
                                                        "latest"))
                                            'face 'transient-value))
                      "Version"))
-    ("V p" "Previous" hyperdrive-previous-version
+    ("V p" "Previous" hyperdrive-open-previous-version
      :inapt-if-not (lambda ()
                      (hyperdrive-entry-previous (oref transient--prefix scope) :cache-only t))
      ;; :transient t
@@ -97,7 +97,7 @@
                                    (concat ": " (propertize (number-to-string version)
                                                             'face 'transient-value)))))
                       "Previous")))
-    ("V n" "Next" hyperdrive-next-version
+    ("V n" "Next" hyperdrive-open-next-version
      :inapt-if-not (lambda  ()
                      (let ((entry (oref transient--prefix scope)))
                        (and (hyperdrive-entry-version entry)
