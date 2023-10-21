@@ -9,6 +9,8 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 - ~hyperdrive-open-at-version~: Open the current file or directory at a
   specific version.
+- Support following relative filename links in hyperdrive
+  ~markdown-mode~ buffers
 
 ** Changed
 
