@@ -106,6 +106,7 @@ Open a hyperdrive
 Link to a hyperdrive
 
 * Org mode links::
+* Markdown links::
 
 View the hyperdrive version history
 
@@ -594,6 +595,7 @@ file or directory.
 
 @menu
 * Org mode links::
+* Markdown links::
 @end menu
 
 @node Org mode links
@@ -618,6 +620,13 @@ to a hyperdrive file/folder by running @code{M-x org-insert-link} (or @code{C-c 
 in org-mode), then typing @code{hyper:} and @code{RET}.  To change how
 @code{org-insert-link} inserts links to files within the same hyperdrive,
 adjust @code{hyperdrive-org-link-full-url} and @code{org-link-file-path-type}.
+
+@node Markdown links
+@subsection Markdown links
+
+Relative links are supported; within @code{hyper://PUBLIC-KEY/foo.md}, the
+links @code{[bar](<bar.md>)}, @code{[bar](<./bar.md>)}, and @code{[bar](</bar.md>)} will
+all point to @code{hyper://PUBLIC-KEY/bar.md}.
 
 @node Delete a hyperdrive file
 @section Delete a hyperdrive file

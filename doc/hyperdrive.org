@@ -358,6 +358,12 @@ in org-mode), then typing ~hyper:~ and ~RET~.  To change how
 ~org-insert-link~ inserts links to files within the same hyperdrive,
 adjust ~hyperdrive-org-link-full-url~ and ~org-link-file-path-type~.
 
+*** Markdown links
+
+Relative links are supported; within ~hyper://PUBLIC-KEY/foo.md~, the
+links ~[bar](<bar.md>)~, ~[bar](<./bar.md>)~, and ~[bar](</bar.md>)~ will
+all point to ~hyper://PUBLIC-KEY/bar.md~.
+
 ** Delete a hyperdrive file
 #+findex: hyperdrive-delete
 
