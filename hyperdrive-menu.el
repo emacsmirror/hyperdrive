@@ -231,28 +231,9 @@
    (:info (lambda () (concat "Public key: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'public-key))))
    (:info (lambda () (concat "Seed: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'seed)))
     :if (lambda () (hyperdrive-seed (hyperdrive-menu--entry))))
-   ("p" "Petname" hyperdrive-menu-set-petname
-    :transient t
-    :description (lambda ()
-                   (format "Petname: %s"
-                           (if-let ((petname (hyperdrive-petname
-                                              (hyperdrive-menu--entry))))
-                               (propertize petname
-                                           'face 'hyperdrive-petname)
-                             ""))))
-   ("n" "set nickname" hyperdrive-menu-set-nickname
-    :transient t
-    :inapt-if-not (lambda ()
-                    (hyperdrive-writablep (hyperdrive-menu--entry)))
-    :description (lambda ()
-                   (format "Nickname: %s"
-                           ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
-                           (if-let ((nickname (alist-get 'name
-                                                         (hyperdrive-metadata
-                                                          (hyperdrive-menu--entry)))))
-                               (propertize nickname
-                                           'face 'hyperdrive-nickname)
-                             ""))))
+   ("p" hyperdrive-menu-set-petname  :transient t)
+   ("n" hyperdrive-menu-set-nickname :transient t
+    :inapt-if-not (lambda () (hyperdrive-writablep (hyperdrive-menu--entry))))
    (:info (lambda () (concat "Domain: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'domain)))
     :if (lambda () (hyperdrive-domains (hyperdrive-menu--entry))))
    (:info (lambda () (format "Latest version: %s" (hyperdrive-latest-version (hyperdrive-menu--entry)))))]
@@ -307,6 +288,12 @@
                            :target-directory target-directory))
 
 (transient-define-suffix hyperdrive-menu-set-petname (petname hyperdrive)
+  :description (lambda ()
+                 (format "Petname: %s"
+                         (if-let ((petname (hyperdrive-petname
+                                            (hyperdrive-menu--entry))))
+                             (propertize petname 'face 'hyperdrive-petname)
+                           "")))
   (interactive
    (list (hyperdrive-read-name
           :prompt "New petname"
@@ -315,6 +302,15 @@
   (hyperdrive-set-petname petname hyperdrive))
 
 (transient-define-suffix hyperdrive-menu-set-nickname (nickname hyperdrive)
+  :description
+  (lambda ()
+    (format "Nickname: %s"
+            ;; TODO: Hyperdrive-metadata accessor (and maybe gv setter).
+            (if-let ((nickname (alist-get 'name
+                                          (hyperdrive-metadata
+                                           (hyperdrive-menu--entry)))))
+                (propertize nickname 'face 'hyperdrive-nickname)
+              "")))
   (interactive
    (list (hyperdrive-read-name
           :prompt "New nickname"
