@@ -353,7 +353,7 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
              (lambda () (read--expression "Lambda: " "(lambda (filename) )")))
             ("Named function"   .
              (lambda () (completing-read "Named function: " obarray #'functionp t)))))
-         (reader (completing-read "Predicate type: " readers)))
+         (reader (completing-read "Predicate type: " readers nil t)))
     (funcall (alist-get reader readers nil nil #'equal))))
 
 (defun hyperdrive-mirror-do-upload ()
