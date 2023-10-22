@@ -352,6 +352,8 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
              (lambda () (read--expression "Lambda: " "(lambda (filename) )")))
             ("Named function"   .
              (lambda () (completing-read "Named function: " obarray #'functionp t)))))
+         ;; TODO(transient): Implement returning values from prefixes,
+         ;; allowing us to use a sub-prefix here instead of completing-read.
          (reader (completing-read "Predicate type: " readers nil t))
          (reader (alist-get reader readers nil nil #'equal)))
     (and reader (funcall reader))))

@@ -230,6 +230,12 @@
   "Show menu for HYPERDRIVE."
   :refresh-suffixes t
   ["Hyperdrive"
+   ;; TODO(transient): Maybe support shared predicates like
+   ;; so, and then ":if entryp" to avoid duplication below.
+   ;; :predicates ((entryp ,(lambda () (hyperdrive-seed (hyperdrive-menu--entry)))))
+   ;; TODO(transient): Support subgroups in a column group,
+   ;; making the below "" "Upload" unnecessary.
+   ;; TODO(transient): Implement :inapt-if* for groups.
    :pad-keys t
    ("d" hyperdrive-menu-describe-hyperdrive)
    (:info (lambda () (concat "Public key: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'public-key))))
