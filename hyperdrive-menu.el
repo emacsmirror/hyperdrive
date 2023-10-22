@@ -285,8 +285,7 @@
 
 (defun hyperdrive-mirror-configured-p ()
   (and hyperdrive-mirror-hyperdrive
-       hyperdrive-mirror-source
-       hyperdrive-mirror-target))
+       hyperdrive-mirror-source))
 
 ;; TODO(transient): Use a suffix class, so these commands can be invoked
 ;; directly.  See magit-branch.<branch>.description et al.
