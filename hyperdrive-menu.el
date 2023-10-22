@@ -225,9 +225,7 @@
   :refresh-suffixes t
   ["Hyperdrive"
    :pad-keys t
-   ("d" "Describe" (lambda ()
-                     (interactive)
-                     (hyperdrive-describe-hyperdrive (hyperdrive-menu--entry))))
+   ("d" hyperdrive-menu-describe-hyperdrive)
    (:info (lambda () (concat "Public key: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'public-key))))
    (:info (lambda () (concat "Seed: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'seed)))
     :if (lambda () (hyperdrive-seed (hyperdrive-menu--entry))))
@@ -238,19 +236,8 @@
     :if (lambda () (hyperdrive-domains (hyperdrive-menu--entry))))
    (:info (lambda () (format "Latest version: %s" (hyperdrive-latest-version (hyperdrive-menu--entry)))))]
   [["Open"
-    ("f" "Find file"
-     (lambda ()
-       (interactive)
-       (hyperdrive-open
-         (hyperdrive-read-entry
-          :hyperdrive (hyperdrive-menu--entry)
-          :read-version current-prefix-arg))))
-    ("v" "View file" (lambda ()
-                       (interactive)
-                       (hyperdrive-view-file
-                        (hyperdrive-read-entry
-                         :hyperdrive (hyperdrive-menu--entry)
-                         :read-version current-prefix-arg))))]
+    ("f" "Find file" hyperdrive-menu-open-file)
+    ("v" "View file" hyperdrive-menu-view-file)]
    ["Upload"
     ("u f" "File" hyperdrive-menu-upload-file
      :inapt-if-not (lambda ()
@@ -264,6 +251,18 @@
                      (hyperdrive-writablep (hyperdrive-menu--entry))))]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
+
+(transient-define-suffix hyperdrive-menu-open-file ()
+  (interactive)
+  (hyperdrive-open (hyperdrive-read-entry
+                    :hyperdrive (hyperdrive-menu--entry)
+                    :read-version current-prefix-arg)))
+
+(transient-define-suffix hyperdrive-menu-view-file ()
+  (interactive)
+  (hyperdrive-view-file (hyperdrive-read-entry
+                         :hyperdrive (hyperdrive-menu--entry)
+                         :read-version current-prefix-arg)))
 
 (transient-define-suffix hyperdrive-menu-upload-file (filename entry)
   (interactive
@@ -286,6 +285,11 @@
                          :default "/"))))
   (hyperdrive-upload-files files hyperdrive
                            :target-directory target-directory))
+
+(transient-define-suffix hyperdrive-menu-describe-hyperdrive ()
+  :description "Describe"
+  (interactive)
+  (hyperdrive-describe-hyperdrive (hyperdrive-menu--entry)))
 
 (transient-define-suffix hyperdrive-menu-set-petname (petname hyperdrive)
   :description (lambda ()
