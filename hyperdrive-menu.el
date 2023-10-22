@@ -238,6 +238,7 @@
    ;; TODO(transient): Implement :inapt-if* for groups.
    :pad-keys t
    ("d" hyperdrive-menu-describe-hyperdrive)
+   ("w" hyperdrive-menu-hyperdrive-copy-url)
    (:info (lambda () (concat "Public key: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'public-key))))
    (:info (lambda () (concat "Seed: " (hyperdrive--format-host (hyperdrive-menu--entry) :format 'seed)))
     :if (lambda () (hyperdrive-seed (hyperdrive-menu--entry))))
@@ -396,6 +397,12 @@
   :description "Describe"
   (interactive)
   (hyperdrive-describe-hyperdrive (hyperdrive-menu--entry)))
+
+(transient-define-suffix hyperdrive-menu-hyperdrive-copy-url ()
+  :description "Copy URL"
+  (interactive)
+  (hyperdrive-copy-url (hyperdrive-entry-create
+                        :hyperdrive (hyperdrive-menu--entry))))
 
 (transient-define-suffix hyperdrive-menu-set-petname (petname hyperdrive)
   :description (lambda ()
