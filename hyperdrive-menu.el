@@ -42,7 +42,7 @@
 (declare-function hyperdrive-set-nickname "hyperdrive")
 (declare-function hyperdrive-set-petname "hyperdrive")
 
-;;;;; hyperdrive-menu: Transient for entries
+;;;; hyperdrive-menu: Transient for entries
 
 ;; TODO: Use something like this later.
 ;; (defmacro hyperdrive-menu-lambda (&rest body)
@@ -224,7 +224,7 @@
   (interactive (list hyperdrive-current-entry))
   (transient-setup 'hyperdrive-menu nil nil :scope entry))
 
-;;;;; hyperdrive-menu-hyperdrive: Transient for hyperdrives
+;;;; hyperdrive-menu-hyperdrive: Transient for hyperdrives
 
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for HYPERDRIVE."
@@ -340,7 +340,7 @@
                            :then (lambda (drive)
                                    (hyperdrive-menu-hyperdrive drive))))
 
-;;;;; Common Utilities
+;;;; Menu Utilities
 
 (defun hyperdrive-menu--entry ()
   "Return the current entry as understood by `hyperdrive-menu'."
