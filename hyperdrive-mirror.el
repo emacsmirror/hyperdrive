@@ -343,8 +343,7 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
 (defun hyperdrive-mirror-read-predicate ()
   "Read a function for filtering source files for mirroring."
   (let* ((readers
-          '(("Mirror all files" .
-             (lambda () #'always))
+          '(("Mirror all files" . nil)
             ("`rx' form" .
              (lambda () (eval (read--expression "`rx' form: " "(rx )"))))
             ("Regexp string" .
@@ -353,8 +352,9 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
              (lambda () (read--expression "Lambda: " "(lambda (filename) )")))
             ("Named function"   .
              (lambda () (completing-read "Named function: " obarray #'functionp t)))))
-         (reader (completing-read "Predicate type: " readers nil t)))
-    (funcall (alist-get reader readers nil nil #'equal))))
+         (reader (completing-read "Predicate type: " readers nil t))
+         (reader (alist-get reader readers nil nil #'equal)))
+    (and reader (funcall reader))))
 
 (defun hyperdrive-mirror-do-upload ()
   "Upload files in current \"*hyperdrive-mirror*\" buffer."
