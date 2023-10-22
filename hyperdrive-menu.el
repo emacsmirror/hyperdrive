@@ -320,9 +320,7 @@
           :prompt "New nickname"
           :initial-input (alist-get 'name (hyperdrive-metadata (hyperdrive-menu--entry))))
          (hyperdrive-menu--entry)))
-  (hyperdrive-set-nickname nickname hyperdrive
-                           :then (lambda (drive)
-                                   (hyperdrive-menu-hyperdrive drive))))
+  (hyperdrive-set-nickname nickname hyperdrive))
 
 ;;;; Menu Utilities
 
