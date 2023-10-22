@@ -237,14 +237,15 @@
    (:info (lambda () (format "Latest version: %s" (hyperdrive-latest-version (hyperdrive-menu--entry)))))]
   [["Open"
     ("f" "Find file" hyperdrive-menu-open-file)
-    ("v" "View file" hyperdrive-menu-view-file)]
-   ["Upload"
+    ("v" "View file" hyperdrive-menu-view-file)
+    "" "Upload"
     ("u f" "File" hyperdrive-menu-upload-file
      :inapt-if-not (lambda ()
                      (hyperdrive-writablep (hyperdrive-menu--entry))))
     ("u F" "Files" hyperdrive-menu-upload-files
      :inapt-if-not (lambda ()
-                     (hyperdrive-writablep (hyperdrive-menu--entry))))
+                     (hyperdrive-writablep (hyperdrive-menu--entry))))]
+   ["Mirror"
     ;; TODO: When `hyperdrive-mirror' is rewritten with transient.el, set the hyperdrive by default to the
     ("u m" "Mirror" hyperdrive-mirror
      :inapt-if-not (lambda ()
