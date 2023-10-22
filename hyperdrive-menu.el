@@ -258,13 +258,13 @@
      :inapt-if-not (lambda () (hyperdrive-writablep (hyperdrive-menu--entry))))]
    ["Mirror"
     :if (lambda () (hyperdrive-writablep (hyperdrive-menu--entry)))
-    ("u M" "Mirror using adhoc settings" hyperdrive-mirror)
-    ("u m" "Mirror using below settings" hyperdrive-mirror-configured)
-    ("u s" "Source"       hyperdrive-mirror-set-source)
-    ("u h" "Hyperdrive"   hyperdrive-mirror-set-hyperdrive)
-    ("u t" "Target"       hyperdrive-mirror-set-target)
-    ("u p" "Filter"       hyperdrive-mirror-set-filter)
-    ("u c" "Confirmation" hyperdrive-mirror-set-confirm)]]
+    ("m M" "Mirror using adhoc settings" hyperdrive-mirror)
+    ("m m" "Mirror using below settings" hyperdrive-mirror-configured)
+    ("m s" "Source"       hyperdrive-mirror-set-source)
+    ("m h" "Hyperdrive"   hyperdrive-mirror-set-hyperdrive)
+    ("m t" "Target"       hyperdrive-mirror-set-target)
+    ("m p" "Filter"       hyperdrive-mirror-set-filter)
+    ("m c" "Confirmation" hyperdrive-mirror-set-confirm)]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   ;; TODO: When `hyperdrive-mirror' is rewritten with transient.el,
   ;; set the hyperdrive by default to the [hyperdrive-menu--entry?].
