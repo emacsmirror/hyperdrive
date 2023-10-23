@@ -267,18 +267,12 @@
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
 (transient-define-suffix hyperdrive-mirror-configured ()
-  :inapt-if-not #'hyperdrive-mirror-configured-p
   (interactive)
-  (unless (hyperdrive-mirror-configured-p)
-    (hyperdrive-user-error "Not all required mirror variables are set"))
-  (hyperdrive-mirror hyperdrive-mirror-source
+  (hyperdrive-mirror (or hyperdrive-mirror-source default-directory)
                      (hyperdrive-menu--entry)
                      :target-dir hyperdrive-mirror-target
                      :predicate hyperdrive-mirror-filter
                      :no-confirm (not hyperdrive-mirror-confirm)))
-
-(defun hyperdrive-mirror-configured-p ()
-  hyperdrive-mirror-source)
 
 ;; TODO(transient): Use a suffix class, so these commands can be invoked
 ;; directly.  See magit-branch.<branch>.description et al.
@@ -303,6 +297,11 @@
   :class 'hyperdrive-mirror-variable
   :variable 'hyperdrive-mirror-source
   :value-face 'hyperdrive-file-name
+  :format-value (lambda (obj)
+                  (if-let ((value (oref obj value)))
+                      (propertize value 'face 'hyperdrive-file-name)
+                    (format (propertize "%s (default)" 'face 'hyperdrive-dimmed)
+                            (propertize default-directory 'face 'hyperdrive-file-name))))
   :reader (lambda (_prompt _default _history)
             (read-directory-name "Mirror directory: " nil nil t)))
 
