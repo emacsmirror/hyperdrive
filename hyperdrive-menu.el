@@ -259,10 +259,10 @@
     :if (lambda () (hyperdrive-writablep (hyperdrive-menu--entry)))
     ("m M" "Mirror using adhoc settings" hyperdrive-mirror)
     ("m m" "Mirror using below settings" hyperdrive-mirror-configured)
-    ("m s" "Source"       hyperdrive-mirror-set-source)
-    ("m t" "Target"       hyperdrive-mirror-set-target)
-    ("m p" "Filter"       hyperdrive-mirror-set-filter)
-    ("m c" "Confirmation" hyperdrive-mirror-set-confirm)]]
+    ("m s" "Source"  hyperdrive-mirror-set-source)
+    ("m t" "Target"  hyperdrive-mirror-set-target)
+    ("m p" "Filter"  hyperdrive-mirror-set-filter)
+    ("m c" "Confirm" hyperdrive-mirror-set-confirm)]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
@@ -332,8 +332,8 @@
   :format-value (lambda (obj)
                   ;; TODO dedicated faces
                   (if (oref obj value)
-                      (propertize "required" 'face 'hyperdrive-file-name)
-                    (propertize "not required" 'face 'font-lock-warning-face)))
+                      (propertize "yes" 'face 'hyperdrive-file-name)
+                    (propertize "no (dangerous)" 'face 'font-lock-warning-face)))
   :reader (lambda (_prompt _default _history)
             (not hyperdrive-mirror-confirm)))
 
