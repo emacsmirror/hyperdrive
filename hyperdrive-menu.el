@@ -323,6 +323,13 @@
 (transient-define-infix hyperdrive-mirror-set-filter ()
   :class 'hyperdrive-mirror-variable
   :variable 'hyperdrive-mirror-filter
+  :format-value (lambda (obj)
+                  (pcase-exhaustive (oref obj value)
+                    ('nil (propertize "Mirror all" 'face 'hyperdrive-file-name))
+                    ((and (pred stringp) it) (propertize it 'face 'font-lock-regexp-face))
+                    ((and (pred symbolp) it) (propertize (symbol-name it) 'face 'font-lock-function-name-face))
+                    ;; TODO: Fontify the whole lambda.
+                    ((and (pred consp) it) (propertize (prin1-to-string it) 'face 'default))))
   :reader (lambda (_prompt _default _history)
             (hyperdrive-mirror-read-predicate)))
 
