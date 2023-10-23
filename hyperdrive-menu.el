@@ -139,7 +139,8 @@
      :transient t)
     ;; TODO: Consider running whatever command imenu has been rebound to in the
     ;; global map, e.g., consult-imenu.
-    ("j" "Jump" imenu)
+    ("j" "Jump" imenu
+     :if-mode hyperdrive-dir-mode)
     ;; TODO: Combine previous and next commands on the same line?
     ("p" "Previous" hyperdrive-ewoc-previous
      :if-mode hyperdrive-dir-mode
