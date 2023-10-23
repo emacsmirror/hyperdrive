@@ -322,6 +322,7 @@
 (transient-define-infix hyperdrive-mirror-set-filter ()
   :class 'hyperdrive-mirror-variable
   :variable 'hyperdrive-mirror-filter
+  :always-read nil
   :format-value (lambda (obj)
                   (pcase-exhaustive (oref obj value)
                     ('nil (propertize "Mirror all" 'face 'hyperdrive-file-name))
