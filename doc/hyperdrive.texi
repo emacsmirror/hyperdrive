@@ -1357,8 +1357,8 @@ the relevant section in the @code{hyperdrive.el} manual.
 @node Troubleshooting
 @chapter Troubleshooting
 
-If you run into issues, please first try resetting the value of
-@code{hyperdrive-hyperdrives}:
+If you run into issues, please first try resetting the values of
+@code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}:
 
 @lisp
 (progn

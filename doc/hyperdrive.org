@@ -897,8 +897,8 @@ the relevant section in the ~hyperdrive.el~ manual.
 
 * Troubleshooting
 
-If you run into issues, please first try resetting the value of
-~hyperdrive-hyperdrives~:
+If you run into issues, please first try resetting the values of
+~hyperdrive-hyperdrives~ and ~hyperdrive-version-ranges~:
 
 #+begin_src elisp
   (progn
