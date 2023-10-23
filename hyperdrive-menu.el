@@ -220,7 +220,6 @@
 
 ;;;; hyperdrive-menu-hyperdrive: Transient for hyperdrives
 
-(defvar hyperdrive-mirror-hyperdrive nil)
 (defvar hyperdrive-mirror-source nil)
 (defvar hyperdrive-mirror-target nil)
 (defvar hyperdrive-mirror-filter nil)
@@ -261,15 +260,10 @@
     ("m M" "Mirror using adhoc settings" hyperdrive-mirror)
     ("m m" "Mirror using below settings" hyperdrive-mirror-configured)
     ("m s" "Source"       hyperdrive-mirror-set-source)
-    ("m h" "Hyperdrive"   hyperdrive-mirror-set-hyperdrive)
     ("m t" "Target"       hyperdrive-mirror-set-target)
     ("m p" "Filter"       hyperdrive-mirror-set-filter)
     ("m c" "Confirmation" hyperdrive-mirror-set-confirm)]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
-  ;; TODO: When `hyperdrive-mirror' is rewritten with transient.el,
-  ;; set the hyperdrive by default to the [hyperdrive-menu--entry?].
-  ;; This does that in a hacky way:
-  (setq hyperdrive-mirror-hyperdrive hyperdrive)
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
 
 (transient-define-suffix hyperdrive-mirror-configured ()
@@ -278,14 +272,13 @@
   (unless (hyperdrive-mirror-configured-p)
     (hyperdrive-user-error "Not all required mirror variables are set"))
   (hyperdrive-mirror hyperdrive-mirror-source
-                     hyperdrive-mirror-hyperdrive
+                     (hyperdrive-menu--entry)
                      :target-dir hyperdrive-mirror-target
                      :predicate hyperdrive-mirror-filter
                      :no-confirm (not hyperdrive-mirror-confirm)))
 
 (defun hyperdrive-mirror-configured-p ()
-  (and hyperdrive-mirror-hyperdrive
-       hyperdrive-mirror-source))
+  hyperdrive-mirror-source)
 
 ;; TODO(transient): Use a suffix class, so these commands can be invoked
 ;; directly.  See magit-branch.<branch>.description et al.
@@ -306,19 +299,6 @@
           value)
       (propertize "not set" 'face 'hyperdrive-dimmed))))
 
-(transient-define-infix hyperdrive-mirror-set-hyperdrive ()
-  :class 'hyperdrive-mirror-variable
-  :variable 'hyperdrive-mirror-hyperdrive
-  :format-value (lambda (_obj)
-                  (if hyperdrive-mirror-hyperdrive
-                      (hyperdrive--format-host hyperdrive-mirror-hyperdrive
-                                               :with-label t)
-                    (propertize "not set" 'face 'hyperdrive-dimmed)))
-  :reader (lambda (_prompt _default _history)
-            (hyperdrive-complete-hyperdrive
-             :predicate #'hyperdrive-writablep
-             :force-prompt t)))
-
 (transient-define-infix hyperdrive-mirror-set-source ()
   :class 'hyperdrive-mirror-variable
   :variable 'hyperdrive-mirror-source
@@ -337,7 +317,7 @@
                             (propertize "/" 'face 'hyperdrive-file-name))))
   :reader (lambda (_prompt _default _history)
             (hyperdrive-read-path
-             :hyperdrive hyperdrive-mirror-hyperdrive
+             :hyperdrive (hyperdrive-menu--entry)
              :prompt "Target directory in «%s»"
              :default "/")))
 
