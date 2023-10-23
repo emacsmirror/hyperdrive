@@ -142,8 +142,6 @@ Runs `hyperdrive-mirror' again with the same query."
 
 ;;;; Commands
 
-;; TODO: Rewrite `hyperdrive-mirror' as a Transient.
-
 ;;;###autoload
 (cl-defun hyperdrive-mirror
     (source hyperdrive &key target-dir (predicate #'always) no-confirm)
