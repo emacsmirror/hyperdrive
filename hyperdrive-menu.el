@@ -325,7 +325,7 @@
   :always-read nil
   :format-value (lambda (obj)
                   (pcase-exhaustive (oref obj value)
-                    ('nil (propertize "Mirror all" 'face 'hyperdrive-file-name))
+                    ('nil (propertize "None (mirror all)" 'face 'hyperdrive-file-name))
                     ((and (pred stringp) it) (propertize it 'face 'font-lock-regexp-face))
                     ((and (pred symbolp) it) (propertize (symbol-name it) 'face 'font-lock-function-name-face))
                     ;; TODO: Fontify the whole lambda.
