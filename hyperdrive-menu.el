@@ -257,7 +257,6 @@
      :inapt-if-not (lambda () (hyperdrive-writablep (hyperdrive-menu--entry))))]
    ["Mirror"
     :if (lambda () (hyperdrive-writablep (hyperdrive-menu--entry)))
-    ("m M" "Mirror using adhoc settings" hyperdrive-mirror)
     ("m m" "Mirror using below settings" hyperdrive-mirror-configured)
     ("m s" "Source"  hyperdrive-mirror-set-source)
     ("m t" "Target"  hyperdrive-mirror-set-target)
