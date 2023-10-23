@@ -260,7 +260,7 @@
     ("m m" "Mirror using below settings" hyperdrive-mirror-configured)
     ("m s" "Source"  hyperdrive-mirror-set-source)
     ("m t" "Target"  hyperdrive-mirror-set-target)
-    ("m p" "Filter"  hyperdrive-mirror-set-filter)
+    ("m f" "Filter"  hyperdrive-mirror-set-filter)
     ("m c" "Confirm" hyperdrive-mirror-set-confirm)]]
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'hyperdrive-menu-hyperdrive nil nil :scope hyperdrive))
