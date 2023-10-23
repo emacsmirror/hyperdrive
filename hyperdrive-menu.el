@@ -131,10 +131,7 @@
                 (propertize (hyperdrive--format-path (hyperdrive-entry-path entry))
                             'face 'transient-value))))
     ("g" "Refresh" revert-buffer)
-    ("^" "Up to parent"
-     (lambda ()
-       (interactive)
-       (hyperdrive-up (hyperdrive-menu--scope)))
+    ("^" "Up to parent" hyperdrive-up
      :inapt-if-not (lambda ()
                      (hyperdrive-parent (hyperdrive-menu--scope))))
     ("s" "Sort" hyperdrive-dir-sort
