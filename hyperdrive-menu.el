@@ -236,6 +236,8 @@
    ;; :predicates ((entryp ,(lambda () (hyperdrive-seed (hyperdrive-menu--scope)))))
    ;; TODO(transient): Support subgroups in a column group,
    ;; making the below "" "Upload" unnecessary.
+   ;; TODO: After transient supports subgroup in a column group, use :if writablep
+   ;; on whole "Upload" group instead of :inapt-if-not on individual commands
    ;; TODO(transient): Implement :inapt-if* for groups.
    :pad-keys t
    ("d" hyperdrive-menu-describe-hyperdrive)
