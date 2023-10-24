@@ -32,6 +32,7 @@
 (require 'transient)
 (require 'compat)
 
+(require 'hyperdrive)
 (require 'hyperdrive-vars)
 (require 'hyperdrive-lib)
 (require 'hyperdrive-mirror)
