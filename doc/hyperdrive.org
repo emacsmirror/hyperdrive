@@ -370,8 +370,8 @@ all point to ~hyper://PUBLIC-KEY/bar.md~.
 You can use ~hyperdrive-delete~ to delete the hyperdrive file in the
 current buffer.  This command has a keybinding in the [[*Directory view][directory view]].
 
-*Note that deleted files can be accessed by [[*View the hyperdrive version history][loading a prior version]] of
-the hyperdrive.*
+*Please note that deleted files can be accessed by [[*View the hyperdrive version history][loading a prior version]]
+of the hyperdrive.*
 
 ** View the hyperdrive version history
 #+findex: hyperdrive-open-previous-version

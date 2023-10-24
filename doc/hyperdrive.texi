@@ -651,7 +651,7 @@ all point to @code{hyper://PUBLIC-KEY/bar.md}.
 You can use @code{hyperdrive-delete} to delete the hyperdrive file in the
 current buffer.  This command has a keybinding in the @ref{Directory view, , directory view}.
 
-@strong{Note that deleted files can be accessed by @ref{View the hyperdrive version history, , loading a prior version} of
+@strong{Please note that deleted files can be accessed by @ref{View the hyperdrive version history, , loading a prior version} of
 the hyperdrive.}
 
 @node View the hyperdrive version history
