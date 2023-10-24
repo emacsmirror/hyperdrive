@@ -34,6 +34,7 @@
 
 (require 'hyperdrive-vars)
 (require 'hyperdrive-lib)
+(require 'hyperdrive-mirror)
 
 ;;;; Declarations
 
