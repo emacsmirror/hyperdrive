@@ -342,8 +342,6 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
   "Read a function for filtering source files for mirroring."
   (let* ((readers
           '(("Mirror all files" . nil)
-            ("`rx' form" .
-             (lambda () (eval (read--expression "`rx' form: " "(rx )"))))
             ("Regexp string" .
              (lambda () (read-regexp "Regular expression: ")))
             ("Lambda function" .
