@@ -27,6 +27,7 @@
 ;;;; Requirements
 
 (require 'cl-lib)
+(require 'rx)
 
 (require 'hyperdrive-lib)
 
