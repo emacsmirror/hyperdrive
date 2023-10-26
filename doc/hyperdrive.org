@@ -117,9 +117,7 @@ you can use the following snippet to install from that repository:
 
 In your ~init.el~, type ~M-x eval-buffer RET~.
 
-# TODO: Change "commands like ..." to reference easy menu
-# functionality once implemented.
-If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-start~
+If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-menu~
 should now be available.  The documentation for ~hyperdrive.el~ should
 also be installed.
 
