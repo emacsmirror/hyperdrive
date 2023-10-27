@@ -30,6 +30,8 @@
 
 (require 'hyperdrive-lib)
 
+(require 'taxy-magit-section)
+
 ;;;; Variables
 
 ;; TODO: Consolidate these two local variables into one?
@@ -39,6 +41,50 @@
 
 (defvar-local hyperdrive-mirror-query nil
   "List of arguments passed to `hyperdrive-mirror', excluding \\+`no-confirm'.")
+
+(defvar-local hyperdrive-mirror-visibility-cache nil)
+
+;;;; Keys
+
+;; These are the "keys" used to group items with Taxy.
+
+(eval-and-compile
+  (taxy-define-key-definer hyperdrive-mirror-define-key
+    hyperdrive-mirror-keys "hyperdrive-mirror-key" "Grouping keys."))
+
+(hyperdrive-mirror-define-key status (&key name status)
+  (pcase-let ((`(,_id [,_file ,item-status ,_url]) item))
+    (if status
+        (when (equal status item-status)
+          (or name status))
+      item-status)))
+
+(defvar hyperdrive-mirror-default-keys
+  '(status)
+  "Default keys.")
+
+;;;; Columns
+
+;; These forms define the columns used to display items with `taxy-magit-section'.
+
+(eval-and-compile
+  (taxy-magit-section-define-column-definer "hyperdrive-mirror"))
+
+(hyperdrive-mirror-define-column "File" ()
+  (pcase-let* ((`(,_id [,file ,_status ,_url]) item))
+    file))
+
+(hyperdrive-mirror-define-column "Status" ()
+  (pcase-let* ((`(,_id [,_file ,status ,_url]) item))
+    status))
+
+(hyperdrive-mirror-define-column "URL" ()
+  (pcase-let* ((`(,_id [,_file ,_status ,url]) item))
+    url))
+
+(unless hyperdrive-mirror-columns
+  (setq-default hyperdrive-mirror-columns
+                (get 'hyperdrive-mirror-columns 'standard-value)))
 
 ;;;; Functions
 
@@ -146,18 +192,15 @@ predicate and set NO-CONFIRM to t."
                         `(,source ,hyperdrive :target-dir ,target-dir :predicate ,predicate)
                         hyperdrive-mirror-parent-entry parent-entry)
             ;; TODO: Add command to clear plz queue.
-            (setf metadata-queue (make-plz-queue
-                                  :limit hyperdrive-queue-limit
-                                  :finally (lambda ()
-                                             (with-current-buffer buffer
-                                               (with-silent-modifications
-                                                 (erase-buffer)
-                                                 (setf tabulated-list-entries
-                                                       (sort files-and-urls
-                                                             (pcase-lambda (`(,_ [,_ ,a-file ,_]) `(,_ [,_ ,b-file ,_]))
-                                                               (string< a-file b-file))))
-                                                 (tabulated-list-print))
-                                               (set-buffer-modified-p nil)))))
+            (setf metadata-queue
+                  (make-plz-queue
+                   :limit hyperdrive-queue-limit
+                   :finally (lambda ()
+                              (hyperdrive-mirror--metadata-finally
+                               buffer
+                               (sort files-and-urls
+                                     (pcase-lambda (`(,_ [,_ ,a-file ,_]) `(,_ [,_ ,b-file ,_]))
+                                       (string< a-file b-file)))))))
             (dolist (file files)
               (let ((entry (hyperdrive-entry-create
                             :hyperdrive hyperdrive
@@ -191,6 +234,71 @@ predicate and set NO-CONFIRM to t."
                                                  (hyperdrive-entry-url entry) plz-error))))))))
             (pop-to-buffer (current-buffer))))))))
 
+(defun hyperdrive-mirror--metadata-finally (buffer files-and-urls)
+  "Insert FILES-AND-URLS into BUFFER.
+Callback for queue finalizer in `hyperdrive-mirror'."
+  (with-current-buffer buffer
+    (with-silent-modifications
+      (let ((pos (point))
+            (section-ident (when (magit-current-section)
+                             (magit-section-ident (magit-current-section))))
+            (window-start 0) (window-point 0))
+        (when-let ((window (get-buffer-window (current-buffer))))
+          (setf window-point (window-point window)
+                window-start (window-start window)))
+        (when hyperdrive-mirror-visibility-cache
+          (setf magit-section-visibility-cache hyperdrive-mirror-visibility-cache))
+        (add-hook 'kill-buffer-hook #'hyperdrive-mirror--cache-visibility nil 'local)
+        (delete-all-overlays)
+        (erase-buffer)
+        (hyperdrive-mirror--insert-taxy :items files-and-urls)
+        (if-let ((section-ident)
+                 (section (magit-get-section section-ident)))
+            (goto-char (oref section start))
+          (goto-char pos))
+        (when-let ((window (get-buffer-window (current-buffer))))
+          (set-window-start window window-start)
+          (set-window-point window window-point))))
+    (set-buffer-modified-p nil)))
+
+(cl-defun hyperdrive-mirror--insert-taxy
+    (&key items (keys hyperdrive-mirror-default-keys))
+  "Insert and return a `taxy' for `hyperdrive-mirror', optionally having ITEMS.
+KEYS should be a list of grouping keys, as in
+`hyperdrive-mirror-default-keys'."
+  (let (format-table column-sizes)
+    (cl-labels ((format-item (item) (gethash item format-table))
+                (make-fn (&rest args)
+                  (apply #'make-taxy-magit-section
+                         :make #'make-fn
+                         :format-fn #'format-item
+                         ;; FIXME: Make indent an option again.
+                         :level-indent 2
+                         ;; :visibility-fn #'visible-p
+                         ;; :heading-indent 2
+                         :item-indent 2
+                         ;; :heading-face-fn #'heading-face
+                         args)))
+      (let* ((taxy-magit-section-insert-indent-items nil)
+             (taxy
+              (thread-last
+                (make-fn :name "Hyperdrive mirror"
+                         :take (taxy-make-take-function keys hyperdrive-mirror-keys))
+                (taxy-fill items)))
+             (format-cons
+              (taxy-magit-section-format-items
+               hyperdrive-mirror-columns hyperdrive-mirror-column-formatters
+               taxy))
+             (inhibit-read-only t))
+        (setf format-table (car format-cons)
+              column-sizes (cdr format-cons)
+              header-line-format (taxy-magit-section-format-header
+                                  column-sizes hyperdrive-mirror-column-formatters))
+        ;; Before this point, no changes have been made to the buffer's contents.
+        (save-excursion
+          (taxy-magit-section-insert taxy :items 'first :initial-depth 0))
+        taxy))))
+
 (defun hyperdrive-mirror-read-predicate ()
   "Read a function for filtering source files for mirroring."
   (let* ((readers
@@ -219,24 +327,29 @@ predicate and set NO-CONFIRM to t."
       (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry)
     (hyperdrive-user-error "Missing information about files to upload.  Are you in a \"*hyperdrive-mirror*\" buffer?")))
 
+(defun hyperdrive-mirror--cache-visibility ()
+  "Save visibility cache.
+Sets `hyperdrive-mirror-visibility-cache' to the value of
+`magit-section-visibility-cache'.  To be called in
+`kill-buffer-hook' in `hyperdrive-mirror' buffers."
+  (ignore-errors
+    (when magit-section-visibility-cache
+      (setf hyperdrive-mirror-visibility-cache magit-section-visibility-cache))))
+
 ;;;; Mode
 
 (defvar-keymap hyperdrive-mirror-mode-map
-  :parent tabulated-list-mode-map
+  :parent magit-section-mode-map
   :doc "Local keymap for `hyperdrive-mirror-mode' buffers."
   "C-c C-c"   #'hyperdrive-mirror-do-upload)
 
-(define-derived-mode hyperdrive-mirror-mode tabulated-list-mode
+(define-derived-mode hyperdrive-mirror-mode magit-section-mode
   "Hyperdrive-mirror"
   "Major mode for buffers for mirror local directories to a hyperdrive."
   :group 'hyperdrive
   :interactive nil
   ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29) (or maybe taxy-magit-section)
-  (setq tabulated-list-format [("Upload file" 60 t)
-                               ("Status" 10 t)
-                               ("To hyperdrive" 60 t)]
-        revert-buffer-function #'hyperdrive-mirror-revert-buffer)
-  (tabulated-list-init-header))
+  (setq revert-buffer-function #'hyperdrive-mirror-revert-buffer))
 
 ;;;; Footer
 
