@@ -276,10 +276,12 @@ KEYS should be a list of grouping keys, as in
                          :level-indent 2
                          ;; :visibility-fn #'visible-p
                          ;; :heading-indent 2
-                         :item-indent 2
+                         :item-indent 0
                          ;; :heading-face-fn #'heading-face
                          args)))
       (let* ((taxy-magit-section-insert-indent-items nil)
+             ;; (taxy-magit-section-item-indent 0)
+             ;; (taxy-magit-section-level-indent 0)
              (taxy
               (thread-last
                 (make-fn :name "Hyperdrive mirror"
