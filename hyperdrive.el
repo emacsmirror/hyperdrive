@@ -95,7 +95,7 @@
 
 ;;;; Commands
 
-;; TODO(A): Command to rename paths.
+;; TODO[#A]: Command to rename paths.
 
 ;;;###autoload
 (defun hyperdrive-start ()
