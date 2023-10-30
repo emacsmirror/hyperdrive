@@ -213,10 +213,10 @@ predicate and set NO-CONFIRM to t."
                           (let* ((drive-mtime (hyperdrive-entry-mtime entry))
                                  (local-mtime (file-attribute-modification-time (file-attributes file)))
                                  (status (cond
-                                          ((time-equal-p drive-mtime local-mtime)
-                                           (propertize "same as" 'face 'hyperdrive-mirror-same))
                                           ((time-less-p drive-mtime local-mtime)
                                            (propertize "newer than" 'face 'hyperdrive-mirror-newer))
+                                          ((time-equal-p drive-mtime local-mtime)
+                                           (propertize "same as" 'face 'hyperdrive-mirror-same))
                                           (t
                                            (propertize "older than" 'face 'hyperdrive-mirror-older))))
                                  (url (hyperdrive-entry-url entry)))
