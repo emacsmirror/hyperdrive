@@ -39,6 +39,10 @@
   "Parent entry for `hyperdrive-mirror-mode' buffer.")
 (put 'hyperdrive-mirror-parent-entry 'permanent-local t)
 
+(defvar-local hyperdrive-mirror-files-and-urls nil
+  "List of mappings between filenames and the URLs into which files
+will be uploaded in `hyperdrive-mirror-mode'.")
+
 (defvar-local hyperdrive-mirror-query nil
   "List of arguments passed to `hyperdrive-mirror', excluding \\+`no-confirm'.")
 
@@ -91,8 +95,8 @@
 (declare-function hyperdrive-upload-file "hyperdrive")
 (defun hyperdrive--mirror (files-and-urls parent-entry)
   "Upload each file to its corresponding URL in FILES-AND-URLs.
-FILES-AND-URLS is structured like `tabulated-list-entries'.  After
-uploading files, open PARENT-ENTRY."
+FILES-AND-URLS is structured like `hyperdrive-mirror-files-and-urls'.
+After uploading files, open PARENT-ENTRY."
   (let* ((count 0)
          (upload-files-and-urls (cl-remove-if-not (pcase-lambda (`(,_id [,_file ,status ,_url]))
                                                     (string-match-p (rx (or "not in" "newer than")) status))
@@ -243,6 +247,7 @@ Callback for queue finalizer in `hyperdrive-mirror'."
             (section-ident (when (magit-current-section)
                              (magit-section-ident (magit-current-section))))
             (window-start 0) (window-point 0))
+        (setq-local hyperdrive-mirror-files-and-urls files-and-urls)
         (when-let ((window (get-buffer-window (current-buffer))))
           (setf window-point (window-point window)
                 window-start (window-start window)))
@@ -325,8 +330,8 @@ KEYS should be a list of grouping keys, as in
   ;; command twice in a mirror buffer, it would start another queue to
   ;; upload the same files, which would unnecessarily increment the
   ;; hyperdrive version by potentially a lot).
-  (if (and tabulated-list-entries hyperdrive-mirror-parent-entry)
-      (hyperdrive--mirror tabulated-list-entries hyperdrive-mirror-parent-entry)
+  (if (and hyperdrive-mirror-files-and-urls hyperdrive-mirror-parent-entry)
+      (hyperdrive--mirror hyperdrive-mirror-files-and-urls hyperdrive-mirror-parent-entry)
     (hyperdrive-user-error "Missing information about files to upload.  Are you in a \"*hyperdrive-mirror*\" buffer?")))
 
 (defun hyperdrive-mirror--cache-visibility ()
