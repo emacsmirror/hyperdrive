@@ -289,7 +289,20 @@ KEYS should be a list of grouping keys, as in
               (thread-last
                 (make-fn :name "Hyperdrive mirror"
                          :take (taxy-make-take-function keys hyperdrive-mirror-keys))
-                (taxy-fill items)))
+                (taxy-fill items)
+                (taxy-sort* (lambda (a b)
+                              (pcase a
+                                ("New locally" t)
+                                ((and "Newer locally"
+                                      (guard (or (equal b "Older locally")
+                                                 (equal b "Same"))))
+                                 t)
+                                ((and "Older locally" (guard (equal b "Same"))) t)
+                                (_ nil)))
+                  ;; TODO: Instead of comparing taxy-name strings, could we set
+                  ;; taxy-key to `new', `newer', `older', or `same' and then
+                  ;; compare keys instead?
+                  #'taxy-name)))
              (format-cons
               (taxy-magit-section-format-items
                hyperdrive-mirror-columns hyperdrive-mirror-column-formatters
