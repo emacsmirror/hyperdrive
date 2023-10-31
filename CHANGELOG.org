@@ -11,6 +11,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
   specific version.
 - Support following relative filename links in hyperdrive
   ~markdown-mode~ buffers
+- ~find-file-at-point~ integration
 
 ** Changed
 
