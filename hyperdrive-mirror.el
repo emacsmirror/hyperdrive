@@ -81,11 +81,11 @@ STATUS is one of:
 (eval-and-compile
   (taxy-magit-section-define-column-definer "hyperdrive-mirror"))
 
-(hyperdrive-mirror-define-column "File" ()
+(hyperdrive-mirror-define-column "Local File" ()
   (pcase-let* ((`(,file ,_status ,_url) item))
     file))
 
-(hyperdrive-mirror-define-column "URL" ()
+(hyperdrive-mirror-define-column "Hyperdrive File" ()
   (pcase-let* ((`(,_file ,_status ,url) item))
     url))
 
