@@ -302,7 +302,9 @@ KEYS should be a list of grouping keys, as in
                   ;; TODO: Instead of comparing taxy-name strings, could we set
                   ;; taxy-key to `new', `newer', `older', or `same' and then
                   ;; compare keys instead?
-                  #'taxy-name)))
+                  #'taxy-name)
+                (taxy-mapcar (pcase-lambda (`(,file ,status ,url))
+                               (list (abbreviate-file-name file) status url)))))
              (format-cons
               (taxy-magit-section-format-items
                hyperdrive-mirror-columns hyperdrive-mirror-column-formatters
