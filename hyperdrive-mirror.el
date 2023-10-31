@@ -77,10 +77,6 @@
   (pcase-let* ((`(,file ,_status ,_url) item))
     file))
 
-(hyperdrive-mirror-define-column "Status" ()
-  (pcase-let* ((`(,_file ,status ,_url) item))
-    status))
-
 (hyperdrive-mirror-define-column "URL" ()
   (pcase-let* ((`(,_file ,_status ,url) item))
     url))
