@@ -96,6 +96,7 @@ Usage
 * Upload files from your filesystem::
 * Purge a hyperdrive::
 * Non-interactive use::
+* Miscellaneous features::
 
 Open a hyperdrive
 
@@ -340,6 +341,7 @@ On the network it still may be there.
 * Upload files from your filesystem::
 * Purge a hyperdrive::
 * Non-interactive use::
+* Miscellaneous features::
 @end menu
 
 @node Menu bar support
@@ -858,6 +860,15 @@ In writing your own functions to extend @code{hyperdrive.el}, you can use
 or public key.
 
 For examples, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
+
+@node Miscellaneous features
+@section Miscellaneous features
+
+@findex find-file-at-point
+
+If you have enabled @code{find-file-at-point} (@code{ffap}) bindings with @code{M-x
+ffap-bindings}, you can open a hyperdrive link by putting the point on
+it and pressing @code{C-x C-f}.
 
 @node Concepts
 @chapter Concepts

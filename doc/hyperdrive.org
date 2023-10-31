@@ -544,6 +544,13 @@ or public key.
 For examples, see [[*Mirror a whole directory]] and [[*Mirror files by tag or
 other attributes]].
 
+** Miscellaneous features
+#+findex: find-file-at-point
+
+If you have enabled ~find-file-at-point~ (~ffap~) bindings with ~M-x
+ffap-bindings~, you can open a hyperdrive link by putting the point on
+it and pressing ~C-x C-f~.
+
 * Concepts
 
 ** Hyperdrive
