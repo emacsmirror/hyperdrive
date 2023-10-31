@@ -40,7 +40,14 @@
 (put 'hyperdrive-mirror-parent-entry 'permanent-local t)
 
 (defvar-local hyperdrive-mirror-files-and-urls nil
-  "List of lists like (FILE STATUS URL) for `hyperdrive-mirror-mode'.")
+  "List of lists like (FILE STATUS URL) for `hyperdrive-mirror-mode'.
+FILE is the local filepath of the file to be uploaded.
+URL is \"hyper://\" URL where the file would be uploaded.
+STATUS is one of:
+- \\+`new':   FILE does not exist in hyperdrive at URL
+- \\+`newer': FILE has a later modification time than hyperdrive URL
+- \\+`older': FILE has an earlier modification time than hyperdrive URL
+- \\+`same':  FILE has the same modification time as hyperdrive URL")
 
 (defvar-local hyperdrive-mirror-query nil
   "List of arguments passed to `hyperdrive-mirror', excluding \\+`no-confirm'.")
@@ -57,7 +64,11 @@
 
 (hyperdrive-mirror-define-key status ()
   (pcase-let ((`(,_file ,item-status ,_url) item))
-    item-status))
+    (pcase-exhaustive item-status
+      (`new (propertize "New locally" 'face 'hyperdrive-mirror-new))
+      (`newer (propertize "Newer locally" 'face 'hyperdrive-mirror-newer))
+      ('older (propertize "Older locally" 'face 'hyperdrive-mirror-older))
+      ('same (propertize "Same" 'face 'hyperdrive-mirror-same)))))
 
 (defvar hyperdrive-mirror-default-keys
   '(status)
@@ -91,7 +102,7 @@ FILES-AND-URLS is structured like `hyperdrive-mirror-files-and-urls'.
 After uploading files, open PARENT-ENTRY."
   (let* ((count 0)
          (upload-files-and-urls (cl-remove-if-not (pcase-lambda (`(,_file ,status ,_url))
-                                                    (string-match-p (rx (or "not in" "newer than")) status))
+                                                    (or (eq status 'new) (eq status 'newer)))
                                                   files-and-urls))
          (progress-reporter
           (make-progress-reporter (format "Uploading %s files: " (length upload-files-and-urls)) 0 (length upload-files-and-urls)))
@@ -206,25 +217,20 @@ predicate and set NO-CONFIRM to t."
                           (let* ((drive-mtime (hyperdrive-entry-mtime entry))
                                  (local-mtime (file-attribute-modification-time (file-attributes file)))
                                  (status (cond
-                                          ((time-less-p drive-mtime local-mtime)
-                                           (propertize "newer than" 'face 'hyperdrive-mirror-newer))
-                                          ((time-equal-p drive-mtime local-mtime)
-                                           (propertize "same as" 'face 'hyperdrive-mirror-same))
-                                          (t
-                                           (propertize "older than" 'face 'hyperdrive-mirror-older))))
+                                          ((time-less-p drive-mtime local-mtime) 'newer)
+                                          ((time-equal-p drive-mtime local-mtime) 'same)
+                                          (t 'older)))
                                  (url (hyperdrive-entry-url entry)))
                             (push (list file status url) files-and-urls)
                             (update-progress (cl-incf num-filled) num-of)))
                   :else (lambda (plz-error)
                           (let ((status-code (plz-response-status (plz-error-response plz-error))))
                             (pcase status-code
-                              (404 ;; Entry doesn't exist: Set `status' to `new'.
+                              (404 ;; Entry doesn't exist: Set `status' to `new'".
                                ;; TODO: Consider moving `hyperdrive-update-nonexistent-version-range' call...
                                (hyperdrive-update-nonexistent-version-range entry)
-                               (let ((status (propertize "not in" 'face 'hyperdrive-mirror-new))
-                                     (url (hyperdrive-entry-url entry)))
-                                 (push (list file status url) files-and-urls)
-                                 (update-progress (cl-incf num-filled) num-of)))
+                               (push (list file 'new (hyperdrive-entry-url entry)) files-and-urls)
+                               (update-progress (cl-incf num-filled) num-of))
                               (_
                                (hyperdrive-error "Unable to get metadata for URL \"%s\": %S"
                                                  (hyperdrive-entry-url entry) plz-error))))))))
