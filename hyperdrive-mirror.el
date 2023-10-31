@@ -55,12 +55,9 @@
   (taxy-define-key-definer hyperdrive-mirror-define-key
     hyperdrive-mirror-keys "hyperdrive-mirror-key" "Grouping keys."))
 
-(hyperdrive-mirror-define-key status (&key name status)
+(hyperdrive-mirror-define-key status ()
   (pcase-let ((`(,_file ,item-status ,_url) item))
-    (if status
-        (when (equal status item-status)
-          (or name status))
-      item-status)))
+    item-status))
 
 (defvar hyperdrive-mirror-default-keys
   '(status)
