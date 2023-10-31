@@ -475,9 +475,11 @@ Let's say you have some files on your filesystem in the ~~/blog/~
 directory, and you want to upload them all into a hyperdrive you
 already created with the petname "foo". The following snippet will
 show you the list of files which will be uploaded as well as the ~hyper~
-URL at which they will be available after upload. To upload the files,
-run ~hyperdrive-mirror-do-upload~ (bound to ~C-c C-c~ by default) in the
-~*hyperdrive-mirror*~ buffer which opens.
+URL at which they will be available after upload. To upload the files
+which are "locally new" (they don't already exist on the drive) or
+"locally newer" (they have been locally modified since a previous
+upload), run ~hyperdrive-mirror-do-upload~ (bound to ~C-c C-c~ by default)
+in the ~*hyperdrive-mirror*~ buffer which opens.
 
 #+begin_src elisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
