@@ -40,7 +40,7 @@
 (put 'hyperdrive-mirror-parent-entry 'permanent-local t)
 
 (defvar-local hyperdrive-mirror-files-and-urls nil
-  "List of lists like (FILE STATUS URL) for `hyperdrive-mirror-mode'.
+  "List of lists like (FILE URL STATUS) for `hyperdrive-mirror-mode'.
 FILE is the local filepath of the file to be uploaded.
 URL is \"hyper://\" URL where the file would be uploaded.
 STATUS is one of:
@@ -63,7 +63,7 @@ STATUS is one of:
     hyperdrive-mirror-keys "hyperdrive-mirror-key" "Grouping keys."))
 
 (hyperdrive-mirror-define-key status ()
-  (pcase-let ((`(,_file ,item-status ,_url) item))
+  (pcase-let ((`(,_file ,_url ,item-status) item))
     (pcase-exhaustive item-status
       (`new (propertize "New locally" 'face 'hyperdrive-mirror-new))
       (`newer (propertize "Newer locally" 'face 'hyperdrive-mirror-newer))
@@ -82,11 +82,11 @@ STATUS is one of:
   (taxy-magit-section-define-column-definer "hyperdrive-mirror"))
 
 (hyperdrive-mirror-define-column "Local File" ()
-  (pcase-let* ((`(,file ,_status ,_url) item))
+  (pcase-let* ((`(,file ,_url ,_status) item))
     file))
 
 (hyperdrive-mirror-define-column "Hyperdrive File" ()
-  (pcase-let* ((`(,_file ,_status ,url) item))
+  (pcase-let* ((`(,_file ,url ,_status) item))
     url))
 
 (unless hyperdrive-mirror-columns
@@ -101,7 +101,7 @@ STATUS is one of:
 FILES-AND-URLS is structured like `hyperdrive-mirror-files-and-urls'.
 After uploading files, open PARENT-ENTRY."
   (let* ((count 0)
-         (upload-files-and-urls (cl-remove-if-not (pcase-lambda (`(,_file ,status ,_url))
+         (upload-files-and-urls (cl-remove-if-not (pcase-lambda (`(,_file ,_url ,status))
                                                     (or (eq status 'new) (eq status 'newer)))
                                                   files-and-urls))
          (progress-reporter
@@ -115,7 +115,7 @@ After uploading files, open PARENT-ENTRY."
                               (revert-buffer nil t))))))
     (unless upload-files-and-urls
       (hyperdrive-user-error "No new/newer files to upload"))
-    (pcase-dolist (`(,file ,_status ,url) upload-files-and-urls)
+    (pcase-dolist (`(,file ,url ,_status) upload-files-and-urls)
       (hyperdrive-upload-file file (hyperdrive-url-entry url)
         :queue queue
         ;; TODO: Error handling (e.g. in case one or more files fails to upload).
@@ -206,7 +206,7 @@ predicate and set NO-CONFIRM to t."
                               (hyperdrive-mirror--metadata-finally
                                buffer
                                (sort files-and-urls
-                                     (pcase-lambda (`(,_ ,a-file ,_) `(,_ ,b-file ,_))
+                                     (pcase-lambda (`(,a-file ,_ ,_) `(,b-file ,_ ,_))
                                        (string< a-file b-file)))))))
             (dolist (file files)
               (let ((entry (hyperdrive-entry-create
@@ -221,7 +221,7 @@ predicate and set NO-CONFIRM to t."
                                           ((time-equal-p drive-mtime local-mtime) 'same)
                                           (t 'older)))
                                  (url (hyperdrive-entry-url entry)))
-                            (push (list file status url) files-and-urls)
+                            (push (list file url status) files-and-urls)
                             (update-progress (cl-incf num-filled) num-of)))
                   :else (lambda (plz-error)
                           (let ((status-code (plz-response-status (plz-error-response plz-error))))
@@ -229,7 +229,7 @@ predicate and set NO-CONFIRM to t."
                               (404 ;; Entry doesn't exist: Set `status' to `new'".
                                ;; TODO: Consider moving `hyperdrive-update-nonexistent-version-range' call...
                                (hyperdrive-update-nonexistent-version-range entry)
-                               (push (list file 'new (hyperdrive-entry-url entry)) files-and-urls)
+                               (push (list file (hyperdrive-entry-url entry) 'new) files-and-urls)
                                (update-progress (cl-incf num-filled) num-of))
                               (_
                                (hyperdrive-error "Unable to get metadata for URL \"%s\": %S"
@@ -303,8 +303,8 @@ KEYS should be a list of grouping keys, as in
                   ;; taxy-key to `new', `newer', `older', or `same' and then
                   ;; compare keys instead?
                   #'taxy-name)
-                (taxy-mapcar (pcase-lambda (`(,file ,status ,url))
-                               (list (abbreviate-file-name file) status url)))))
+                (taxy-mapcar (pcase-lambda (`(,file ,url ,status))
+                               (list (abbreviate-file-name file) url status)))))
              (format-cons
               (taxy-magit-section-format-items
                hyperdrive-mirror-columns hyperdrive-mirror-column-formatters
