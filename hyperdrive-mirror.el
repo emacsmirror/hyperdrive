@@ -262,9 +262,11 @@ Callback for queue finalizer in `hyperdrive-mirror'."
             (window-start 0) (window-point 0)
             (uploadable (cl-remove-if-not (lambda (status)
                                             (member status '(new newer)))
+                                          files-and-urls
                                           :key #'hyperdrive-mirror-item-status))
             (non-uploadable (cl-remove-if-not (lambda (status)
                                                 (member status '(older same)))
+                                              files-and-urls
                                               :key #'hyperdrive-mirror-item-status)))
         (setq-local hyperdrive-mirror-files-and-urls files-and-urls)
         (when-let ((window (get-buffer-window (current-buffer))))
@@ -275,8 +277,8 @@ Callback for queue finalizer in `hyperdrive-mirror'."
         (add-hook 'kill-buffer-hook #'hyperdrive-mirror--cache-visibility nil 'local)
         (delete-all-overlays)
         (erase-buffer)
-        (hyperdrive-mirror--insert-taxy :items uploadable)
-        (hyperdrive-mirror--insert-taxy :items non-uploadable)
+        (hyperdrive-mirror--insert-taxy :name "To upload" :items uploadable)
+        (hyperdrive-mirror--insert-taxy :name "Ignored" :items non-uploadable)
         (if-let ((section-ident)
                  (section (magit-get-section section-ident)))
             (goto-char (oref section start))
@@ -287,10 +289,10 @@ Callback for queue finalizer in `hyperdrive-mirror'."
     (set-buffer-modified-p nil)))
 
 (cl-defun hyperdrive-mirror--insert-taxy
-    (&key items (keys hyperdrive-mirror-default-keys))
+    (&key items name (keys hyperdrive-mirror-default-keys))
   "Insert and return a `taxy' for `hyperdrive-mirror', optionally having ITEMS.
-KEYS should be a list of grouping keys, as in
-`hyperdrive-mirror-default-keys'."
+NAME is the name of the section.  KEYS should be a list of
+grouping keys, as in `hyperdrive-mirror-default-keys'."
   (let (format-table column-sizes)
     (cl-labels ((format-item (item) (gethash item format-table))
                 (make-fn (&rest args)
@@ -309,7 +311,7 @@ KEYS should be a list of grouping keys, as in
              ;; (taxy-magit-section-level-indent 0)
              (taxy
               (thread-last
-                (make-fn :name "Hyperdrive mirror"
+                (make-fn :name name
                          :take (taxy-make-take-function keys hyperdrive-mirror-keys))
                 (taxy-fill items)
                 (taxy-sort* (lambda (a b)
