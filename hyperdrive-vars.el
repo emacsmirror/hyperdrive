@@ -220,18 +220,6 @@ an existing buffer at the same version, or make a new buffer."
 (defface hyperdrive-history-unknown '((t :inherit warning))
   "Marker for entries with unknown existence in `hyperdrive-history' buffers.")
 
-(defface hyperdrive-mirror-new '((t :inherit error))
-  "Face for files with \"new\" status in `hyperdrive-mirror' buffers.")
-
-(defface hyperdrive-mirror-same '((t :inherit success))
-  "Face for files with \"same\" status in `hyperdrive-mirror' buffers.")
-
-(defface hyperdrive-mirror-newer '((t :inherit warning))
-  "Face for files with \"newer\" status in `hyperdrive-mirror' buffers.")
-
-(defface hyperdrive-mirror-older '((t :inherit font-lock-builtin-face))
-  "Face for files with \"older\" status in `hyperdrive-mirror' buffers.")
-
 ;;;;; Regular expressions
 
 (eval-and-compile
