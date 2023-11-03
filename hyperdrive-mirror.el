@@ -73,7 +73,7 @@ STATUS is one of:
     hyperdrive-mirror-keys "hyperdrive-mirror-key" "Grouping keys."))
 
 (hyperdrive-mirror-define-key status ()
-  (pcase-let (((cl-struct hyperdrive-mirror-item file url (status item-status)) item))
+  (pcase-let (((cl-struct hyperdrive-mirror-item (status item-status)) item))
     (pcase-exhaustive item-status
       (`new (propertize "New locally" 'face 'hyperdrive-mirror-new))
       (`newer (propertize "Newer locally" 'face 'hyperdrive-mirror-newer))
