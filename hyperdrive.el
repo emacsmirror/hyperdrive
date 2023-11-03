@@ -663,9 +663,15 @@ After successful upload, call THEN.  When QUEUE, use it."
                        (hyperdrive-read-entry :predicate #'hyperdrive-writablep
                                               :default-path (file-name-nondirectory filename)
                                               :latest-version t))))
-  (let ((url (hyperdrive-entry-url entry)))
+  (let ((url (hyperdrive-entry-url entry))
+        (last-modified (let ((system-time-locale "C"))
+                         (format-time-string "%Y-%m-%dT%T.%3NZ"
+                                             ;; "%a, %-d %b %Y %T %Z"
+                                             (file-attribute-modification-time
+                                              (file-attributes filename)) t))))
     (hyperdrive-api 'put url :queue queue
       :body `(file ,filename)
+      :headers `(("Last-Modified" . ,last-modified))
       :then then)
     (unless queue
       (hyperdrive-message "Uploading to \"%s\"..." url))))
