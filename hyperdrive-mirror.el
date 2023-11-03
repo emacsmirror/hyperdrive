@@ -93,7 +93,7 @@ STATUS is one of:
 
 (hyperdrive-mirror-define-column "Local File" ()
   (pcase-let (((cl-struct hyperdrive-mirror-item file) item))
-    file))
+    (abbreviate-file-name file)))
 
 (hyperdrive-mirror-define-column "Hyperdrive File" ()
   (pcase-let (((cl-struct hyperdrive-mirror-item url) item))
@@ -326,9 +326,7 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
                   ;; TODO: Instead of comparing taxy-name strings, could we set
                   ;; taxy-key to `new', `newer', `older', or `same' and then
                   ;; compare keys instead?
-                  #'taxy-name)
-                (taxy-mapcar (pcase-lambda ((cl-struct hyperdrive-mirror-item file url status))
-                               (list (abbreviate-file-name file) url status)))))
+                  #'taxy-name)))
              (format-cons
               (taxy-magit-section-format-items
                hyperdrive-mirror-columns hyperdrive-mirror-column-formatters
