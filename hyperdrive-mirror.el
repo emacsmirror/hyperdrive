@@ -319,7 +319,8 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
                                 (_ nil)))
                   ;; TODO: Instead of comparing taxy-name strings, could we set
                   ;; taxy-key to `new', `newer', `older', or `same' and then
-                  ;; compare keys instead?
+                  ;; compare keys instead?  (When we change to static taxys,
+                  ;; sorting them won't be necessary.)
                   #'taxy-name)))
              (format-cons
               (taxy-magit-section-format-items
