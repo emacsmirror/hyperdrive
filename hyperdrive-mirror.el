@@ -96,8 +96,10 @@ STATUS is one of:
     (abbreviate-file-name file)))
 
 (hyperdrive-mirror-define-column "Hyperdrive File" ()
-  (pcase-let (((cl-struct hyperdrive-mirror-item url) item))
-    url))
+  (pcase-let* (((cl-struct hyperdrive-mirror-item url) item)
+               (entry (hyperdrive-url-entry url))
+               (short-url (hyperdrive--format-entry-url entry :host-format 'short-key)))
+    (propertize url 'display short-url)))
 
 (unless hyperdrive-mirror-columns
   (setq-default hyperdrive-mirror-columns
