@@ -229,6 +229,7 @@
 
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for HYPERDRIVE."
+  :info-manual "(hyperdrive)"
   :refresh-suffixes t
   ["Hyperdrive"
    ;; TODO(transient): Maybe support shared predicates like
