@@ -279,8 +279,10 @@ Callback for queue finalizer in `hyperdrive-mirror'."
         (add-hook 'kill-buffer-hook #'hyperdrive-mirror--cache-visibility nil 'local)
         (delete-all-overlays)
         (erase-buffer)
-        (hyperdrive-mirror--insert-taxy :name "Ignored" :items non-uploadable)
-        (hyperdrive-mirror--insert-taxy :name "To upload" :items uploadable)
+        (when non-uploadable
+          (hyperdrive-mirror--insert-taxy :name "Ignored" :items non-uploadable))
+        (when uploadable
+          (hyperdrive-mirror--insert-taxy :name "To upload" :items uploadable))
         (if-let ((section-ident)
                  (section (magit-get-section section-ident)))
             (goto-char (oref section start))
