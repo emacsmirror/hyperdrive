@@ -122,10 +122,10 @@ After uploading files, open PARENT-ENTRY."
          (queue (make-plz-queue
                  :limit hyperdrive-queue-limit
                  :finally (lambda ()
-                            (progress-reporter-done progress-reporter)
+                            (when (buffer-live-p (get-buffer "*hyperdrive-mirror*"))
+                              (kill-buffer "*hyperdrive-mirror*"))
                             (hyperdrive-open parent-entry)
-                            (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-                              (revert-buffer nil t))))))
+                            (progress-reporter-done progress-reporter)))))
     (unless upload-files-and-urls
       (hyperdrive-user-error "No new/newer files to upload"))
     (pcase-dolist ((cl-struct hyperdrive-mirror-item file url) upload-files-and-urls)
