@@ -122,10 +122,10 @@ After uploading files, open PARENT-ENTRY."
          (queue (make-plz-queue
                  :limit hyperdrive-queue-limit
                  :finally (lambda ()
-                            (progress-reporter-done progress-reporter)
+                            (when (buffer-live-p (get-buffer "*hyperdrive-mirror*"))
+                              (kill-buffer "*hyperdrive-mirror*"))
                             (hyperdrive-open parent-entry)
-                            (with-current-buffer (get-buffer-create "*hyperdrive-mirror*")
-                              (revert-buffer nil t))))))
+                            (progress-reporter-done progress-reporter)))))
     (unless upload-files-and-urls
       (hyperdrive-user-error "No new/newer files to upload"))
     (pcase-dolist ((cl-struct hyperdrive-mirror-item file url) upload-files-and-urls)
@@ -228,8 +228,8 @@ predicate and set NO-CONFIRM to t."
                             :path (expand-file-name (file-relative-name file source) target-dir))))
                 (hyperdrive-fill entry :queue metadata-queue
                   :then (lambda (entry)
-                          (let* ((drive-mtime (hyperdrive-entry-mtime entry))
-                                 (local-mtime (file-attribute-modification-time (file-attributes file)))
+                          (let* ((drive-mtime (floor (float-time (hyperdrive-entry-mtime entry))))
+                                 (local-mtime (floor (float-time (file-attribute-modification-time (file-attributes file)))))
                                  (status (cond
                                           ((time-less-p drive-mtime local-mtime) 'newer)
                                           ((time-equal-p drive-mtime local-mtime) 'same)
@@ -279,8 +279,10 @@ Callback for queue finalizer in `hyperdrive-mirror'."
         (add-hook 'kill-buffer-hook #'hyperdrive-mirror--cache-visibility nil 'local)
         (delete-all-overlays)
         (erase-buffer)
-        (hyperdrive-mirror--insert-taxy :name "Ignored" :items non-uploadable)
-        (hyperdrive-mirror--insert-taxy :name "To upload" :items uploadable)
+        (when non-uploadable
+          (hyperdrive-mirror--insert-taxy :name "Ignored" :items non-uploadable))
+        (when uploadable
+          (hyperdrive-mirror--insert-taxy :name "To upload" :items uploadable))
         (if-let ((section-ident)
                  (section (magit-get-section section-ident)))
             (goto-char (oref section start))
