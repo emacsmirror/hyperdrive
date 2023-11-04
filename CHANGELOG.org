@@ -18,12 +18,14 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 - Simplified ~hyperdrive-menu~ by moving commands which required
   selecting a hyperdrive into ~hyperdrive-menu-hyperdrive~.
+- Refactored the ~*hyperdrive-mirror*~ buffer to use [[https://github.com/alphapapa/taxy.el/tree/package/taxy-magit-section][taxy-magit-section]]
 
 ** Fixed
 
 - Fixed single click on directory column header
 - Fixed a bug which caused ~hyperdrive-menu~ to fail when the current
   entry's next version was ~unknown~.
+- Uploaded files now retain the timestamp of the local file
 
 * 0.2 [2023-10-14 Sat]
 
