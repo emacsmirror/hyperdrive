@@ -1262,8 +1262,6 @@ If then, then call THEN with no arguments.  Default handler."
 
 (cl-defun hyperdrive-handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
-  ;; FIXME: Opening a streamable entry from a hyperdrive-dir buffer
-  ;; buries the -dir buffer.
   "Stream ENTRY."
   (hyperdrive-message "Streaming %s..." (hyperdrive--format-entry-url entry))
   (pcase-let ((`(,command . ,args)
