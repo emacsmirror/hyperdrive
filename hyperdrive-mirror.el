@@ -228,8 +228,8 @@ predicate and set NO-CONFIRM to t."
                             :path (expand-file-name (file-relative-name file source) target-dir))))
                 (hyperdrive-fill entry :queue metadata-queue
                   :then (lambda (entry)
-                          (let* ((drive-mtime (hyperdrive-entry-mtime entry))
-                                 (local-mtime (file-attribute-modification-time (file-attributes file)))
+                          (let* ((drive-mtime (floor (float-time (hyperdrive-entry-mtime entry))))
+                                 (local-mtime (floor (float-time (file-attribute-modification-time (file-attributes file)))))
                                  (status (cond
                                           ((time-less-p drive-mtime local-mtime) 'newer)
                                           ((time-equal-p drive-mtime local-mtime) 'same)
