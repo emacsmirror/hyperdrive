@@ -319,10 +319,12 @@
                     (format (propertize "%s (default)" 'face 'hyperdrive-dimmed)
                             (propertize "/" 'face 'hyperdrive-file-name))))
   :reader (lambda (_prompt _default _history)
-            (hyperdrive-read-path
-             :hyperdrive (hyperdrive-menu--scope)
-             :prompt "Target directory in «%s»"
-             :default "/")))
+            (hyperdrive--format-path
+             (hyperdrive-read-path
+              :hyperdrive (hyperdrive-menu--scope)
+              :prompt "Target directory in «%s»"
+              :default "/")
+             :directoryp t)))
 
 (transient-define-infix hyperdrive-mirror-set-filter ()
   :class 'hyperdrive-mirror-variable
