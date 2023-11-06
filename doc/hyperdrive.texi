@@ -818,37 +818,37 @@ t}.  Interactively, use two universal prefix arguments @code{C-u C-u}.
 @node Mirror files by tag or other attributes
 @subsection Mirror files by tag or other attributes
 
-@code{hyperdrive-mirror} can accept a @code{PREDICATE} argument, which you can
+@code{hyperdrive-mirror} can accept a @code{FILTER} argument, which you can
 use to upload only certain files.  Interactively, one universal prefix
-argument @code{C-u} make this command prompt you for @code{PREDICATE}.
+argument @code{C-u} make this command prompt you for @code{FILTER}.
 
 Let's say that you have some files on your filesystem in the @code{~/blog/}
 directory, but you only want to upload those files which have been
 tagged as ``public'' using Protesilaos Stavrou's @uref{https://protesilaos.com/emacs/denote, Denote} file-naming
 scheme.
 
-The following snippet includes a @code{PREDICATE} key whose value is a
+The following snippet includes a @code{FILTER} key whose value is a
 regular expression against which every expanded filename inside will
 be tested.
 
 @lisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
-                   :predicate ".*_public.*")
+                   :filter ".*_public.*")
 @end lisp
 
 Alternatively, you could select files by tag with Karl Voit's
 @uref{https://github.com/novoid/filetags/, filetags}. Either way allows for a ``non-splitting'' approach where
 public and private files exist in the same directory.
 
-@code{PREDICATE} may also be a function, which receives the expanded filename
+@code{FILTER} may also be a function, which receives the expanded filename
 as its only argument. For example, the following snippet will mirror
 only those files in @code{~/blog/} which are smaller than 5MB:
 
 @lisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
-                   :predicate (lambda (file) (> (* 5 1024 1024)
+                   :filter (lambda (file) (> (* 5 1024 1024)
                                               (file-attribute-size (file-attributes file)))))
 @end lisp
 

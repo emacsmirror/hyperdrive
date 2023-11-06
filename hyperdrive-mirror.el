@@ -145,11 +145,11 @@ Runs `hyperdrive-mirror' again with the same query."
 
 ;;;###autoload
 (cl-defun hyperdrive-mirror
-    (source hyperdrive &key target-dir (predicate #'always) no-confirm)
+    (source hyperdrive &key target-dir (filter #'always) no-confirm)
   "Mirror SOURCE to TARGET-DIR in HYPERDRIVE.
 
-Only mirror paths within SOURCE for which PREDICATE returns
-non-nil.  PREDICATE may be a function, which receives the expanded
+Only mirror paths within SOURCE for which FILTER returns
+non-nil.  FILTER may be a function, which receives the expanded
 filename path as its argument, or a regular expression, which is
 tested against each expanded filename path.  SOURCE is a directory
 name.
@@ -164,10 +164,10 @@ be uploaded and the URL at which each file will be published.  See
 When NO-CONFIRM is non-nil, upload without prompting.
 
 Interactively, with one universal prefix argument
-\\[universal-argument], prompt for predicate, otherwise mirror
+\\[universal-argument], prompt for filter, otherwise mirror
 all files. With two universal prefix arguments
 \\[universal-argument] \\[universal-argument], prompt for
-predicate and set NO-CONFIRM to t."
+filter and set NO-CONFIRM to t."
   (interactive
    (let ((source (read-directory-name "Mirror directory: " nil nil t))
          (hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
@@ -177,16 +177,16 @@ predicate and set NO-CONFIRM to t."
            ;; auto-fill (or add as "future history") in target-dir prompt.
            :target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in «%s»" :default "/")
            :no-confirm (equal '(16) current-prefix-arg)
-           :predicate (if current-prefix-arg
-                          (hyperdrive-mirror-read-predicate)
-                        #'always))))
+           :filter (if current-prefix-arg
+                       (hyperdrive-mirror-read-filter)
+                     #'always))))
   (cl-callf expand-file-name source)
   (setf target-dir (hyperdrive--format-path target-dir :directoryp t))
-  (when (stringp predicate)
-    (let ((regexp predicate))
-      (setf predicate (lambda (filename)
-                        (string-match-p regexp filename)))))
-  (let* ((files (cl-remove-if-not predicate (directory-files-recursively source ".")))
+  (when (stringp filter)
+    (let ((regexp filter))
+      (setf filter (lambda (filename)
+                     (string-match-p regexp filename)))))
+  (let* ((files (cl-remove-if-not filter (directory-files-recursively source ".")))
          (parent-entry (hyperdrive-entry-create :hyperdrive hyperdrive :path target-dir))
          (buffer (unless no-confirm
                    (get-buffer-create "*hyperdrive-mirror*")))
@@ -194,7 +194,7 @@ predicate and set NO-CONFIRM to t."
          (num-of (length files))
          metadata-queue files-and-urls)
     (unless files
-      (hyperdrive-user-error "No files selected for mirroring (double-check predicate)"))
+      (hyperdrive-user-error "No files selected for mirroring (double-check filter)"))
     (if no-confirm
         (hyperdrive--mirror files-and-urls parent-entry)
       (with-current-buffer buffer
@@ -208,7 +208,7 @@ predicate and set NO-CONFIRM to t."
                                                   'face 'font-lock-comment-face)))))))
             (hyperdrive-mirror-mode)
             (setq-local hyperdrive-mirror-query
-                        `(,source ,hyperdrive :target-dir ,target-dir :predicate ,predicate)
+                        `(,source ,hyperdrive :target-dir ,target-dir :filter ,filter)
                         hyperdrive-mirror-parent-entry parent-entry)
             ;; TODO: Add command to clear plz queue.
             (setf metadata-queue
@@ -339,7 +339,7 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
           (taxy-magit-section-insert taxy :items 'first :initial-depth 0))
         taxy))))
 
-(defun hyperdrive-mirror-read-predicate ()
+(defun hyperdrive-mirror-read-filter ()
   "Read a function for filtering source files for mirroring."
   (let* ((readers
           '(("Mirror all files" . nil)
@@ -351,7 +351,7 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
              (lambda () (intern (completing-read "Named function: " obarray #'functionp t))))))
          ;; TODO(transient): Implement returning values from prefixes,
          ;; allowing us to use a sub-prefix here instead of completing-read.
-         (reader (completing-read "Predicate type: " readers nil t))
+         (reader (completing-read "Filter type: " readers nil t))
          (reader (alist-get reader readers nil nil #'equal)))
     (and reader (funcall reader))))
 

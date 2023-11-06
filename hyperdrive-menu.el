@@ -275,7 +275,7 @@
   (hyperdrive-mirror (or hyperdrive-mirror-source default-directory)
                      (hyperdrive-menu--scope)
                      :target-dir hyperdrive-mirror-target
-                     :predicate hyperdrive-mirror-filter
+                     :filter hyperdrive-mirror-filter
                      :no-confirm (not hyperdrive-mirror-confirm)))
 
 ;; TODO(transient): Use a suffix class, so these commands can be invoked
@@ -338,7 +338,7 @@
                     ;; TODO: Fontify the whole lambda.
                     ((and (pred consp) it) (propertize (prin1-to-string it) 'face 'default))))
   :reader (lambda (_prompt _default _history)
-            (hyperdrive-mirror-read-predicate)))
+            (hyperdrive-mirror-read-filter)))
 
 (transient-define-infix hyperdrive-mirror-set-confirm ()
   :class 'hyperdrive-mirror-variable

@@ -489,37 +489,37 @@ t~.  Interactively, use two universal prefix arguments ~C-u C-u~.
 
 *** Mirror files by tag or other attributes
 
-~hyperdrive-mirror~ can accept a ~PREDICATE~ argument, which you can
+~hyperdrive-mirror~ can accept a ~FILTER~ argument, which you can
 use to upload only certain files.  Interactively, one universal prefix
-argument ~C-u~ make this command prompt you for ~PREDICATE~.
+argument ~C-u~ make this command prompt you for ~FILTER~.
 
 Let's say that you have some files on your filesystem in the ~~/blog/~
 directory, but you only want to upload those files which have been
 tagged as "public" using Protesilaos Stavrou's [[https://protesilaos.com/emacs/denote][Denote]] file-naming
 scheme.
 
-The following snippet includes a ~PREDICATE~ key whose value is a
+The following snippet includes a ~FILTER~ key whose value is a
 regular expression against which every expanded filename inside will
 be tested.
 
 #+begin_src elisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
-                   :predicate ".*_public.*")
+                   :filter ".*_public.*")
 #+end_src
 
 Alternatively, you could select files by tag with Karl Voit's
 [[https://github.com/novoid/filetags/][filetags]]. Either way allows for a "non-splitting" approach where
 public and private files exist in the same directory.
 
-~PREDICATE~ may also be a function, which receives the expanded filename
+~FILTER~ may also be a function, which receives the expanded filename
 as its only argument. For example, the following snippet will mirror
 only those files in ~~/blog/~ which are smaller than 5MB:
 
 #+begin_src elisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
-                   :predicate (lambda (file) (> (* 5 1024 1024)
+                   :filter (lambda (file) (> (* 5 1024 1024)
                                               (file-attribute-size (file-attributes file)))))
 #+end_src
 
