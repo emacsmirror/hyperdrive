@@ -1369,8 +1369,39 @@ Affected by option `hyperdrive-reuse-buffers', which see."
   (lambda (buffer) (hyperdrive--buffer-visiting-entry-p buffer entry)))
 
 (defun hyperdrive--entry-buffer-name (entry)
-  "Return buffer name for ENTRY."
-  (hyperdrive-entry-description entry :format-path 'name))
+  "Return buffer name for ENTRY.
+Formatted according to `hyperdrive-buffer-name-format', which
+see."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path version) entry)
+               ((cl-struct hyperdrive domains public-key petname seed
+                           (metadata (map ('name nickname))))
+                hyperdrive))
+    (format-spec hyperdrive-buffer-name-format
+                 ;; TODO(deprecate-28): Use lambdas in each specifier.
+                 `((?n . ,name)
+                   (?p . ,path)
+                   (?v . ,(if version
+                              (format hyperdrive-entry-version-format version)
+                            ""))
+                   (?D . ,(if domains
+                              (format hyperdrive-entry-domains-format
+                                      (string-join domains ","))
+                            ""))
+                   (?H . ,(hyperdrive--format-host
+                           hyperdrive :with-label t :with-faces nil))
+                   (?k . ,(format hyperdrive-entry-public-key-short-format
+                                  (concat (substring public-key 0 6) "…")))
+                   (?K . ,(format hyperdrive-entry-public-key-full-format
+                                  public-key))
+                   (?N . ,(if nickname
+                              (format hyperdrive-entry-nickname-format nickname)
+                            ""))
+                   (?P . ,(if petname
+                              (format hyperdrive-entry-petname-format petname)
+                            ""))
+                   (?S . ,(if seed
+                              (format hyperdrive-entry-seed-format seed)
+                            ""))))))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."

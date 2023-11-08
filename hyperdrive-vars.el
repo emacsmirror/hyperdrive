@@ -165,6 +165,73 @@ an existing buffer at the same version, or make a new buffer."
   :type '(choice (const :tag "Use an existing buffer at any version" any-version)
                  (const :tag "Use an existing buffer at the same version" same-version)))
 
+;;;;;; Entry formatting
+
+(defgroup hyperdrive-entry-format nil
+  "Formatting of entries for buffer names, etc."
+  :group 'hyperdrive)
+
+(defcustom hyperdrive-buffer-name-format "[%H] %n%v"
+  "Format string for buffer names.
+Specifiers:
+
+%n  Entry name
+%p  Entry path
+%v  Entry version (see `hyperdrive-entry-version-format')
+
+%H Hyperdrive default host format (see
+   `hyperdrive-default-host-format')
+
+%D  Hyperdrive domains
+%k  Hyperdrive public key (short)
+%K  Hyperdrive public key (full)
+%N  Hyperdrive nickname
+%P  Hyperdrive petname
+%S  Hyperdrive seed"
+  :type 'string)
+
+(defcustom hyperdrive-entry-version-format " (version:%s)"
+  "Format string for entry version.
+\"%s\" is replaced with the entry version.  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type 'string)
+
+(defcustom hyperdrive-entry-domains-format "domains:%s"
+  "Format string for entry domains.
+\"%s\" is replaced with the entry domains.  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type 'string)
+
+(defcustom hyperdrive-entry-nickname-format "nickname:%s"
+  "Format string for entry nickname.
+\"%s\" is replaced with the entry nickname  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type 'string)
+
+(defcustom hyperdrive-entry-petname-format "petname:%s"
+  "Format string for entry petname.
+\"%s\" is replaced with the entry petname  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type 'string)
+
+(defcustom hyperdrive-entry-public-key-full-format "public-key:%s"
+  "Format string for entry full public-key.
+\"%s\" is replaced with the entry's full public-key.  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type 'string)
+
+(defcustom hyperdrive-entry-public-key-short-format "public-key:%s"
+  "Format string for entry public-key (short format).
+\"%s\" is replaced with the entry's short public-key.  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type 'string)
+
+(defcustom hyperdrive-entry-seed-format "seed:%s"
+  "Format string for entry seed.
+\"%s\" is replaced with the entry seed  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type 'string)
+
 ;;;;; Faces
 
 (defgroup hyperdrive-faces nil
