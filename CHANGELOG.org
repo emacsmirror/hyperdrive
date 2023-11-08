@@ -32,7 +32,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 ** Added
 
-- ~hyperdrive-menu~ is the new control panel. Bind it a convenient key!
+- ~hyperdrive-menu~ is the new control panel. Bind it to a convenient key!
 - ~hyperdrive-menu-bar-mode~ enables the "Hyperdrive" menu bar inside "Tools"
 - ~org-insert-link~ automatically inserts relative links to hyperdrive
   files within the same drive
