@@ -262,7 +262,7 @@
      :inapt-if-not (lambda () (hyperdrive-writablep (hyperdrive-menu--scope))))]
    ["Mirror"
     :if (lambda () (hyperdrive-writablep (hyperdrive-menu--scope)))
-    ("m m" "Mirror using below settings" hyperdrive-mirror-configured)
+    ("m m" "Mirror using settings below" hyperdrive-mirror-configured)
     ("m s" "Source"  hyperdrive-mirror-set-source)
     ("m t" "Target"  hyperdrive-mirror-set-target)
     ("m f" "Filter"  hyperdrive-mirror-set-filter)
