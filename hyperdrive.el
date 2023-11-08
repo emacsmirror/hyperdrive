@@ -494,7 +494,9 @@ use, see `hyperdrive-write'."
                   (setf (hyperdrive-entry-type entry) "text/plain; charset=utf-8")
                   (setq-local hyperdrive-current-entry entry)
                   (setf buffer-file-name nil)
-                  (rename-buffer (hyperdrive--entry-buffer-name entry) 'unique)
+                  (rename-buffer
+                   (hyperdrive--format-entry entry hyperdrive-buffer-name-format)
+                   'unique)
                   (set-buffer-modified-p nil)
                   ;; Update the visited file modtime so undo commands
                   ;; correctly set the buffer-modified flag.  We just

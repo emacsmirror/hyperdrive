@@ -549,7 +549,9 @@ echo area when the request for the file is made."
                           (not (hyperdrive-entry-version entry)))
                      ;; Entry is a writable file: create a new buffer
                      ;; that will be saved to its path.
-                     (if-let ((buffer (get-buffer (hyperdrive--entry-buffer-name entry))))
+                     (if-let ((buffer
+                               (get-buffer
+                                (hyperdrive--format-entry entry hyperdrive-buffer-name-format))))
                          ;; Buffer already exists: likely the user deleted the entry
                          ;; without killing the buffer.  Switch to the buffer and
                          ;; alert the user that the entry no longer exists.
@@ -1336,7 +1338,8 @@ In other words, this avoids the situation where a buffer called
 both point to the same content.
 
 Affected by option `hyperdrive-reuse-buffers', which see."
-  (let* ((buffer-name (hyperdrive--entry-buffer-name entry))
+  (let* ((buffer-name (hyperdrive--format-entry
+                       entry hyperdrive-buffer-name-format))
          (buffer
           (or (when (eq 'any-version hyperdrive-reuse-buffers)
                 (cl-loop for buffer in (buffer-list)
@@ -1368,15 +1371,15 @@ Affected by option `hyperdrive-reuse-buffers', which see."
   ;; TODO: This function is a workaround for bug#65797
   (lambda (buffer) (hyperdrive--buffer-visiting-entry-p buffer entry)))
 
-(defun hyperdrive--entry-buffer-name (entry)
-  "Return buffer name for ENTRY.
-Formatted according to `hyperdrive-buffer-name-format', which
-see."
+(defun hyperdrive--format-entry (entry format)
+  "Return ENTRY formatted according to FORMAT.
+FORMAT may be a format string like the value of
+`hyperdrive-buffer-name-format', which see."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path version) entry)
                ((cl-struct hyperdrive domains public-key petname seed
                            (metadata (map ('name nickname))))
                 hyperdrive))
-    (format-spec hyperdrive-buffer-name-format
+    (format-spec format
                  ;; TODO(deprecate-28): Use lambdas in each specifier.
                  `((?n . ,name)
                    (?p . ,path)
