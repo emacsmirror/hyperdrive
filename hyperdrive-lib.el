@@ -557,7 +557,8 @@ echo area when the request for the file is made."
                          ;; alert the user that the entry no longer exists.
                          (progn
                            (switch-to-buffer buffer)
-                           (hyperdrive-message "Entry no longer exists!  %s" (hyperdrive-entry-description entry)))
+                           (hyperdrive-message "Entry no longer exists!  %s"
+                                               (hyperdrive--format-entry entry)))
                        ;; Make and switch to new buffer.
                        (switch-to-buffer (hyperdrive--get-buffer-create entry))))
                     (t
@@ -915,28 +916,6 @@ Call ELSE if request fails."
   (declare (indent defun))
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else :queue queue))
-
-(cl-defun hyperdrive-entry-description (entry &key (format-path 'path) (with-version t))
-  "Return description for ENTRY.
-When ENTRY has a non-nil VERSION slot, include it.  Returned
-string looks like:
-
-  FORMAT-PATH [HOST] (version:VERSION)
-
-When FORMAT-PATH is `path', use full path to entry.  When
-FORMAT-PATH is `name', use only last part of path, as in
-`file-name-non-directory'.
-
-When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path name) entry)
-               (handle (hyperdrive--format-host hyperdrive :with-label t)))
-    (propertize (concat (format "[%s] " handle)
-                        (pcase format-path
-                          ('path path)
-                          ('name name))
-                        (when (and version with-version)
-                          (format " (version:%s)" version)))
-                'help-echo (hyperdrive-entry-url entry))))
 
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
@@ -1371,7 +1350,7 @@ Affected by option `hyperdrive-reuse-buffers', which see."
   ;; TODO: This function is a workaround for bug#65797
   (lambda (buffer) (hyperdrive--buffer-visiting-entry-p buffer entry)))
 
-(defun hyperdrive--format-entry (entry format)
+(cl-defun hyperdrive--format-entry (entry &optional (format hyperdrive-default-entry-format))
   "Return ENTRY formatted according to FORMAT.
 FORMAT may be a format string like the value of
 `hyperdrive-buffer-name-format', which see."
@@ -1379,32 +1358,34 @@ FORMAT may be a format string like the value of
                ((cl-struct hyperdrive domains public-key petname seed
                            (metadata (map ('name nickname))))
                 hyperdrive))
-    (format-spec format
-                 ;; TODO(deprecate-28): Use lambdas in each specifier.
-                 `((?n . ,name)
-                   (?p . ,path)
-                   (?v . ,(if version
-                              (format hyperdrive-entry-version-format version)
-                            ""))
-                   (?D . ,(if domains
-                              (format hyperdrive-entry-domains-format
-                                      (string-join domains ","))
-                            ""))
-                   (?H . ,(hyperdrive--format-host
-                           hyperdrive :with-label t :with-faces nil))
-                   (?k . ,(format hyperdrive-entry-public-key-short-format
-                                  (concat (substring public-key 0 6) "…")))
-                   (?K . ,(format hyperdrive-entry-public-key-full-format
-                                  public-key))
-                   (?N . ,(if nickname
-                              (format hyperdrive-entry-nickname-format nickname)
-                            ""))
-                   (?P . ,(if petname
-                              (format hyperdrive-entry-petname-format petname)
-                            ""))
-                   (?S . ,(if seed
-                              (format hyperdrive-entry-seed-format seed)
-                            ""))))))
+    (propertize
+     (format-spec format
+                  ;; TODO(deprecate-28): Use lambdas in each specifier.
+                  `((?n . ,name)
+                    (?p . ,path)
+                    (?v . ,(if version
+                               (format hyperdrive-entry-version-format version)
+                             ""))
+                    (?D . ,(if domains
+                               (format hyperdrive-entry-domains-format
+                                       (string-join domains ","))
+                             ""))
+                    (?H . ,(hyperdrive--format-host
+                            hyperdrive :with-label t :with-faces nil))
+                    (?k . ,(format hyperdrive-entry-public-key-short-format
+                                   (concat (substring public-key 0 6) "…")))
+                    (?K . ,(format hyperdrive-entry-public-key-full-format
+                                   public-key))
+                    (?N . ,(if nickname
+                               (format hyperdrive-entry-nickname-format nickname)
+                             ""))
+                    (?P . ,(if petname
+                               (format hyperdrive-entry-petname-format petname)
+                             ""))
+                    (?S . ,(if seed
+                               (format hyperdrive-entry-seed-format seed)
+                             ""))))
+     'help-echo (hyperdrive-entry-url entry))))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."

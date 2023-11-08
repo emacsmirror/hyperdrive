@@ -171,8 +171,8 @@ an existing buffer at the same version, or make a new buffer."
   "Formatting of entries for buffer names, etc."
   :group 'hyperdrive)
 
-(defcustom hyperdrive-buffer-name-format "[%H] %n%v"
-  "Format string for buffer names.
+(defcustom hyperdrive-default-entry-format "[%H] %p%v"
+  "Format string for displaying entries.
 Specifiers:
 
 %n  Entry name
@@ -188,6 +188,17 @@ Specifiers:
 %N  Hyperdrive nickname
 %P  Hyperdrive petname
 %S  Hyperdrive seed"
+  :type 'string)
+
+(defvar hyperdrive-default-entry-format-without-version "[%H] %p"
+  "Format string for displaying entries without displaying the version.
+The format of the following specifiers can be configured using
+`hyperdrive-entry-format-alist', which see.")
+
+(defcustom hyperdrive-buffer-name-format "[%H] %n%v"
+  "Format string for buffer names.
+Specifiers are as in `hyperdrive-default-entry-format', which
+see."
   :type 'string)
 
 (defcustom hyperdrive-entry-version-format " (version:%s)"
