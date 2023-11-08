@@ -556,8 +556,7 @@ it to `hyperdrive-open'."
       (hyperdrive-open previous-entry)
     (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
                         (hyperdrive-entry-description entry :with-version nil)
-                        (1- (or (hyperdrive-entry-version entry)
-                                (hyperdrive-latest-version (hyperdrive-entry-hyperdrive entry)))))))
+                        (1- (car (hyperdrive-entry-version-range entry))))))
 
 (defun hyperdrive-open-next-version (entry)
   "Open next version of ENTRY."
