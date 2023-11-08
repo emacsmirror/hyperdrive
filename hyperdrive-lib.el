@@ -1368,22 +1368,31 @@ FORMAT may be a format string like the value of
                              ""))
                     (?D . ,(if domains
                                (format hyperdrive-entry-domains-format
-                                       (string-join domains ","))
+                                       (propertize (string-join domains ",")
+                                                   'face 'hyperdrive-domain))
                              ""))
-                    (?H . ,(hyperdrive--format-host
-                            hyperdrive :with-label t :with-faces nil))
+                    (?H . ,(hyperdrive--format-host hyperdrive :with-label t))
                     (?k . ,(format hyperdrive-entry-public-key-short-format
-                                   (concat (substring public-key 0 6) "…")))
+                                   (concat (propertize (substring public-key 0 6)
+                                                       'face 'hyperdrive-public-key)
+                                           "…")))
                     (?K . ,(format hyperdrive-entry-public-key-full-format
-                                   public-key))
+                                   (propertize public-key
+                                               'face 'hyperdrive-public-key)))
                     (?N . ,(if nickname
-                               (format hyperdrive-entry-nickname-format nickname)
+                               (format hyperdrive-entry-nickname-format
+                                       (propertize nickname
+                                                   'face 'hyperdrive-nickname))
                              ""))
                     (?P . ,(if petname
-                               (format hyperdrive-entry-petname-format petname)
+                               (format hyperdrive-entry-petname-format
+                                       (propertize petname
+                                                   'face 'hyperdrive-petname))
                              ""))
                     (?S . ,(if seed
-                               (format hyperdrive-entry-seed-format seed)
+                               (format hyperdrive-entry-seed-format
+                                       (propertize seed
+                                                   'face 'hyperdrive-seed))
                              ""))))
      'help-echo (hyperdrive-entry-url entry))))
 
