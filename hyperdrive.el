@@ -1268,6 +1268,18 @@ Intended for relative (i.e. non-full) URLs."
             (rx-to-string `(or ,ffap-url-regexp (seq bos "hyper://")))
           (rx bos "hyper://"))))
 
+;;;;; Embark integration
+
+(with-eval-after-load 'embark
+  (defvar-keymap hyperdrive-embark-hyperdrive-map
+    :doc "Keymap for Embark actions on hyperdrives."
+    :parent embark-general-map
+    "h" #'hyperdrive-menu-hyperdrive
+    "p" #'hyperdrive-set-petname
+    "n" #'hyperdrive-set-nickname)
+
+  (add-to-list 'embark-keymap-alist '(hyperdrive . hyperdrive-embark-hyperdrive-map)))
+
 ;;;; Footer
 
 (provide 'hyperdrive)
