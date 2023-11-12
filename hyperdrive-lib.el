@@ -1064,7 +1064,15 @@ case, when PREDICATE, only offer hyperdrives matching it."
                                (cons (hyperdrive--format-hyperdrive hyperdrive) hyperdrive))
                              hyperdrives))
          (completion-styles (cons 'substring completion-styles))
-         (selected (completing-read prompt candidates nil 'require-match nil nil default)))
+         (selected
+          (completing-read
+           prompt
+           (lambda (string predicate action)
+             (if (eq action 'metadata)
+                 '(metadata (category . hyperdrive))
+               (complete-with-action
+                action candidates string predicate)))
+           nil 'require-match nil nil default)))
     (or (alist-get selected candidates nil nil #'equal)
         (hyperdrive-user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
 
