@@ -870,6 +870,22 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
   version. To have separate buffers for each version of a
   file/directory, use ~same-version~.
 
+** Additional customization
+
+This section mentions ways to change the behavior of ~hyperdrive.el~
+besides its own customization options.
+
+*** Completion styles and cycling
+#+vindex: completion-category-overrides
+#+findex: hyperdrive-complete-hyperdrive
+#+findex: completing-read
+
+~hyperdrive-complete-hyperdrive~ offers a ~completing-read~ interface for
+selecting a hyperdrive from a list of known hyperdrive.  You can
+customize the completion styles and cycling behavior of
+~hyperdrive-complete-hyperdrive~ by customizing the ~hyperdrive~ category
+in ~completion-category-overrides~.
+
 * Known limitations
 
 ** No empty directories

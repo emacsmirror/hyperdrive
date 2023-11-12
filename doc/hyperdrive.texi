@@ -142,6 +142,14 @@ Naming
 * Seeds::
 * DNS domains::
 
+Customization
+
+* Additional customization::
+
+Additional customization
+
+* Completion styles and cycling::
+
 Known limitations
 
 * No empty directories::
@@ -1314,6 +1322,33 @@ reuses a buffer that is already visiting it, regardless of
 version. To have separate buffers for each version of a
 file/directory, use @code{same-version}.
 @end table
+
+@menu
+* Additional customization::
+@end menu
+
+@node Additional customization
+@section Additional customization
+
+This section mentions ways to change the behavior of @code{hyperdrive.el}
+besides its own customization options.
+
+@menu
+* Completion styles and cycling::
+@end menu
+
+@node Completion styles and cycling
+@subsection Completion styles and cycling
+
+@vindex completion-category-overrides
+@findex hyperdrive-complete-hyperdrive
+@findex completing-read
+
+@code{hyperdrive-complete-hyperdrive} offers a @code{completing-read} interface for
+selecting a hyperdrive from a list of known hyperdrive.  You can
+customize the completion styles and cycling behavior of
+@code{hyperdrive-complete-hyperdrive} by customizing the @code{hyperdrive} category
+in @code{completion-category-overrides}.
 
 @node Known limitations
 @chapter Known limitations
