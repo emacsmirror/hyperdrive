@@ -118,6 +118,10 @@ Upload files from your filesystem
 * Mirror a whole directory::
 * Mirror files by tag or other attributes::
 
+Miscellaneous features
+
+* Find file at point integration::
+
 Concepts
 
 * Hyperdrive::
@@ -873,6 +877,13 @@ For examples, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or
 
 @node Miscellaneous features
 @section Miscellaneous features
+
+@menu
+* Find file at point integration::
+@end menu
+
+@node Find file at point integration
+@subsection Find file at point integration
 
 @findex find-file-at-point
 

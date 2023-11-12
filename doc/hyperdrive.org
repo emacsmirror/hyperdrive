@@ -547,6 +547,8 @@ For examples, see [[*Mirror a whole directory]] and [[*Mirror files by tag or
 other attributes]].
 
 ** Miscellaneous features
+
+*** Find file at point integration
 #+findex: find-file-at-point
 
 If you have enabled ~find-file-at-point~ (~ffap~) bindings with ~M-x
