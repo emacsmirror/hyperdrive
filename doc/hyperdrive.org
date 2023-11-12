@@ -555,6 +555,13 @@ If you have enabled ~find-file-at-point~ (~ffap~) bindings with ~M-x
 ffap-bindings~, you can open a hyperdrive link by putting the point on
 it and pressing ~C-x C-f~.
 
+*** Embark integration
+#+findex: embark-act
+
+Embark users can run ~embark-act~ in the ~hyperdrive-complete-hyperdrive~
+~completing-read~ interface in order to select an alternative action for
+the selected hyperdrive.
+
 * Concepts
 
 ** Hyperdrive

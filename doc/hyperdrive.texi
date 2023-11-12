@@ -121,6 +121,7 @@ Upload files from your filesystem
 Miscellaneous features
 
 * Find file at point integration::
+* Embark integration::
 
 Concepts
 
@@ -880,6 +881,7 @@ For examples, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or
 
 @menu
 * Find file at point integration::
+* Embark integration::
 @end menu
 
 @node Find file at point integration
@@ -890,6 +892,15 @@ For examples, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or
 If you have enabled @code{find-file-at-point} (@code{ffap}) bindings with @code{M-x
 ffap-bindings}, you can open a hyperdrive link by putting the point on
 it and pressing @code{C-x C-f}.
+
+@node Embark integration
+@subsection Embark integration
+
+@findex embark-act
+
+Embark users can run @code{embark-act} in the @code{hyperdrive-complete-hyperdrive}
+@code{completing-read} interface in order to select an alternative action for
+the selected hyperdrive.
 
 @node Concepts
 @chapter Concepts
