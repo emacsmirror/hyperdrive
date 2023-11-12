@@ -16,6 +16,8 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - ~find-file-at-point~ integration
 - Added ~hyperdrive~ completion category which affects the
   ~hyperdrive-complete-hyperdrive~ ~completing-read~ interface.
+- Embark integration: Run ~embark-act~ while interactively selecting a
+  hyperdrive to choose an alternative action.
 
 ** Changed
 
