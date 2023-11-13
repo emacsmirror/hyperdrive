@@ -227,6 +227,7 @@
 (defvar hyperdrive-mirror-filter nil)
 (defvar hyperdrive-mirror-confirm t)
 
+;;;###autoload (autoload 'hyperdrive-menu-hyperdrive "hyperdrive-menu" nil t)
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for HYPERDRIVE."
   :info-manual "(hyperdrive)"
