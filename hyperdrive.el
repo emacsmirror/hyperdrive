@@ -1262,6 +1262,8 @@ Intended for relative (i.e. non-full) URLs."
 
 ;;;;; `find-file-at-point' (`ffap') support
 
+(eval-when-compile (require 'ffap))
+
 (with-eval-after-load 'ffap
   (setf ffap-url-regexp
         (if ffap-url-regexp
@@ -1269,6 +1271,11 @@ Intended for relative (i.e. non-full) URLs."
           (rx bos "hyper://"))))
 
 ;;;;; Embark integration
+
+(defvar embark-general-map)
+(defvar embark-keymap-alist)
+
+(declare-function hyperdrive-menu "hyperdrive-menu-hyperdrive" nil t)
 
 (with-eval-after-load 'embark
   (defvar-keymap hyperdrive-embark-hyperdrive-map
