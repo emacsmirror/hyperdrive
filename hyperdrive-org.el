@@ -59,7 +59,7 @@ which see."
   (when hyperdrive-current-entry
     (pcase-let (((map type link description)
                  (pcase major-mode
-                   ('org-mode (hyperdrive--org-link))
+                   ('org-mode (hyperdrive-org--link))
                    ('hyperdrive-dir-mode
                     (let ((entry (hyperdrive-dir--entry-at-point)))
                       `((type . "hyper://")
@@ -71,7 +71,7 @@ which see."
       (org-link-store-props :type type :link link :description description)
       t)))
 
-(defun hyperdrive--org-link (&optional raw-url-p)
+(defun hyperdrive-org--link (&optional raw-url-p)
   "Return Org alist for current Org buffer.
 Attempts to link to the entry at point.  If RAW-URL-P, return a
 raw URL, not an Org link."
@@ -114,7 +114,7 @@ raw URL, not an Org link."
   ;; have been configured with `org-link-set-parameters'.
   (hyperdrive-open (hyperdrive-url-entry (concat "hyper:" url))))
 
-(defun hyperdrive--org-link-goto (target)
+(defun hyperdrive-org--link-goto (target)
   "Go to TARGET in current Org buffer.
 TARGET may be a CUSTOM_ID or a headline."
   (cl-assert (eq 'org-mode major-mode))
@@ -125,17 +125,15 @@ TARGET may be a CUSTOM_ID or a headline."
   ;; TODO: Support other hyper:// links like diffs when implemented.
   (hyperdrive-entry-url (hyperdrive-read-entry :read-version t)))
 
-;; TODO: hyperdrive--org-* or hyperdrive-org--*?
-
-(defun hyperdrive--org-open-at-point ()
+(defun hyperdrive-org--open-at-point ()
   "Handle relative links in hyperdrive-mode org files.
 
 Added to `org-open-at-point-functions' in order to short-circuit
 the logic for handling links of \"file\" type."
   (when hyperdrive-mode
-    (hyperdrive-open (hyperdrive--org-link-entry-at-point))))
+    (hyperdrive-open (hyperdrive-org--link-entry-at-point))))
 
-(defun hyperdrive--org-link-entry-at-point ()
+(defun hyperdrive-org--link-entry-at-point ()
   "Return a hyperdrive entry for the Org link at point."
   ;; This function is not in the code path for full URLs or links that
   ;; are only search options.
@@ -156,13 +154,13 @@ the logic for handling links of \"file\" type."
                            :etc `((target . ,(org-element-property :search-option context))))))
         entry))))
 
-(defun hyperdrive--org-insert-link-after-advice (&rest _)
+(defun hyperdrive-org--insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
   (when (and hyperdrive-mode hyperdrive-current-entry)
     (let* ((link-element (org-element-context))
            (_ (cl-assert (eq 'link (car link-element))))
            (url (org-element-property :raw-link link-element))
-           (desc (hyperdrive--org-link-description link-element))
+           (desc (hyperdrive-org--link-description link-element))
            (target-entry (hyperdrive-url-entry url)))
       (when (and (not hyperdrive-org-link-full-url)
                  (hyperdrive-entry-hyperdrive-equal-p
@@ -170,10 +168,10 @@ the logic for handling links of \"file\" type."
         (delete-region (org-element-property :begin link-element)
                        (org-element-property :end link-element))
         (insert (org-link-make-string
-                 (hyperdrive--org-shorthand-link target-entry)
+                 (hyperdrive-org--shorthand-link target-entry)
                  desc))))))
 
-(cl-defun hyperdrive--org-shorthand-link (entry)
+(cl-defun hyperdrive-org--shorthand-link (entry)
   "Return a non-\"hyper://\"-prefixed link to ENTRY.
 Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
   ;; FIXME: Docstring, maybe move details from `hyperdrive-org-link-full-url'.
@@ -181,7 +179,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
   (let ((search-option (alist-get 'target (hyperdrive-entry-etc entry))))
     (when (and search-option
                (hyperdrive-entry-equal-p hyperdrive-current-entry entry))
-      (cl-return-from hyperdrive--org-shorthand-link search-option))
+      (cl-return-from hyperdrive-org--shorthand-link search-option))
 
     ;; Search option alone: Remove leading "::"
     (when search-option
@@ -210,7 +208,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
             (file-name-directory (hyperdrive-entry-path hyperdrive-current-entry)))))
         search-option)))))
 
-(defun hyperdrive--org-link-description (link)
+(defun hyperdrive-org--link-description (link)
   "Return description of Org LINK or nil if it has none."
   ;; TODO: Is there a built-in solution?
   (when-let* ((desc-begin (org-element-property :contents-begin link))
@@ -228,7 +226,7 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
     ;; buffers as links to files within that hyperdrive.  Only add
     ;; this function to the variable after `hyperdrive' is loaded so
     ;; that `hyperdrive-mode' will be defined.
-    (cl-pushnew #'hyperdrive--org-open-at-point org-open-at-point-functions)))
+    (cl-pushnew #'hyperdrive-org--open-at-point org-open-at-point-functions)))
 
 ;;;; Footer
 

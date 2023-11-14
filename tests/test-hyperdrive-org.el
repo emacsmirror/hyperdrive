@@ -253,7 +253,7 @@ variables and the expected link."
 ;; Testing a different drive should stand in for testing
 ;; `hyperdrive-org-link-full-url' as well as insertion in
 ;; non-hyperdrive buffers, since all of these cases cause
-;; `hyperdrive--org-insert-link-after-advice' to do nothing.
+;; `hyperdrive-org--insert-link-after-advice' to do nothing.
 
 (hyperdrive-test-org-insert-link-deftest org-mode-before-heading/different-drive
   :public-key "fredbeef"
@@ -274,7 +274,7 @@ variables and the expected link."
 ;;;; Parse relative/absolute link into entry tests
 
 ;; Neither full "hyper://"-prefixed URLs, nor links which are only search
-;; options, are handled by `hyperdrive--org-link-entry-at-point'.
+;; options, are handled by `hyperdrive-org--link-entry-at-point'.
 
 (defmacro hyperdrive-org-test-link-parse-deftest (name current-entry link parsed-entry)
   (declare (indent defun))
@@ -288,7 +288,7 @@ variables and the expected link."
            (insert ,link)
            (goto-char (point-min))
            (should
-            (hyperdrive-entry-equal-p ,parsed-entry (hyperdrive--org-link-entry-at-point))))))))
+            (hyperdrive-entry-equal-p ,parsed-entry (hyperdrive-org--link-entry-at-point))))))))
 
 (hyperdrive-org-test-link-parse-deftest absolute/without-search-option
   (hyperdrive-entry-create

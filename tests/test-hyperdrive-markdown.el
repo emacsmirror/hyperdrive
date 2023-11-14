@@ -40,7 +40,7 @@
 ;;;; Parse relative/absolute link into entry tests
 
 ;; Neither full "hyper://"-prefixed URLs, nor links which are only search
-;; options, are handled by `hyperdrive--org-link-entry-at-point'.
+;; options, are handled by `hyperdrive-org--link-entry-at-point'.
 
 (defmacro hyperdrive-test-markdown-parse-link-deftest (name current-entry link parsed-entry)
   (declare (indent defun))
