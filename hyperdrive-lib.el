@@ -305,8 +305,9 @@ before making the entry struct."
 Intended to be used as hash table key in `hyperdrive-version-ranges'."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
-    (hyperdrive--format-entry-url version-less :host-format '(public-key) :with-protocol nil
-                                  :with-help-echo nil :with-target nil :with-faces nil)))
+    (substring-no-properties
+     (hyperdrive--format-entry-url version-less :host-format '(public-key) :with-protocol nil
+                                   :with-help-echo nil :with-target nil))))
 
 ;; TODO: Add tests for version range functions
 (defun hyperdrive-entry-version-ranges (entry)
@@ -919,8 +920,7 @@ Call ELSE if request fails."
 
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
-           (with-path t) (with-protocol t) (with-help-echo t)
-           (with-target t) (with-faces t))
+           (with-path t) (with-protocol t) (with-help-echo t) (with-target t))
   "Return ENTRY's URL.
 Returns URL formatted like:
 
@@ -929,8 +929,7 @@ Returns URL formatted like:
 HOST-FORMAT is passed to `hyperdrive--format-host', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL.  When WITH-FACES is nil, don't add face text
-properties.  If WITH-TARGET, append the ENTRY's target, stored in
+full URL.  If WITH-TARGET, append the ENTRY's target, stored in
 its :etc slot.  If WITH-PATH, include the path portion.  When
 ENTRY has non-nil `version' slot, include version number in URL.
 
@@ -949,7 +948,7 @@ Path and target fragment are URI-encoded."
                (host (when host-format
                        ;; FIXME: Update docstring to say that host-format can be nil to omit it.
                        (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                                :format host-format :with-faces with-faces)))
+                                                :format host-format)))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)
@@ -963,27 +962,23 @@ Path and target fragment are URI-encoded."
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
                                 entry :with-protocol t :host-format '(public-key domain)
-                                :with-path with-path :with-help-echo nil :with-target with-target
-                                :with-faces with-faces))
+                                :with-path with-path :with-help-echo nil :with-target with-target))
       url)))
 
 (cl-defun hyperdrive--format-host
-    (hyperdrive &key with-label (format hyperdrive-preferred-naming) (with-faces t))
+    (hyperdrive &key with-label (format hyperdrive-preferred-naming))
   "Return HYPERDRIVE's formatted hostname, or nil.
 FORMAT should be one or a list of symbols, by default
 `hyperdrive-preferred-naming', which see for choices.  If the
 specified FORMAT is not available, returns nil.  If WITH-LABEL,
-prepend a label for the kind of format used (e.g. \"petname:\").
-When WITH-FACES is nil, don't add face text properties."
+prepend a label for the kind of format used (e.g. \"petname:\")."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map name)))
                 hyperdrive))
     (cl-flet ((fmt (string label face)
                 (concat (when with-label
                           label)
-                        (if with-faces
-                            (propertize string 'face face)
-                          string))))
+                        (propertize string 'face face))))
       (cl-loop for f in (ensure-list format)
                when (pcase f
                       ((and 'petname (guard petname))
