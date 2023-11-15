@@ -306,8 +306,8 @@ Intended to be used as hash table key in `hyperdrive-version-ranges'."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
     (substring-no-properties
-     (hyperdrive--format-entry-url version-less :host-format '(public-key) :with-protocol nil
-                                   :with-help-echo nil :with-target nil))))
+     (hyperdrive--format-entry-url version-less :host-format '(public-key)
+                                   :with-protocol nil :with-target nil))))
 
 ;; TODO: Add tests for version range functions
 (defun hyperdrive-entry-version-ranges (entry)
