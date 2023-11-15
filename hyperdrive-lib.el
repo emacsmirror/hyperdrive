@@ -1364,33 +1364,34 @@ FORMAT may be a format string like the value of
                   `((?n . ,name)
                     (?p . ,path)
                     (?v . ,(if version
-                               (format hyperdrive-entry-version-format version)
+                               (format (alist-get 'version hyperdrive-format-alist)
+                                       version)
                              ""))
                     (?D . ,(if domains
-                               (format hyperdrive-entry-domains-format
+                               (format (alist-get 'domains hyperdrive-format-alist)
                                        (propertize (string-join domains ",")
                                                    'face 'hyperdrive-domain))
                              ""))
                     (?H . ,(hyperdrive--format-host hyperdrive :with-label t))
-                    (?k . ,(format hyperdrive-entry-public-key-short-format
+                    (?k . ,(format (alist-get 'short-key hyperdrive-format-alist)
                                    (concat (propertize (substring public-key 0 6)
                                                        'face 'hyperdrive-public-key)
                                            "…")))
-                    (?K . ,(format hyperdrive-entry-public-key-full-format
+                    (?K . ,(format (alist-get 'public-key hyperdrive-format-alist)
                                    (propertize public-key
                                                'face 'hyperdrive-public-key)))
                     (?N . ,(if nickname
-                               (format hyperdrive-entry-nickname-format
+                               (format (alist-get 'nickname hyperdrive-format-alist)
                                        (propertize nickname
                                                    'face 'hyperdrive-nickname))
                              ""))
                     (?P . ,(if petname
-                               (format hyperdrive-entry-petname-format
+                               (format (alist-get 'petname hyperdrive-format-alist)
                                        (propertize petname
                                                    'face 'hyperdrive-petname))
                              ""))
                     (?S . ,(if seed
-                               (format hyperdrive-entry-seed-format
+                               (format (alist-get 'seed hyperdrive-format-alist)
                                        (propertize seed
                                                    'face 'hyperdrive-seed))
                              ""))))

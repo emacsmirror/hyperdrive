@@ -177,11 +177,12 @@ Specifiers:
 
 %n  Entry name
 %p  Entry path
-%v  Entry version (see `hyperdrive-entry-version-format')
+%H  Hyperdrive default host format (see `hyperdrive-default-host-format')
 
-%H Hyperdrive default host format (see
-   `hyperdrive-default-host-format')
+The format of the following specifiers can be configured using
+`hyperdrive-format-alist':
 
+%v  Entry version
 %D  Hyperdrive domains
 %k  Hyperdrive public key (short)
 %K  Hyperdrive public key (full)
@@ -193,7 +194,7 @@ Specifiers:
 (defvar hyperdrive-default-entry-format-without-version "[%H] %p"
   "Format string for displaying entries without displaying the version.
 The format of the following specifiers can be configured using
-`hyperdrive-entry-format-alist', which see.")
+`hyperdrive-format-alist', which see.")
 
 (defcustom hyperdrive-buffer-name-format "[%H] %n%v"
   "Format string for buffer names.
@@ -201,47 +202,28 @@ Specifiers are as in `hyperdrive-default-entry-format', which
 see."
   :type 'string)
 
-(defcustom hyperdrive-entry-version-format " (version:%s)"
-  "Format string for entry version.
-\"%s\" is replaced with the entry version.  Used in
-`hyperdrive-buffer-name-format', which see."
-  :type 'string)
+(defcustom hyperdrive-format-alist '((version    . " (version:%s)")
+                                     (domains    . "domains:%s")
+                                     (nickname   . "nickname:%s")
+                                     (petname    . "petname:%s")
+                                     (public-key . "public-key:%s")
+                                     (short-key  . "public-key:%s")
+                                     (seed       . "seed:%s"))
+  "Alist mapping hyperdrive and hyperdrive entry metadata item to format string.
+Each metadata item may be one of:
 
-(defcustom hyperdrive-entry-domains-format "domains:%s"
-  "Format string for entry domains.
-\"%s\" is replaced with the entry domains.  Used in
-`hyperdrive-buffer-name-format', which see."
-  :type 'string)
+- petname
+- nickname
+- version
+- domains
+- public-key
+- short-key
+- seed
 
-(defcustom hyperdrive-entry-nickname-format "nickname:%s"
-  "Format string for entry nickname.
-\"%s\" is replaced with the entry nickname  Used in
-`hyperdrive-buffer-name-format', which see."
-  :type 'string)
-
-(defcustom hyperdrive-entry-petname-format "petname:%s"
-  "Format string for entry petname.
-\"%s\" is replaced with the entry petname  Used in
-`hyperdrive-buffer-name-format', which see."
-  :type 'string)
-
-(defcustom hyperdrive-entry-public-key-full-format "public-key:%s"
-  "Format string for entry full public-key.
-\"%s\" is replaced with the entry's full public-key.  Used in
-`hyperdrive-buffer-name-format', which see."
-  :type 'string)
-
-(defcustom hyperdrive-entry-public-key-short-format "public-key:%s"
-  "Format string for entry public-key (short format).
-\"%s\" is replaced with the entry's short public-key.  Used in
-`hyperdrive-buffer-name-format', which see."
-  :type 'string)
-
-(defcustom hyperdrive-entry-seed-format "seed:%s"
-  "Format string for entry seed.
-\"%s\" is replaced with the entry seed  Used in
-`hyperdrive-buffer-name-format', which see."
-  :type 'string)
+In each corresponding format string, \"%s\" is replaced with the
+metadatum. Used in `hyperdrive-buffer-name-format', which see."
+  :type '(alist :key-type symbol :value-type string)
+  :options '(petname nickname version domains public-key short-key seed))
 
 ;;;;; Faces
 
