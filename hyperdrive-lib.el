@@ -968,10 +968,10 @@ Path and target fragment are URI-encoded."
       url)))
 
 (cl-defun hyperdrive--format-host
-    (hyperdrive &key with-label (format hyperdrive-default-host-format) (with-faces t))
+    (hyperdrive &key with-label (format hyperdrive-preferred-naming) (with-faces t))
   "Return HYPERDRIVE's formatted hostname, or nil.
 FORMAT should be one or a list of symbols, by default
-`hyperdrive-default-host-format', which see for choices.  If the
+`hyperdrive-preferred-naming', which see for choices.  If the
 specified FORMAT is not available, returns nil.  If WITH-LABEL,
 prepend a label for the kind of format used (e.g. \"petname:\").
 When WITH-FACES is nil, don't add face text properties."

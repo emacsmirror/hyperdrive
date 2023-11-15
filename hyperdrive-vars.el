@@ -118,7 +118,7 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
-(defcustom hyperdrive-default-host-format
+(defcustom hyperdrive-preferred-naming
   '(petname nickname domain seed short-key public-key)
   "Default format for displaying hyperdrive hostnames.
 Each option is checked in order, and the first available type is
@@ -177,7 +177,7 @@ Specifiers:
 
 %n  Entry name
 %p  Entry path
-%H  Hyperdrive default host format (see `hyperdrive-default-host-format')
+%H  Preferred hyperdrive naming (see `hyperdrive-preferred-naming')
 
 The format of the following specifiers can be configured using
 `hyperdrive-format-alist':
