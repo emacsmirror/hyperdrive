@@ -244,16 +244,14 @@
    :pad-keys t
    ("d" hyperdrive-menu-describe-hyperdrive)
    ("w" hyperdrive-menu-hyperdrive-copy-url)
-   (:info (lambda () (hyperdrive--format (hyperdrive-menu--scope) "Public key: %K"
-                                         hyperdrive-raw-formats)))
-   (:info (lambda () (hyperdrive--format (hyperdrive-menu--scope) "Seed: %S" hyperdrive-raw-formats))
-          :if (lambda () (hyperdrive-seed (hyperdrive-menu--scope))))
+   (:info (lambda () (hyperdrive--format (hyperdrive-menu--scope) "Public key: %K" hyperdrive-raw-formats)))
+   ( :info (lambda () (hyperdrive--format (hyperdrive-menu--scope) "Seed: %S" hyperdrive-raw-formats))
+     :if (lambda () (hyperdrive-seed (hyperdrive-menu--scope))))
    ("p" hyperdrive-menu-set-petname  :transient t)
    ("n" hyperdrive-menu-set-nickname :transient t
     :inapt-if-not (lambda () (hyperdrive-writablep (hyperdrive-menu--scope))))
-   (:info (lambda () (hyperdrive--format (hyperdrive-menu--scope) "Domain: %D"
-                                         hyperdrive-raw-formats))
-          :if (lambda () (hyperdrive-domains (hyperdrive-menu--scope))))
+   ( :info (lambda () (hyperdrive--format (hyperdrive-menu--scope) "Domain: %D" hyperdrive-raw-formats))
+     :if (lambda () (hyperdrive-domains (hyperdrive-menu--scope))))
    (:info (lambda () (format "Latest version: %s" (hyperdrive-latest-version (hyperdrive-menu--scope)))))]
   [["Open"
     ("f"   "Find file"    hyperdrive-menu-open-file)
