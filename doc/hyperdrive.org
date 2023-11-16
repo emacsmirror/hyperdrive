@@ -888,7 +888,7 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
   format is like ~hyperdrive-default-entry-format~ with the entry name
   sans directory instead of the full path.
 
-- ~hyperdrive-format-alist~ :: Alist mapping hyperdrive and hyperdrive
+- ~hyperdrive-formats~ :: Alist mapping hyperdrive and hyperdrive
   entry metadata to a format string, used in
   ~hyperdrive-default-entry-format~ and ~hyperdrive-buffer-name-format~ as
   well as other places hyperdrives or entries are displayed.  By

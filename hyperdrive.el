@@ -860,7 +860,7 @@ The return value of this function is the retrieval buffer."
                (cl-labels ((list-drives (drives)
                              (cl-loop for drive in drives
                                       for entry = (hyperdrive-entry-create :hyperdrive drive)
-                                      collect (list (hyperdrive--format-host drive :with-label t)
+                                      collect (list (hyperdrive--format drive)
                                                     (vector "Describe"
                                                             `(lambda ()
                                                                (interactive)
@@ -949,15 +949,15 @@ The return value of this function is the retrieval buffer."
                  (append (list ["Writable" :active nil])
                          (or (list-drives (sort (cl-remove-if-not #'hyperdrive-writablep (hash-table-values hyperdrive-hyperdrives))
                                                 (lambda (a b)
-                                                  (string< (hyperdrive--format-host a :with-label t)
-                                                           (hyperdrive--format-host b :with-label t)))))
+                                                  (string< (hyperdrive--format a)
+                                                           (hyperdrive--format b)))))
                              (list ["none" :active nil]))
                          (list "---")
                          (list ["Read-only" :active nil])
                          (or (list-drives (sort (cl-remove-if #'hyperdrive-writablep (hash-table-values hyperdrive-hyperdrives))
                                                 (lambda (a b)
-                                                  (string< (hyperdrive--format-host a :with-label t)
-                                                           (hyperdrive--format-host b :with-label t)))))
+                                                  (string< (hyperdrive--format a)
+                                                           (hyperdrive--format b)))))
                              (list ["none" :active nil]))))))
     ("Current"
      :active hyperdrive-current-entry
@@ -969,7 +969,7 @@ The return value of this function is the retrieval buffer."
       :active hyperdrive-current-entry
       :label (if-let* ((entry hyperdrive-current-entry)
                        (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                 (format "Current Drive «%s»" (hyperdrive--format-host hyperdrive :with-label t))
+                 (format "Current Drive «%s»" (hyperdrive--format hyperdrive))
                "Current Drive")
       ["Find File"
        (lambda ()

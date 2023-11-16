@@ -1356,7 +1356,7 @@ buffers visiting hyperdrive files/directories.  By default, this
 format is like @code{hyperdrive-default-entry-format} with the entry name
 sans directory instead of the full path.
 
-@item @code{hyperdrive-format-alist}
+@item @code{hyperdrive-formats}
 Alist mapping hyperdrive and hyperdrive
 entry metadata to a format string, used in
 @code{hyperdrive-default-entry-format} and @code{hyperdrive-buffer-name-format} as

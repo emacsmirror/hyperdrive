@@ -175,26 +175,25 @@ an existing buffer at the same version, or make a new buffer."
   "Format string for displaying entries.
 Specifiers:
 
-%n  Entry name
-%p  Entry path
 %H  Preferred hyperdrive naming (see `hyperdrive-preferred-naming')
 
-The format of the following specifiers can be configured using
-`hyperdrive-format-alist':
+To configure the format of the following specifiers, see `hyperdrive-formats':
 
+%n  Entry name
+%p  Entry path
 %v  Entry version
-%D  Hyperdrive domains
-%k  Hyperdrive public key (short)
-%K  Hyperdrive public key (full)
-%N  Hyperdrive nickname
+%S  Hyperdrive seed
 %P  Hyperdrive petname
-%S  Hyperdrive seed"
+%N  Hyperdrive nickname
+%K  Hyperdrive public key (full)
+%k  Hyperdrive public key (short)
+%D  Hyperdrive domains"
   :type 'string)
 
 (defvar hyperdrive-default-entry-format-without-version "[%H] %p"
   "Format string for displaying entries without displaying the version.
 The format of the following specifiers can be configured using
-`hyperdrive-format-alist', which see.")
+`hyperdrive-formats', which see.")
 
 (defcustom hyperdrive-buffer-name-format "[%H] %n%v"
   "Format string for buffer names.
@@ -202,23 +201,42 @@ Specifiers are as in `hyperdrive-default-entry-format', which
 see."
   :type 'string)
 
-(defcustom hyperdrive-format-alist '((version    . " (version:%s)")
-                                     (domains    . "domains:%s")
-                                     (nickname   . "nickname:%s")
-                                     (petname    . "petname:%s")
-                                     (public-key . "public-key:%s")
-                                     (short-key  . "public-key:%s")
-                                     (seed       . "seed:%s"))
+(defvar hyperdrive-raw-formats '(;; Entry metadata
+                                 (name    . "%s")
+                                 (path    . "%s")
+                                 (version . "%s")
+                                 ;; Hyperdrive metadata
+                                 (petname    . "%s")
+                                 (nickname   . "%s")
+                                 (public-key . "%s")
+                                 (short-key  . "%s")
+                                 (seed       . "%s")
+                                 (domains    . "%s"))
+  "Like `hyperdrive-formats', without any special formatting.")
+
+(defcustom hyperdrive-formats '(;; Entry metadata
+                                (name       . "%s")
+                                (version    . " (version:%s)")
+                                (path       . "%s")
+                                ;; Hyperdrive metadata
+                                (petname    . "petname:%s")
+                                (nickname   . "nickname:%s")
+                                (public-key . "public-key:%s")
+                                (short-key  . "public-key:%s")
+                                (seed       . "seed:%s")
+                                (domains    . "domains:%s"))
   "Alist mapping hyperdrive and hyperdrive entry metadata item to format string.
 Each metadata item may be one of:
 
-- petname
-- nickname
-- version
-- domains
-- public-key
-- short-key
-- seed
+- \\+`name' (Entry name)
+- \\+`path' (Entry path)
+- \\+`version' (Entry version)
+- \\+`petname' (Hyperdrive petname)
+- \\+`nickname' (Hyperdrive nickname)
+- \\+`domains' (Hyperdrive domains)
+- \\+`public-key' (Hyperdrive public key)
+- \\+`short-key' (Hyperdrive short key)
+- \\+`seed' (Hyperdrive seed)
 
 In each corresponding format string, \"%s\" is replaced with the
 metadatum. Used in `hyperdrive-buffer-name-format', which see."
