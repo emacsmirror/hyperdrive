@@ -189,8 +189,8 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                                                (propertize "Last Modified" 'face 'hyperdrive-column-header)))))
                (queue) (ewoc))
     (with-current-buffer (get-buffer-create
-                          (format "*Hyperdrive-history: %s %s*"
-                                  (hyperdrive--format-host hyperdrive :with-label t) path))
+                          (format "*Hyperdrive-history: %s*"
+                                  (hyperdrive--format-entry entry "[%H] %p")))
       (with-silent-modifications
         (hyperdrive-history-mode)
         (setq-local hyperdrive-current-entry entry)
