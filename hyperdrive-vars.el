@@ -228,20 +228,37 @@ see."
   "Alist mapping hyperdrive and hyperdrive entry metadata item to format string.
 Each metadata item may be one of:
 
-- \\+`name' (Entry name)
-- \\+`path' (Entry path)
-- \\+`version' (Entry version)
-- \\+`petname' (Hyperdrive petname)
-- \\+`nickname' (Hyperdrive nickname)
-- \\+`domains' (Hyperdrive domains)
-- \\+`public-key' (Hyperdrive public key)
-- \\+`short-key' (Hyperdrive short key)
-- \\+`seed' (Hyperdrive seed)
+- \\=`name' (Entry name)
+- \\=`path' (Entry path)
+- \\=`version' (Entry version)
+- \\=`petname' (Hyperdrive petname)
+- \\=`nickname' (Hyperdrive nickname)
+- \\=`domains' (Hyperdrive domains)
+- \\=`public-key' (Hyperdrive public key)
+- \\=`short-key' (Hyperdrive short key)
+- \\=`seed' (Hyperdrive seed)
 
 In each corresponding format string, \"%s\" is replaced with the
-value.  Used in `hyperdrive-buffer-name-format', which see."
-  :type '(alist :key-type symbol :value-type string)
-  :options '(name version path petname nickname public-key short-key seed domains))
+value (and should only be present once in the string).  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type '(list (cons :tag "Entry name" (const name)
+                     (string :tag "Format string"))
+               (cons :tag "Entry version" (const version)
+                     (string :tag "Format string"))
+               (cons :tag "Entry path" (const path)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive petname" (const petname)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive nickname" (const nickname)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive public key" (const public-key)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive short key" (const short-key)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive seed" (const seed)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive domains" (const domains)
+                     (string :tag "Format string"))))
 
 ;;;;; Faces
 
