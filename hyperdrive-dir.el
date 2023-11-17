@@ -63,7 +63,8 @@ If THEN, call it in the directory buffer with no arguments."
                   ;; of this function (e.g. so it will be available if
                   ;; the user loads a non-directory file directly).
                   (hyperdrive-fill-metadata hyperdrive)
-                  (hyperdrive-dir-column-headers (hyperdrive-entry-description directory-entry))))
+                  (hyperdrive-dir-column-headers
+                   (hyperdrive--format-entry directory-entry))))
                (num-entries (length entries)) (num-filled 0)
 	       ;; (debug-start-time (current-time))
                (metadata-queue) (ewoc) (prev-entry) (prev-point))
@@ -344,7 +345,8 @@ DIRECTORY-SORT should be a valid value of
       (dolist (entry (hyperdrive-sort-entries entries))
         (ewoc-enter-last hyperdrive-ewoc entry))
       (ewoc-set-hf hyperdrive-ewoc
-                   (hyperdrive-dir-column-headers (hyperdrive-entry-description hyperdrive-current-entry))
+                   (hyperdrive-dir-column-headers
+                    (hyperdrive--format-entry hyperdrive-current-entry))
                    ""))))
 
 ;;;; Imenu support

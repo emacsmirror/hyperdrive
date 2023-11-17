@@ -361,7 +361,7 @@ directory.  Otherwise, or with universal prefix argument
   (declare (indent defun))
   (interactive
    (let* ((entry (hyperdrive--context-entry :latest-version t))
-          (description (hyperdrive-entry-description entry))
+          (description (hyperdrive--format-entry entry))
           (buffer (current-buffer)))
      (when (and (hyperdrive--entry-directory-p entry)
                 (or (eq entry hyperdrive-current-entry)
@@ -450,11 +450,11 @@ use, see `hyperdrive-write'."
                      current-prefix-arg))
   (unless (or overwritep (not (hyperdrive-entry-at nil entry)))
     (unless (y-or-n-p
-	     (format "File %s exists; overwrite?" (hyperdrive-entry-description entry)))
+	     (format "File %s exists; overwrite?" (hyperdrive--format-entry entry)))
       (hyperdrive-user-error "Canceled"))
     (when-let ((buffers (match-buffers (hyperdrive--buffer-for-entry entry))))
       (unless (y-or-n-p
-	       (format "A buffer is visiting %s; proceed?" (hyperdrive-entry-description entry)))
+	       (format "A buffer is visiting %s; proceed?" (hyperdrive--format-entry entry)))
         (hyperdrive-user-error "Aborted"))
       ;; TODO: In BUFFERS, when user attempts to modify the buffer,
       ;; offer warning like "FILE has been modified in hyperdrive; are
@@ -494,7 +494,9 @@ use, see `hyperdrive-write'."
                   (setf (hyperdrive-entry-type entry) "text/plain; charset=utf-8")
                   (setq-local hyperdrive-current-entry entry)
                   (setf buffer-file-name nil)
-                  (rename-buffer (hyperdrive--entry-buffer-name entry) 'unique)
+                  (rename-buffer
+                   (hyperdrive--format-entry entry hyperdrive-buffer-name-format)
+                   'unique)
                   (set-buffer-modified-p nil)
                   ;; Update the visited file modtime so undo commands
                   ;; correctly set the buffer-modified flag.  We just
@@ -555,7 +557,7 @@ it to `hyperdrive-open'."
   (if-let ((previous-entry (hyperdrive-entry-previous entry)))
       (hyperdrive-open previous-entry)
     (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
-                        (hyperdrive-entry-description entry :with-version nil)
+                        (hyperdrive--format-entry entry "[%H] %p")
                         (1- (car (hyperdrive-entry-version-range entry))))))
 
 (defun hyperdrive-open-next-version (entry)
@@ -589,11 +591,12 @@ Nil VERSION means open the entry at its hyperdrive's latest version."
                  (list entry (hyperdrive-read-version
                               :hyperdrive (hyperdrive-entry-hyperdrive entry)
                               :prompt (format "Open «%s» at version (leave blank for latest version)"
-                                              (hyperdrive-entry-description entry :with-version nil))))))
+                                              (hyperdrive--format-entry entry))))))
   (if-let ((latest-entry (hyperdrive-entry-at version entry)))
       (hyperdrive-open latest-entry)
     (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
-                        (hyperdrive-entry-description entry :with-version nil)
+                        (hyperdrive--format-entry
+                         entry hyperdrive-default-entry-format-without-version)
                         version)))
 
 ;;;; Bookmark support
@@ -607,7 +610,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   (let ((bookmark (bookmark-make-record-default 'no-file)))
     (setf (alist-get 'handler bookmark) #'hyperdrive-bookmark-handler
           (alist-get 'location bookmark) (hyperdrive-entry-url hyperdrive-current-entry))
-    (cons (format "hyperdrive: %s" (hyperdrive-entry-description hyperdrive-current-entry)) bookmark)))
+    (cons (format "hyperdrive: %s" (hyperdrive--format-entry hyperdrive-current-entry)) bookmark)))
 
 ;;;###autoload
 (defun hyperdrive-bookmark-handler (bookmark)
@@ -797,14 +800,14 @@ The return value of this function is the retrieval buffer."
           (if (< emacs-major-version 28)
               (read-multiple-choice
                (format "Hyperdrive file %s modified; kill anyway?"
-                       (hyperdrive-entry-description hyperdrive-current-entry))
+                       (hyperdrive--format-entry hyperdrive-current-entry))
                '((?y "yes" "kill buffer without saving")
                  (?n "no" "exit without doing anything")
                  (?s "save and then kill" "save the buffer and then kill it")))
             (with-suppressed-warnings ((free-vars use-short-answers))
               (compat-call read-multiple-choice
                            (format "Hyperdrive file %s modified; kill anyway?"
-                                   (hyperdrive-entry-description hyperdrive-current-entry))
+                                   (hyperdrive--format-entry hyperdrive-current-entry))
                            '((?y "yes" "kill buffer without saving")
                              (?n "no" "exit without doing anything")
                              (?s "save and then kill" "save the buffer and then kill it"))
@@ -857,7 +860,7 @@ The return value of this function is the retrieval buffer."
                (cl-labels ((list-drives (drives)
                              (cl-loop for drive in drives
                                       for entry = (hyperdrive-entry-create :hyperdrive drive)
-                                      collect (list (hyperdrive--format-host drive :with-label t)
+                                      collect (list (hyperdrive--format drive)
                                                     (vector "Describe"
                                                             `(lambda ()
                                                                (interactive)
@@ -946,27 +949,27 @@ The return value of this function is the retrieval buffer."
                  (append (list ["Writable" :active nil])
                          (or (list-drives (sort (cl-remove-if-not #'hyperdrive-writablep (hash-table-values hyperdrive-hyperdrives))
                                                 (lambda (a b)
-                                                  (string< (hyperdrive--format-host a :with-label t)
-                                                           (hyperdrive--format-host b :with-label t)))))
+                                                  (string< (hyperdrive--format a)
+                                                           (hyperdrive--format b)))))
                              (list ["none" :active nil]))
                          (list "---")
                          (list ["Read-only" :active nil])
                          (or (list-drives (sort (cl-remove-if #'hyperdrive-writablep (hash-table-values hyperdrive-hyperdrives))
                                                 (lambda (a b)
-                                                  (string< (hyperdrive--format-host a :with-label t)
-                                                           (hyperdrive--format-host b :with-label t)))))
+                                                  (string< (hyperdrive--format a)
+                                                           (hyperdrive--format b)))))
                              (list ["none" :active nil]))))))
     ("Current"
      :active hyperdrive-current-entry
      :label (if-let* ((entry hyperdrive-current-entry))
                 (format "Current: «%s»"
-                        (hyperdrive-entry-description entry))
+                        (hyperdrive--format-entry entry))
               "Current")
      ("Current Drive"
       :active hyperdrive-current-entry
       :label (if-let* ((entry hyperdrive-current-entry)
                        (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                 (format "Current Drive «%s»" (hyperdrive--format-host hyperdrive :with-label t))
+                 (format "Current Drive «%s»" (hyperdrive--format hyperdrive))
                "Current Drive")
       ["Find File"
        (lambda ()

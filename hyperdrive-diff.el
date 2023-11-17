@@ -71,9 +71,11 @@ This function is intended to diff files, not directories."
                             (unless (or old-response new-response)
                               (hyperdrive-error "Files non-existent"))
                             (let ((old-buffer (generate-new-buffer
-                                               (hyperdrive-entry-description old-entry)))
+                                               (hyperdrive--format-entry
+                                                old-entry hyperdrive-buffer-name-format)))
                                   (new-buffer (generate-new-buffer
-                                               (hyperdrive-entry-description new-entry)))
+                                               (hyperdrive--format-entry
+                                                new-entry hyperdrive-buffer-name-format)))
                                   ;; TODO: Improve diff buffer name.
                                   (diff-buffer (get-buffer-create "*hyperdrive-diff*")))
                               (when old-response
@@ -119,8 +121,8 @@ This function is intended to diff files, not directories."
         (insert (format "No difference between entries:
 %s
 %s"
-                        (hyperdrive-entry-description (car hyperdrive-diff-entries))
-                        (hyperdrive-entry-description (cdr hyperdrive-diff-entries)))))
+                        (hyperdrive--format-entry (car hyperdrive-diff-entries))
+                        (hyperdrive--format-entry (cdr hyperdrive-diff-entries)))))
       (goto-char (point-max))
       (forward-line -1)
       (delete-region (point) (point-max)))))

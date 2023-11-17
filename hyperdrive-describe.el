@@ -50,30 +50,19 @@ Universal prefix argument \\[universal-argument] forces
   ;; TODO: Do we want to asynchronously fill the hyperdrive's latest version?
   (hyperdrive-fill-latest-version hyperdrive)
   (with-current-buffer (get-buffer-create
-                        (format "*Hyperdrive: %s*"
-                                (hyperdrive--format-host hyperdrive :format '(short-key)
-                                                         :with-label t)))
+                        (format "*Hyperdrive: %s*" (hyperdrive--format hyperdrive "%k")))
     (with-silent-modifications
       (hyperdrive-describe-mode)
       (setq-local hyperdrive-describe-current-hyperdrive hyperdrive)
-      (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive))
+      (pcase-let (((cl-struct hyperdrive metadata writablep) hyperdrive))
         (erase-buffer)
         (insert
          (propertize "Hyperdrive: \n" 'face 'bold)
-         (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
-         (format "Seed: %s\n" (or (hyperdrive--format-host hyperdrive :format '(seed))
-                                  "[none]"))
-         (format "Petname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(petname))
-                                     "[none]"))
-         (format "Nickname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(nickname))
-                                      "[none]"))
-         (format "Domains: %s\n"
-                 (if domains
-                     (string-join (mapcar (lambda (domain)
-                                            (propertize domain 'face 'hyperdrive-domain))
-                                          domains)
-                                  ", ")
-                   "[none]"))
+         (hyperdrive--format hyperdrive "Public key %K:\n" hyperdrive-raw-formats)
+         (hyperdrive--format hyperdrive "Seed: %S\n" hyperdrive-raw-formats)
+         (hyperdrive--format hyperdrive "Petname: %P\n" hyperdrive-raw-formats)
+         (hyperdrive--format hyperdrive "Nickname: %N\n" hyperdrive-raw-formats)
+         (hyperdrive--format hyperdrive "Domains: %D\n" hyperdrive-raw-formats)
          (format "Latest version: %s\n" (hyperdrive-latest-version hyperdrive))
          (format "Writable: %s\n" (if writablep "yes" "no"))
          (format "Metadata: %s\n"

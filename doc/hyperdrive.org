@@ -848,9 +848,10 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
 - ~hyperdrive-history-display-buffer-action~ :: Display buffer action
   for hyperdrive history buffers. Passed to ~display-buffer~, which see.
 
-#+vindex: hyperdrive-default-host-format
-- ~hyperdrive-default-host-format~ :: Default format for displaying
-  hyperdrive hostnames. See [[*Naming][Naming]] section for what this means.
+#+vindex: hyperdrive-preferred-formats
+- ~hyperdrive-preferred-formats~ :: List of metadata types used to
+  display hyperdrives.  Hyperdrives are displayed using the first
+  available metadata type.  See [[*Naming][Naming]] section for what this means.
 
 #+vindex: hyperdrive-stream-player-command
 - ~hyperdrive-stream-player-command~ :: Command used to play streamable
@@ -876,6 +877,23 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
   reuses a buffer that is already visiting it, regardless of
   version. To have separate buffers for each version of a
   file/directory, use ~same-version~.
+
+- ~hyperdrive-default-entry-format~ :: Format string for displaying
+  hyperdrive entries (files/directories).  By default, entries are
+  displayed with the default host format in brackets, followed by the
+  full entry path, followed by "version: " and version in parentheses.
+
+- ~hyperdrive-buffer-name-format~ :: Format string for buffer names of
+  buffers visiting hyperdrive files/directories.  By default, this
+  format is like ~hyperdrive-default-entry-format~ with the entry name
+  sans directory instead of the full path.
+
+- ~hyperdrive-formats~ :: Alist mapping hyperdrive and hyperdrive
+  entry metadata to a format string, used in
+  ~hyperdrive-default-entry-format~ and ~hyperdrive-buffer-name-format~ as
+  well as other places hyperdrives or entries are displayed.  By
+  default, each metadatum is prefixed by its type, e.g., the petname
+  ~foo~ is displayed by default as ~petname:foo~.
 
 ** Additional customization
 

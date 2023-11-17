@@ -25,7 +25,7 @@
 + *Internals*
   + [X] Add a ~petname~ field to the ~hyperdrive~ struct.
   + [X] Add /petnames/ support to ~hyperdrive--format-host~.
-  + [X] Add petname to ~hyperdrive-default-host-format~.
+  + [X] Add petname to ~hyperdrive-preferred-formats~.
   + [X] Add petname face.
   + [X] Add faces for all types of hostname formats.
   + [X] Change ~public-name~ to ~nickname~ everywhere.

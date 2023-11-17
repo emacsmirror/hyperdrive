@@ -305,8 +305,9 @@ before making the entry struct."
 Intended to be used as hash table key in `hyperdrive-version-ranges'."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                (version-less (hyperdrive-entry-create :hyperdrive hyperdrive :path path)))
-    (hyperdrive--format-entry-url version-less :host-format '(public-key) :with-protocol nil
-                                  :with-help-echo nil :with-target nil :with-faces nil)))
+    (substring-no-properties
+     (hyperdrive--format-entry-url version-less :host-format '(public-key)
+                                   :with-protocol nil :with-target nil))))
 
 ;; TODO: Add tests for version range functions
 (defun hyperdrive-entry-version-ranges (entry)
@@ -549,13 +550,16 @@ echo area when the request for the file is made."
                           (not (hyperdrive-entry-version entry)))
                      ;; Entry is a writable file: create a new buffer
                      ;; that will be saved to its path.
-                     (if-let ((buffer (get-buffer (hyperdrive--entry-buffer-name entry))))
+                     (if-let ((buffer
+                               (get-buffer
+                                (hyperdrive--format-entry entry hyperdrive-buffer-name-format))))
                          ;; Buffer already exists: likely the user deleted the entry
                          ;; without killing the buffer.  Switch to the buffer and
                          ;; alert the user that the entry no longer exists.
                          (progn
                            (switch-to-buffer buffer)
-                           (hyperdrive-message "Entry no longer exists!  %s" (hyperdrive-entry-description entry)))
+                           (hyperdrive-message "Entry no longer exists!  %s"
+                                               (hyperdrive--format-entry entry)))
                        ;; Make and switch to new buffer.
                        (switch-to-buffer (hyperdrive--get-buffer-create entry))))
                     (t
@@ -914,42 +918,18 @@ Call ELSE if request fails."
   (hyperdrive--write (hyperdrive-entry-url entry)
     :body body :then then :else else :queue queue))
 
-(cl-defun hyperdrive-entry-description (entry &key (format-path 'path) (with-version t))
-  "Return description for ENTRY.
-When ENTRY has a non-nil VERSION slot, include it.  Returned
-string looks like:
-
-  FORMAT-PATH [HOST] (version:VERSION)
-
-When FORMAT-PATH is `path', use full path to entry.  When
-FORMAT-PATH is `name', use only last part of path, as in
-`file-name-non-directory'.
-
-When WITH-VERSION or ENTRY's version is nil, omit (version:VERSION)."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version path name) entry)
-               (handle (hyperdrive--format-host hyperdrive :with-label t)))
-    (propertize (concat (format "[%s] " handle)
-                        (pcase format-path
-                          ('path path)
-                          ('name name))
-                        (when (and version with-version)
-                          (format " (version:%s)" version)))
-                'help-echo (hyperdrive-entry-url entry))))
-
 (cl-defun hyperdrive--format-entry-url
     (entry &key (host-format '(public-key domain))
-           (with-path t) (with-protocol t) (with-help-echo t)
-           (with-target t) (with-faces t))
+           (with-path t) (with-protocol t) (with-help-echo t) (with-target t))
   "Return ENTRY's URL.
 Returns URL formatted like:
 
   hyper://HOST-FORMAT/PATH/TO/FILE
 
-HOST-FORMAT is passed to `hyperdrive--format-host', which see.
+HOST-FORMAT is passed to `hyperdrive--preferred-format', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
-full URL.  When WITH-FACES is nil, don't add face text
-properties.  If WITH-TARGET, append the ENTRY's target, stored in
+full URL.  If WITH-TARGET, append the ENTRY's target, stored in
 its :etc slot.  If WITH-PATH, include the path portion.  When
 ENTRY has non-nil `version' slot, include version number in URL.
 
@@ -967,8 +947,8 @@ Path and target fragment are URI-encoded."
                            "hyper://"))
                (host (when host-format
                        ;; FIXME: Update docstring to say that host-format can be nil to omit it.
-                       (hyperdrive--format-host (hyperdrive-entry-hyperdrive entry)
-                                                :format host-format :with-faces with-faces)))
+                       (hyperdrive--preferred-format (hyperdrive-entry-hyperdrive entry)
+                                                     host-format hyperdrive-raw-formats)))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
                (target-part (when (and with-target target)
@@ -982,44 +962,76 @@ Path and target fragment are URI-encoded."
         (propertize url
                     'help-echo (hyperdrive--format-entry-url
                                 entry :with-protocol t :host-format '(public-key domain)
-                                :with-path with-path :with-help-echo nil :with-target with-target
-                                :with-faces with-faces))
+                                :with-path with-path :with-help-echo nil :with-target with-target))
       url)))
 
-(cl-defun hyperdrive--format-host
-    (hyperdrive &key with-label (format hyperdrive-default-host-format) (with-faces t))
+(defun hyperdrive--format (hyperdrive &optional format formats)
+  "Return HYPERDRIVE formatted according to FORMAT.
+FORMAT is a `format-spec' specifier string which maps to specifications
+according to FORMATS, by default `hyperdrive-formats', which see."
+  (pcase-let* (((cl-struct hyperdrive domains public-key petname seed
+                           (metadata (map ('name nickname))))
+                hyperdrive)
+               (format (or format "%H"))
+               (formats (or formats hyperdrive-formats)))
+    (cl-labels ((fmt (naming value face)
+                  (if value
+                      (format (alist-get naming formats)
+                              (propertize value 'face face))
+                    "")))
+      (format-spec format
+                   ;; TODO(deprecate-28): Use lambdas in each specifier.
+                   `((?H . ,(and (string-match-p (rx "%"
+                                                     ;; Flags
+                                                     (optional (1+ (or " " "0" "-" "<" ">" "^" "_")))
+                                                     (0+ digit) ;; Width
+                                                     (0+ digit) ;; Precision
+                                                     "H")
+                                                 format)
+                                 ;; HACK: Once using lambdas in this specifier,
+                                 ;; remove the `string-match-p' check.
+                                 (hyperdrive--preferred-format hyperdrive)))
+                     (?P . ,(fmt 'petname petname 'hyperdrive-petname))
+                     (?N . ,(fmt 'nickname nickname 'hyperdrive-nickname))
+                     (?k . ,(fmt 'short-key public-key 'hyperdrive-public-key))
+                     (?K . ,(fmt 'public-key public-key 'hyperdrive-public-key))
+                     (?S . ,(fmt 'seed seed 'hyperdrive-seed))
+                     (?D . ,(if (car domains)
+                                (format (alist-get 'domains formats)
+                                        (string-join
+                                         (mapcar (lambda (domain)
+                                                   (propertize domain
+                                                               'face 'hyperdrive-domain))
+                                                 domains)
+                                         ","))
+                              "")))))))
+
+(defun hyperdrive--preferred-format (hyperdrive &optional naming formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
-FORMAT should be one or a list of symbols, by default
-`hyperdrive-default-host-format', which see for choices.  If the
-specified FORMAT is not available, returns nil.  If WITH-LABEL,
-prepend a label for the kind of format used (e.g. \"petname:\").
-When WITH-FACES is nil, don't add face text properties."
+NAMING should be one or a list of symbols, by default
+`hyperdrive-preferred-formats', which see for choices.  If the
+specified NAMING is not available, return nil.
+
+Each item in NAMING is formatted according to FORMATS, set by
+default to `hyperdrive-formats', which see."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
-                           (metadata (map name)))
+                           (metadata (map ('name nickname))))
                 hyperdrive))
-    (cl-flet ((fmt (string label face)
-                (concat (when with-label
-                          label)
-                        (if with-faces
-                            (propertize string 'face face)
-                          string))))
-      (cl-loop for f in (ensure-list format)
-               when (pcase f
-                      ((and 'petname (guard petname))
-                       (fmt petname "petname:" 'hyperdrive-petname))
-                      ((and 'nickname (guard name))
-                       (fmt name "nickname:" 'hyperdrive-nickname))
-                      ((and 'domain (guard (car domains)))
-                       ;; TODO: Handle the unlikely case that a drive has multiple domains.
-                       (fmt (car domains) "domain:" 'hyperdrive-domain))
-                      ((and 'seed (guard seed))
-                       (fmt seed "seed:" 'hyperdrive-seed))
-                      ((and 'short-key (guard public-key))
-                       ;; TODO: Consider adding a help-echo with the full key.
-                       (fmt (concat (substring public-key 0 6) "…") "public-key:" 'hyperdrive-public-key))
-                      ((and 'public-key (guard public-key))
-                       (fmt public-key "public-key:" 'hyperdrive-public-key)))
-               return it))))
+    (cl-loop for f in (ensure-list (or naming hyperdrive-preferred-formats))
+             when (pcase f
+                    ((and 'petname (guard petname))
+                     (hyperdrive--format hyperdrive "%P" formats))
+                    ((and 'nickname (guard nickname))
+                     (hyperdrive--format hyperdrive "%N" formats))
+                    ((and 'domain (guard (car domains)))
+                     (hyperdrive--format hyperdrive "%D" formats))
+                    ((and 'seed (guard seed))
+                     (hyperdrive--format hyperdrive "%S" formats))
+                    ((and 'short-key (guard public-key))
+                     (hyperdrive--format hyperdrive "%k" formats))
+                    ((and 'public-key (guard public-key))
+                     (hyperdrive--format hyperdrive "%K" formats)))
+             return it)))
 
 ;;;; Reading from the user
 
@@ -1077,13 +1089,12 @@ case, when PREDICATE, only offer hyperdrives matching it."
         (hyperdrive-user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
 
 (cl-defun hyperdrive--format-hyperdrive
-    (hyperdrive &key (formats '(petname nickname domain seed short-key)) (with-label t))
+    (hyperdrive &key (formats '(petname nickname domain seed short-key)))
   "Return HYPERDRIVE formatted for completion.
-For each of FORMATS, concatenates the value separated by two
-spaces, optionally WITH-LABEL."
+For each of FORMATS, concatenates the value separated by two spaces."
   (string-trim
    (cl-loop for format in formats
-            when (hyperdrive--format-host hyperdrive :format format :with-label with-label)
+            when (hyperdrive--preferred-format hyperdrive format)
             concat (concat it "  "))))
 
 (cl-defun hyperdrive-read-entry (&key hyperdrive predicate default-path
@@ -1336,7 +1347,8 @@ In other words, this avoids the situation where a buffer called
 both point to the same content.
 
 Affected by option `hyperdrive-reuse-buffers', which see."
-  (let* ((buffer-name (hyperdrive--entry-buffer-name entry))
+  (let* ((buffer-name (hyperdrive--format-entry
+                       entry hyperdrive-buffer-name-format))
          (buffer
           (or (when (eq 'any-version hyperdrive-reuse-buffers)
                 (cl-loop for buffer in (buffer-list)
@@ -1368,9 +1380,30 @@ Affected by option `hyperdrive-reuse-buffers', which see."
   ;; TODO: This function is a workaround for bug#65797
   (lambda (buffer) (hyperdrive--buffer-visiting-entry-p buffer entry)))
 
-(defun hyperdrive--entry-buffer-name (entry)
-  "Return buffer name for ENTRY."
-  (hyperdrive-entry-description entry :format-path 'name))
+(defun hyperdrive--format-entry (entry &optional format formats)
+  "Return ENTRY formatted according to FORMAT.
+FORMAT is a `format-spec' specifier string which maps to specifications
+according to FORMATS, by default `hyperdrive-formats', which see."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path version) entry)
+               (formats (or formats hyperdrive-formats)))
+    (cl-labels ((fmt (naming value)
+                  (if value
+                      (format (alist-get naming formats) value)
+                    "")))
+      (propertize
+       (format-spec (or format hyperdrive-default-entry-format)
+                    ;; TODO(deprecate-28): Use lambdas in each specifier.
+                    `((?n . ,(fmt 'name name))
+                      (?p . ,(fmt 'path path))
+                      (?v . ,(fmt 'version version))
+                      (?H . ,(hyperdrive--preferred-format hyperdrive nil formats))
+                      (?D . ,(hyperdrive--format hyperdrive "%D" formats))
+                      (?k . ,(hyperdrive--format hyperdrive "%k" formats))
+                      (?K . ,(hyperdrive--format hyperdrive "%K" formats))
+                      (?N . ,(hyperdrive--format hyperdrive "%N" formats))
+                      (?P . ,(hyperdrive--format hyperdrive "%P" formats))
+                      (?S . ,(hyperdrive--format hyperdrive "%S" formats))))
+       'help-echo (hyperdrive-entry-url entry)))))
 
 (defun hyperdrive--entry-directory-p (entry)
   "Return non-nil if ENTRY is a directory."

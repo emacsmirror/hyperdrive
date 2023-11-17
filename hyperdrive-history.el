@@ -179,7 +179,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                                  :version (car range))))
                         ;; Display in reverse chronological order
                         (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
-               (main-header (hyperdrive-entry-description entry :with-version nil))
+               (main-header (hyperdrive--format-entry entry "[%H] %p"))
                (header (concat main-header "\n"
                                (format "%7s  %19s  %6s  %s"
                                        (propertize "Exists" 'face 'hyperdrive-column-header)
@@ -189,8 +189,8 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                                                (propertize "Last Modified" 'face 'hyperdrive-column-header)))))
                (queue) (ewoc))
     (with-current-buffer (get-buffer-create
-                          (format "*Hyperdrive-history: %s %s*"
-                                  (hyperdrive--format-host hyperdrive :with-label t) path))
+                          (format "*Hyperdrive-history: %s*"
+                                  (hyperdrive--format-entry entry "[%H] %p")))
       (with-silent-modifications
         (hyperdrive-history-mode)
         (setq-local hyperdrive-current-entry entry)

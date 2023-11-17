@@ -118,7 +118,7 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
-(defcustom hyperdrive-default-host-format
+(defcustom hyperdrive-preferred-formats
   '(petname nickname domain seed short-key public-key)
   "Default format for displaying hyperdrive hostnames.
 Each option is checked in order, and the first available type is
@@ -164,6 +164,101 @@ same entry at any version.  When \\+`same-version', try to reuse
 an existing buffer at the same version, or make a new buffer."
   :type '(choice (const :tag "Use an existing buffer at any version" any-version)
                  (const :tag "Use an existing buffer at the same version" same-version)))
+
+;;;;;; Entry formatting
+
+(defgroup hyperdrive-entry-format nil
+  "Formatting of entries for buffer names, etc."
+  :group 'hyperdrive)
+
+(defcustom hyperdrive-default-entry-format "[%H] %p%v"
+  "Format string for displaying entries.
+Specifiers:
+
+%H  Preferred hyperdrive naming (see `hyperdrive-preferred-formats')
+
+To configure the format of the following specifiers, see `hyperdrive-formats':
+
+%n  Entry name
+%p  Entry path
+%v  Entry version
+%S  Hyperdrive seed
+%P  Hyperdrive petname
+%N  Hyperdrive nickname
+%K  Hyperdrive public key (full)
+%k  Hyperdrive public key (short)
+%D  Hyperdrive domains"
+  :type 'string)
+
+(defvar hyperdrive-default-entry-format-without-version "[%H] %p"
+  "Format string for displaying entries without displaying the version.
+The format of the following specifiers can be configured using
+`hyperdrive-formats', which see.")
+
+(defcustom hyperdrive-buffer-name-format "[%H] %n%v"
+  "Format string for buffer names.
+Specifiers are as in `hyperdrive-default-entry-format', which
+see."
+  :type 'string)
+
+(defvar hyperdrive-raw-formats '(;; Entry metadata
+                                 (name    . "%s")
+                                 (path    . "%s")
+                                 (version . "%s")
+                                 ;; Hyperdrive metadata
+                                 (petname    . "%s")
+                                 (nickname   . "%s")
+                                 (public-key . "%s")
+                                 (short-key  . "%s")
+                                 (seed       . "%s")
+                                 (domains    . "%s"))
+  "Like `hyperdrive-formats', without any special formatting.")
+
+(defcustom hyperdrive-formats '(;; Entry metadata
+                                (name       . "%s")
+                                (version    . " (version:%s)")
+                                (path       . "%s")
+                                ;; Hyperdrive metadata
+                                (petname    . "petname:%s")
+                                (nickname   . "nickname:%s")
+                                (public-key . "public-key:%s")
+                                (short-key  . "public-key:%.8s…")
+                                (seed       . "seed:%s")
+                                (domains    . "domains:%s"))
+  "Alist mapping hyperdrive and hyperdrive entry metadata item to format string.
+Each metadata item may be one of:
+
+- \\=`name' (Entry name)
+- \\=`path' (Entry path)
+- \\=`version' (Entry version)
+- \\=`petname' (Hyperdrive petname)
+- \\=`nickname' (Hyperdrive nickname)
+- \\=`domains' (Hyperdrive domains)
+- \\=`public-key' (Hyperdrive public key)
+- \\=`short-key' (Hyperdrive short key)
+- \\=`seed' (Hyperdrive seed)
+
+In each corresponding format string, \"%s\" is replaced with the
+value (and should only be present once in the string).  Used in
+`hyperdrive-buffer-name-format', which see."
+  :type '(list (cons :tag "Entry name" (const name)
+                     (string :tag "Format string"))
+               (cons :tag "Entry version" (const version)
+                     (string :tag "Format string"))
+               (cons :tag "Entry path" (const path)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive petname" (const petname)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive nickname" (const nickname)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive public key" (const public-key)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive short key" (const short-key)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive seed" (const seed)
+                     (string :tag "Format string"))
+               (cons :tag "Hyperdrive domains" (const domains)
+                     (string :tag "Format string"))))
 
 ;;;;; Faces
 

@@ -1343,6 +1343,26 @@ By default (@code{any-version}), opening a hyperdrive file or directory
 reuses a buffer that is already visiting it, regardless of
 version. To have separate buffers for each version of a
 file/directory, use @code{same-version}.
+
+@item @code{hyperdrive-default-entry-format}
+Format string for displaying
+hyperdrive entries (files/directories).  By default, entries are
+displayed with the default host format in brackets, followed by the
+full entry path, followed by ``version: '' and version in parentheses.
+
+@item @code{hyperdrive-buffer-name-format}
+Format string for buffer names of
+buffers visiting hyperdrive files/directories.  By default, this
+format is like @code{hyperdrive-default-entry-format} with the entry name
+sans directory instead of the full path.
+
+@item @code{hyperdrive-formats}
+Alist mapping hyperdrive and hyperdrive
+entry metadata to a format string, used in
+@code{hyperdrive-default-entry-format} and @code{hyperdrive-buffer-name-format} as
+well as other places hyperdrives or entries are displayed.  By
+default, each metadatum is prefixed by its type, e.g., the petname
+@code{foo} is displayed by default as @code{petname:foo}.
 @end table
 
 @menu
