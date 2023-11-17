@@ -981,7 +981,13 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                     "")))
       (format-spec format
                    ;; TODO(deprecate-28): Use lambdas in each specifier.
-                   `((?H . ,(and (string-match-p "%H" format)
+                   `((?H . ,(and (string-match-p (rx "%"
+                                                     ;; Flags
+                                                     (optional (1+ (or " " "0" "-" "<" ">" "^" "_")))
+                                                     (0+ digit) ;; Width
+                                                     (0+ digit) ;; Precision
+                                                     "H")
+                                                 format)
                                  ;; HACK: Once using lambdas in this specifier,
                                  ;; remove the `string-match-p' check.
                                  (hyperdrive--preferred-format hyperdrive)))
