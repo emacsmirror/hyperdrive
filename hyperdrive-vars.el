@@ -241,7 +241,7 @@ Each metadata item may be one of:
 In each corresponding format string, \"%s\" is replaced with the
 metadatum. Used in `hyperdrive-buffer-name-format', which see."
   :type '(alist :key-type symbol :value-type string)
-  :options '(petname nickname version domains public-key short-key seed))
+  :options '(name version path petname nickname public-key short-key seed domains))
 
 ;;;;; Faces
 
