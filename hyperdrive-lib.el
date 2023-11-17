@@ -1003,8 +1003,6 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                                                      ","))
                               "")))))))
 
-;; TODO: Wherever `hyperdrive--preferred-format' is called, define argument as
-;; `naming', not `host-format'.
 (defun hyperdrive--preferred-format (hyperdrive &optional naming formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
 NAMING should be one or a list of symbols, by default
