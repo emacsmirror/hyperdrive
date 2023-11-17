@@ -1000,7 +1000,7 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                                                    (propertize domain
                                                                'face 'hyperdrive-domain))
                                                  domains)
-                                                     ","))
+                                         ","))
                               "")))))))
 
 (defun hyperdrive--preferred-format (hyperdrive &optional naming formats)
