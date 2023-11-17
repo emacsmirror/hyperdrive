@@ -1008,7 +1008,7 @@ according to FORMATS, by default `hyperdrive-formats', which see."
 (defun hyperdrive--preferred-format (hyperdrive &optional naming formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
 NAMING should be one or a list of symbols, by default
-`hyperdrive-preferred-naming', which see for choices.  If the
+`hyperdrive-preferred-formats', which see for choices.  If the
 specified NAMING is not available, return nil.
 
 Each item in NAMING is formatted according to FORMATS, set by
@@ -1016,7 +1016,7 @@ default to `hyperdrive-formats', which see."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map ('name nickname))))
                 hyperdrive))
-    (cl-loop for f in (ensure-list (or naming hyperdrive-preferred-naming))
+    (cl-loop for f in (ensure-list (or naming hyperdrive-preferred-formats))
              when (pcase f
                     ((and 'petname (guard petname))
                      (hyperdrive--format hyperdrive "%P" formats))

@@ -118,7 +118,7 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
-(defcustom hyperdrive-preferred-naming
+(defcustom hyperdrive-preferred-formats
   '(petname nickname domain seed short-key public-key)
   "Default format for displaying hyperdrive hostnames.
 Each option is checked in order, and the first available type is
@@ -175,7 +175,7 @@ an existing buffer at the same version, or make a new buffer."
   "Format string for displaying entries.
 Specifiers:
 
-%H  Preferred hyperdrive naming (see `hyperdrive-preferred-naming')
+%H  Preferred hyperdrive naming (see `hyperdrive-preferred-formats')
 
 To configure the format of the following specifiers, see `hyperdrive-formats':
 

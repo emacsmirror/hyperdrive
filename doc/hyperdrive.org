@@ -848,8 +848,8 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
 - ~hyperdrive-history-display-buffer-action~ :: Display buffer action
   for hyperdrive history buffers. Passed to ~display-buffer~, which see.
 
-#+vindex: hyperdrive-preferred-naming
-- ~hyperdrive-preferred-naming~ :: List of metadata types used to
+#+vindex: hyperdrive-preferred-formats
+- ~hyperdrive-preferred-formats~ :: List of metadata types used to
   display hyperdrives.  Hyperdrives are displayed using the first
   available metadata type.  See [[*Naming][Naming]] section for what this means.
 
