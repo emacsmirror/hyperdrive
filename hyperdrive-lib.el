@@ -974,10 +974,10 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                 hyperdrive)
                (format (or format "%H"))
                (formats (or formats hyperdrive-formats)))
-    (cl-labels ((fmt (naming value string face)
+    (cl-labels ((fmt (naming value face)
                   (if value
                       (format (alist-get naming formats)
-                              (propertize string 'face face))
+                              (propertize value 'face face))
                     "")))
       (format-spec format
                    ;; TODO(deprecate-28): Use lambdas in each specifier.
@@ -985,14 +985,11 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                                  ;; HACK: Once using lambdas in this specifier,
                                  ;; remove the `string-match-p' check.
                                  (hyperdrive--preferred-format hyperdrive)))
-                     (?P . ,(fmt 'petname petname petname 'hyperdrive-petname))
-                     (?N . ,(fmt 'nickname nickname nickname 'hyperdrive-nickname))
-                     (?k . ,(fmt 'short-key public-key
-                                 (concat (substring public-key 0 6) "…")
-                                 'hyperdrive-public-key))
-                     (?K . ,(fmt 'public-key public-key
-                                 public-key 'hyperdrive-public-key))
-                     (?S . ,(fmt 'seed seed seed 'hyperdrive-seed))
+                     (?P . ,(fmt 'petname petname 'hyperdrive-petname))
+                     (?N . ,(fmt 'nickname nickname 'hyperdrive-nickname))
+                     (?k . ,(fmt 'short-key public-key 'hyperdrive-public-key))
+                     (?K . ,(fmt 'public-key public-key 'hyperdrive-public-key))
+                     (?S . ,(fmt 'seed seed 'hyperdrive-seed))
                      (?D . ,(if (car domains)
                                 (format (alist-get 'domains formats)
                                         (string-join

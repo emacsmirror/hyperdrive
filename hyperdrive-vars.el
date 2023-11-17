@@ -222,7 +222,7 @@ see."
                                 (petname    . "petname:%s")
                                 (nickname   . "nickname:%s")
                                 (public-key . "public-key:%s")
-                                (short-key  . "public-key:%s")
+                                (short-key  . "public-key:%.8s…")
                                 (seed       . "seed:%s")
                                 (domains    . "domains:%s"))
   "Alist mapping hyperdrive and hyperdrive entry metadata item to format string.
