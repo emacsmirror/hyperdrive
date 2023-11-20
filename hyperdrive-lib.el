@@ -209,8 +209,7 @@ PLZ-ERR should be a `plz-error' struct."
   (pcase plz-err
     ((app plz-error-curl-error `(7 . ,_message))
      ;; Curl error 7 is "Failed to connect to host."
-     (hyperdrive-user-error (substitute-command-keys
-                             "Gateway not running.  Use \\[hyperdrive-start] to start it")))
+     (hyperdrive-user-error "Gateway not running.  Use \\[hyperdrive-start] to start it"))
     ((app plz-error-response (cl-struct plz-response (status (or 403 405)) body))
      ;; 403 Forbidden or 405 Method Not Allowed: Display message from hyper-gateway.
      (hyperdrive-error "%s" body))
@@ -1411,11 +1410,13 @@ according to FORMATS, by default `hyperdrive-formats', which see."
 
 (defun hyperdrive-message (message &rest args)
   "Call `message' with MESSAGE and ARGS, prefixing MESSAGE with \"Hyperdrive:\"."
-  (apply #'message (concat "Hyperdrive: " message) args))
+  (apply #'message
+         (concat "Hyperdrive: " (substitute-command-keys message)) args))
 
 (defun hyperdrive-user-error (format &rest args)
   "Call `user-error' with FORMAT and ARGS, prefixing FORMAT with \"Hyperdrive:\"."
-  (apply #'user-error (concat "Hyperdrive: " format) args))
+  (apply #'user-error
+         (concat "Hyperdrive: " (substitute-command-keys format)) args))
 
 (defun hyperdrive-insert-button (text &rest properties)
   "Insert button labeled TEXT with button PROPERTIES at point.

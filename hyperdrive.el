@@ -557,7 +557,7 @@ it to `hyperdrive-open'."
   (interactive (list hyperdrive-current-entry))
   (if-let ((previous-entry (hyperdrive-entry-previous entry)))
       (hyperdrive-open previous-entry)
-    (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
+    (hyperdrive-message "%s does not exist at version %s. Try \\[hyperdrive-history]"
                         (hyperdrive--format-entry entry "[%H] %p")
                         (1- (car (hyperdrive-entry-version-range entry))))))
 
@@ -576,11 +576,9 @@ it to `hyperdrive-open'."
            "\\[revert-buffer-quick]"
          "\\[revert-buffer]"))))
     ('nil ;; Known nonexistent: suggest `hyperdrive-history'.
-     (hyperdrive-message (substitute-command-keys
-                          "Entry deleted after this version. Try \\[hyperdrive-history]")))
+     (hyperdrive-message "Entry deleted after this version. Try \\[hyperdrive-history]"))
     ('unknown ;; Unknown existence: suggest `hyperdrive-history'.
-     (hyperdrive-message (substitute-command-keys
-                          "Next version unknown. Try \\[hyperdrive-history]")))
+     (hyperdrive-message "Next version unknown. Try \\[hyperdrive-history]"))
     ((and (pred hyperdrive-entry-p) next-entry)
      (hyperdrive-open next-entry))))
 
@@ -595,7 +593,7 @@ Nil VERSION means open the entry at its hyperdrive's latest version."
                                                       (hyperdrive--format-entry entry))))))
   (if-let ((latest-entry (hyperdrive-entry-at version entry)))
       (hyperdrive-open latest-entry)
-    (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
+    (hyperdrive-message "%s does not exist at version %s. Try \\[hyperdrive-history]"
                         (hyperdrive--format-entry
                          entry hyperdrive-default-entry-format-without-version)
                         version)))
