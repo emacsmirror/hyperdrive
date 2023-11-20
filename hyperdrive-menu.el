@@ -323,7 +323,7 @@
             (hyperdrive--format-path
              (hyperdrive-read-path
               :hyperdrive (hyperdrive-menu--scope)
-              :prompt "Target directory in «%s»"
+              :prompt "Target directory in `%s'"
               :default "/")
              :directoryp t)))
 
@@ -381,7 +381,7 @@
       drive
       :target-directory (hyperdrive-read-path
                          :hyperdrive drive
-                         :prompt "Target directory in «%s»"
+                         :prompt "Target directory in `%s'"
                          :default "/"))))
   (hyperdrive-upload-files files hyperdrive
                            :target-directory target-directory))

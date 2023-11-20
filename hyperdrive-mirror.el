@@ -175,7 +175,7 @@ filter and set NO-CONFIRM to t."
      (list source hyperdrive
            ;; TODO: Get path from any visible hyperdrive-dir buffer and
            ;; auto-fill (or add as "future history") in target-dir prompt.
-           :target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in «%s»" :default "/")
+           :target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in `%s'" :default "/")
            :no-confirm (equal '(16) current-prefix-arg)
            :filter (if current-prefix-arg
                        (hyperdrive-mirror-read-filter)

@@ -163,8 +163,8 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
 (defun hyperdrive-purge (hyperdrive)
   "Purge all data corresponding to HYPERDRIVE."
   (interactive (list (hyperdrive-complete-hyperdrive :force-prompt t)))
-  (when (yes-or-no-p (format "Delete local copy of hyperdrive (data will likely not be recoverable—see manual): «%s»? "
-                             (hyperdrive--format-hyperdrive hyperdrive)))
+  (when (yes-or-no-p (format-message "Delete local copy of hyperdrive (data will likely not be recoverable—see manual): `%s'? "
+                                     (hyperdrive--format-hyperdrive hyperdrive)))
     (hyperdrive-purge-no-prompt hyperdrive
       :then (lambda (_response)
               (hyperdrive-message "Purged drive: %s" (hyperdrive--format-hyperdrive hyperdrive)))
@@ -182,7 +182,7 @@ Universal prefix argument \\[universal-argument] forces
   (interactive
    (let* ((hyperdrive (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg))
           (petname (hyperdrive-read-name
-                    :prompt (format "Petname for «%s» (leave blank to unset)"
+                    :prompt (format "Petname for `%s' (leave blank to unset)"
                                     (hyperdrive--format-hyperdrive hyperdrive))
                     :initial-input (hyperdrive-petname hyperdrive))))
      (list petname hyperdrive)))
@@ -190,12 +190,12 @@ Universal prefix argument \\[universal-argument] forces
               (other-hyperdrive (cl-find petname (hash-table-values hyperdrive-hyperdrives)
                                          :key #'hyperdrive-petname :test #'equal)))
     (setf petname (hyperdrive-read-name
-                   :prompt (format "%S already assigned as petname to hyperdrive «%s».  Enter new petname"
+                   :prompt (format "%S already assigned as petname to hyperdrive `%s'.  Enter new petname"
                                    petname (hyperdrive--format-hyperdrive other-hyperdrive))
                    :initial-input (hyperdrive-petname hyperdrive))))
   (if (string-blank-p petname)
-      (when (yes-or-no-p (format "Unset petname for «%s»? "
-                                 (hyperdrive--format-hyperdrive hyperdrive)))
+      (when (yes-or-no-p (format-message "Unset petname for `%s'? "
+                                         (hyperdrive--format-hyperdrive hyperdrive)))
         (setf (hyperdrive-petname hyperdrive) nil))
     (setf (hyperdrive-petname hyperdrive) petname))
   (hyperdrive-persist hyperdrive)
@@ -220,8 +220,8 @@ Universal prefix argument \\[universal-argument] forces
            (progn
              (hyperdrive-fill-metadata hyperdrive)
              (hyperdrive-read-name
-              :prompt (format "Nickname for «%s»"
-                              (hyperdrive--format-hyperdrive hyperdrive))
+              :prompt (format-message "Nickname for `%s'"
+                                      (hyperdrive--format-hyperdrive hyperdrive))
               :initial-input (alist-get 'name (hyperdrive-metadata hyperdrive))))))
      (list nickname hyperdrive)))
   (unless (equal nickname (alist-get 'name (hyperdrive-metadata hyperdrive)))
@@ -367,18 +367,19 @@ directory.  Otherwise, or with universal prefix argument
                 (or (eq entry hyperdrive-current-entry)
                     (string= "../" (alist-get 'display-name (hyperdrive-entry-etc entry)))))
        (hyperdrive-user-error "Won't delete from within"))
-     (when (and (yes-or-no-p (format "Delete «%s»? " description))
+     (when (and (yes-or-no-p (format-message "Delete `%s'? " description))
                 (or (not (hyperdrive--entry-directory-p entry))
-                    (yes-or-no-p (format "Recursively delete «%s»? " description))))
+                    (yes-or-no-p (format-message "Recursively delete `%s'? "
+                                                 description))))
        (list entry
              :then (lambda (_)
                      (when (and (buffer-live-p buffer)
                                 (eq 'hyperdrive-dir-mode (buffer-local-value 'major-mode buffer)))
                        (with-current-buffer buffer
                          (revert-buffer)))
-                     (hyperdrive-message "Deleted: «%s» (Deleted files can be accessed from prior versions of the hyperdrive.)" description))
+                     (hyperdrive-message "Deleted: `%s' (Deleted files can be accessed from prior versions of the hyperdrive.)" description))
              :else (lambda (plz-error)
-                     (hyperdrive-message "Unable to delete «%s»: %S" description plz-error))))))
+                     (hyperdrive-message "Unable to delete `%s': %S" description plz-error))))))
   (hyperdrive-api 'delete (hyperdrive-entry-url entry)
     :as 'response
     :then (lambda (response)
@@ -590,8 +591,8 @@ Nil VERSION means open the entry at its hyperdrive's latest version."
   (interactive (let ((entry hyperdrive-current-entry))
                  (list entry (hyperdrive-read-version
                               :hyperdrive (hyperdrive-entry-hyperdrive entry)
-                              :prompt (format "Open «%s» at version (leave blank for latest version)"
-                                              (hyperdrive--format-entry entry))))))
+                              :prompt (format-message "Open `%s' at version (leave blank for latest version)"
+                                                      (hyperdrive--format-entry entry))))))
   (if-let ((latest-entry (hyperdrive-entry-at version entry)))
       (hyperdrive-open latest-entry)
     (hyperdrive-message (substitute-command-keys "%s does not exist at version %s. Try \\[hyperdrive-history]")
@@ -694,7 +695,7 @@ Universal prefix argument \\[universal-argument] forces
           (hyperdrive (hyperdrive-complete-hyperdrive :predicate #'hyperdrive-writablep
                                                       :force-prompt current-prefix-arg))
           ;; TODO: Consider offering target dirs in hyperdrive with completion.
-          (target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in «%s»" :default "/")))
+          (target-dir (hyperdrive-read-path :hyperdrive hyperdrive :prompt "Target directory in `%s'" :default "/")))
      (list files hyperdrive :target-directory target-dir)))
   (cl-assert (cl-notany #'file-directory-p files))
   (cl-assert (cl-every #'file-readable-p files))
@@ -900,7 +901,7 @@ The return value of this function is the retrieval buffer."
                                                                (let* ((files (hyperdrive-read-files))
                                                                       (target-dir (hyperdrive-read-path
                                                                                    :hyperdrive ,drive
-                                                                                   :prompt "Target directory in «%s»"
+                                                                                   :prompt "Target directory in `%s'"
                                                                                    :default "/")))
                                                                  (hyperdrive-upload-files files ,drive
                                                                                           :target-directory target-dir)))
@@ -923,10 +924,10 @@ The return value of this function is the retrieval buffer."
                                                                  (call-interactively #'hyperdrive-set-petname)))
                                                             :help "Set petname for hyperdrive"
                                                             :label
-                                                            (format "Set petname: «%s»"
-                                                                    (pcase (hyperdrive-petname drive)
-                                                                      (`nil "none")
-                                                                      (it it))))
+                                                            (format-message "Set petname: `%s'"
+                                                                            (pcase (hyperdrive-petname drive)
+                                                                              (`nil "none")
+                                                                              (it it))))
                                                     (vector "Nickname"
                                                             `(lambda ()
                                                                (interactive)
@@ -935,10 +936,10 @@ The return value of this function is the retrieval buffer."
                                                             :help "Set nickname for hyperdrive"
                                                             :active (hyperdrive-writablep drive)
                                                             :label
-                                                            (format "Set nickname: «%s»"
-                                                                    (pcase (alist-get 'name (hyperdrive-metadata drive))
-                                                                      (`nil "none")
-                                                                      (it it))))
+                                                            (format-message "Set nickname: `%s'"
+                                                                            (pcase (alist-get 'name (hyperdrive-metadata drive))
+                                                                              (`nil "none")
+                                                                              (it it))))
                                                     "---"
                                                     (vector "Purge"
                                                             `(lambda ()
@@ -962,14 +963,14 @@ The return value of this function is the retrieval buffer."
     ("Current"
      :active hyperdrive-current-entry
      :label (if-let* ((entry hyperdrive-current-entry))
-                (format "Current: «%s»"
-                        (hyperdrive--format-entry entry))
+                (format-message "Current: `%s'"
+                                (hyperdrive--format-entry entry))
               "Current")
      ("Current Drive"
       :active hyperdrive-current-entry
       :label (if-let* ((entry hyperdrive-current-entry)
                        (hyperdrive (hyperdrive-entry-hyperdrive entry)))
-                 (format "Current Drive «%s»" (hyperdrive--format hyperdrive))
+                 (format-message "Current Drive `%s'" (hyperdrive--format hyperdrive))
                "Current Drive")
       ["Find File"
        (lambda ()
@@ -1005,7 +1006,7 @@ The return value of this function is the retrieval buffer."
                 (drive (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
                 (target-dir (hyperdrive-read-path
                              :hyperdrive drive
-                             :prompt "Target directory in «%s»"
+                             :prompt "Target directory in `%s'"
                              :default "/")))
            (hyperdrive-upload-files files drive
                                     :target-directory target-dir)))
@@ -1023,23 +1024,23 @@ The return value of this function is the retrieval buffer."
          (call-interactively #'hyperdrive-set-petname))
        :help "Set petname for hyperdrive"
        :label
-       (format "Set petname: «%s»"
-               (pcase (hyperdrive-petname (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
-                 (`nil "none")
-                 (it it)))]
+       (format-message "Set petname: `%s'"
+                       (pcase (hyperdrive-petname (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
+                         (`nil "none")
+                         (it it)))]
       ["Nickname" (lambda ()
                     (interactive)
                     (call-interactively #'hyperdrive-set-nickname))
        :help "Set nickname for hyperdrive"
        :active (hyperdrive-writablep (hyperdrive-entry-hyperdrive hyperdrive-current-entry))
        :label
-       (format "Set nickname: «%s»"
-               (pcase (alist-get 'name
-                                 (hyperdrive-metadata
-                                  (hyperdrive-entry-hyperdrive
-                                   hyperdrive-current-entry)))
-                 (`nil "none")
-                 (it it)))]
+       (format-message "Set nickname: `%s'"
+                       (pcase (alist-get 'name
+                                         (hyperdrive-metadata
+                                          (hyperdrive-entry-hyperdrive
+                                           hyperdrive-current-entry)))
+                         (`nil "none")
+                         (it it)))]
       "---"
       ["Describe" (lambda ()
                     (interactive)
@@ -1050,12 +1051,12 @@ The return value of this function is the retrieval buffer."
                  (call-interactively #'hyperdrive-purge))
        :help "Purge all local data about hyperdrive"])
      ("Current File/Directory"
-      :label (format "Current %s: «%s»"
-                     (if (hyperdrive--entry-directory-p hyperdrive-current-entry)
-                         "Directory"
-                       "File")
-                     (hyperdrive--format-path (hyperdrive-entry-path
-                                               hyperdrive-current-entry)))
+      :label (format-message "Current %s: `%s'"
+                             (if (hyperdrive--entry-directory-p hyperdrive-current-entry)
+                                 "Directory"
+                               "File")
+                             (hyperdrive--format-path (hyperdrive-entry-path
+                                                       hyperdrive-current-entry)))
       ["Refresh" (lambda ()
                    (interactive)
                    (call-interactively #'revert-buffer))
@@ -1114,11 +1115,11 @@ The return value of this function is the retrieval buffer."
        :help "Download current file"])
      ("Selected"
       :label (let ((entry-at-point (hyperdrive-dir--entry-at-point)))
-               (format "Selected %s: «%s»"
-                       (if (hyperdrive--entry-directory-p entry-at-point)
-                           "Directory"
-                         "File")
-                       (hyperdrive-entry-name entry-at-point)))
+               (format-message "Selected %s: `%s'"
+                               (if (hyperdrive--entry-directory-p entry-at-point)
+                                   "Directory"
+                                 "File")
+                               (hyperdrive-entry-name entry-at-point)))
       :visible (and (eq major-mode 'hyperdrive-dir-mode)
                     (hyperdrive-dir--entry-at-point))
       ["Download" (lambda ()

@@ -1145,7 +1145,7 @@ Blank input returns nil.
 HYPERDRIVE is used to fill in PROMPT format %s sequence.
 INITIAL-INPUT-NUMBER is converted to a string and passed to
 `read-string', which see."
-  (let* ((prompt (or prompt "Version number in «%s» (leave blank for latest version)"))
+  (let* ((prompt (or prompt "Version number in `%s' (leave blank for latest version)"))
          ;; Don't use read-number since it cannot return nil.
          (version (read-string
                    (format-prompt prompt nil (hyperdrive--format-hyperdrive hyperdrive))
@@ -1164,8 +1164,8 @@ sequence.  PROMPT is passed to `format-prompt', which see.  DEFAULT
 is passed to `read-string' as its DEFAULT-VALUE argument."
   (let ((prompt (or prompt
                     (if version
-                        "Path in «%s» (version:%s)"
-                      "Path in «%s»"))))
+                        "Path in `%s' (version:%s)"
+                      "Path in `%s'"))))
     ;; TODO: Provide a `find-file'-like auto-completing UI
     (read-string (format-prompt prompt default
                                 (hyperdrive--format-hyperdrive hyperdrive) version)
