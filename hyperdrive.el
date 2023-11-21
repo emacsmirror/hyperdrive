@@ -7,7 +7,7 @@
 ;; Maintainer: Joseph Turner <~ushin/ushin@lists.sr.ht>
 ;; Created: 2022
 ;; Version: 0.3-pre
-;; Package-Requires: ((emacs "27.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5") (taxy-magit-section "0.12.1") (transient "0.4.4"))
+;; Package-Requires: ((emacs "28.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5") (taxy-magit-section "0.12.1") (transient "0.4.4"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@
 
 ;;;; Installation:
 
-;; hyperdrive.el requires Emacs version 27.1 or later.
+;; hyperdrive.el requires Emacs version 28.1 or later.
 
 ;; hyperdrive.el is available on MELPA:
 ;; https://melpa.org/#/getting-started
@@ -85,13 +85,12 @@
   "Browse hyperdrive URL."
   (hyperdrive-open-url url))
 
-(when (version<= "28.1" emacs-version)
-  (require 'browse-url)
-  (require 'thingatpt)
+(require 'browse-url)
+(require 'thingatpt)
 
-  (cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-browse-url)
-              browse-url-handlers :test #'equal)
-  (cl-pushnew "hyper://" thing-at-point-uri-schemes :test #'equal))
+(cl-pushnew (cons (rx bos "hyper://") #'hyperdrive-browse-url)
+            browse-url-handlers :test #'equal)
+(cl-pushnew "hyper://" thing-at-point-uri-schemes :test #'equal)
 
 ;;;; Commands
 
@@ -780,13 +779,11 @@ The return value of this function is the retrieval buffer."
                         expand-file-name url-default-expander)
          url-scheme-registry)
 
-(defvar eww-use-browse-url)
-(when (version<= "28.1" emacs-version)
-  (require 'eww)
-  (setf eww-use-browse-url
-        (if eww-use-browse-url
-            (rx-to-string `(or ,eww-use-browse-url (seq bos "hyper://")))
-          (rx bos "hyper://"))))
+(require 'eww)
+(setf eww-use-browse-url
+      (if eww-use-browse-url
+          (rx-to-string `(or ,eww-use-browse-url (seq bos "hyper://")))
+        (rx bos "hyper://")))
 
 ;;;; `kill-buffer-query-functions' integration
 
@@ -795,25 +792,17 @@ The return value of this function is the retrieval buffer."
   ;; Mostly copied from `kill-buffer--possibly-save'.
   (cl-assert (and hyperdrive-mode hyperdrive-current-entry))
   (let ((response
-         (cadr
-          (if (< emacs-major-version 28)
-              (read-multiple-choice
-               (format "Hyperdrive file %s modified; kill anyway?"
-                       (hyperdrive--format-entry hyperdrive-current-entry))
-               '((?y "yes" "kill buffer without saving")
-                 (?n "no" "exit without doing anything")
-                 (?s "save and then kill" "save the buffer and then kill it")))
-            (with-suppressed-warnings ((free-vars use-short-answers))
-              (compat-call read-multiple-choice
-                           (format "Hyperdrive file %s modified; kill anyway?"
-                                   (hyperdrive--format-entry hyperdrive-current-entry))
-                           '((?y "yes" "kill buffer without saving")
-                             (?n "no" "exit without doing anything")
-                             (?s "save and then kill" "save the buffer and then kill it"))
-                           nil nil (and (not use-short-answers)
-                                        (not (when (fboundp 'use-dialog-box-p)
-                                               (with-no-warnings
-                                                 (use-dialog-box-p)))))))))))
+         (cadr (compat-call
+                read-multiple-choice
+                (format "Hyperdrive file %s modified; kill anyway?"
+                        (hyperdrive--format-entry hyperdrive-current-entry))
+                '((?y "yes" "kill buffer without saving")
+                  (?n "no" "exit without doing anything")
+                  (?s "save and then kill" "save the buffer and then kill it"))
+                nil nil (and (not use-short-answers)
+                             (not (when (fboundp 'use-dialog-box-p)
+                                    (with-no-warnings
+                                      (use-dialog-box-p)))))))))
     (if (equal response "no")
         nil
       (unless (equal response "yes")

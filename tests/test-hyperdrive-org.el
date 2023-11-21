@@ -94,11 +94,7 @@ Point is indicated by ★."
       (setq-local hyperdrive-current-entry entry)
       (goto-char (point-min))
       (search-forward "★")
-      (org-store-link nil 'interactive)
-      ;; Disable the mode because on Emacs 27, `with-temp-buffer'
-      ;; calls kill-buffer hooks and stuff like that which cause
-      ;; prompting to kill the buffer when running the tests.
-      (hyperdrive-mode -1))
+      (org-store-link nil 'interactive))
     org-stored-links))
 
 (defmacro hyperdrive-test-org-store-link-deftest (scenario)
@@ -106,7 +102,7 @@ Point is indicated by ★."
   (let ((test-name (intern
                     (format "hyperdrive-test-org-store-link/%s" scenario))))
     `(ert-deftest ,test-name ()
-       (pcase-let* (((map (:public-key public-key) (:path path) (:content content)
+       (pcase-let* (((map :public-key :path :content
                           (:url expected-url) (:desc expected-desc))
                      ;; TODO: Is there a better syntax that explicit `quote'?
                      (alist-get (quote ,scenario)
@@ -115,14 +111,7 @@ Point is indicated by ★."
                      (hyperdrive-test-org-store-link content
                        :public-key public-key :path path)))
          (should (string= expected-url got-url))
-         (should (string= ,(if ;; TODO(deprecate-27): Remove this hack someday.
-                               (and (version<= org-version "9.4.4")
-                                    (equal scenario 'org-mode-before-heading))
-                               '(progn
-				  (ignore expected-desc)
-				  expected-url)
-                             'expected-desc)
-                          got-desc))))))
+         (should (string= expected-desc got-desc))))))
 
 ;; TODO: Loop through `hyperdrive-test-org-store-link-scenarios'?
 (hyperdrive-test-org-store-link-deftest org-mode-before-heading)
@@ -139,8 +128,7 @@ Point is indicated by ★."
 (cl-defun hyperdrive-test-org-insert-link-string (scenario &key public-key path)
   "Return link for SCENARIO inserted into entry with PUBLIC-KEY and PATH."
   (declare (indent defun))
-  (pcase-let (((map (:url url) (:desc desc))
-               (alist-get scenario hyperdrive-test-org-store-link-scenarios)))
+  (pcase-let (((map :url :desc) (alist-get scenario hyperdrive-test-org-store-link-scenarios)))
     (with-temp-buffer
       ;; TODO: Initialize this buffer only once for this file's tests.
       (org-mode)
@@ -148,10 +136,6 @@ Point is indicated by ★."
       (setq-local hyperdrive-current-entry (hyperdrive-test-org-entry-create
                                             :public-key public-key :path path))
       (org-insert-link nil url desc)
-      ;; Disable the mode because on Emacs 27, `with-temp-buffer'
-      ;; calls kill-buffer hooks and stuff like that which cause
-      ;; prompting to kill the buffer when running the tests.
-      (hyperdrive-mode -1)
       (buffer-string))))
 
 (cl-defmacro hyperdrive-test-org-insert-link-deftest (name &key public-key path results)

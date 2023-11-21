@@ -44,10 +44,6 @@
 (declare-function hyperdrive-mode "hyperdrive")
 (declare-function hyperdrive-dir-mode "hyperdrive-dir")
 
-(eval-and-compile
-  (when (< emacs-major-version 28)
-    (cl-pushnew '(modes ignore) defun-declarations-alist :test #'equal)))
-
 ;;;; Errors
 
 (define-error 'hyperdrive-error "hyperdrive error")
@@ -979,31 +975,22 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                               (propertize value 'face face))
                     "")))
       (format-spec format
-                   ;; TODO(deprecate-28): Use lambdas in each specifier.
-                   `((?H . ,(and (string-match-p (rx "%"
-                                                     ;; Flags
-                                                     (optional (1+ (or " " "0" "-" "<" ">" "^" "_")))
-                                                     (0+ digit) ;; Width
-                                                     (0+ digit) ;; Precision
-                                                     "H")
-                                                 format)
-                                 ;; HACK: Once using lambdas in this specifier,
-                                 ;; remove the `string-match-p' check.
-                                 (hyperdrive--preferred-format hyperdrive)))
-                     (?P . ,(fmt 'petname petname 'hyperdrive-petname))
-                     (?N . ,(fmt 'nickname nickname 'hyperdrive-nickname))
-                     (?k . ,(fmt 'short-key public-key 'hyperdrive-public-key))
-                     (?K . ,(fmt 'public-key public-key 'hyperdrive-public-key))
-                     (?S . ,(fmt 'seed seed 'hyperdrive-seed))
-                     (?D . ,(if (car domains)
-                                (format (alist-get 'domains formats)
-                                        (string-join
-                                         (mapcar (lambda (domain)
-                                                   (propertize domain
-                                                               'face 'hyperdrive-domain))
-                                                 domains)
-                                         ","))
-                              "")))))))
+                   `((?H . ,(lambda () (hyperdrive--preferred-format hyperdrive)))
+                     (?P . ,(lambda () (fmt 'petname petname 'hyperdrive-petname)))
+                     (?N . ,(lambda () (fmt 'nickname nickname 'hyperdrive-nickname)))
+                     (?k . ,(lambda () (fmt 'short-key public-key 'hyperdrive-public-key)))
+                     (?K . ,(lambda () (fmt 'public-key public-key 'hyperdrive-public-key)))
+                     (?S . ,(lambda () (fmt 'seed seed 'hyperdrive-seed)))
+                     (?D . ,(lambda ()
+                              (if (car domains)
+                                  (format (alist-get 'domains formats)
+                                          (string-join
+                                           (mapcar (lambda (domain)
+                                                     (propertize domain
+                                                                 'face 'hyperdrive-domain))
+                                                   domains)
+                                           ","))
+                                ""))))))))
 
 (defun hyperdrive--preferred-format (hyperdrive &optional naming formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
@@ -1391,17 +1378,16 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                     "")))
       (propertize
        (format-spec (or format hyperdrive-default-entry-format)
-                    ;; TODO(deprecate-28): Use lambdas in each specifier.
-                    `((?n . ,(fmt 'name name))
-                      (?p . ,(fmt 'path path))
-                      (?v . ,(fmt 'version version))
-                      (?H . ,(hyperdrive--preferred-format hyperdrive nil formats))
-                      (?D . ,(hyperdrive--format hyperdrive "%D" formats))
-                      (?k . ,(hyperdrive--format hyperdrive "%k" formats))
-                      (?K . ,(hyperdrive--format hyperdrive "%K" formats))
-                      (?N . ,(hyperdrive--format hyperdrive "%N" formats))
-                      (?P . ,(hyperdrive--format hyperdrive "%P" formats))
-                      (?S . ,(hyperdrive--format hyperdrive "%S" formats))))
+                    `((?n . ,(lambda () (fmt 'name name)))
+                      (?p . ,(lambda () (fmt 'path path)))
+                      (?v . ,(lambda () (fmt 'version version)))
+                      (?H . ,(lambda () (hyperdrive--preferred-format hyperdrive nil formats)))
+                      (?D . ,(lambda () (hyperdrive--format hyperdrive "%D" formats)))
+                      (?k . ,(lambda () (hyperdrive--format hyperdrive "%k" formats)))
+                      (?K . ,(lambda () (hyperdrive--format hyperdrive "%K" formats)))
+                      (?N . ,(lambda () (hyperdrive--format hyperdrive "%N" formats)))
+                      (?P . ,(lambda () (hyperdrive--format hyperdrive "%P" formats)))
+                      (?S . ,(lambda () (hyperdrive--format hyperdrive "%S" formats)))))
        'help-echo (hyperdrive-entry-url entry)))))
 
 (defun hyperdrive--entry-directory-p (entry)
