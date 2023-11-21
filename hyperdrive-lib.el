@@ -1244,7 +1244,7 @@ Otherwise, return nil.  SLOT may be one of
 
 ;;;; Handlers
 
-(declare-function hyperdrive--org-link-goto "hyperdrive-org")
+(declare-function hyperdrive-org--link-goto "hyperdrive-org")
 (cl-defun hyperdrive-handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
@@ -1271,7 +1271,7 @@ If then, then call THEN with no arguments.  Default handler."
                 (pcase major-mode
                   ('org-mode
                    (require 'hyperdrive-org)
-                   (hyperdrive--org-link-goto target))
+                   (hyperdrive-org--link-goto target))
                   ('markdown-mode
                    ;; TODO: Handle markdown link
                    )))
