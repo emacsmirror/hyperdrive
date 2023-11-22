@@ -29,7 +29,7 @@
 (require 'cl-lib)
 
 (require 'hyperdrive-lib)
-(require 'hyperdrive-ewoc)
+(require 'h/ewoc)
 
 ;;;; Variables
 
@@ -44,58 +44,58 @@
 If THEN, call it in the directory buffer with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) directory-entry)
-               (url (hyperdrive-entry-url directory-entry))
+               (url (he/url directory-entry))
                ((cl-struct plz-response headers body)
                 ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
-                (hyperdrive-api 'get url :as 'response :noquery t))
+                (h/api 'get url :as 'response :noquery t))
                (entry-names (json-read-from-string body))
                (entries (mapcar (lambda (entry-name)
-                                  (hyperdrive-entry-create
+                                  (he/create
                                    :hyperdrive hyperdrive
                                    :path (concat path entry-name)
                                    :version version))
                                 entry-names))
-               (parent-entry (hyperdrive-parent directory-entry))
+               (parent-entry (h/parent directory-entry))
                (header
                 (progn
                   ;; Fill metadata first to get the current nickname.
                   ;; TODO: Consider filling metadata earlier, outside
                   ;; of this function (e.g. so it will be available if
                   ;; the user loads a non-directory file directly).
-                  (hyperdrive-fill-metadata hyperdrive)
-                  (hyperdrive-dir-column-headers
-                   (hyperdrive--format-entry directory-entry))))
+                  (h/fill-metadata hyperdrive)
+                  (h/dir-column-headers
+                   (h//format-entry directory-entry))))
                (num-entries (length entries)) (num-filled 0)
 	       ;; (debug-start-time (current-time))
                (metadata-queue) (ewoc) (prev-entry) (prev-point))
     (cl-labels ((goto-entry (entry ewoc)
-                  (when-let ((node (hyperdrive-ewoc-find-node ewoc entry
-                                     :predicate #'hyperdrive-entry-equal-p)))
+                  (when-let ((node (h/ewoc-find-node ewoc entry
+                                     :predicate #'he/equal-p)))
                     (goto-char (ewoc-location node))))
                 (update-footer (num-filled num-of)
                   (when (zerop (mod num-filled 5))
                     (ewoc-set-hf ewoc header
                                  (propertize (format "Loading (%s/%s)..." num-filled num-of)
 					     'face 'font-lock-comment-face)))))
-      (setf directory-entry (hyperdrive--fill directory-entry headers))
+      (setf directory-entry (h//fill directory-entry headers))
       (when parent-entry
-        (setf (alist-get 'display-name (hyperdrive-entry-etc parent-entry))  "../")
+        (setf (alist-get 'display-name (he/etc parent-entry))  "../")
         (push parent-entry entries))
-      (with-current-buffer (hyperdrive--get-buffer-create directory-entry)
+      (with-current-buffer (h//get-buffer-create directory-entry)
         (with-silent-modifications
-          (setf ewoc (or hyperdrive-ewoc ; Bind this for lambdas.
-                         (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-dir-pp)))
+          (setf ewoc (or h/ewoc ; Bind this for lambdas.
+                         (setf h/ewoc (ewoc-create #'h/dir-pp)))
                 metadata-queue (make-plz-queue
 				;; Experimentation seems to show that a
 				;; queue size of about 20 performs best.
-                                :limit hyperdrive-queue-limit
+                                :limit h/queue-limit
                                 :finally (lambda ()
                                            (with-current-buffer (ewoc-buffer ewoc)
                                              (with-silent-modifications
                                                ;; `with-silent-modifications' increases performance,
                                                ;; but we still need `set-buffer-modified-p' below.
                                                (ewoc-set-hf ewoc header "")
-                                               (setf entries (hyperdrive-sort-entries entries))
+                                               (setf entries (h/sort-entries entries))
                                                (dolist (entry entries)
                                                  (ewoc-enter-last ewoc entry))
                                                (or (when prev-entry
@@ -108,43 +108,43 @@ If THEN, call it in the directory buffer with no arguments."
                                            ;;          (float-time (time-subtract (current-time)
                                            ;;                                     debug-start-time)))
                                            ))
-                prev-entry (when-let ((node (ewoc-locate hyperdrive-ewoc)))
+                prev-entry (when-let ((node (ewoc-locate h/ewoc)))
                              (ewoc-data node))
                 prev-point (point))
-          (ewoc-filter hyperdrive-ewoc #'ignore)
+          (ewoc-filter h/ewoc #'ignore)
           (update-footer num-filled num-entries)
           (dolist (entry entries)
-            (hyperdrive-fill entry :queue metadata-queue
+            (h/fill entry :queue metadata-queue
               :then (lambda (&rest _)
                       (update-footer (cl-incf num-filled) num-entries))))
           (plz-run metadata-queue)
           (when then
             (funcall then)))))))
 
-(defun hyperdrive-dir-column-headers (prefix)
+(defun h/dir-column-headers (prefix)
   "Return column headers as a string with PREFIX.
 Columns are suffixed with up/down arrows according to
 `hyperdrive-sort-entries'."
-  (pcase-let* ((`(,sort-column . ,direction) hyperdrive-directory-sort)
+  (pcase-let* ((`(,sort-column . ,direction) h/directory-sort)
                ;; TODO: Use "↑" and "↓" glyphs, but make sure that the
                ;; column headers are aligned correctly.
                (arrow (propertize (if (eq direction :ascending) "^" "v")
-                                  'face 'hyperdrive-header-arrow))
+                                  'face 'h/header-arrow))
                (headers))
-    (pcase-dolist (`(,column . ,(map (:desc desc))) hyperdrive-dir-sort-fields)
+    (pcase-dolist (`(,column . ,(map (:desc desc))) h/dir-sort-fields)
       (let* ((selected (eq column sort-column))
              ;; Put the arrow after desc, since the column is left-aligned.
              (left-aligned (eq column 'name))
              (format-str (pcase column
                            ('size "%6s")
-                           ('mtime (format "%%%ds" hyperdrive-timestamp-width))
+                           ('mtime (format "%%%ds" h/timestamp-width))
                            ('name "%s")))
              (desc (concat (and selected (not left-aligned) (concat arrow " "))
                            (propertize desc 'face (if selected
-                                                      'hyperdrive-selected-column-header
-                                                    'hyperdrive-column-header))
+                                                      'h/selected-column-header
+                                                    'h/column-header))
                            ;; This extra space is necessary to prevent
-                           ;; the `hyperdrive-column-header' face from
+                           ;; the `h/column-header' face from
                            ;; extended to the end of the window.
                            (and selected left-aligned (concat " " arrow)))))
         (push (propertize (format format-str desc)
@@ -159,17 +159,17 @@ Columns are suffixed with up/down arrows according to
     (apply #'concat prefix "\n" (nreverse headers))))
 
 
-(defun hyperdrive-dir-complete-sort ()
+(defun h/dir-complete-sort ()
   "Return a value for `hyperdrive-directory-sort' selected with completion."
   (pcase-let* ((read-answer-short t)
                (choices (mapcar (lambda (field)
                                   (let ((desc (symbol-name (car field))))
                                     (list desc (aref desc 0) (format "sort by %s" desc))))
-                                hyperdrive-dir-sort-fields))
+                                h/dir-sort-fields))
                (column (intern (read-answer "Sort by column: " choices))))
-    (hyperdrive-dir-toggle-sort-direction column hyperdrive-directory-sort)))
+    (h/dir-toggle-sort-direction column h/directory-sort)))
 
-(defun hyperdrive-dir-toggle-sort-direction (column sort)
+(defun h/dir-toggle-sort-direction (column sort)
   "Return `hyperdrive-directory-sort' cons cell for COLUMN.
 If SORT is already sorted using COLUMN, toggle direction.
 Otherwise, set direction to \\+`:descending'."
@@ -180,219 +180,228 @@ Otherwise, set direction to \\+`:descending'."
                             :ascending)))
     (cons column direction)))
 
-(defun hyperdrive-dir-pp (thing)
+(defun h/dir-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."
   (pcase-exhaustive thing
-    ((pred hyperdrive-entry-p)
-     (insert (hyperdrive-dir--format-entry thing)))))
+    ((pred he/p)
+     (insert (h/dir--format-entry thing)))))
 
-(defun hyperdrive-dir--format-entry (entry)
+(defun h/dir--format-entry (entry)
   "Return ENTRY formatted as a string."
   (pcase-let* (((cl-struct hyperdrive-entry size mtime) entry)
                (size (when size
                        (file-size-human-readable size)))
-               (directoryp (hyperdrive--entry-directory-p entry))
-               (face (if directoryp 'hyperdrive-directory 'default))
+               (directoryp (h//entry-directory-p entry))
+               (face (if directoryp 'h/directory 'default))
                (timestamp (if mtime
-                              (format-time-string hyperdrive-timestamp-format mtime)
-                            (propertize " " 'display '(space :width hyperdrive-timestamp-width)))))
+                              (format-time-string h/timestamp-format mtime)
+                            (propertize " " 'display '(space :width h/timestamp-width)))))
     (format "%6s  %s  %s"
             (propertize (or size "")
-                        'face 'hyperdrive-size)
+                        'face 'h/size)
             (propertize timestamp
-                        'face 'hyperdrive-timestamp)
-            (propertize (or (alist-get 'display-name (hyperdrive-entry-etc entry))
-                            (hyperdrive-entry-name entry))
+                        'face 'h/timestamp)
+            (propertize (or (alist-get 'display-name (he/etc entry))
+                            (he/name entry))
                         'face face
                         'mouse-face 'highlight
                         'help-echo (format "Visit this %s in other window"
                                            (if directoryp "directory ""file"))))))
 
-(defun hyperdrive-dir--entry-at-point ()
+(defun h/dir--entry-at-point ()
   "Return entry at point.
 With point below last entry, returns nil.
 With point on header, returns directory entry."
   (let ((current-line (line-number-at-pos))
-        (last-entry (ewoc-nth hyperdrive-ewoc -1)))
+        (last-entry (ewoc-nth h/ewoc -1)))
     (cond ((or (not last-entry) (= 1 current-line))
            ;; Hyperdrive is empty or point is on header line
-           hyperdrive-current-entry)
+           h/current-entry)
           ((or (> current-line (line-number-at-pos (ewoc-location last-entry)))
                (= 2 current-line))
            ;; Point is below the last entry or on column headers
            nil)
           (t
            ;; Point on a file entry: return its entry.
-           (ewoc-data (ewoc-locate hyperdrive-ewoc))))))
+           (ewoc-data (ewoc-locate h/ewoc))))))
 
 ;;;; Mode
 
-(declare-function hyperdrive-up "hyperdrive")
-(declare-function hyperdrive-delete "hyperdrive")
-(declare-function hyperdrive-download "hyperdrive")
-;; `hyperdrive-menu' is defined with `transient-define-prefix', which
+(declare-function h/up "hyperdrive")
+(declare-function h/delete "hyperdrive")
+(declare-function h/download "hyperdrive")
+;; `h/menu' is defined with `transient-define-prefix', which
 ;; `check-declare' doesn't recognize.
-(declare-function hyperdrive-menu "hyperdrive-menu" nil t)
+(declare-function h/menu "hyperdrive-menu" nil t)
 
-(defvar-keymap hyperdrive-dir-mode-map
-  :parent hyperdrive-ewoc-mode-map
+(defvar-keymap h/dir-mode-map
+  :parent h/ewoc-mode-map
   :doc "Local keymap for `hyperdrive-dir-mode' buffers."
-  "RET" #'hyperdrive-dir-find-file
-  "o"   #'hyperdrive-dir-find-file-other-window
-  "v"   #'hyperdrive-dir-view-file
+  "RET" #'h/dir-find-file
+  "o"   #'h/dir-find-file-other-window
+  "v"   #'h/dir-view-file
   "j"   #'imenu
-  "w"   #'hyperdrive-dir-copy-url
-  "d"   #'hyperdrive-download
-  "^"   #'hyperdrive-up
-  "D"   #'hyperdrive-delete
-  "H"   #'hyperdrive-dir-history
-  "s"   #'hyperdrive-dir-sort
-  "?"   #'hyperdrive-menu
-  "+"   #'hyperdrive-create-directory-no-op
-  "<mouse-2>" #'hyperdrive-dir-follow-link
+  "w"   #'h/dir-copy-url
+  "d"   #'h/download
+  "^"   #'h/up
+  "D"   #'h/delete
+  "H"   #'h/dir-history
+  "s"   #'h/dir-sort
+  "?"   #'h/menu
+  "+"   #'h/create-directory-no-op
+  "<mouse-2>" #'h/dir-follow-link
   "<follow-link>" 'mouse-face)
 
-(define-derived-mode hyperdrive-dir-mode hyperdrive-ewoc-mode
+(define-derived-mode h/dir-mode h/ewoc-mode
   `("Hyperdrive-dir"
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive directory buffers."
   :group 'hyperdrive
   :interactive nil
-  (setq-local imenu-create-index-function #'hyperdrive-dir--imenu-create-index-function
+  (setq-local imenu-create-index-function #'h/dir--imenu-create-index-function
               imenu-auto-rescan t
               imenu-space-replacement " "))
 
 ;;;; Commands
 
-(defun hyperdrive-dir-follow-link (event)
+(defun h/dir-follow-link (event)
   "Follow link at EVENT's position."
   (interactive "e")
   (if-let ((column (get-char-property (mouse-set-point event) 'hyperdrive-dir-column)))
-      (hyperdrive-dir-sort
-       (hyperdrive-dir-toggle-sort-direction
-        column hyperdrive-directory-sort))
-    (call-interactively #'hyperdrive-dir-find-file-other-window)))
+      (h/dir-sort
+       (h/dir-toggle-sort-direction
+        column h/directory-sort))
+    (call-interactively #'h/dir-find-file-other-window)))
 
-(cl-defun hyperdrive-dir-find-file
-    (entry &key (display-buffer-action hyperdrive-directory-display-buffer-action))
+(cl-defun h/dir-find-file
+    (entry &key (display-buffer-action h/directory-display-buffer-action))
   "Visit hyperdrive ENTRY at point.
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer.  DISPLAY-BUFFER-ACTION is passed to
 `pop-to-buffer'."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive (list (or (hyperdrive-dir--entry-at-point)
-                         (hyperdrive-user-error "No file/directory at point"))))
-  (hyperdrive-open entry
+  (declare (modes h/dir-mode))
+  (interactive (list (or (h/dir--entry-at-point)
+                         (h/user-error "No file/directory at point"))))
+  (h/open entry
     :then (lambda ()
             (pop-to-buffer (current-buffer) display-buffer-action))))
 
-(defun hyperdrive-dir-find-file-other-window (entry)
+(defun h/dir-find-file-other-window (entry)
   "Visit hyperdrive ENTRY at point in other window.
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive (list (or (hyperdrive-dir--entry-at-point)
-                         (hyperdrive-user-error "No file/directory at point"))))
-  (hyperdrive-dir-find-file entry :display-buffer-action t))
+  (declare (modes h/dir-mode))
+  (interactive (list (or (h/dir--entry-at-point)
+                         (h/user-error "No file/directory at point"))))
+  (h/dir-find-file entry :display-buffer-action t))
 
-(declare-function hyperdrive-view-file "hyperdrive")
-(defun hyperdrive-dir-view-file (entry)
+(declare-function h/view-file "hyperdrive")
+(defun h/dir-view-file (entry)
   "Open hyperdrive ENTRY at point in `view-mode'.
 Interactively, opens file or directory at point in
 `hyperdrive-dir' buffer."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive (list (or (hyperdrive-dir--entry-at-point)
-                         (hyperdrive-user-error "No file/directory at point"))))
-  (hyperdrive-view-file entry))
+  (declare (modes h/dir-mode))
+  (interactive (list (or (h/dir--entry-at-point)
+                         (h/user-error "No file/directory at point"))))
+  (h/view-file entry))
 
-(declare-function hyperdrive-copy-url "hyperdrive")
+(declare-function h/copy-url "hyperdrive")
 
-(defun hyperdrive-dir-copy-url (entry)
+(defun h/dir-copy-url (entry)
   "Copy URL of ENTRY into the kill ring."
-  (declare (modes hyperdrive-dir-mode))
-  (interactive (list (or (hyperdrive-dir--entry-at-point)
-                         (hyperdrive-user-error "No file/directory at point"))))
-  (hyperdrive-copy-url entry))
+  (declare (modes h/dir-mode))
+  (interactive (list (or (h/dir--entry-at-point)
+                         (h/user-error "No file/directory at point"))))
+  (h/copy-url entry))
 
-(declare-function hyperdrive-history "hyperdrive-history")
+(declare-function h/history "hyperdrive-history")
 
-(defun hyperdrive-dir-history (entry)
+(defun h/dir-history (entry)
   "Display version history for ENTRY at point."
-  (interactive (list (or (hyperdrive-dir--entry-at-point)
-                         (hyperdrive-user-error "No file/directory at point"))))
-  (hyperdrive-history entry))
+  (interactive (list (or (h/dir--entry-at-point)
+                         (h/user-error "No file/directory at point"))))
+  (h/history entry))
 
-(defun hyperdrive-create-directory-no-op ()
+(defun h/create-directory-no-op ()
   "Signal error that directory creation is not possible in hyperdrive."
   (interactive)
-  (hyperdrive-user-error "Cannot create empty directory; to create a new file, use `hyperdrive-find-file' or \\[hyperdrive-find-file]"))
+  (h/user-error "Cannot create empty directory; to create a new file, use `hyperdrive-find-file' or \\[hyperdrive-find-file]"))
 
-(defun hyperdrive-dir-sort (directory-sort)
+(defun h/dir-sort (directory-sort)
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
 DIRECTORY-SORT should be a valid value of
 `hyperdrive-directory-sort'."
   (interactive (list (if current-prefix-arg
-                         (hyperdrive-dir-complete-sort)
-                       (hyperdrive-dir-toggle-sort-direction
-                        (car hyperdrive-directory-sort) hyperdrive-directory-sort))))
-  (setq-local hyperdrive-directory-sort directory-sort)
+                         (h/dir-complete-sort)
+                       (h/dir-toggle-sort-direction
+                        (car h/directory-sort) h/directory-sort))))
+  (setq-local h/directory-sort directory-sort)
   (with-silent-modifications
-    (let ((entries (ewoc-collect hyperdrive-ewoc #'hyperdrive-entry-p)))
-      (ewoc-filter hyperdrive-ewoc #'ignore)
-      (dolist (entry (hyperdrive-sort-entries entries))
-        (ewoc-enter-last hyperdrive-ewoc entry))
-      (ewoc-set-hf hyperdrive-ewoc
-                   (hyperdrive-dir-column-headers
-                    (hyperdrive--format-entry hyperdrive-current-entry))
+    (let ((entries (ewoc-collect h/ewoc #'he/p)))
+      (ewoc-filter h/ewoc #'ignore)
+      (dolist (entry (h/sort-entries entries))
+        (ewoc-enter-last h/ewoc entry))
+      (ewoc-set-hf h/ewoc
+                   (h/dir-column-headers
+                    (h//format-entry h/current-entry))
                    ""))))
 
 ;;;; Imenu support
 
-(defun hyperdrive-dir--imenu-create-index-function ()
+(defun h/dir--imenu-create-index-function ()
   "Return Imenu index for the current `hyperdrive-dir' buffer.
 For use as `imenu-create-index-function'."
-  (cl-loop for node in (hyperdrive-ewoc-collect-nodes hyperdrive-ewoc #'identity)
+  (cl-loop for node in (h/ewoc-collect-nodes h/ewoc #'identity)
            collect (let* ((location (goto-char (ewoc-location node)))
                           (entry (ewoc-data node))
-                          (face (when (hyperdrive--entry-directory-p entry)
-                                  'hyperdrive-directory)))
-                     (cons (propertize (hyperdrive-entry-name entry)
+                          (face (when (h//entry-directory-p entry)
+                                  'h/directory)))
+                     (cons (propertize (he/name entry)
                                        'face face)
                            location))))
 
 ;;;; Yank media support
 
 (when (version<= "29.1" emacs-version)
-  (defun hyperdrive-dir--yank-media-image-handler (_type image)
+  (defun h/dir--yank-media-image-handler (_type image)
     "Upload IMAGE to current buffer's hyperdrive directory.
 Prompts for a filename before uploading.  For more information,
 see Info node `(elisp)Yanking Media'."
     ;; TODO: Extend this to other media types?
-    (cl-assert (and hyperdrive-current-entry
-                    (hyperdrive--entry-directory-p hyperdrive-current-entry)))
-    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) hyperdrive-current-entry)
-                 (entry (hyperdrive-read-entry :hyperdrive (and (hyperdrive-writablep hyperdrive)
-                                                                hyperdrive)
-                                               :predicate #'hyperdrive-writablep
-                                               :default-path path :latest-version t)))
-      (hyperdrive-api 'put (hyperdrive-entry-url entry)
+    (cl-assert (and h/current-entry
+                    (h//entry-directory-p h/current-entry)))
+    (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) h/current-entry)
+                 (entry (h/read-entry :hyperdrive (and (h/writablep hyperdrive)
+                                                       hyperdrive)
+                                      :predicate #'h/writablep
+                                      :default-path path :latest-version t)))
+      (h/api 'put (he/url entry)
         :body-type 'binary
         ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
         :body image :as 'response
-        :then (lambda (_res) (hyperdrive-open entry))
+        :then (lambda (_res) (h/open entry))
         :else (lambda (plz-error)
-                (hyperdrive-message "Unable to yank media: %S" plz-error)))))
+                (h/message "Unable to yank media: %S" plz-error)))))
 
-  (add-hook 'hyperdrive-dir-mode-hook
+  (add-hook 'h/dir-mode-hook
             (lambda ()
               ;; Silence compiler warning about `yank-media-handler' not being
               ;; defined in earlier versions of Emacs.  (`with-suppressed-warnings'
               ;; doesn't allow suppressing this warning.)
               (with-no-warnings
                 (yank-media-handler
-                 "image/.*" #'hyperdrive-dir--yank-media-image-handler)))))
+                 "image/.*" #'h/dir--yank-media-image-handler)))))
 
 (provide 'hyperdrive-dir)
+
+;;;###autoload(register-definition-prefixes "hyperdrive-dir" '("hyperdrive-"))
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
 ;;; hyperdrive-dir.el ends here

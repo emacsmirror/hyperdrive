@@ -33,13 +33,13 @@
 
 ;;;; Variables
 
-(defvar-local hyperdrive-ewoc nil
+(defvar-local h/ewoc nil
   "EWOC for current hyperdrive buffer.")
-(put 'hyperdrive-ewoc 'permanent-local t)
+(put 'h/ewoc 'permanent-local t)
 
 ;;;; Functions
 
-(cl-defun hyperdrive-ewoc-find-node (ewoc data &key (predicate #'eq))
+(cl-defun h/ewoc-find-node (ewoc data &key (predicate #'eq))
   "Return the last node in EWOC whose DATA matches PREDICATE.
 PREDICATE is called with DATA and node's data.  Searches backward from
 last node."
@@ -53,13 +53,13 @@ last node."
 
 ;;;; Mode
 
-(defvar-keymap hyperdrive-ewoc-mode-map
+(defvar-keymap h/ewoc-mode-map
   :parent  special-mode-map
   :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
-  "n"   #'hyperdrive-ewoc-next
-  "p"   #'hyperdrive-ewoc-previous)
+  "n"   #'h/ewoc-next
+  "p"   #'h/ewoc-previous)
 
-(define-derived-mode hyperdrive-ewoc-mode special-mode
+(define-derived-mode h/ewoc-mode special-mode
   `("Hyperdrive-ewoc"
     ;; TODO: Add more to lighter, e.g. URL.
     )
@@ -69,11 +69,11 @@ last node."
 
 ;;;; Commands
 
-(cl-defun hyperdrive-ewoc-next (&optional (n 1))
+(cl-defun h/ewoc-next (&optional (n 1))
   "Move forward N entries.
 When on header line, moves point to first entry, skipping over
 column headers."
-  (declare (modes hyperdrive-ewoc-mode))
+  (declare (modes h/ewoc-mode))
   (interactive "p")
   ;; TODO: Try using the intangible text property on headers to
   ;; automatically skip over them without conditional code. Setting
@@ -81,35 +81,35 @@ column headers."
   ;; highlight the wrong line when crossing over the headers.
   (let ((lines-below-header (- (line-number-at-pos) 2)))
     (if (cl-plusp lines-below-header)
-        (hyperdrive-ewoc-move n)
+        (h/ewoc-move n)
       ;; Point on first line or column header: jump to first ewoc entry and then maybe move.
-      (goto-char (ewoc-location (ewoc-nth hyperdrive-ewoc 0)))
-      (hyperdrive-ewoc-move (1- n)))))
+      (goto-char (ewoc-location (ewoc-nth h/ewoc 0)))
+      (h/ewoc-move (1- n)))))
 
-(cl-defun hyperdrive-ewoc-previous (&optional (n 1))
+(cl-defun h/ewoc-previous (&optional (n 1))
   "Move backward N entries.
 When on first entry, moves point to header line, skipping over
 column headers."
-  (declare (modes hyperdrive-ewoc-mode))
+  (declare (modes h/ewoc-mode))
   (interactive "p")
   (let ((lines-below-header (- (line-number-at-pos) 2)))
     (if (and (cl-plusp lines-below-header)
              (< n lines-below-header))
-        (hyperdrive-ewoc-move (- n))
+        (h/ewoc-move (- n))
       ;; Point on first line or column header or N > LINE
       (goto-char (point-min)))))
 
-(cl-defun hyperdrive-ewoc-move (&optional (n 1))
+(cl-defun h/ewoc-move (&optional (n 1))
   "Move forward N entries."
   (let ((next-fn (pcase n
                    ((pred (< 0)) #'ewoc-next)
                    ((pred (> 0)) #'ewoc-prev)))
-        (node (ewoc-locate hyperdrive-ewoc))
+        (node (ewoc-locate h/ewoc))
         (i 0)
         (n (abs n))
         target-node)
     (while (and (< i n)
-                (setf node (funcall next-fn hyperdrive-ewoc node)))
+                (setf node (funcall next-fn h/ewoc node)))
       (setf target-node node)
       (cl-incf i))
     (when target-node
@@ -117,7 +117,7 @@ column headers."
 
 ;;;; Functions
 
-(defun hyperdrive-ewoc-collect-nodes (ewoc predicate)
+(defun h/ewoc-collect-nodes (ewoc predicate)
   "Collect all nodes in EWOC matching PREDICATE.
 PREDICATE is called with the full node."
   ;; Intended to be like `ewoc-collect', but working with the full
@@ -128,5 +128,14 @@ PREDICATE is called with the full node."
            when (funcall predicate node)
            collect node))
 
-(provide 'hyperdrive-ewoc)
+(provide 'h/ewoc)
+
+;;;###autoload(register-definition-prefixes "hyperdrive-ewoc" '("hyperdrive-"))
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
 ;;; hyperdrive-ewoc.el ends here

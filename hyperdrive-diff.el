@@ -36,14 +36,14 @@
 
 ;;;; Internal variables
 
-(defvar-local hyperdrive-diff-entries nil
+(defvar-local h/diff-entries nil
   "Entries to be diffed in `hyperdrive-diff' buffer.
 A cons cell whose car is OLD-ENTRY and whose cdr is NEW-ENTRY.")
-(put 'hyperdrive-diff-entries 'permanent-local t)
+(put 'h/diff-entries 'permanent-local t)
 
 ;;;; Functions
 
-(defun hyperdrive-diff-empty-diff-p (buffer)
+(defun h/diff-empty-diff-p (buffer)
   "Return t if `hyperdrive-diff-mode' BUFFER has no differences."
   (with-current-buffer buffer
     (save-excursion
@@ -66,16 +66,16 @@ This function is intended to diff files, not directories."
   (let* (old-response
          new-response
          (queue (make-plz-queue
-                 :limit hyperdrive-queue-limit
+                 :limit h/queue-limit
                  :finally (lambda ()
                             (unless (or old-response new-response)
-                              (hyperdrive-error "Files non-existent"))
+                              (h/error "Files non-existent"))
                             (let ((old-buffer (generate-new-buffer
-                                               (hyperdrive--format-entry
-                                                old-entry hyperdrive-buffer-name-format)))
+                                               (h//format-entry
+                                                old-entry h/buffer-name-format)))
                                   (new-buffer (generate-new-buffer
-                                               (hyperdrive--format-entry
-                                                new-entry hyperdrive-buffer-name-format)))
+                                               (h//format-entry
+                                                new-entry h/buffer-name-format)))
                                   ;; TODO: Improve diff buffer name.
                                   (diff-buffer (get-buffer-create "*hyperdrive-diff*")))
                               (when old-response
@@ -89,26 +89,26 @@ This function is intended to diff files, not directories."
                                       (progn
                                         (diff-no-select old-buffer new-buffer nil t diff-buffer)
                                         (with-current-buffer diff-buffer
-                                          (setf hyperdrive-diff-entries (cons old-entry new-entry))
-                                          (hyperdrive-diff-mode)
+                                          (setf h/diff-entries (cons old-entry new-entry))
+                                          (h/diff-mode)
                                           (when then
                                             (funcall then))))
                                     (error (kill-buffer diff-buffer)
                                            (signal (car err) (cdr err))))
                                 (kill-buffer old-buffer)
                                 (kill-buffer new-buffer)))))))
-    (hyperdrive-api 'get (hyperdrive-entry-url old-entry)
+    (h/api 'get (he/url old-entry)
       :queue queue :as 'response :else #'ignore
       :then (lambda (response)
               (setf old-response response)))
-    (hyperdrive-api 'get (hyperdrive-entry-url new-entry)
+    (h/api 'get (he/url new-entry)
       :queue queue :as 'response :else #'ignore
       :then (lambda (response)
               (setf new-response response)))))
 
 ;;;; Mode
 
-(define-derived-mode hyperdrive-diff-mode diff-mode "hyperdrive-diff"
+(define-derived-mode h/diff-mode diff-mode "hyperdrive-diff"
   "Major mode for `hyperdrive-diff' buffers."
   :group 'hyperdrive
   :interactive nil
@@ -117,12 +117,12 @@ This function is intended to diff files, not directories."
     (save-excursion
       (goto-char (point-min))
       (delete-line)
-      (when (hyperdrive-diff-empty-diff-p (current-buffer))
+      (when (h/diff-empty-diff-p (current-buffer))
         (insert (format "No difference between entries:
 %s
 %s"
-                        (hyperdrive--format-entry (car hyperdrive-diff-entries))
-                        (hyperdrive--format-entry (cdr hyperdrive-diff-entries)))))
+                        (h//format-entry (car h/diff-entries))
+                        (h//format-entry (cdr h/diff-entries)))))
       (goto-char (point-max))
       (forward-line -1)
       (delete-region (point) (point-max)))))
@@ -130,4 +130,13 @@ This function is intended to diff files, not directories."
 ;;;; Footer
 
 (provide 'hyperdrive-diff)
+
+;;;###autoload(register-definition-prefixes "hyperdrive-diff" '("hyperdrive-"))
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
 ;;; hyperdrive-diff.el ends here

@@ -45,7 +45,7 @@
 
 ;;;; Utilities
 
-(defmacro hyperdrive-deftest (name &rest args)
+(defmacro h/deftest (name &rest args)
   (declare (indent defun))
   (let ((name (intern (concat "hyperdrive-" (symbol-name name)))))
     `(cl-macrolet ((make-url
@@ -54,81 +54,90 @@
 
 ;;;; Tests
 
-(hyperdrive-deftest url-entry--names-and-paths ()
+(h/deftest url-entry--names-and-paths ()
   (pcase-let (((cl-struct hyperdrive-entry name path)
-               (hyperdrive-url-entry (make-url ""))))
+               (h/url-entry (make-url ""))))
     (should (equal name "/"))
     (should (equal path "/")))
   (pcase-let (((cl-struct hyperdrive-entry name path)
-               (hyperdrive-url-entry (make-url "/"))))
+               (h/url-entry (make-url "/"))))
     (should (equal name "/"))
     (should (equal path "/")))
   (pcase-let (((cl-struct hyperdrive-entry name path)
-               (hyperdrive-url-entry (make-url "/name-without-spaces"))))
+               (h/url-entry (make-url "/name-without-spaces"))))
     (should (equal name "name-without-spaces"))
     (should (equal path "/name-without-spaces")))
   ;; TODO: Consider testing unhexified filename in URL.
   (pcase-let (((cl-struct hyperdrive-entry name path)
-               (hyperdrive-url-entry (make-url (hyperdrive--url-hexify-string "/name with spaces")))))
+               (h/url-entry (make-url (h//url-hexify-string "/name with spaces")))))
     (should (equal name "name with spaces"))
     (should (equal path "/name with spaces")))
   (pcase-let (((cl-struct hyperdrive-entry name path)
-               (hyperdrive-url-entry (make-url "/subdir/"))))
+               (h/url-entry (make-url "/subdir/"))))
     (should (equal name "subdir/"))
     (should (equal path "/subdir/")))
   (pcase-let (((cl-struct hyperdrive-entry name path)
-               (hyperdrive-url-entry (make-url "/subdir/with-file"))))
+               (h/url-entry (make-url "/subdir/with-file"))))
     (should (equal name "with-file"))
     (should (equal path "/subdir/with-file"))))
 
-(hyperdrive-deftest url-entry--version ()
+(h/deftest url-entry--version ()
   (pcase-let (((cl-struct hyperdrive-entry name path version)
-               (hyperdrive-url-entry (make-url "/$/version/42"))))
+               (h/url-entry (make-url "/$/version/42"))))
     (should (equal name "/"))
     (should (equal path "/"))
     (should (equal 42 version)))
   (pcase-let (((cl-struct hyperdrive-entry name path version)
-               (hyperdrive-url-entry (make-url "/$/version/42/"))))
+               (h/url-entry (make-url "/$/version/42/"))))
     (should (equal name "/"))
     (should (equal path "/"))
     (should (equal 42 version)))
   (pcase-let (((cl-struct hyperdrive-entry name path version)
-               (hyperdrive-url-entry (make-url "/$/version/42/name-without-spaces"))))
+               (h/url-entry (make-url "/$/version/42/name-without-spaces"))))
     (should (equal name "name-without-spaces"))
     (should (equal path "/name-without-spaces"))
     (should (equal 42 version)))
   (pcase-let (((cl-struct hyperdrive-entry name path version)
-               (hyperdrive-url-entry (make-url "/$/version/42/subdir/"))))
+               (h/url-entry (make-url "/$/version/42/subdir/"))))
     (should (equal name "subdir/"))
     (should (equal path "/subdir/"))
     (should (equal 42 version)))
   (pcase-let (((cl-struct hyperdrive-entry name path version)
-               (hyperdrive-url-entry (make-url "/$/version/42/subdir/with-file"))))
+               (h/url-entry (make-url "/$/version/42/subdir/with-file"))))
     (should (equal name "with-file"))
     (should (equal path "/subdir/with-file"))
     (should (equal 42 version))))
 
-(hyperdrive-deftest url-entry--makes-hyperdrive ()
+(h/deftest url-entry--makes-hyperdrive ()
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive)
-                (hyperdrive-url-entry (make-url (hyperdrive--url-hexify-string "/subdir/with-file"))))
+                (h/url-entry (make-url (h//url-hexify-string "/subdir/with-file"))))
                ((cl-struct hyperdrive public-key) hyperdrive))
     (should (equal public-key test-hyperdrive-public-key))))
 
-(hyperdrive-deftest entry-url-round-trip ()
+(h/deftest entry-url-round-trip ()
 
-  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry (make-url "")))))
+  (let ((url (he/url (h/url-entry (make-url "")))))
     (should (equal url (concat "hyper://" test-hyperdrive-public-key "/"))))
 
-  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry (make-url "/")))))
+  (let ((url (he/url (h/url-entry (make-url "/")))))
     (should (equal url (concat "hyper://" test-hyperdrive-public-key "/"))))
 
-  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry (make-url "/name-without-spaces")))))
+  (let ((url (he/url (h/url-entry (make-url "/name-without-spaces")))))
     (should (equal url (concat "hyper://" test-hyperdrive-public-key "/name-without-spaces"))))
 
-  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry (make-url "/name%20without%20spaces")))))
+  (let ((url (he/url (h/url-entry (make-url "/name%20without%20spaces")))))
     (should (equal url (concat "hyper://" test-hyperdrive-public-key "/name%20without%20spaces"))))
 
-  (let ((url (hyperdrive-entry-url (hyperdrive-url-entry
-                                    (make-url "/name%20without%20spaces/subdir")))))
+  (let ((url (he/url (h/url-entry
+                      (make-url "/name%20without%20spaces/subdir")))))
     (should (equal url (concat "hyper://" test-hyperdrive-public-key
                                "/name%20without%20spaces/subdir")))))
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
+;;; test-hyperdrive.el ends here
