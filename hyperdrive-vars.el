@@ -118,22 +118,6 @@ Passed to `display-buffer', which see."
                  (const :tag "Pop up window" (display-buffer-pop-up-window))
                  (sexp :tag "Other")))
 
-(defcustom h/preferred-formats
-  '(petname nickname domain seed short-key public-key)
-  "Default format for displaying hyperdrive hostnames.
-Each option is checked in order, and the first available type is
-used."
-  :type '(repeat
-          (choice (const :tag "Petname" petname)
-                  (const :tag "Nickname"
-                         :doc "(Nickname specified by hyperdrive author)"
-                         :format "%t %h"
-                         nickname)
-                  (const :tag "DNSLink domain" domain)
-                  (const :tag "Seed" seed)
-                  (const :tag "Shortened public key" short-key)
-                  (const :tag "Full public key" public-key))))
-
 (defcustom h/stream-player-command "mpv --force-window=immediate %s"
   "Command used to play streamable URLs externally.
 In the command, \"%s\" is replaced with the URL (it should not be
@@ -170,6 +154,22 @@ an existing buffer at the same version, or make a new buffer."
 (defgroup hyperdrive-entry-format nil
   "Formatting of entries for buffer names, etc."
   :group 'hyperdrive)
+
+(defcustom h/preferred-formats
+  '(petname nickname domain seed short-key public-key)
+  "Default format for displaying hyperdrive hostnames.
+Each option is checked in order, and the first available type is
+used."
+  :type '(repeat
+          (choice (const :tag "Petname" petname)
+                  (const :tag "Nickname"
+                         :doc "(Nickname specified by hyperdrive author)"
+                         :format "%t %h"
+                         nickname)
+                  (const :tag "DNSLink domain" domain)
+                  (const :tag "Seed" seed)
+                  (const :tag "Shortened public key" short-key)
+                  (const :tag "Full public key" public-key))))
 
 (defcustom h/default-entry-format "[%H] %p%v"
   "Format string for displaying entries.
