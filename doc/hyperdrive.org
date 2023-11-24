@@ -1012,9 +1012,7 @@ world of p2p as well as the development of ~hyper-gateway~.
 
 [[https://protesilaos.com][Protesilaos Stavrou]] for design input and user-testing ~hyperdrive.el~.
 
-[[https://karl-voit.at/][Karl Voit]] for his feedback, especially the
-suggestion that we allow for a non-splitting approach for uploading
-files from the filesystem.
+[[https://karl-voit.at/][Karl Voit]] for his feedback which inspired the design of ~hyperdrive-mirror~.
 
 [[https://www.sanityinc.com/][Steve Purcell]] and [[https://github.com/akirak][Akira Komamura]] for suggestions to improve our CI
 build manifests.
