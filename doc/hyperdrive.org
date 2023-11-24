@@ -314,7 +314,7 @@ You can write a buffer to a hyperdrive with ~hyperdrive-write-buffer~,
 which will prompt you for one of hyperdrives you have created as well
 as the path in that hyperdrive where you want to store the file. If
 you are editing an existing hyperdrive file, ~save-buffer~ will
-silently update the current hyperdrive entry with the new content.
+silently update the current hyperdrive file with the new content.
 
 ~hyperdrive.el~ will prompt to save modified hyperdrive files before
 exiting Emacs. If you want the command ~save-some-buffers~ to always
@@ -656,7 +656,7 @@ If another user (not you) attempts to load that URL, ~hyperdrive.el~
 will warn ~"URL not found"~.  All users can still access the old file
 contents at the versioned URLs.
 
-Since only the current version of a hyperdrive entry can be updated,
+Since only the current version of a hyperdrive file can be updated,
 ~hyperdrive.el~ sets the buffer to read-only whenever a version number
 is specified in a hyper URL.
 
