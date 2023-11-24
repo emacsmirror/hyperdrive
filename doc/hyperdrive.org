@@ -301,12 +301,8 @@ URL.
 You can have multiple hyperdrives, each one containing its own set of
 files. Run ~M-x hyperdrive-new~ then type in a ~seed~ (see [[*Seeds]]) to
 create a new hyperdrive. That seed will be combined with your secret
-master key, which is generated for you by ~hyper-gateway~, to produce a
-public key (see [[*Public keys]]) that uniquely identifies that
-hyperdrive. ~hyperdrive-new~ is idempotent since the same seed will
-always produce the same public key. For this reason, a hyperdrive's
-seed cannot be changed.
-# TODO: Move conceptual master key stuff into *Concepts
+master key (see [[*Master key]]) to produce a public key (see [[*Public
+keys]]) that uniquely identifies that hyperdrive.
 
 ** Write to a hyperdrive
 #+findex: hyperdrive-write-buffer
@@ -717,6 +713,13 @@ and technical reason:
   2. generating directory history based on the history of the files it
      contains, which can never prove that a directory doesn't exist.
 
+*** Master key
+# TODO: Link to this node once we've added backup/restore.
+
+The secret master key is combined with a seed (see [[*Seeds]]) to generate
+a new public key for a hyperdrive when you run ~hyperdrive-new~.  Your
+master key is generated automatically by ~hyper-gateway~.
+
 ** Hyper-gateway
 #+cindex: Hyper-gateway
 
@@ -728,6 +731,7 @@ to write files to a hyperdrive.
 
 ** Naming
 #+cindex: Naming
+#+vindex: hyperdrive-formats
 
 Inspired by Marc Stiegler's [[http://www.skyhunter.com/marcs/petnames/IntroPetNames.html][An Introduction to Petname Systems]],
 ~hyperdrive.el~ names drives in a three different ways:
@@ -749,28 +753,25 @@ Each drive may also have one or both of the following attributes:
 #+cindex: Public keys
 #+findex: hyperdrive-new
 
-Public keys are 52-character-long, [[https://en.wikipedia.org/wiki/Base32#z-base-32][z-base-32]] encoded keys generated
-from your secret master key and a seed string. ~hyper-gateway~ generates
-the secret key for you, and you provide a seed (see [[*Seeds]]) when
-generating a new drive with ~hyperdrive-new~.
-
-Public keys allow for permanent links to hyperdrive content. When
-sharing a hyperdrive with someone else, you will need to copy its full
-URL. Peers can load your hyperdrive files directly from your computer
-or from other peers who previously loaded those files.
+Public keys are globally unique identifiers for hyperdrives.  They
+make up the first part of a ~hyper://~ URL.  Public keys are
+52-character-long [[https://en.wikipedia.org/wiki/Base32#z-base-32][z-base-32]] encoded keys generated from your master
+key (see [[*Master key]]) and a [[*Seeds][seed]] string.  When you run ~hyperdrive-new~
+and type a new seed, ~hyper-gateway~ automatically generates a new
+public key.
 
 *** Nicknames
 #+cindex: Nicknames
 #+findex: hyperdrive-set-nickname
 
-Nicknames are public, memorable names which users can give to their
-own hyperdrives. Other users can see the nicknames you give to your
-hyperdrives.
+Nicknames are public, memorable names which you can give to your own
+hyperdrives to make them easier for others to recognize.  Other users
+can see your nicknames but cannot change them.
 
 Nicknames are stored in each hyperdrive inside
 ~/.well-known/host-meta.json~ under the ~name~ key, as specified in
-RFC6415. You can only assign a nickname to hyperdrives which you have
-created. Nicknames can be changed with ~hyperdrive-set-nickname~.
+[[https://www.rfc-editor.org/rfc/rfc6415#section-6.1][RFC6415]].  You can update a hyperdrive's nickname with
+~hyperdrive-set-nickname~.
 
 *** Petnames
 #+cindex: Petnames
@@ -786,10 +787,11 @@ petname by default. Petnames can be changed with
 *** Seeds
 #+cindex: Seeds
 
-Along with your secret master key, seeds are used to generate public
-keys (see [[*Public keys]]). A seed has a one-to-one relationship with a
-drive. Seeds are local but not secret. To share a drive, you must use
-a public key or DNS domain (see [[*DNS domains]]).
+Seeds are used in tandem with your secret master key (see [[*Master key]])
+to generate public keys (see [[*Public keys]]).  The same seed and master
+key will always produce the same public key, so a hyperdrive's seed
+cannot be changed.  Seeds are local but not secret.  To share a drive,
+you must use a public key or DNS domain (see [[*DNS domains]]).
 
 *** DNS domains
 #+cindex: DNS domains
@@ -848,11 +850,6 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
 - ~hyperdrive-history-display-buffer-action~ :: Display buffer action
   for hyperdrive history buffers. Passed to ~display-buffer~, which see.
 
-#+vindex: hyperdrive-preferred-formats
-- ~hyperdrive-preferred-formats~ :: List of metadata types used to
-  display hyperdrives.  Hyperdrives are displayed using the first
-  available metadata type.  See [[*Naming][Naming]] section for what this means.
-
 #+vindex: hyperdrive-stream-player-command
 - ~hyperdrive-stream-player-command~ :: Command used to play streamable
   URLs externally. Default uses [[https://mpv.io/][mpv]]. There also exists a preconfigured
@@ -878,10 +875,16 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
   version. To have separate buffers for each version of a
   file/directory, use ~same-version~.
 
+#+vindex: hyperdrive-preferred-formats
+- ~hyperdrive-preferred-formats~ :: List of metadata types used to
+  display hyperdrives.  Hyperdrives are displayed using the first
+  available metadata type.  See [[*Naming][Naming]] section for what this means.
+
 - ~hyperdrive-default-entry-format~ :: Format string for displaying
   hyperdrive entries (files/directories).  By default, entries are
-  displayed with the default host format in brackets, followed by the
-  full entry path, followed by "version: " and version in parentheses.
+  displayed with the preferred hyperdrive format in brackets (see
+  ~hyperdrive-preferred-formats~), followed by the full entry path,
+  followed by "version: " and version in parentheses.
 
 - ~hyperdrive-buffer-name-format~ :: Format string for buffer names of
   buffers visiting hyperdrive files/directories.  By default, this
@@ -894,6 +897,24 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
   well as other places hyperdrives or entries are displayed.  By
   default, each metadatum is prefixed by its type, e.g., the petname
   ~foo~ is displayed by default as ~petname:foo~.
+
+  Feel free to adjust the following example configuration for
+  abbreviated labels:
+
+  #+begin_src emacs-lisp
+    (setq hyperdrive-formats '((name . "%s")
+                               (version . " (%s)")
+                               (path . "%s")
+                               (petname . "p:%s")
+                               (nickname . "n:%s")
+                               (public-key . "k:%s")
+                               (short-key . "k:%.8s…")
+                               (seed . "s:%s")
+                               (domains . "d:%s")))
+  #+end_src
+
+  With this snippet, the petname ~foo~ now displays as ~p:foo~.  For further
+  customization, run ~M-x customize-group RET ~hyperdrive-entry-format~.
 
 ** Additional customization
 
