@@ -886,17 +886,20 @@ DIRECTION being one of ~:ascending~ or ~:descending~.
   display hyperdrives.  Hyperdrives are displayed using the first
   available metadata type.  See [[*Naming][Naming]] section for what this means.
 
+#+vindex: hyperdrive-default-entry-format
 - ~hyperdrive-default-entry-format~ :: Format string for displaying
   hyperdrive entries (files/directories).  By default, entries are
   displayed with the preferred hyperdrive format in brackets (see
   ~hyperdrive-preferred-formats~), followed by the full entry path,
   followed by "version: " and version in parentheses.
 
+#+vindex: hyperdrive-buffer-name-format
 - ~hyperdrive-buffer-name-format~ :: Format string for buffer names of
   buffers visiting hyperdrive files/directories.  By default, this
   format is like ~hyperdrive-default-entry-format~ with the entry name
   sans directory instead of the full path.
 
+#+vindex: hyperdrive-formats
 - ~hyperdrive-formats~ :: Alist mapping hyperdrive and hyperdrive
   entry metadata to a format string, used in
   ~hyperdrive-default-entry-format~ and ~hyperdrive-buffer-name-format~ as
