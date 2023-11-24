@@ -175,7 +175,7 @@ used."
   "Format string for displaying entries.
 Specifiers:
 
-%H  Preferred hyperdrive naming (see `hyperdrive-preferred-formats')
+%H  Preferred hyperdrive format (see `hyperdrive-preferred-formats')
 
 To configure the format of the following specifiers, see `hyperdrive-formats':
 
