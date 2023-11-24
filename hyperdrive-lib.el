@@ -969,9 +969,9 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                 hyperdrive)
                (format (or format "%H"))
                (formats (or formats h/formats)))
-    (cl-labels ((fmt (naming value face)
+    (cl-labels ((fmt (format value face)
                   (if value
-                      (format (alist-get naming formats)
+                      (format (alist-get format formats)
                               (propertize value 'face face))
                     "")))
       (format-spec format
@@ -992,18 +992,18 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                                            ","))
                                 ""))))))))
 
-(defun h//preferred-format (hyperdrive &optional naming formats)
+(defun h//preferred-format (hyperdrive &optional format formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
-NAMING should be one or a list of symbols, by default
+FORMAT should be one or a list of symbols, by default
 `hyperdrive-preferred-formats', which see for choices.  If the
-specified NAMING is not available, return nil.
+specified FORMAT is not available, return nil.
 
-Each item in NAMING is formatted according to FORMATS, set by
+Each item in FORMAT is formatted according to FORMATS, set by
 default to `hyperdrive-formats', which see."
   (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
                            (metadata (map ('name nickname))))
                 hyperdrive))
-    (cl-loop for f in (ensure-list (or naming h/preferred-formats))
+    (cl-loop for f in (ensure-list (or format h/preferred-formats))
              when (pcase f
                     ((and 'petname (guard petname))
                      (h//format hyperdrive "%P" formats))
@@ -1372,9 +1372,9 @@ FORMAT is a `format-spec' specifier string which maps to specifications
 according to FORMATS, by default `hyperdrive-formats', which see."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name path version) entry)
                (formats (or formats h/formats)))
-    (cl-labels ((fmt (naming value)
+    (cl-labels ((fmt (format value)
                   (if value
-                      (format (alist-get naming formats) value)
+                      (format (alist-get format formats) value)
                     "")))
       (propertize
        (format-spec (or format h/default-entry-format)
