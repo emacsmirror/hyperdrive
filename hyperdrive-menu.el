@@ -125,81 +125,81 @@
          (and (h/menu--scope)
               ;; TODO: Remove this check and add useful history transient UI.
               (not (eq 'h/history-mode major-mode))))
-   [;; Current
-    :description
-    (lambda ()
-      (let ((entry (h/menu--scope)))
-        (concat (propertize "Current: " 'face 'transient-heading)
-                (propertize (h//format-path (he/path entry))
-                            'face 'transient-value))))
-    ("g" "Refresh" revert-buffer)
-    ("^" "Up to parent" h/up
-     :inapt-if-not (lambda ()
-                     (h/parent (h/menu--scope))))
-    ("s" "Sort" h/dir-sort
-     :if-mode h/dir-mode
-     :transient t)
-    ;; TODO: Consider running whatever command imenu has been rebound to in the
-    ;; global map, e.g., consult-imenu.
-    ("j" "Jump" imenu
-     :if-mode h/dir-mode)
-    ;; TODO: Combine previous and next commands on the same line?
-    ("p" "Previous" h/ewoc-previous
-     :if-mode h/dir-mode
-     :transient t)
-    ("n" "Next" h/ewoc-next
-     :if-mode h/dir-mode
-     :transient t)
-    ("w" "Copy URL" h/copy-url
-     :if-not-mode h/dir-mode)
-    ("D" "Delete" h/delete
-     :if-not-mode h/dir-mode
-     :inapt-if (lambda ()
-                 (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
-                              (h/menu--scope)))
-                   (or version (not (h/writablep hyperdrive))))))
-    ("d" "Download" h/download
-     :if-not-mode h/dir-mode)]
-   ;; TODO: Consider adding a defcustom to hide the "Selected" and
-   ;; "Current" groups when in a directory buffer.
-   [;; Selected
-    :if (lambda ()
-          (and (h/menu--scope)
-               (eq major-mode 'h/dir-mode)
-               (h/dir--entry-at-point)))
-    :description
-    (lambda ()
-      (let ((current-entry (h/menu--scope))
-            (selected-entry (h/dir--entry-at-point)))
-        (concat (propertize "Selected: " 'face 'transient-heading)
-                (propertize
-                 (or (and (he/equal-p current-entry selected-entry)
-                          "./")
-                     (alist-get 'display-name
-                                (he/etc selected-entry))
-                     (he/name selected-entry))
-                 'face 'transient-value))))
-    :pad-keys t
-    ("d" "Download" h/download
-     :inapt-if (lambda ()
-                 (when-let ((entry-at-point (h/dir--entry-at-point)))
-                   (h//entry-directory-p entry-at-point))))
-    ("D" "Delete" h/delete
-     :inapt-if (lambda ()
-                 (let ((current-entry (h/menu--scope))
-                       (selected-entry (h/dir--entry-at-point)))
-                   (or (not (h/writablep
-                             (he/hyperdrive current-entry)))
-                       (eq selected-entry current-entry)
-                       (string= "../" (alist-get 'display-name
-                                                 (he/etc selected-entry)))))))
-    ("w" "Copy URL" h/dir-copy-url)
-    ;; FIXME: The sequence "? RET" says "Unbound suffix" instead of showing the help for that command.  Might be an issue in Transient.
-    ("RET" "Open" h/dir-find-file)
-    ("v" "View" h/dir-view-file
-     :inapt-if (lambda ()
-                 (when-let ((entry-at-point (h/dir--entry-at-point)))
-                   (h//entry-directory-p entry-at-point))))]]
+       [;; Current
+        :description
+        (lambda ()
+          (let ((entry (h/menu--scope)))
+            (concat (propertize "Current: " 'face 'transient-heading)
+                    (propertize (h//format-path (he/path entry))
+                                'face 'transient-value))))
+        ("g" "Refresh" revert-buffer)
+        ("^" "Up to parent" h/up
+         :inapt-if-not (lambda ()
+                         (h/parent (h/menu--scope))))
+        ("s" "Sort" h/dir-sort
+         :if-mode h/dir-mode
+         :transient t)
+        ;; TODO: Consider running whatever command imenu has been rebound to in the
+        ;; global map, e.g., consult-imenu.
+        ("j" "Jump" imenu
+         :if-mode h/dir-mode)
+        ;; TODO: Combine previous and next commands on the same line?
+        ("p" "Previous" h/ewoc-previous
+         :if-mode h/dir-mode
+         :transient t)
+        ("n" "Next" h/ewoc-next
+         :if-mode h/dir-mode
+         :transient t)
+        ("w" "Copy URL" h/copy-url
+         :if-not-mode h/dir-mode)
+        ("D" "Delete" h/delete
+         :if-not-mode h/dir-mode
+         :inapt-if (lambda ()
+                     (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
+                                  (h/menu--scope)))
+                       (or version (not (h/writablep hyperdrive))))))
+        ("d" "Download" h/download
+         :if-not-mode h/dir-mode)]
+       ;; TODO: Consider adding a defcustom to hide the "Selected" and
+       ;; "Current" groups when in a directory buffer.
+       [;; Selected
+        :if (lambda ()
+              (and (h/menu--scope)
+                   (eq major-mode 'h/dir-mode)
+                   (h/dir--entry-at-point)))
+        :description
+        (lambda ()
+          (let ((current-entry (h/menu--scope))
+                (selected-entry (h/dir--entry-at-point)))
+            (concat (propertize "Selected: " 'face 'transient-heading)
+                    (propertize
+                     (or (and (he/equal-p current-entry selected-entry)
+                              "./")
+                         (alist-get 'display-name
+                                    (he/etc selected-entry))
+                         (he/name selected-entry))
+                     'face 'transient-value))))
+        :pad-keys t
+        ("d" "Download" h/download
+         :inapt-if (lambda ()
+                     (when-let ((entry-at-point (h/dir--entry-at-point)))
+                       (h//entry-directory-p entry-at-point))))
+        ("D" "Delete" h/delete
+         :inapt-if (lambda ()
+                     (let ((current-entry (h/menu--scope))
+                           (selected-entry (h/dir--entry-at-point)))
+                       (or (not (h/writablep
+                                 (he/hyperdrive current-entry)))
+                           (eq selected-entry current-entry)
+                           (string= "../" (alist-get 'display-name
+                                                     (he/etc selected-entry)))))))
+        ("w" "Copy URL" h/dir-copy-url)
+        ;; FIXME: The sequence "? RET" says "Unbound suffix" instead of showing the help for that command.  Might be an issue in Transient.
+        ("RET" "Open" h/dir-find-file)
+        ("v" "View" h/dir-view-file
+         :inapt-if (lambda ()
+                     (when-let ((entry-at-point (h/dir--entry-at-point)))
+                       (h//entry-directory-p entry-at-point))))]]
   [["Gateway"
     :description
     (lambda ()

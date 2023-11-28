@@ -911,7 +911,7 @@ Call ELSE if request fails."
   "Write BODY to hyperdrive ENTRY's URL."
   (declare (indent defun))
   (h//write (he/url entry)
-            :body body :then then :else else :queue queue))
+    :body body :then then :else else :queue queue))
 
 (cl-defun h//format-entry-url
     (entry &key (host-format '(public-key domain))
