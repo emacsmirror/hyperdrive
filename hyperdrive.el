@@ -49,9 +49,6 @@
 
 ;;; Code:
 
-;; TODO: When requiring Emacs 28+, consider using symbol shorthands to
-;; reduce how many times we have to type "hyperdrive".
-
 ;;;; Requirements
 
 (require 'cl-lib)
