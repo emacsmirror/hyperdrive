@@ -276,9 +276,9 @@ With point on header, returns directory entry."
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer.  DISPLAY-BUFFER-ACTION is passed to
 `pop-to-buffer'."
-  (declare (modes h/dir-mode))
   (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point"))))
+                         (h/user-error "No file/directory at point")))
+               h/dir-mode)
   (h/open entry
     :then (lambda ()
             (pop-to-buffer (current-buffer) display-buffer-action))))
@@ -287,9 +287,9 @@ Interactively, visit file or directory at point in
   "Visit hyperdrive ENTRY at point in other window.
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
-  (declare (modes h/dir-mode))
   (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point"))))
+                         (h/user-error "No file/directory at point")))
+               h/dir-mode)
   (h/dir-find-file entry :display-buffer-action t))
 
 (declare-function h/view-file "hyperdrive")
@@ -297,18 +297,18 @@ Interactively, visit file or directory at point in
   "Open hyperdrive ENTRY at point in `view-mode'.
 Interactively, opens file or directory at point in
 `hyperdrive-dir' buffer."
-  (declare (modes h/dir-mode))
   (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point"))))
+                         (h/user-error "No file/directory at point")))
+               h/dir-mode)
   (h/view-file entry))
 
 (declare-function h/copy-url "hyperdrive")
 
 (defun h/dir-copy-url (entry)
   "Copy URL of ENTRY into the kill ring."
-  (declare (modes h/dir-mode))
   (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point"))))
+                         (h/user-error "No file/directory at point")))
+               h/dir-mode)
   (h/copy-url entry))
 
 (declare-function h/history "hyperdrive-history")

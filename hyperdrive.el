@@ -268,8 +268,7 @@ without confirmation."
 
 (defun h/revert-buffer-quick ()
   "Like `revert-buffer-quick', but works with `hyperdrive-mode' files."
-  (declare (modes h/mode))
-  (interactive)
+  (interactive nil h/mode)
   (h/revert-buffer nil (not (buffer-modified-p))))
 
 ;;;; h/mode
@@ -521,8 +520,7 @@ To be used in `write-contents-functions'."
   "Save hyperdrive ENTRY's URL to the kill ring.
 Interactively, uses `hyperdrive-current-entry', from either a
 hyperdrive directory listing or a `hyperdrive-mode' file buffer."
-  (declare (modes h/mode))
-  (interactive (list h/current-entry))
+  (interactive (list h/current-entry) h/mode)
   (let ((url (he/url entry)))
     (kill-new url)
     (h/message "%s" url)))
@@ -531,11 +529,11 @@ hyperdrive directory listing or a `hyperdrive-mode' file buffer."
   "Go up to parent directory of ENTRY.
 Interactively, use the `hyperdrive-current-entry'.  If THEN, pass
 it to `hyperdrive-open'."
-  (declare (modes h/mode))
   (interactive (progn
                  (unless (and h/mode h/current-entry)
                    (user-error "Not a hyperdrive buffer"))
-                 (list h/current-entry)))
+                 (list h/current-entry))
+               h/mode)
   (if-let ((parent (h/parent entry)))
       ;; TODO: Go to entry in parent directory.
       (if then-set-p
@@ -552,8 +550,7 @@ it to `hyperdrive-open'."
 
 (defun h/open-previous-version (entry)
   "Open previous version of ENTRY."
-  (declare (modes h/mode))
-  (interactive (list h/current-entry))
+  (interactive (list h/current-entry) h/mode)
   (if-let ((previous-entry (he/previous entry)))
       (h/open previous-entry)
     (h/message "%s does not exist at version %s. Try \\[hyperdrive-history]"
@@ -562,8 +559,7 @@ it to `hyperdrive-open'."
 
 (defun h/open-next-version (entry)
   "Open next version of ENTRY."
-  (declare (modes h/mode))
-  (interactive (list h/current-entry))
+  (interactive (list h/current-entry) h/mode)
   (pcase-exhaustive (he/next entry)
     ((and (pred (eq entry)) next-entry)
      ;; ENTRY already at latest version: open and say `revert-buffer'.
@@ -584,12 +580,12 @@ it to `hyperdrive-open'."
 (defun h/open-at-version (entry version)
   "Open ENTRY at VERSION.
 Nil VERSION means open the entry at its hyperdrive's latest version."
-  (declare (modes h/mode))
   (interactive (let ((entry h/current-entry))
                  (list entry (h/read-version
                               :hyperdrive (he/hyperdrive entry)
                               :prompt (format-message "Open `%s' at version (leave blank for latest version)"
-                                                      (h//format-entry entry))))))
+                                                      (h//format-entry entry)))))
+               h/mode)
   (if-let ((latest-entry (he/at version entry)))
       (h/open latest-entry)
     (h/message "%s does not exist at version %s. Try \\[hyperdrive-history]"

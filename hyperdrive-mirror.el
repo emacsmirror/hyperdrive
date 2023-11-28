@@ -357,8 +357,7 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
 
 (defun h/mirror-do-upload ()
   "Upload files in current \"*hyperdrive-mirror*\" buffer."
-  (declare (modes h/mirror-mode))
-  (interactive)
+  (interactive nil h/mirror-mode)
   ;; FIXME: Debounce this (e.g. if the user accidentally calls this
   ;; command twice in a mirror buffer, it would start another queue to
   ;; upload the same files, which would unnecessarily increment the

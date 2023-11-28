@@ -73,8 +73,7 @@ last node."
   "Move forward N entries.
 When on header line, moves point to first entry, skipping over
 column headers."
-  (declare (modes h/ewoc-mode))
-  (interactive "p")
+  (interactive "p" h/ewoc-mode)
   ;; TODO: Try using the intangible text property on headers to
   ;; automatically skip over them without conditional code. Setting
   ;; `cursor-intangible' on the column header causes `hl-line-mode' to
@@ -90,8 +89,7 @@ column headers."
   "Move backward N entries.
 When on first entry, moves point to header line, skipping over
 column headers."
-  (declare (modes h/ewoc-mode))
-  (interactive "p")
+  (interactive "p" h/ewoc-mode)
   (let ((lines-below-header (- (line-number-at-pos) 2)))
     (if (and (cl-plusp lines-below-header)
              (< n lines-below-header))

@@ -250,7 +250,6 @@ prefix argument \\[universal-argument], prompt for ENTRY."
 (defun h/history-diff (old-entry new-entry)
   "Show diff between OLD-ENTRY and NEW-ENTRY.
 Interactively, diff range entry at point with previous entry."
-  (declare (modes h/history-mode))
   ;; TODO: Set entries based on marked ranges
   ;; TODO: What to do for unknown range-entries?
   (interactive (let* ((new-entry (cdr (h/history-range-entry-at-point)))
@@ -258,7 +257,7 @@ Interactively, diff range entry at point with previous entry."
                  (unless old-entry
                    (setf old-entry (h/copy-tree new-entry t))
                    (cl-decf (he/version old-entry)))
-                 (list old-entry new-entry)))
+                 (list old-entry new-entry)) h/history-mode)
   (h/diff-file-entries old-entry new-entry
     :then (lambda ()
             (pop-to-buffer (current-buffer)))))
@@ -273,8 +272,7 @@ entry at RANGE-ENTRY's RANGE-END.
 
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
-  (declare (modes h/history-mode))
-  (interactive (list (h/history-range-entry-at-point)))
+  (interactive (list (h/history-range-entry-at-point)) h/history-mode)
   (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: open it.
@@ -294,8 +292,7 @@ entry at RANGE-ENTRY's RANGE-END.
 
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
-  (declare (modes h/history-mode))
-  (interactive (list (h/history-range-entry-at-point)))
+  (interactive (list (h/history-range-entry-at-point)) h/history-mode)
   (h/history-find-file
    range-entry :then (lambda ()
                        (pop-to-buffer (current-buffer) t))))
@@ -308,8 +305,7 @@ and returns nil.
 
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
-  (declare (modes h/history-mode))
-  (interactive (list (h/history-range-entry-at-point)))
+  (interactive (list (h/history-range-entry-at-point)) h/history-mode)
   (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: open it.
@@ -325,8 +321,7 @@ buffer."
 
 (defun h/history-copy-url (range-entry)
   "Copy URL of entry in RANGE-ENTRY into the kill ring."
-  (declare (modes h/history-mode))
-  (interactive (list (h/history-range-entry-at-point)))
+  (interactive (list (h/history-range-entry-at-point)) h/history-mode)
   (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: copy it.
@@ -342,7 +337,6 @@ buffer."
 
 (defun h/history-download-file (range-entry filename)
   "Download entry in RANGE-ENTRY at point to FILENAME on disk."
-  (declare (modes h/history-mode))
   (interactive
    (pcase-let* ((range-entry (h/history-range-entry-at-point))
                 ((cl-struct hyperdrive-entry name) (cdr range-entry))
@@ -356,7 +350,7 @@ buffer."
                                  ;; check for the existence of the entry.
                                  (read-file-name "Filename: "
                                                  (expand-file-name name h/download-directory)))))
-     (list range-entry read-filename)))
+     (list range-entry read-filename)) h/history-mode)
   (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: download it.
