@@ -1242,7 +1242,7 @@ Intended for relative (i.e. non-full) URLs."
 ;;;###autoload
 (with-eval-after-load 'markdown-mode
   (when (boundp 'markdown-follow-link-functions)
-    (cl-pushnew #'h//markdown-follow-link markdown-follow-link-functions)))
+    (cl-pushnew #'hyperdrive--markdown-follow-link markdown-follow-link-functions)))
 
 ;;;;; `find-file-at-point' (`ffap') support
 
