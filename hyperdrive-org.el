@@ -214,18 +214,20 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
               (desc-end (org-element-property :contents-end link)))
     (buffer-substring desc-begin desc-end)))
 
+;; NOTE: Autoloads do not support shorthands (yet?), so we use the full symbol
+;; names below.
+;; TODO: Report Emacs bug about autoloads and symbol shorthands.
 ;;;###autoload
 (with-eval-after-load 'org
   (org-link-set-parameters "hyper"
-                           :store #'h/org-link-store
-                           :follow #'h/org-link-follow
-			   :complete #'h/org-link-complete)
+                           :store #'hyperdrive-org-link-store
+                           :follow #'hyperdrive-org-link-follow
+			   :complete #'hyperdrive-org-link-complete)
   (with-eval-after-load 'hyperdrive
-    ;; Handle links with no specified type in `h/mode'
-    ;; buffers as links to files within that hyperdrive.  Only add
-    ;; this function to the variable after `hyperdrive' is loaded so
-    ;; that `h/mode' will be defined.
-    (cl-pushnew #'h/org--open-at-point org-open-at-point-functions)))
+    ;; Handle links with no specified type in `hyperdrive-mode' buffers as links
+    ;; to files within that hyperdrive.  Only add this function to the variable
+    ;; after `hyperdrive' is loaded so that `hyperdrive-mode' will be defined.
+    (cl-pushnew #'hyperdrive-org--open-at-point org-open-at-point-functions)))
 
 ;;;; Footer
 
