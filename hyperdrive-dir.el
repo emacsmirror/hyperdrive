@@ -65,7 +65,7 @@ If THEN, call it in the directory buffer with no arguments."
                (metadata-queue) (ewoc) (prev-entry) (prev-point))
     (cl-labels ((goto-entry (entry ewoc)
                   (when-let ((node (h/ewoc-find-node ewoc entry
-                                     :predicate #'he/equal-p)))
+                                                     :predicate #'he/equal-p)))
                     (goto-char (ewoc-location node))))
                 (update-footer (num-filled num-of)
                   (when (zerop (mod num-filled 5))
@@ -110,8 +110,8 @@ If THEN, call it in the directory buffer with no arguments."
           (update-footer num-filled num-entries)
           (dolist (entry entries)
             (h/fill entry :queue metadata-queue
-              :then (lambda (&rest _)
-                      (update-footer (cl-incf num-filled) num-entries))))
+                    :then (lambda (&rest _)
+                            (update-footer (cl-incf num-filled) num-entries))))
           (plz-run metadata-queue)
           (when then
             (funcall then)))))))
