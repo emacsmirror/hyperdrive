@@ -1,5 +1,21 @@
 #+title: Hyperdrive.el notes
 
+* Reference
+
+/Information for future reference./
+
+** ~check-declare~ library does not account for symbol shorthands
+
+So, e.g. ~makem~'s ~lint-declare~ rule, which uses ~check-declare~, gives false warnings.
+
+*** TODO File bug report to Emacs about this
+:PROPERTIES:
+:assignee: Joseph
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2023-11-28 Tue 16:31]
+:END:
+
 * PROJECT Petnames
 :PROPERTIES:
 :ID:       e5b0c0f1-7ebc-4e8c-9712-cd2cd4a055ce
