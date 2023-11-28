@@ -102,7 +102,6 @@ Gets latest metadata from hyperdrive."
 
 (provide 'hyperdrive-describe)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-describe" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

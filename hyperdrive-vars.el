@@ -404,7 +404,6 @@ Keys are regexps matched against MIME types.")
 
 (provide 'hyperdrive-vars)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-vars" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

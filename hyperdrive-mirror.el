@@ -394,7 +394,6 @@ Sets `hyperdrive-mirror-visibility-cache' to the value of
 
 (provide 'h/mirror)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-mirror" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

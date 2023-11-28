@@ -131,7 +131,6 @@ This function is intended to diff files, not directories."
 
 (provide 'hyperdrive-diff)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-diff" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

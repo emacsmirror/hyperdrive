@@ -1498,7 +1498,6 @@ Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
 
 (provide 'hyperdrive-lib)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-lib" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

@@ -438,7 +438,6 @@
 
 (provide 'h/menu)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-menu" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

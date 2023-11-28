@@ -1275,7 +1275,6 @@ Intended for relative (i.e. non-full) URLs."
 
 (provide 'hyperdrive)
 
-;;;###autoload(register-definition-prefixes "hyperdrive" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

@@ -364,7 +364,6 @@ buffer."
 
 (provide 'h/history)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-history" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

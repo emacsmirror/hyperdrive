@@ -391,7 +391,6 @@ see Info node `(elisp)Yanking Media'."
 
 (provide 'hyperdrive-dir)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-dir" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

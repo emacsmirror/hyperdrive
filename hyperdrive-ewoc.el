@@ -128,7 +128,6 @@ PREDICATE is called with the full node."
 
 (provide 'h/ewoc)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-ewoc" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")

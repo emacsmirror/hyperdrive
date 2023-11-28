@@ -233,7 +233,6 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
 
 (provide 'hyperdrive-org)
 
-;;;###autoload(register-definition-prefixes "hyperdrive-org" '("hyperdrive-"))
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")
