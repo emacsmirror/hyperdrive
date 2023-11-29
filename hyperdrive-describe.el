@@ -32,9 +32,9 @@
 
 ;;;; Variables
 
-(defvar-local hyperdrive-describe-current-hyperdrive nil
+(defvar-local h/describe-current-hyperdrive nil
   "Hyperdrive for current `hyperdrive-describe-mode' buffer.")
-(put 'hyperdrive-describe-current-hyperdrive 'permanent-local t)
+(put 'h/describe-current-hyperdrive 'permanent-local t)
 
 ;;;; Commands
 
@@ -46,35 +46,24 @@
 
 Universal prefix argument \\[universal-argument] forces
 `hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
-  (interactive (list (hyperdrive-complete-hyperdrive :force-prompt current-prefix-arg)))
+  (interactive (list (h/complete-hyperdrive :force-prompt current-prefix-arg)))
   ;; TODO: Do we want to asynchronously fill the hyperdrive's latest version?
-  (hyperdrive-fill-latest-version hyperdrive)
+  (h/fill-latest-version hyperdrive)
   (with-current-buffer (get-buffer-create
-                        (format "*Hyperdrive: %s*"
-                                (hyperdrive--format-host hyperdrive :format '(short-key)
-                                                         :with-label t)))
+                        (format "*Hyperdrive: %s*" (h//format hyperdrive "%k")))
     (with-silent-modifications
-      (hyperdrive-describe-mode)
-      (setq-local hyperdrive-describe-current-hyperdrive hyperdrive)
-      (pcase-let (((cl-struct hyperdrive metadata domains writablep) hyperdrive))
+      (h/describe-mode)
+      (setq-local h/describe-current-hyperdrive hyperdrive)
+      (pcase-let (((cl-struct hyperdrive metadata writablep) hyperdrive))
         (erase-buffer)
         (insert
          (propertize "Hyperdrive: \n" 'face 'bold)
-         (format "Public key: %s\n" (hyperdrive--format-host hyperdrive :format '(public-key)))
-         (format "Seed: %s\n" (or (hyperdrive--format-host hyperdrive :format '(seed))
-                                  "[none]"))
-         (format "Petname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(petname))
-                                     "[none]"))
-         (format "Nickname: %s\n" (or (hyperdrive--format-host hyperdrive :format '(nickname))
-                                      "[none]"))
-         (format "Domains: %s\n"
-                 (if domains
-                     (string-join (mapcar (lambda (domain)
-                                            (propertize domain 'face 'hyperdrive-domain))
-                                          domains)
-                                  ", ")
-                   "[none]"))
-         (format "Latest version: %s\n" (hyperdrive-latest-version hyperdrive))
+         (h//format hyperdrive "Public key %K:\n" h/raw-formats)
+         (h//format hyperdrive "Seed: %S\n" h/raw-formats)
+         (h//format hyperdrive "Petname: %P\n" h/raw-formats)
+         (h//format hyperdrive "Nickname: %N\n" h/raw-formats)
+         (h//format hyperdrive "Domains: %D\n" h/raw-formats)
+         (format "Latest version: %s\n" (h/latest-version hyperdrive))
          (format "Writable: %s\n" (if writablep "yes" "no"))
          (format "Metadata: %s\n"
                  (if metadata
@@ -94,22 +83,30 @@ Universal prefix argument \\[universal-argument] forces
 
 ;;;; Mode
 
-(defun hyperdrive-describe-revert-buffer (&optional _ignore-auto _noconfirm)
+(defun h/describe-revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-describe-mode' buffer.
 Gets latest metadata from hyperdrive."
-  (hyperdrive-fill-metadata hyperdrive-describe-current-hyperdrive)
-  (hyperdrive-describe-hyperdrive hyperdrive-describe-current-hyperdrive))
+  (h/fill-metadata h/describe-current-hyperdrive)
+  (h/describe-hyperdrive h/describe-current-hyperdrive))
 
-(define-derived-mode hyperdrive-describe-mode special-mode
+(define-derived-mode h/describe-mode special-mode
   `("Hyperdrive-describe"
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for buffers for describing hyperdrives."
   :group 'hyperdrive
   :interactive nil
-  (setq-local revert-buffer-function #'hyperdrive-describe-revert-buffer))
+  (setq-local revert-buffer-function #'h/describe-revert-buffer))
 
 ;;;; Footer
 
 (provide 'hyperdrive-describe)
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
 ;;; hyperdrive-describe.el ends here

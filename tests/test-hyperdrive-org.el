@@ -41,7 +41,7 @@
 
 ;;;;; Scenarios
 
-(defvar hyperdrive-test-org-store-link-scenarios
+(defvar h/test-org-store-link-scenarios
   '((org-mode-before-heading
      :public-key "deadbeef"
      :path "/foo/bar quux.org"
@@ -78,83 +78,67 @@ Each value is a plist with the following keys:
 
 ;;;;; Store links
 
-(cl-defun hyperdrive-test-org-store-link (contents &key public-key path)
+(cl-defun h/test-org-store-link (contents &key public-key path)
   "Return stored link to entry with PUBLIC-KEY, PATH, and CONTENTS.
 Point is indicated by ★."
   (declare (indent defun))
-  (let ((entry (hyperdrive-entry-create
-                :hyperdrive (hyperdrive-create :public-key public-key)
+  (let ((entry (he/create
+                :hyperdrive (h/create :public-key public-key)
                 :path path))
         org-id-link-to-org-use-id org-stored-links)
     (with-temp-buffer
       (insert contents)
       ;; TODO: Initialize this buffer only once for this file's tests.
       (org-mode)
-      (hyperdrive-mode)
-      (setq-local hyperdrive-current-entry entry)
+      (h/mode)
+      (setq-local h/current-entry entry)
       (goto-char (point-min))
       (search-forward "★")
-      (org-store-link nil 'interactive)
-      ;; Disable the mode because on Emacs 27, `with-temp-buffer'
-      ;; calls kill-buffer hooks and stuff like that which cause
-      ;; prompting to kill the buffer when running the tests.
-      (hyperdrive-mode -1))
+      (org-store-link nil 'interactive))
     org-stored-links))
 
-(defmacro hyperdrive-test-org-store-link-deftest (scenario)
+(defmacro h/test-org-store-link-deftest (scenario)
   "Test scenario in `hyperdrive-test-org-store-link-scenarios'."
   (let ((test-name (intern
                     (format "hyperdrive-test-org-store-link/%s" scenario))))
     `(ert-deftest ,test-name ()
-       (pcase-let* (((map (:public-key public-key) (:path path) (:content content)
+       (pcase-let* (((map :public-key :path :content
                           (:url expected-url) (:desc expected-desc))
                      ;; TODO: Is there a better syntax that explicit `quote'?
                      (alist-get (quote ,scenario)
-                                hyperdrive-test-org-store-link-scenarios))
+                                h/test-org-store-link-scenarios))
                     (`((,got-url ,got-desc))
-                     (hyperdrive-test-org-store-link content
+                     (h/test-org-store-link content
                        :public-key public-key :path path)))
          (should (string= expected-url got-url))
-         (should (string= ,(if ;; TODO(deprecate-27): Remove this hack someday.
-                               (and (version<= org-version "9.4.4")
-                                    (equal scenario 'org-mode-before-heading))
-                               '(progn
-				  (ignore expected-desc)
-				  expected-url)
-                             'expected-desc)
-                          got-desc))))))
+         (should (string= expected-desc got-desc))))))
 
-;; TODO: Loop through `hyperdrive-test-org-store-link-scenarios'?
-(hyperdrive-test-org-store-link-deftest org-mode-before-heading)
-(hyperdrive-test-org-store-link-deftest org-mode-on-heading-with-custom-id)
-(hyperdrive-test-org-store-link-deftest org-mode-on-heading-no-custom-id)
+;; TODO: Loop through `h/test-org-store-link-scenarios'?
+(h/test-org-store-link-deftest org-mode-before-heading)
+(h/test-org-store-link-deftest org-mode-on-heading-with-custom-id)
+(h/test-org-store-link-deftest org-mode-on-heading-no-custom-id)
 
 ;;;;; Insert links
 
-(cl-defun hyperdrive-test-org-entry-create (&key public-key path)
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key public-key)
+(cl-defun h/test-org-entry-create (&key public-key path)
+  (he/create
+   :hyperdrive (h/create :public-key public-key)
    :path path))
 
-(cl-defun hyperdrive-test-org-insert-link-string (scenario &key public-key path)
+(cl-defun h/test-org-insert-link-string (scenario &key public-key path)
   "Return link for SCENARIO inserted into entry with PUBLIC-KEY and PATH."
   (declare (indent defun))
-  (pcase-let (((map (:url url) (:desc desc))
-               (alist-get scenario hyperdrive-test-org-store-link-scenarios)))
+  (pcase-let (((map :url :desc) (alist-get scenario h/test-org-store-link-scenarios)))
     (with-temp-buffer
       ;; TODO: Initialize this buffer only once for this file's tests.
       (org-mode)
-      (hyperdrive-mode)
-      (setq-local hyperdrive-current-entry (hyperdrive-test-org-entry-create
-                                            :public-key public-key :path path))
+      (h/mode)
+      (setq-local h/current-entry (h/test-org-entry-create
+                                   :public-key public-key :path path))
       (org-insert-link nil url desc)
-      ;; Disable the mode because on Emacs 27, `with-temp-buffer'
-      ;; calls kill-buffer hooks and stuff like that which cause
-      ;; prompting to kill the buffer when running the tests.
-      (hyperdrive-mode -1)
       (buffer-string))))
 
-(cl-defmacro hyperdrive-test-org-insert-link-deftest (name &key public-key path results)
+(cl-defmacro h/test-org-insert-link-deftest (name &key public-key path results)
   "Test inserted link in entry with PUBLIC-KEY and PATH.
 Scenario is the first part of NAME, and RESULTS contain let-bound
 variables and the expected link."
@@ -169,14 +153,14 @@ variables and the expected link."
         (push `(ert-deftest ,test-name ()
                  (let (,@vars)
                    (should (string= ,result
-                                    (hyperdrive-test-org-insert-link-string ',scenario
+                                    (h/test-org-insert-link-string ',scenario
                                       :public-key ,public-key :path ,path)))))
               body-forms)))
     `(progn ,@body-forms)))
 
 ;;;;;; Insert shorthand links
 
-(hyperdrive-test-org-insert-link-deftest org-mode-before-heading/same-drive-same-path
+(h/test-org-insert-link-deftest org-mode-before-heading/same-drive-same-path
   :public-key "deadbeef"
   :path "/foo/bar quux.org"
   :results (( :let ((org-link-file-path-type 'relative))
@@ -188,7 +172,7 @@ variables and the expected link."
             ( :let ((org-link-file-path-type 'adaptive))
               :result "[[./bar quux.org]]")))
 
-(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-with-custom-id/same-drive-same-path
+(h/test-org-insert-link-deftest org-mode-on-heading-with-custom-id/same-drive-same-path
   :public-key "deadbeef"
   :path "/foo/bar quux.org"
   :results (( :let ((org-link-file-path-type 'relative))
@@ -200,7 +184,7 @@ variables and the expected link."
             ( :let ((org-link-file-path-type 'adaptive))
               :result "[[#baz zot][Heading A]]")))
 
-(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-no-custom-id/same-drive-same-path
+(h/test-org-insert-link-deftest org-mode-on-heading-no-custom-id/same-drive-same-path
   :public-key "deadbeef"
   :path "/foo/bar quux.org"
   :results (( :let ((org-link-file-path-type 'relative))
@@ -212,7 +196,7 @@ variables and the expected link."
             ( :let ((org-link-file-path-type 'adaptive))
               :result "[[*Heading A][Heading A]]")))
 
-(hyperdrive-test-org-insert-link-deftest org-mode-before-heading/same-drive-different-path
+(h/test-org-insert-link-deftest org-mode-before-heading/same-drive-different-path
   :public-key "deadbeef"
   :path "/thud.org"
   :results (( :let ((org-link-file-path-type 'relative))
@@ -224,7 +208,7 @@ variables and the expected link."
             ( :let ((org-link-file-path-type 'adaptive))
               :result "[[./foo/bar quux.org]]")))
 
-(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-with-custom-id/same-drive-different-path
+(h/test-org-insert-link-deftest org-mode-on-heading-with-custom-id/same-drive-different-path
   :public-key "deadbeef"
   :path "/thud.org"
   :results (( :let ((org-link-file-path-type 'relative))
@@ -236,7 +220,7 @@ variables and the expected link."
             ( :let ((org-link-file-path-type 'adaptive))
               :result "[[./foo/bar quux.org::#baz zot][Heading A]]")))
 
-(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-no-custom-id/same-drive-different-path
+(h/test-org-insert-link-deftest org-mode-on-heading-no-custom-id/same-drive-different-path
   :public-key "deadbeef"
   :path "/thud.org"
   :results (( :let ((org-link-file-path-type 'relative))
@@ -251,21 +235,21 @@ variables and the expected link."
 ;;;;;; Insert full "hyper://" links
 
 ;; Testing a different drive should stand in for testing
-;; `hyperdrive-org-link-full-url' as well as insertion in
+;; `h/org-link-full-url' as well as insertion in
 ;; non-hyperdrive buffers, since all of these cases cause
-;; `hyperdrive--org-insert-link-after-advice' to do nothing.
+;; `h/org--insert-link-after-advice' to do nothing.
 
-(hyperdrive-test-org-insert-link-deftest org-mode-before-heading/different-drive
+(h/test-org-insert-link-deftest org-mode-before-heading/different-drive
   :public-key "fredbeef"
   :path "/thud.org"
   :results ((:result "[[hyper://deadbeef/foo/bar%20quux.org]]")))
 
-(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-with-custom-id/different-drive
+(h/test-org-insert-link-deftest org-mode-on-heading-with-custom-id/different-drive
   :public-key "fredbeef"
   :path "/thud.org"
   :results ((:result "[[hyper://deadbeef/foo/bar%20quux.org#%3A%3A%23baz%20zot][Heading A]]")))
 
-(hyperdrive-test-org-insert-link-deftest org-mode-on-heading-no-custom-id/different-drive
+(h/test-org-insert-link-deftest org-mode-on-heading-no-custom-id/different-drive
   :public-key "fredbeef"
   :path "/thud.org"
   :results
@@ -274,13 +258,13 @@ variables and the expected link."
 ;;;; Parse relative/absolute link into entry tests
 
 ;; Neither full "hyper://"-prefixed URLs, nor links which are only search
-;; options, are handled by `hyperdrive--org-link-entry-at-point'.
+;; options, are handled by `h/org--link-entry-at-point'.
 
-(defmacro hyperdrive-org-test-link-parse-deftest (name current-entry link parsed-entry)
+(defmacro h/org-test-link-parse-deftest (name current-entry link parsed-entry)
   (declare (indent defun))
   (let ((test-name (intern (format "hyperdrive-test-org-parse-link/%s" name))))
     `(ert-deftest ,test-name ()
-       (let ((hyperdrive-current-entry ,current-entry))
+       (let ((h/current-entry ,current-entry))
          (with-temp-buffer
            ;; FIXME: Use persistent buffer for performance.
            (org-mode)
@@ -288,61 +272,70 @@ variables and the expected link."
            (insert ,link)
            (goto-char (point-min))
            (should
-            (hyperdrive-entry-equal-p ,parsed-entry (hyperdrive--org-link-entry-at-point))))))))
+            (he/equal-p ,parsed-entry (h/org--link-entry-at-point))))))))
 
-(hyperdrive-org-test-link-parse-deftest absolute/without-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/org-test-link-parse-deftest absolute/without-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org")
   "[[/foo/bar quux.org]]"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org"))
 
-(hyperdrive-org-test-link-parse-deftest parent/without-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/org-test-link-parse-deftest parent/without-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org")
   "[[../foo/bar quux.org]]"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org"))
 
-(hyperdrive-org-test-link-parse-deftest sibling/without-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/org-test-link-parse-deftest sibling/without-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org")
   "[[./bar quux.org]]"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org"))
 
-(hyperdrive-org-test-link-parse-deftest sibling/with-heading-text-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/org-test-link-parse-deftest sibling/with-heading-text-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org")
   "[[./bar quux.org::Heading A]]"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org"
    :etc '((target . "Heading A"))))
 
-(hyperdrive-org-test-link-parse-deftest sibling/with-heading-text*-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/org-test-link-parse-deftest sibling/with-heading-text*-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org")
   "[[./bar quux.org::*Heading A]]"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org"
    :etc '((target . "*Heading A"))))
 
-(hyperdrive-org-test-link-parse-deftest sibling/with-custom-id-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/org-test-link-parse-deftest sibling/with-custom-id-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org")
   "[[./bar quux.org::#baz zot]]"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.org"
    :etc '((target . "#baz zot"))))
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
+;;; test-hyperdrive-org.el ends here

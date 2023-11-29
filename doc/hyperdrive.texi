@@ -133,6 +133,7 @@ Hyperdrive
 
 * Sparse replication::
 * Versioning::
+* Master key::
 
 Versioning
 
@@ -295,7 +296,7 @@ you can use the following snippet to install from that repository:
 
 In your @code{init.el}, type @code{M-x eval-buffer RET}.
 
-If all goes well, @code{hyperdrive.el} commands like @code{M-x hyperdrive-start}
+If all goes well, @code{hyperdrive.el} commands like @code{M-x hyperdrive-menu}
 should now be available.  The documentation for @code{hyperdrive.el} should
 also be installed.
 
@@ -572,11 +573,7 @@ URL@.
 You can have multiple hyperdrives, each one containing its own set of
 files. Run @code{M-x hyperdrive-new} then type in a @code{seed} (see @ref{Seeds}) to
 create a new hyperdrive. That seed will be combined with your secret
-master key, which is generated for you by @code{hyper-gateway}, to produce a
-public key (see @ref{Public keys}) that uniquely identifies that
-hyperdrive. @code{hyperdrive-new} is idempotent since the same seed will
-always produce the same public key. For this reason, a hyperdrive's
-seed cannot be changed.
+master key (see @ref{Master key}) to produce a public key (see @ref{Public keys}) that uniquely identifies that hyperdrive.
 
 @node Write to a hyperdrive
 @section Write to a hyperdrive
@@ -590,7 +587,7 @@ You can write a buffer to a hyperdrive with @code{hyperdrive-write-buffer},
 which will prompt you for one of hyperdrives you have created as well
 as the path in that hyperdrive where you want to store the file. If
 you are editing an existing hyperdrive file, @code{save-buffer} will
-silently update the current hyperdrive entry with the new content.
+silently update the current hyperdrive file with the new content.
 
 @code{hyperdrive.el} will prompt to save modified hyperdrive files before
 exiting Emacs. If you want the command @code{save-some-buffers} to always
@@ -651,8 +648,8 @@ all point to @code{hyper://PUBLIC-KEY/bar.md}.
 You can use @code{hyperdrive-delete} to delete the hyperdrive file in the
 current buffer.  This command has a keybinding in the @ref{Directory view, , directory view}.
 
-@strong{Note that deleted files can be accessed by @ref{View the hyperdrive version history, , loading a prior version} of
-the hyperdrive.}
+@strong{Please note that deleted files can be accessed by @ref{View the hyperdrive version history, , loading a prior version}
+of the hyperdrive.}
 
 @node View the hyperdrive version history
 @section View the hyperdrive version history
@@ -818,37 +815,37 @@ t}.  Interactively, use two universal prefix arguments @code{C-u C-u}.
 @node Mirror files by tag or other attributes
 @subsection Mirror files by tag or other attributes
 
-@code{hyperdrive-mirror} can accept a @code{PREDICATE} argument, which you can
+@code{hyperdrive-mirror} can accept a @code{FILTER} argument, which you can
 use to upload only certain files.  Interactively, one universal prefix
-argument @code{C-u} make this command prompt you for @code{PREDICATE}.
+argument @code{C-u} make this command prompt you for @code{FILTER}.
 
 Let's say that you have some files on your filesystem in the @code{~/blog/}
 directory, but you only want to upload those files which have been
 tagged as ``public'' using Protesilaos Stavrou's @uref{https://protesilaos.com/emacs/denote, Denote} file-naming
 scheme.
 
-The following snippet includes a @code{PREDICATE} key whose value is a
+The following snippet includes a @code{FILTER} key whose value is a
 regular expression against which every expanded filename inside will
 be tested.
 
 @lisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
-                   :predicate ".*_public.*")
+                   :filter ".*_public.*")
 @end lisp
 
 Alternatively, you could select files by tag with Karl Voit's
 @uref{https://github.com/novoid/filetags/, filetags}. Either way allows for a ``non-splitting'' approach where
 public and private files exist in the same directory.
 
-@code{PREDICATE} may also be a function, which receives the expanded filename
+@code{FILTER} may also be a function, which receives the expanded filename
 as its only argument. For example, the following snippet will mirror
 only those files in @code{~/blog/} which are smaller than 5MB:
 
 @lisp
 (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
                    :target-dir "/blog/"
-                   :predicate (lambda (file) (> (* 5 1024 1024)
+                   :filter (lambda (file) (> (* 5 1024 1024)
                                               (file-attribute-size (file-attributes file)))))
 @end lisp
 
@@ -871,8 +868,8 @@ available on the network.}
 @findex hyperdrive-by-slot
 
 In writing your own functions to extend @code{hyperdrive.el}, you can use
-@code{hyperdrive-by-slot} to access a hyperdrive entry by its seed, petname,
-or public key.
+@code{hyperdrive-by-slot} to access a hyperdrive by its seed, petname, or
+public key.
 
 For examples, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
 
@@ -948,6 +945,7 @@ be accessed.  See @ref{Versioning} for more information.
 @menu
 * Sparse replication::
 * Versioning::
+* Master key::
 @end menu
 
 @node Sparse replication
@@ -968,19 +966,23 @@ Hyperdrives are versioned, meaning that it is possible to explore a
 hyperdrive as it was in the past. Version numbers indicate the
 hyperdrive's version. For example, @code{hyper://PUBLIC-KEY/$/version/50/}
 refers to the fiftieth version of the hyperdrive identified by
-@code{PUBLIC-KEY}. Loading a hyperdrive entry without specifying a version
-number always loads the most recent version of that hyperdrive. If you
-pass @code{hyper://PUBLIC-KEY/foo.org} to @code{hyperdrive-open-url}, @code{hyperdrive.el}
-will always attempt to find @code{/foo.org} inside the latest version of that
-hyperdrive.
+@code{PUBLIC-KEY}. If you want to load the latest version, leave out the
+@code{/$/version/N} part.  For example, if you run@dots{}
 
-Whenever you update an entry, the hyperdrive's version number gets
-incremented by 1. The version number tells you how many times the
-hyperdrive has been modified, not how many times a particular entry
-has been modified. For example, let's say that the current version of
-your hyperdrive at @code{hyper://PUBLIC-KEY/} is 50. If you add a new entry
-at @code{hyper://PUBLIC-KEY/bar.org}, the latest version of your hyperdrive
-will become 51.
+@example
+M-x hyperdrive-open-url RET hyper://PUBLIC-KEY/foo.org RET
+@end example
+
+@dots{}then @code{hyperdrive.el} will attempt to find @code{/foo.org} inside the latest version
+of that hyperdrive.
+
+Whenever you add a file, remove a file, or change a file, the
+hyperdrive's version number gets incremented by 1. The version number
+tells you how many times the hyperdrive has been modified, not how
+many times a particular file has been modified. For example, let's say
+that the current version of your hyperdrive at @code{hyper://PUBLIC-KEY/}
+is 50. If you add a new file at @code{hyper://PUBLIC-KEY/bar.org}, the latest
+version of your hyperdrive will become 51.
 
 Since @code{/bar.org} did not exist before version 51, @code{hyperdrive.el} should
 warn you that nothing exists at
@@ -988,10 +990,9 @@ warn you that nothing exists at
 @code{hyper://PUBLIC-KEY/quux.org}, your hyperdrive's latest version will
 become 52. For the moment, @code{hyper://PUBLIC-KEY/bar.org},
 @code{hyper://PUBLIC-KEY/$/version/51/bar.org}, and
-@code{hyper://PUBLIC-KEY/$/version/52/bar.org}, all point to the same
-version of @code{/bar.org}. If you then make a change to @code{/bar.org}, your
-hyperdrive's latest version will become 53. Now
-@code{hyper://PUBLIC-KEY/bar.org} and
+@code{hyper://PUBLIC-KEY/$/version/52/bar.org}, all point to the same version
+of @code{/bar.org}. If you then make a change to @code{/bar.org}, your hyperdrive's
+latest version will become 53. Now @code{hyper://PUBLIC-KEY/bar.org} and
 @code{hyper://PUBLIC-KEY/$/version/53/bar.org} will point to the latest
 version of @code{/bar.org}, while the 51- and 52-versioned URLs will continue
 to point to the original version.
@@ -1015,10 +1016,13 @@ hyperdrive history until version 51 (when it was created) and that it
 was modified at version 53.  Since the final range number in the table
 is 53, we also know that the hyperdrive's latest version is 53.
 
-If you delete @code{/bar.org}, @code{hyper://PUBLIC-KEY/bar.org} will no longer
-point to anything, but the versioned URLs will still work.
+If you delete @code{/bar.org} then try to load @code{hyper://PUBLIC-KEY/bar.org},
+@code{hyperdrive.el} will open an empty buffer for you to author a new file.
+If another user (not you) attempts to load that URL, @code{hyperdrive.el}
+will warn @code{"URL not found"}.  All users can still access the old file
+contents at the versioned URLs.
 
-Since only the current version of a hyperdrive entry can be updated,
+Since only the current version of a hyperdrive file can be updated,
 @code{hyperdrive.el} sets the buffer to read-only whenever a version number
 is specified in a hyper URL@.
 
@@ -1111,6 +1115,13 @@ contains, which can never prove that a directory doesn't exist.
 @end enumerate
 @end itemize
 
+@node Master key
+@subsection Master key
+
+The secret master key is combined with a seed (see @ref{Seeds}) to generate
+a new public key for a hyperdrive when you run @code{hyperdrive-new}.  Your
+master key is generated automatically by @code{hyper-gateway}.
+
 @node Hyper-gateway
 @section Hyper-gateway
 
@@ -1126,6 +1137,7 @@ to write files to a hyperdrive.
 @section Naming
 
 @cindex Naming
+@vindex hyperdrive-formats
 
 Inspired by Marc Stiegler's @uref{http://www.skyhunter.com/marcs/petnames/IntroPetNames.html, An Introduction to Petname Systems},
 @code{hyperdrive.el} names drives in a three different ways:
@@ -1166,15 +1178,12 @@ public, globally unique, human-memorable
 @cindex Public keys
 @findex hyperdrive-new
 
-Public keys are 52-character-long, @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated
-from your secret master key and a seed string. @code{hyper-gateway} generates
-the secret key for you, and you provide a seed (see @ref{Seeds}) when
-generating a new drive with @code{hyperdrive-new}.
-
-Public keys allow for permanent links to hyperdrive content. When
-sharing a hyperdrive with someone else, you will need to copy its full
-URL@. Peers can load your hyperdrive files directly from your computer
-or from other peers who previously loaded those files.
+Public keys are globally unique identifiers for hyperdrives.  They
+make up the first part of a @code{hyper://} URL@.  Public keys are
+52-character-long @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated from your master
+key (see @ref{Master key}) and a @ref{Seeds, , seed} string.  When you run @code{hyperdrive-new}
+and type a new seed, @code{hyper-gateway} automatically generates a new
+public key.
 
 @node Nicknames
 @subsection Nicknames
@@ -1182,14 +1191,14 @@ or from other peers who previously loaded those files.
 @cindex Nicknames
 @findex hyperdrive-set-nickname
 
-Nicknames are public, memorable names which users can give to their
-own hyperdrives. Other users can see the nicknames you give to your
-hyperdrives.
+Nicknames are public, memorable names which you can give to your own
+hyperdrives to make them easier for others to recognize.  Other users
+can see your nicknames but cannot change them.
 
 Nicknames are stored in each hyperdrive inside
 @code{/.well-known/host-meta.json} under the @code{name} key, as specified in
-RFC6415. You can only assign a nickname to hyperdrives which you have
-created. Nicknames can be changed with @code{hyperdrive-set-nickname}.
+@uref{https://www.rfc-editor.org/rfc/rfc6415#section-6.1, RFC6415}.  You can update a hyperdrive's nickname with
+@code{hyperdrive-set-nickname}.
 
 @node Petnames
 @subsection Petnames
@@ -1209,10 +1218,11 @@ petname by default. Petnames can be changed with
 
 @cindex Seeds
 
-Along with your secret master key, seeds are used to generate public
-keys (see @ref{Public keys}). A seed has a one-to-one relationship with a
-drive. Seeds are local but not secret. To share a drive, you must use
-a public key or DNS domain (see @ref{DNS domains}).
+Seeds are used in tandem with your secret master key (see @ref{Master key})
+to generate public keys (see @ref{Public keys}).  The same seed and master
+key will always produce the same public key, so a hyperdrive's seed
+cannot be changed.  Seeds are local but not secret.  To share a drive,
+you must use a public key or DNS domain (see @ref{DNS domains}).
 
 @node DNS domains
 @subsection DNS domains
@@ -1298,13 +1308,6 @@ Display buffer action
 for hyperdrive history buffers. Passed to @code{display-buffer}, which see.
 @end table
 
-@vindex hyperdrive-default-host-format
-@table @asis
-@item @code{hyperdrive-default-host-format}
-Default format for displaying
-hyperdrive hostnames. See @ref{Naming} section for what this means.
-@end table
-
 @vindex hyperdrive-stream-player-command
 @table @asis
 @item @code{hyperdrive-stream-player-command}
@@ -1343,6 +1346,62 @@ By default (@code{any-version}), opening a hyperdrive file or directory
 reuses a buffer that is already visiting it, regardless of
 version. To have separate buffers for each version of a
 file/directory, use @code{same-version}.
+@end table
+
+@vindex hyperdrive-preferred-formats
+@table @asis
+@item @code{hyperdrive-preferred-formats}
+List of metadata types used to
+display hyperdrives.  Hyperdrives are displayed using the first
+available metadata type.  See @ref{Naming} section for what this means.
+@end table
+
+@vindex hyperdrive-default-entry-format
+@table @asis
+@item @code{hyperdrive-default-entry-format}
+Format string for displaying
+hyperdrive entries (files/directories).  By default, entries are
+displayed with the preferred hyperdrive format in brackets (see
+@code{hyperdrive-preferred-formats}), followed by the full entry path,
+followed by ``version: '' and version in parentheses.
+@end table
+
+@vindex hyperdrive-buffer-name-format
+@table @asis
+@item @code{hyperdrive-buffer-name-format}
+Format string for buffer names of
+buffers visiting hyperdrive files/directories.  By default, this
+format is like @code{hyperdrive-default-entry-format} with the entry name
+sans directory instead of the full path.
+@end table
+
+@vindex hyperdrive-formats
+@table @asis
+@item @code{hyperdrive-formats}
+Alist mapping hyperdrive and hyperdrive
+entry metadata to a format string, used in
+@code{hyperdrive-default-entry-format} and @code{hyperdrive-buffer-name-format} as
+well as other places hyperdrives or entries are displayed.  By
+default, each metadatum is prefixed by its type, e.g., the petname
+@code{foo} is displayed by default as @code{petname:foo}.
+
+Feel free to adjust the following example configuration for
+abbreviated labels:
+
+@lisp
+(setq hyperdrive-formats '((name . "%s")
+                           (version . " (%s)")
+                           (path . "%s")
+                           (petname . "p:%s")
+                           (nickname . "n:%s")
+                           (public-key . "k:%s")
+                           (short-key . "k:%.8s…")
+                           (seed . "s:%s")
+                           (domains . "d:%s")))
+@end lisp
+
+With this snippet, the petname @code{foo} now displays as @code{p:foo}.  For further
+customization, run @code{M-x customize-group RET ~hyperdrive-entry-format}.
 @end table
 
 @menu
@@ -1468,9 +1527,7 @@ world of p2p as well as the development of @code{hyper-gateway}.
 
 @uref{https://protesilaos.com, Protesilaos Stavrou} for design input and user-testing @code{hyperdrive.el}.
 
-@uref{https://karl-voit.at/, Karl Voit} for his feedback, especially the
-suggestion that we allow for a non-splitting approach for uploading
-files from the filesystem.
+@uref{https://karl-voit.at/, Karl Voit} for his feedback which inspired the design of @code{hyperdrive-mirror}.
 
 @uref{https://www.sanityinc.com/, Steve Purcell} and @uref{https://github.com/akirak, Akira Komamura} for suggestions to improve our CI
 build manifests.

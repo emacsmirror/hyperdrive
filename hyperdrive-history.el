@@ -29,23 +29,23 @@
 (require 'cl-lib)
 
 (require 'hyperdrive-lib)
-(require 'hyperdrive-ewoc)
+(require 'h/ewoc)
 
 ;;;; Functions
 
-(defun hyperdrive-history-find-at-point (event)
+(defun h/history-find-at-point (event)
   "Find entry at EVENT's position."
   (interactive "e")
   (mouse-set-point event)
-  (call-interactively #'hyperdrive-history-find-file-other-window))
+  (call-interactively #'h/history-find-file-other-window))
 
-(defun hyperdrive-history-pp (thing)
+(defun h/history-pp (thing)
   "Pretty-print THING.
 To be used as the pretty-printer for `ewoc-create'."
   ;; FIXME: Perform type-checking? If not, is this function necessary?
-  (insert (hyperdrive-history--format-range-entry thing)))
+  (insert (h/history--format-range-entry thing)))
 
-(defun hyperdrive-history--format-range-entry (range-entry)
+(defun h/history--format-range-entry (range-entry)
   "Return RANGE-ENTRY formatted as a string.
 RANGE-ENTRY is a cons cell whose car is a range according to
 `hyperdrive-version-ranges', except that \\+`:existsp' may have the
@@ -63,18 +63,18 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                (size (when size
                        (file-size-human-readable size)))
                (timestamp (if mtime
-                              (format-time-string hyperdrive-timestamp-format mtime)
-                            (propertize " " 'display '(space :width hyperdrive-timestamp-width)))))
+                              (format-time-string h/timestamp-format mtime)
+                            (propertize " " 'display '(space :width h/timestamp-width)))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
     (format "%7s  %19s  %6s  %s"
             (propertize exists-marker
                         'face (pcase-exhaustive existsp
-                                ('t 'hyperdrive-history-existent)
-                                ('nil 'hyperdrive-history-nonexistent)
-                                ('unknown 'hyperdrive-history-unknown)))
+                                ('t 'h/history-existent)
+                                ('nil 'h/history-nonexistent)
+                                ('unknown 'h/history-unknown)))
             (propertize formatted-range
-                        'face 'hyperdrive-history-range
+                        'face 'h/history-range
                         'mouse-face 'highlight
                         'help-echo (format (pcase-exhaustive existsp
                                              ('t "Open version %s")
@@ -82,33 +82,33 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                                              ('unknown "Load history at version %s"))
                                            range-start))
             (propertize (or size "")
-                        'face 'hyperdrive-size)
+                        'face 'h/size)
             (propertize (or timestamp "")
-                        'face 'hyperdrive-timestamp))))
+                        'face 'h/timestamp))))
 
-(defun hyperdrive-history-range-entry-at-point ()
+(defun h/history-range-entry-at-point ()
   "Return range-entry at version at point.
 With point below last entry, signals a user-error.
 With point on header, returns a rangle-entry whose RANGE-END
 and ENTRY's version are nil."
   (let ((current-line (line-number-at-pos))
-        (last-line (line-number-at-pos (ewoc-location (ewoc-nth hyperdrive-ewoc -1))))
-        (range-entry-at-point (ewoc-data (ewoc-locate hyperdrive-ewoc))))
+        (last-line (line-number-at-pos (ewoc-location (ewoc-nth h/ewoc -1))))
+        (range-entry-at-point (ewoc-data (ewoc-locate h/ewoc))))
     (cond ((= 1 current-line)
            ;; Point on header: set range-end and entry version to nil
            (pcase-let ((`(,range . ,entry)
-                        (hyperdrive-copy-tree range-entry-at-point t)))
+                        (h/copy-tree range-entry-at-point t)))
              (setf (map-elt (cdr range) :range-end) nil)
-             (setf (hyperdrive-entry-version entry) nil)
+             (setf (he/version entry) nil)
              (cons range entry)))
           ((or (> current-line last-line) (= 2 current-line))
            ;; Point is below the last entry or on column headers: signal error.
-           (hyperdrive-user-error "No file on this line"))
+           (h/user-error "No file on this line"))
           (t
            ;; Point on a file entry: return its entry.
            range-entry-at-point))))
 
-(defun hyperdrive-range-entry-exists-p (range-entry)
+(defun h/range-entry-exists-p (range-entry)
   "Return status of RANGE-ENTRY's existence at its version.
 
 - t       :: ENTRY is known to exist.
@@ -118,39 +118,39 @@ and ENTRY's version are nil."
                ((map (:existsp existsp)) (cdr range)))
     existsp))
 
-(defun hyperdrive-history-revert-buffer (&optional _ignore-auto _noconfirm)
+(defun h/history-revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-history-mode' buffer."
   ;; TODO: Preserve point position in buffer.
-  (hyperdrive-history hyperdrive-current-entry))
+  (h/history h/current-entry))
 
 ;;;; Mode
 
-(defvar-keymap hyperdrive-history-mode-map
-  :parent  hyperdrive-ewoc-mode-map
+(defvar-keymap h/history-mode-map
+  :parent  h/ewoc-mode-map
   :doc "Local keymap for `hyperdrive-history-mode' buffers."
-  "RET" #'hyperdrive-history-find-file
-  "o"   #'hyperdrive-history-find-file-other-window
-  "v"   #'hyperdrive-history-view-file
-  "="   #'hyperdrive-history-diff
-  "+"   #'hyperdrive-history-fill-version-ranges
-  "w"   #'hyperdrive-history-copy-url
-  "d"   #'hyperdrive-history-download-file
-  "<mouse-2>" #'hyperdrive-history-find-at-point
+  "RET" #'h/history-find-file
+  "o"   #'h/history-find-file-other-window
+  "v"   #'h/history-view-file
+  "="   #'h/history-diff
+  "+"   #'h/history-fill-version-ranges
+  "w"   #'h/history-copy-url
+  "d"   #'h/history-download-file
+  "<mouse-2>" #'h/history-find-at-point
   "<follow-link>" 'mouse-face)
 
-(define-derived-mode hyperdrive-history-mode hyperdrive-ewoc-mode
+(define-derived-mode h/history-mode h/ewoc-mode
   `("Hyperdrive-history"
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive history buffers."
   ;; TODO: Add revert buffer function. This will likely require
-  ;; binding hyperdrive-current-entry in this mode. Consider keeping
+  ;; binding h/current-entry in this mode. Consider keeping
   ;; the version around so that we can highlight the line
   ;; corresponding to version currently open in another buffer.
   :group 'hyperdrive
   :interactive nil
-  (setf hyperdrive-ewoc (ewoc-create #'hyperdrive-history-pp))
-  (setq-local revert-buffer-function #'hyperdrive-history-revert-buffer))
+  (setf h/ewoc (ewoc-create #'h/history-pp))
+  (setq-local revert-buffer-function #'h/history-revert-buffer))
 
 ;;;; Commands
 
@@ -161,10 +161,10 @@ and ENTRY's version are nil."
 Interactively, open version history for current file ENTRY or
 ENTRY at point in a directory.  Otherwise, or with universal
 prefix argument \\[universal-argument], prompt for ENTRY."
-  (interactive (list (hyperdrive--context-entry)))
+  (interactive (list (h//context-entry)))
   ;; TODO: Highlight range for ENTRY
-  (when (hyperdrive--entry-directory-p entry)
-    (hyperdrive-user-error "Directory history not implemented"))
+  (when (h//entry-directory-p entry)
+    (h/user-error "Directory history not implemented"))
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                (range-entries
                 (mapcar (lambda (range)
@@ -172,38 +172,38 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                           ;; as in the version before it was created, see:
                           ;; (info "(hyperdrive)Versioning")
                           (cons range
-                                (hyperdrive-entry-create
+                                (he/create
                                  :hyperdrive hyperdrive
                                  :path path
                                  ;; Set version to range-start
                                  :version (car range))))
                         ;; Display in reverse chronological order
-                        (nreverse (hyperdrive-entry-version-ranges-no-gaps entry))))
-               (main-header (hyperdrive-entry-description entry :with-version nil))
+                        (nreverse (he/version-ranges-no-gaps entry))))
+               (main-header (h//format-entry entry "[%H] %p"))
                (header (concat main-header "\n"
                                (format "%7s  %19s  %6s  %s"
-                                       (propertize "Exists" 'face 'hyperdrive-column-header)
-                                       (propertize "Drive Version Range" 'face 'hyperdrive-column-header)
-                                       (propertize "Size" 'face 'hyperdrive-column-header)
-                                       (format (format "%%%ds" hyperdrive-timestamp-width)
-                                               (propertize "Last Modified" 'face 'hyperdrive-column-header)))))
+                                       (propertize "Exists" 'face 'h/column-header)
+                                       (propertize "Drive Version Range" 'face 'h/column-header)
+                                       (propertize "Size" 'face 'h/column-header)
+                                       (format (format "%%%ds" h/timestamp-width)
+                                               (propertize "Last Modified" 'face 'h/column-header)))))
                (queue) (ewoc))
     (with-current-buffer (get-buffer-create
-                          (format "*Hyperdrive-history: %s %s*"
-                                  (hyperdrive--format-host hyperdrive :with-label t) path))
+                          (format "*Hyperdrive-history: %s*"
+                                  (h//format-entry entry "[%H] %p")))
       (with-silent-modifications
-        (hyperdrive-history-mode)
-        (setq-local hyperdrive-current-entry entry)
-        (setf ewoc hyperdrive-ewoc) ; Bind this for the hyperdrive-fill lambda.
-        (ewoc-filter hyperdrive-ewoc #'ignore)
+        (h/history-mode)
+        (setq-local h/current-entry entry)
+        (setf ewoc h/ewoc) ; Bind this for the h/fill lambda.
+        (ewoc-filter h/ewoc #'ignore)
         (erase-buffer)
-        (ewoc-set-hf hyperdrive-ewoc header "")
+        (ewoc-set-hf h/ewoc header "")
         (mapc (lambda (range-entry)
-                (ewoc-enter-last hyperdrive-ewoc range-entry))
+                (ewoc-enter-last h/ewoc range-entry))
               range-entries))
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
-      (display-buffer (current-buffer) hyperdrive-history-display-buffer-action)
-      (setf queue (make-plz-queue :limit hyperdrive-queue-limit
+      (display-buffer (current-buffer) h/history-display-buffer-action)
+      (setf queue (make-plz-queue :limit h/queue-limit
                                   :finally (lambda ()
                                              ;; NOTE: Ensure that the buffer's window is selected,
                                              ;; if it has one.  (Workaround a possible bug in EWOC.)
@@ -211,10 +211,10 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                                                  (with-selected-window buffer-window
                                                    ;; TODO: Use `ewoc-invalidate' on individual entries
                                                    ;; (maybe later, as performance comes to matter more).
-                                                   (with-silent-modifications (ewoc-refresh hyperdrive-ewoc))
+                                                   (with-silent-modifications (ewoc-refresh h/ewoc))
                                                    (goto-char (point-min)))
                                                (with-current-buffer (ewoc-buffer ewoc)
-                                                 (with-silent-modifications (ewoc-refresh hyperdrive-ewoc))
+                                                 (with-silent-modifications (ewoc-refresh h/ewoc))
                                                  (goto-char (point-min))))
                                              ;; TODO: Accept then argument?
                                              ;; (with-current-buffer (ewoc-buffer ewoc)
@@ -222,48 +222,47 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                                              ;;     (funcall then)))
                                              )))
       (mapc (lambda (range-entry)
-              (when (eq t (hyperdrive-range-entry-exists-p range-entry))
+              (when (eq t (h/range-entry-exists-p range-entry))
                 ;; TODO: Handle failures?
-                (hyperdrive-fill (cdr range-entry) :queue queue :then #'ignore)))
+                (h/fill (cdr range-entry) :queue queue :then #'ignore)))
             range-entries)
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))
 
 ;; TODO: Add pcase-defmacro for destructuring range-entry
-(defun hyperdrive-history-fill-version-ranges (range-entry)
+(defun h/history-fill-version-ranges (range-entry)
   "Fill version ranges starting from RANGE-ENTRY at point."
-  (interactive (list (hyperdrive-history-range-entry-at-point)))
+  (interactive (list (h/history-range-entry-at-point)))
   (pcase-let* ((`(,range . ,entry) range-entry)
                (`(,_range-start . ,(map (:range-end range-end))) range)
-               (range-end-entry (hyperdrive-copy-tree entry))
+               (range-end-entry (h/copy-tree entry))
                (ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
-    (setf (hyperdrive-entry-version range-end-entry) range-end)
+    (setf (he/version range-end-entry) range-end)
     (overlay-put ov 'display "Loading")
-    (hyperdrive-fill-version-ranges range-end-entry
+    (h/fill-version-ranges range-end-entry
       :finally (lambda ()
                  ;; TODO: Should we open the history buffer for entry
                  ;; or range-end-entry or...?
                  (delete-overlay ov)
-                 (hyperdrive-history entry)))))
+                 (h/history entry)))))
 
-(declare-function hyperdrive-diff-file-entries "hyperdrive-diff")
-(defun hyperdrive-history-diff (old-entry new-entry)
+(declare-function h/diff-file-entries "hyperdrive-diff")
+(defun h/history-diff (old-entry new-entry)
   "Show diff between OLD-ENTRY and NEW-ENTRY.
 Interactively, diff range entry at point with previous entry."
-  (declare (modes hyperdrive-history-mode))
   ;; TODO: Set entries based on marked ranges
   ;; TODO: What to do for unknown range-entries?
-  (interactive (let* ((new-entry (cdr (hyperdrive-history-range-entry-at-point)))
-                      (old-entry (hyperdrive-entry-previous new-entry)))
+  (interactive (let* ((new-entry (cdr (h/history-range-entry-at-point)))
+                      (old-entry (he/previous new-entry)))
                  (unless old-entry
-                   (setf old-entry (hyperdrive-copy-tree new-entry t))
-                   (cl-decf (hyperdrive-entry-version old-entry)))
-                 (list old-entry new-entry)))
-  (hyperdrive-diff-file-entries old-entry new-entry
+                   (setf old-entry (h/copy-tree new-entry t))
+                   (cl-decf (he/version old-entry)))
+                 (list old-entry new-entry)) h/history-mode)
+  (h/diff-file-entries old-entry new-entry
     :then (lambda ()
             (pop-to-buffer (current-buffer)))))
 
-(cl-defun hyperdrive-history-find-file
+(cl-defun h/history-find-file
     (range-entry &key (then (lambda ()
                               (pop-to-buffer (current-buffer) '(display-buffer-same-window)))))
   "Visit hyperdrive entry in RANGE-ENTRY at point.
@@ -273,20 +272,19 @@ entry at RANGE-ENTRY's RANGE-END.
 
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
-  (declare (modes hyperdrive-history-mode))
-  (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
+  (interactive (list (h/history-range-entry-at-point)) h/history-mode)
+  (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: open it.
-     (hyperdrive-open (cdr range-entry) :then then))
+     (h/open (cdr range-entry) :then then))
     ('nil
      ;; Known to not exist: warn user.
-     (hyperdrive-user-error "File does not exist!"))
+     (h/user-error "File does not exist!"))
     ('unknown
      ;; Not known to exist: fill version ranges:
-     (hyperdrive-history-fill-version-ranges range-entry))))
+     (h/history-fill-version-ranges range-entry))))
 
-(defun hyperdrive-history-find-file-other-window (range-entry)
+(defun h/history-find-file-other-window (range-entry)
   "Visit hyperdrive entry in RANGE-ENTRY at point in other window.
 Then call THEN.  When entry does not exist, does nothing and
 returns nil.  When entry is not known to exist, attempts to load
@@ -294,59 +292,55 @@ entry at RANGE-ENTRY's RANGE-END.
 
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
-  (declare (modes hyperdrive-history-mode))
-  (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (hyperdrive-history-find-file
+  (interactive (list (h/history-range-entry-at-point)) h/history-mode)
+  (h/history-find-file
    range-entry :then (lambda ()
                        (pop-to-buffer (current-buffer) t))))
 
-(declare-function hyperdrive-view-file "hyperdrive")
-(defun hyperdrive-history-view-file (range-entry)
+(declare-function h/view-file "hyperdrive")
+(defun h/history-view-file (range-entry)
   "Open hyperdrive entry in RANGE-ENTRY at point in `view-mode'.
 When entry does not exist or is not known to exist, does nothing
 and returns nil.
 
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
-  (declare (modes hyperdrive-history-mode))
-  (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
+  (interactive (list (h/history-range-entry-at-point)) h/history-mode)
+  (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: open it.
-     (hyperdrive-view-file (cdr range-entry)))
+     (h/view-file (cdr range-entry)))
     ('nil
      ;; Known to not exist: warn user.
-     (hyperdrive-user-error "File does not exist!"))
+     (h/user-error "File does not exist!"))
     ('unknown
      ;; Not known to exist: fill version ranges:
-     (hyperdrive-history-fill-version-ranges range-entry))))
+     (h/history-fill-version-ranges range-entry))))
 
-(declare-function hyperdrive-copy-url "hyperdrive")
+(declare-function h/copy-url "hyperdrive")
 
-(defun hyperdrive-history-copy-url (range-entry)
+(defun h/history-copy-url (range-entry)
   "Copy URL of entry in RANGE-ENTRY into the kill ring."
-  (declare (modes hyperdrive-history-mode))
-  (interactive (list (hyperdrive-history-range-entry-at-point)))
-  (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
+  (interactive (list (h/history-range-entry-at-point)) h/history-mode)
+  (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: copy it.
-     (hyperdrive-copy-url (cdr range-entry)))
+     (h/copy-url (cdr range-entry)))
     ('nil
      ;; Known to not exist: warn user.
-     (hyperdrive-user-error "File does not exist!"))
+     (h/user-error "File does not exist!"))
     ('unknown
      ;; Not known to exist: warn user.
-     (hyperdrive-user-error "File not known to exist!"))))
+     (h/user-error "File not known to exist!"))))
 
-(declare-function hyperdrive-download "hyperdrive")
+(declare-function h/download "hyperdrive")
 
-(defun hyperdrive-history-download-file (range-entry filename)
+(defun h/history-download-file (range-entry filename)
   "Download entry in RANGE-ENTRY at point to FILENAME on disk."
-  (declare (modes hyperdrive-history-mode))
   (interactive
-   (pcase-let* ((range-entry (hyperdrive-history-range-entry-at-point))
+   (pcase-let* ((range-entry (h/history-range-entry-at-point))
                 ((cl-struct hyperdrive-entry name) (cdr range-entry))
-                (read-filename (when (eq t (hyperdrive-range-entry-exists-p range-entry))
+                (read-filename (when (eq t (h/range-entry-exists-p range-entry))
                                  ;; Only prompt for filename when entry exists
 
                                  ;; FIXME: This function is only intended for
@@ -355,18 +349,26 @@ buffer."
                                  ;; in the body? This change would deduplicate the
                                  ;; check for the existence of the entry.
                                  (read-file-name "Filename: "
-                                                 (expand-file-name name hyperdrive-download-directory)))))
-     (list range-entry read-filename)))
-  (pcase-exhaustive (hyperdrive-range-entry-exists-p range-entry)
+                                                 (expand-file-name name h/download-directory)))))
+     (list range-entry read-filename)) h/history-mode)
+  (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
      ;; Known to exist: download it.
-     (hyperdrive-download (cdr range-entry) filename))
+     (h/download (cdr range-entry) filename))
     ('nil
      ;; Known to not exist: warn user.
-     (hyperdrive-user-error "File does not exist!"))
+     (h/user-error "File does not exist!"))
     ('unknown
      ;; Not known to exist: warn user.
-     (hyperdrive-user-error "File not known to exist!"))))
+     (h/user-error "File not known to exist!"))))
 
-(provide 'hyperdrive-history)
+(provide 'h/history)
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
 ;;; hyperdrive-history.el ends here

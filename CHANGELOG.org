@@ -24,6 +24,8 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Simplified ~hyperdrive-menu~ by moving commands which required
   selecting a hyperdrive into ~hyperdrive-menu-hyperdrive~.
 - Refactored the ~*hyperdrive-mirror*~ buffer to use [[https://github.com/alphapapa/taxy.el/tree/package/taxy-magit-section][taxy-magit-section]]
+- Removed ~rx~ form option in ~hyperdrive-mirror~
+- Require at least Emacs 28.1+
 
 ** Fixed
 
@@ -31,6 +33,10 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Fixed a bug which caused ~hyperdrive-menu~ to fail when the current
   entry's next version was ~unknown~.
 - Uploaded files now retain the timestamp of the local file
+
+** Internal
+
+- Use Emacs 28 shorthands
 
 * 0.2 [2023-10-14 Sat]
 

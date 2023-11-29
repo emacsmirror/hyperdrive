@@ -40,13 +40,13 @@
 ;;;; Parse relative/absolute link into entry tests
 
 ;; Neither full "hyper://"-prefixed URLs, nor links which are only search
-;; options, are handled by `hyperdrive--org-link-entry-at-point'.
+;; options, are handled by `h/org--link-entry-at-point'.
 
-(defmacro hyperdrive-test-markdown-parse-link-deftest (name current-entry link parsed-entry)
+(defmacro h/test-markdown-parse-link-deftest (name current-entry link parsed-entry)
   (declare (indent defun))
   (let ((test-name (intern (format "hyperdrive-test-markdown-parse-link/%s" name))))
     `(ert-deftest ,test-name ()
-       (let ((hyperdrive-current-entry ,current-entry))
+       (let ((h/current-entry ,current-entry))
          (with-temp-buffer
            ;; FIXME: Use persistent buffer for performance.
            (markdown-mode)
@@ -54,62 +54,71 @@
            (insert ,link)
            (goto-char (point-min))
            (should
-            (hyperdrive-entry-equal-p ,parsed-entry
-                                      (hyperdrive--markdown-url-entry (markdown-link-url)))))))))
+            (he/equal-p ,parsed-entry
+                        (h//markdown-url-entry (markdown-link-url)))))))))
 
-(hyperdrive-test-markdown-parse-link-deftest absolute/without-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/test-markdown-parse-link-deftest absolute/without-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.md")
   "[link](</foo/bar quux.md>)"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.md"))
 
-(hyperdrive-test-markdown-parse-link-deftest parent/without-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/test-markdown-parse-link-deftest parent/without-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.md")
   "[link](<../foo/bar quux.md>)"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.md"))
 
-(hyperdrive-test-markdown-parse-link-deftest sibling/without-search-option
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+(h/test-markdown-parse-link-deftest sibling/without-search-option
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.md")
   "[link](<./bar quux.md>)"
-  (hyperdrive-entry-create
-   :hyperdrive (hyperdrive-create :public-key "deadbeef")
+  (he/create
+   :hyperdrive (h/create :public-key "deadbeef")
    :path "/foo/bar quux.md"))
 
-;; (hyperdrive-test-markdown-parse-link-deftest sibling/with-heading-text-search-option
-;;   (hyperdrive-entry-create
-;;    :hyperdrive (hyperdrive-create :public-key "deadbeef")
+;; (h/test-markdown-parse-link-deftest sibling/with-heading-text-search-option
+;;   (he/create
+;;    :hyperdrive (h/create :public-key "deadbeef")
 ;;    :path "/foo/bar quux.md")
 ;;   "[link](<./bar quux.md::Heading A>)"
-;;   (hyperdrive-entry-create
-;;    :hyperdrive (hyperdrive-create :public-key "deadbeef")
+;;   (he/create
+;;    :hyperdrive (h/create :public-key "deadbeef")
 ;;    :path "/foo/bar quux.md"
 ;;    :etc '((target . "Heading A"))))
 
-;; (hyperdrive-test-markdown-parse-link-deftest sibling/with-heading-text*-search-option
-;;   (hyperdrive-entry-create
-;;    :hyperdrive (hyperdrive-create :public-key "deadbeef")
+;; (h/test-markdown-parse-link-deftest sibling/with-heading-text*-search-option
+;;   (he/create
+;;    :hyperdrive (h/create :public-key "deadbeef")
 ;;    :path "/foo/bar quux.md")
 ;;   "[link](<./bar quux.md::*Heading A>)"
-;;   (hyperdrive-entry-create
-;;    :hyperdrive (hyperdrive-create :public-key "deadbeef")
+;;   (he/create
+;;    :hyperdrive (h/create :public-key "deadbeef")
 ;;    :path "/foo/bar quux.md"
 ;;    :etc '((target . "*Heading A"))))
 
-;; (hyperdrive-test-markdown-parse-link-deftest sibling/with-custom-id-search-option
-;;   (hyperdrive-entry-create
-;;    :hyperdrive (hyperdrive-create :public-key "deadbeef")
+;; (h/test-markdown-parse-link-deftest sibling/with-custom-id-search-option
+;;   (he/create
+;;    :hyperdrive (h/create :public-key "deadbeef")
 ;;    :path "/foo/bar quux.md")
 ;;   "[link](<./bar quux.md::#baz zot>)"
-;;   (hyperdrive-entry-create
-;;    :hyperdrive (hyperdrive-create :public-key "deadbeef")
+;;   (he/create
+;;    :hyperdrive (h/create :public-key "deadbeef")
 ;;    :path "/foo/bar quux.md"
 ;;    :etc '((target . "#baz zot"))))
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
+;;; test-hyperdrive-markdown.el ends here
