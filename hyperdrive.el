@@ -1259,7 +1259,7 @@ Intended for relative (i.e. non-full) URLs."
 (defvar embark-general-map)
 (defvar embark-keymap-alist)
 
-(declare-function h/menu "hyperdrive-menu-hyperdrive" nil t)
+(declare-function h/menu-hyperdrive "hyperdrive-menu" nil t)
 
 (with-eval-after-load 'embark
   (defvar-keymap h/embark-hyperdrive-map
