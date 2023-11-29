@@ -214,9 +214,8 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
               (desc-end (org-element-property :contents-end link)))
     (buffer-substring desc-begin desc-end)))
 
-;; NOTE: Autoloads do not support shorthands (yet?), so we use the full symbol
+;; NOTE: Autoloads do not support shorthands (see bug#63480), so we use the full symbol
 ;; names below.
-;; TODO: Report Emacs bug about autoloads and symbol shorthands.
 ;;;###autoload
 (with-eval-after-load 'org
   (org-link-set-parameters "hyper"
