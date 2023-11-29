@@ -288,6 +288,7 @@
    (value-face :initarg :value-face :initform nil)))
 
 (cl-defmethod transient-format-value ((obj h/mirror-variable))
+  "Method for displaying hyperdrive mirror variables for suffix OBJ."
   (if-let ((fn (oref obj format-value)))
       (funcall fn obj)
     (if-let ((value (oref obj value))
