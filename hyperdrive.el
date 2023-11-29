@@ -1208,7 +1208,7 @@ The return value of this function is the retrieval buffer."
 
 ;;;###autoload
 (defun hyperdrive-info-manual ()
-  "Open hyperdrive.el info manual."
+  "Open Hyperdrive info manual."
   (interactive)
   (info "(hyperdrive) Top"))
 
