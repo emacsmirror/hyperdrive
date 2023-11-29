@@ -43,6 +43,7 @@
 (declare-function h/delete "hyperdrive")
 (declare-function h/set-nickname "hyperdrive")
 (declare-function h/set-petname "hyperdrive")
+(declare-function h/describe-hyperdrive "hyperdrive-describe")
 
 ;;;; hyperdrive-menu: Transient for entries
 
