@@ -52,7 +52,7 @@ file."))
 
 (defvar-local h/mirror-files-and-urls nil
   "List of lists like (FILE URL STATUS) for `hyperdrive-mirror-mode'.
-FILE is the local filepath of the file to be uploaded.
+FILE is the local file path of the file to be uploaded.
 URL is \"hyper://\" URL where the file would be uploaded.
 STATUS is one of:
 - \\+`new':   FILE does not exist in hyperdrive at URL
