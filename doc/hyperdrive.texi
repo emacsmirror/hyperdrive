@@ -521,11 +521,12 @@ prefix argument)
 The following keybindings are available inside the directory view by
 default:
 
-@kindex revert-buffer-quick
-@itemize
-@item
-@code{C-x x g} refreshes the file to display potential updates
-@end itemize
+@table @asis
+@item @kbd{C-x x g} (@code{revert-buffer-quick})
+@kindex C-x x g
+@findex revert-buffer-quick
+Refreshes the file to display potential updates
+@end table
 
 If you have bound @code{dired-jump} in the global keymap (people often choose
 @code{C-x C-j}), you can use the same binding to jump to the parent

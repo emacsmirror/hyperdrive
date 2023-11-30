@@ -262,8 +262,9 @@ default:
 The following keybindings are available inside the directory view by
 default:
 
-#+kindex: revert-buffer-quick
-- ~C-x x g~ refreshes the file to display potential updates
+- Key: C-x x g (revert-buffer-quick) ::
+
+  Refreshes the file to display potential updates
 
 If you have bound ~dired-jump~ in the global keymap (people often choose
 ~C-x C-j~), you can use the same binding to jump to the parent
