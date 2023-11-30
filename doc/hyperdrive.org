@@ -41,7 +41,7 @@ modify this GNU manual."
 
 ** Emacs
 
-~hyperdrive.el~ requires [[https://www.gnu.org/software/emacs/][GNU Emacs]] version 27.1 or later.
+~hyperdrive.el~ requires [[https://www.gnu.org/software/emacs/][GNU Emacs]] version 28.1 or later.
 
 ** hyper-gateway
 
@@ -58,16 +58,8 @@ NonGNU ELPA, MELPA, and ~package-vc~.
 
 *** NonGNU ELPA
 
-~hyperdrive.el~ is available on [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]]. On Emacs 28 or later,
-installation is as simple as ~M-x package-refresh-contents~ then ~M-x
-package-install RET hyperdrive RET~.
-
-On Emacs 27, you'll first have to add the NonGNU ELPA repository:
-
-#+begin_src emacs-lisp
-  (with-eval-after-load 'package
-    (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-#+end_src
+~hyperdrive.el~ can be installed from [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]] with ~M-x
+package-refresh-contents~ then ~M-x package-install RET hyperdrive~.
 
 After installing with NonGNU ELPA, you can later upgrade to a newer
 version of ~hyperdrive.el~ by running ~M-x package-refresh-contents~
@@ -77,15 +69,15 @@ list-packages~, select ~hyperdrive~, and click the ~Install~ button.
 
 *** MELPA
 
-~hyperdrive.el~ is also available on
-[[https://melpa.org/#/hyperdrive][MELPA]]. First add the MELPA repository:
+~hyperdrive.el~ is also available on [[https://melpa.org/#/hyperdrive][MELPA]].  First add the MELPA
+repository...
 
 #+begin_src emacs-lisp
   (with-eval-after-load 'package
     (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/")))
 #+end_src
 
-Then follow the [[*NonGNU ELPA][NonGNU ELPA]] installation instructions.
+...then follow the [[*NonGNU ELPA][NonGNU ELPA]] installation instructions.
 
 *** package-vc
 
