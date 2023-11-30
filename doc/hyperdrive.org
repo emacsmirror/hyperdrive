@@ -268,7 +268,8 @@ default:
 
 - Key: H (hyperdrive-dir-history) ::
 
-  Open the [[*View the hyperdrive version history][version history]] of file at point.
+  Open the version history (see [[*View the hyperdrive version history]])
+  of file at point.
 
 - Key: w (hyperdrive-dir-copy-url) ::
 

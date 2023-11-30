@@ -498,7 +498,8 @@ Delete the file or directory (recursively) at point.
 @item @kbd{H} (@code{hyperdrive-dir-history})
 @kindex H
 @findex hyperdrive-dir-history
-Open the @ref{View the hyperdrive version history, , version history} of file at point.
+Open the version history (see @ref{View the hyperdrive version history})
+of file at point.
 
 @item @kbd{w} (@code{hyperdrive-dir-copy-url})
 @kindex w
