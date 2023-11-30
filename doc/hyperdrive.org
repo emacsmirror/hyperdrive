@@ -51,6 +51,12 @@ hyper-gateway.
 ~hyperdrive.el~ relies on [[https://github.com/RangerMauve/hyper-gateway/][hyper-gateway]] for talking to the hypercore
 network ([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway][installation instructions]]).
 
+Once it's installed, you can start hyper-gateway manually by running:
+
+#+begin_src sh
+hyper-gateway run --writable true
+#+end_src
+
 ** hyperdrive.el
 
 There are three recommended options for installing ~hyperdrive.el~:
