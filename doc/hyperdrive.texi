@@ -441,12 +441,12 @@ The following keybindings are available inside the directory view by
 default:
 
 @table @asis
-@item @kbd{n} (@code{hyperdrive-dir-next})
-@itemx @kbd{p} (@code{hyperdrive-dir-previous})
+@item @kbd{n} (@code{hyperdrive-ewoc-next})
+@itemx @kbd{p} (@code{hyperdrive-ewoc-previous})
 @kindex n
 @kindex p
-@findex hyperdrive-dir-next
-@findex hyperdrive-dir-previous
+@findex hyperdrive-ewoc-next
+@findex hyperdrive-ewoc-previous
 Move between entries.
 
 @item @kbd{@key{RET}} (@code{hyperdrive-dir-find-file})

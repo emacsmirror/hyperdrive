@@ -225,8 +225,8 @@ The following keybindings are available inside the directory view by
 default:
 
 #+attr_texinfo: :compact t
-- Key: n (hyperdrive-dir-next) ::
-- Key: p (hyperdrive-dir-previous) ::
+- Key: n (hyperdrive-ewoc-next) ::
+- Key: p (hyperdrive-ewoc-previous) ::
 
   Move between entries.
 
