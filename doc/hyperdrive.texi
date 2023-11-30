@@ -440,80 +440,87 @@ and a path inside it.  @code{hyperdrive-view-file} is like
 The following keybindings are available inside the directory view by
 default:
 
-@kindex hyperdrive-dir-previous
-@kindex hyperdrive-dir-next
-@itemize
-@item
-@code{n} and @code{p} move between entries
-@end itemize
-@kindex hyperdrive-dir-find-file
-@itemize
-@item
-@code{RET} or opens file or directory at point
-@end itemize
-@kindex hyperdrive-dir-find-file-other-window
-@itemize
-@item
-@code{o}, left click, or middle click opens the file or directory at point
-in a new window
-@end itemize
-@kindex hyperdrive-dir-view-file
-@itemize
-@item
-@code{v} opens file or directory at point in @ref{View Mode,view-mode,,emacs,}.
-@end itemize
-@kindex hyperdrive-up
-@itemize
-@item
-@code{^} goes up to the parent directory
-@end itemize
-@kindex revert-buffer
-@itemize
-@item
-@code{g} refreshes the directory to display potential updates
-@end itemize
-@kindex hyperdrive-dir-sort
-@itemize
-@item
-@code{s} sorts directory contents by column (to sort by a different
-column, click on the column header or use the `C-u` universal
-prefix argument)
-@end itemize
-@kindex hyperdrive-dir-download-file
-@itemize
-@item
-@code{d} downloads the file at point to disk
-@end itemize
-@kindex hyperdrive-delete
-@itemize
-@item
-@code{D} deletes the file or directory (recursively) at point
-@end itemize
-@kindex hyperdrive-dir-history
-@itemize
-@item
-@code{H} opens the @ref{View the hyperdrive version history, , version history} of file at point
-@end itemize
-@kindex hyperdrive-dir-copy-url
-@itemize
-@item
-@code{w} copies the URL of the file or directory at point
-@end itemize
-@kindex imenu
-@itemize
-@item
-@code{j} opens @code{imenu} to quickly jump to a file in the current directory
-@end itemize
-@kindex hyperdrive-menu
-@itemize
-@item
-@code{?} opens @code{hyperdrive-menu} (see @ref{Hyperdrive menu command})
-@end itemize
-@kindex hyperdrive-create-directory-no-op
-@itemize
-@item
-@code{+} signals an error, because you cannot create empty directories (@ref{No empty directories})
-@end itemize
+@table @asis
+@item @kbd{n} (@code{hyperdrive-dir-next})
+@itemx @kbd{p} (@code{hyperdrive-dir-previous})
+@kindex n
+@kindex p
+@findex hyperdrive-dir-next
+@findex hyperdrive-dir-previous
+Move between entries.
+
+@item @kbd{@key{RET}} (@code{hyperdrive-dir-find-file})
+@kindex RET
+@findex hyperdrive-dir-find-file
+Open the file or directory at point.
+
+@item @kbd{o} (@code{hyperdrive-dir-find-file-other-window})
+@itemx @kbd{<mouse-1>}
+@itemx @kbd{<mouse-2>}
+@kindex o
+@kindex <mouse-1>
+@kindex <mouse-2>
+@findex hyperdrive-dir-find-file-other-window
+Open the file or directory at point in a new window.
+
+@item @kbd{v} (@code{hyperdrive-dir-view-file})
+@kindex v
+@findex hyperdrive-dir-view-file
+Open the file or directory at point in @ref{View Mode,view-mode,,emacs,}.
+
+@item @kbd{^} (@code{hyperdrive-up})
+@kindex ^
+@findex hyperdrive-up
+Go up to the parent directory.
+
+@item @kbd{g} (@code{revert-buffer})
+@kindex g
+@findex revert-buffer
+Refresh the directory to display potential updates.
+
+@item @kbd{s} (@code{hyperdrive-dir-sort})
+@kindex s
+@findex hyperdrive-dir-sort
+Sort directory contents by the current column.  To sort by a
+different column, click on the column header or use the universal
+prefix argument (@code{C-u s}).
+
+@item @kbd{d} (@code{hyperdrive-dir-download-file})
+@kindex d
+@findex hyperdrive-dir-download-file
+Download the file at point to disk.
+
+@item @kbd{D} (@code{hyperdrive-delete})
+@kindex D
+@findex hyperdrive-delete
+Delete the file or directory (recursively) at point.
+
+@item @kbd{H} (@code{hyperdrive-dir-history})
+@kindex H
+@findex hyperdrive-dir-history
+Open the @ref{View the hyperdrive version history, , version history} of file at point.
+
+@item @kbd{w} (@code{hyperdrive-dir-copy-url})
+@kindex w
+@findex hyperdrive-dir-copy-url
+Copy the URL of the file or directory at point.
+
+@item @kbd{j} (@code{imenu})
+@kindex j
+@findex imenu
+Open @code{imenu} to quickly jump to a file in the current directory.
+
+@item @kbd{?} (@code{hyperdrive-menu})
+@kindex ?
+@findex hyperdrive-menu
+Open @code{hyperdrive-menu} (see @ref{Hyperdrive menu command}).
+
+@item @kbd{+} (@code{hyperdrive-create-directory-no-op})
+@kindex +
+@findex hyperdrive-create-directory-no-op
+This command signals an error, because you cannot create empty
+directories (@ref{No empty directories}).
+@end table
 
 @node File view
 @subsection File view
@@ -679,43 +686,49 @@ For an explanation of the history buffer, see @ref{Partial version data}.
 The following keybindings are available inside the directory view by
 default:
 
-@kindex hyperdrive-history-fill-version-ranges
-@itemize
-@item
-@code{+} loads version history for unknown ranges
-@end itemize
-@kindex hyperdrive-history-find-file
-@itemize
-@item
-@code{RET} opens the file at the start of the range at point
-@end itemize
-@kindex hyperdrive-history-find-file-other-window
-@itemize
-@item
-@code{o}, left click, or middle click opens the file at the start of the
-range at point at point in a new window
-@end itemize
-@kindex hyperdrive-history-view-file
-@itemize
-@item
-@code{v} opens the file at the start of the range at point in @ref{View Mode,view-mode,,emacs,}
-@end itemize
-@kindex hyperdrive-history-copy-url
-@itemize
-@item
-@code{w} copies the URL of the file at the start of the range at point
-@end itemize
-@kindex hyperdrive-history-download-file
-@itemize
-@item
-@code{d} downloads the file at the start of the range at point
-@end itemize
-@kindex hyperdrive-history-diff
-@itemize
-@item
-@code{=} displays the differences between the version at point and the
-prior version
-@end itemize
+@table @asis
+@item @kbd{+} (@code{hyperdrive-history-fill-version-ranges})
+@kindex +
+@findex hyperdrive-history-fill-version-ranges
+Load version history for unknown ranges.
+
+@item @kbd{@key{RET}} (@code{hyperdrive-history-find-file})
+@kindex RET
+@findex hyperdrive-history-find-file
+Open the file at the start of the range at point.
+
+@item @kbd{o} (@code{hyperdrive-history-find-file-other-window})
+@kindex o
+@findex hyperdrive-history-find-file-other-window
+
+@item @kbd{<mouse-1>}
+@kindex <mouse-1>
+
+@item @kbd{<mouse-2>}
+@kindex <mouse-2>
+Open the file at the start of the range at point in a new window.
+
+@item @kbd{v} (@code{hyperdrive-history-view-file})
+@kindex v
+@findex hyperdrive-history-view-file
+Open the file at the start of the range at point in @ref{View Mode,view-mode,,emacs,}.
+
+@item @kbd{w} (@code{hyperdrive-history-copy-url})
+@kindex w
+@findex hyperdrive-history-copy-url
+Copy the URL of the file at the start of the range at point.
+
+@item @kbd{d} (@code{hyperdrive-history-download-file})
+@kindex d
+@findex hyperdrive-history-download-file
+Download the file at the start of the range at point.
+
+@item @kbd{=} (@code{hyperdrive-history-diff})
+@kindex =
+@findex hyperdrive-history-diff
+Display the differences between the version at point and the prior
+version.
+@end table
 
 To act on the latest known version of the file, use these keybindings
 on the header line displaying the file description.

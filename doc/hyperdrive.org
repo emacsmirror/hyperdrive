@@ -224,38 +224,68 @@ and a path inside it.  ~hyperdrive-view-file~ is like
 The following keybindings are available inside the directory view by
 default:
 
-#+kindex: hyperdrive-dir-previous
-#+kindex: hyperdrive-dir-next
-- ~n~ and ~p~ move between entries
-#+kindex: hyperdrive-dir-find-file
-- ~RET~ or opens file or directory at point
-#+kindex: hyperdrive-dir-find-file-other-window
-- ~o~, left click, or middle click opens the file or directory at point
-  in a new window
-#+kindex: hyperdrive-dir-view-file
-- ~v~ opens file or directory at point in [[info:emacs#View Mode][view-mode]].
-#+kindex: hyperdrive-up
-- ~^~ goes up to the parent directory
-#+kindex: revert-buffer
-- ~g~ refreshes the directory to display potential updates
-#+kindex: hyperdrive-dir-sort
-- ~s~ sorts directory contents by column (to sort by a different
-  column, click on the column header or use the `C-u` universal
-  prefix argument)
-#+kindex: hyperdrive-dir-download-file
-- ~d~ downloads the file at point to disk
-#+kindex: hyperdrive-delete
-- ~D~ deletes the file or directory (recursively) at point
-#+kindex: hyperdrive-dir-history
-- ~H~ opens the [[*View the hyperdrive version history][version history]] of file at point
-#+kindex: hyperdrive-dir-copy-url
-- ~w~ copies the URL of the file or directory at point
-#+kindex: imenu
-- ~j~ opens ~imenu~ to quickly jump to a file in the current directory
-#+kindex: hyperdrive-menu
-- ~?~ opens ~hyperdrive-menu~ (see [[*Hyperdrive menu command][Hyperdrive menu command]])
-#+kindex: hyperdrive-create-directory-no-op
-- ~+~ signals an error, because you cannot create empty directories ([[*No empty directories]])
+#+attr_texinfo: :compact t
+- Key: n (hyperdrive-dir-next) ::
+- Key: p (hyperdrive-dir-previous) ::
+
+  Move between entries.
+
+- Key: RET (hyperdrive-dir-find-file) ::
+
+  Open the file or directory at point.
+
+- Key: o (hyperdrive-dir-find-file-other-window) ::
+- Key: <mouse-1> ::
+- Key: <mouse-2> ::
+
+  Open the file or directory at point in a new window.
+
+- Key: v (hyperdrive-dir-view-file) ::
+
+  Open the file or directory at point in [[info:emacs#View Mode][view-mode]].
+
+- Key: ^ (hyperdrive-up) ::
+
+  Go up to the parent directory.
+
+- Key: g (revert-buffer) ::
+
+  Refresh the directory to display potential updates.
+
+- Key: s (hyperdrive-dir-sort) ::
+
+  Sort directory contents by the current column.  To sort by a
+  different column, click on the column header or use the universal
+  prefix argument (~C-u s~).
+
+- Key: d (hyperdrive-dir-download-file) ::
+
+  Download the file at point to disk.
+
+- Key: D (hyperdrive-delete) ::
+
+  Delete the file or directory (recursively) at point.
+
+- Key: H (hyperdrive-dir-history) ::
+
+  Open the [[*View the hyperdrive version history][version history]] of file at point.
+
+- Key: w (hyperdrive-dir-copy-url) ::
+
+  Copy the URL of the file or directory at point.
+
+- Key: j (imenu) ::
+
+  Open ~imenu~ to quickly jump to a file in the current directory.
+
+- Key: ? (hyperdrive-menu) ::
+
+  Open ~hyperdrive-menu~ (see [[*Hyperdrive menu command][Hyperdrive menu command]]).
+
+- Key: + (hyperdrive-create-directory-no-op) ::
+
+  This command signals an error, because you cannot create empty
+  directories ([[*No empty directories]]).
 
 *** File view
 
@@ -387,22 +417,36 @@ For an explanation of the history buffer, see [[*Partial version data]].
 The following keybindings are available inside the directory view by
 default:
 
-#+kindex: hyperdrive-history-fill-version-ranges
-- ~+~ loads version history for unknown ranges
-#+kindex: hyperdrive-history-find-file
-- ~RET~ opens the file at the start of the range at point
-#+kindex: hyperdrive-history-find-file-other-window
-- ~o~, left click, or middle click opens the file at the start of the
-  range at point at point in a new window
-#+kindex: hyperdrive-history-view-file
-- ~v~ opens the file at the start of the range at point in [[info:emacs#View Mode][view-mode]]
-#+kindex: hyperdrive-history-copy-url
-- ~w~ copies the URL of the file at the start of the range at point
-#+kindex: hyperdrive-history-download-file
-- ~d~ downloads the file at the start of the range at point
-#+kindex: hyperdrive-history-diff
-- ~=~ displays the differences between the version at point and the
-  prior version
+- Key: + (hyperdrive-history-fill-version-ranges) ::
+
+  Load version history for unknown ranges.
+
+- Key: RET (hyperdrive-history-find-file) ::
+
+  Open the file at the start of the range at point.
+
+- Key: o (hyperdrive-history-find-file-other-window) ::
+- Key: <mouse-1> ::
+- Key: <mouse-2> ::
+
+  Open the file at the start of the range at point in a new window.
+
+- Key: v (hyperdrive-history-view-file) ::
+
+  Open the file at the start of the range at point in [[info:emacs#View Mode][view-mode]].
+
+- Key: w (hyperdrive-history-copy-url) ::
+
+  Copy the URL of the file at the start of the range at point.
+
+- Key: d (hyperdrive-history-download-file) ::
+
+  Download the file at the start of the range at point.
+
+- Key: = (hyperdrive-history-diff) ::
+
+  Display the differences between the version at point and the prior
+  version.
 
 To act on the latest known version of the file, use these keybindings
 on the header line displaying the file description.
