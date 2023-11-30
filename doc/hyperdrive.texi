@@ -205,7 +205,7 @@ modify this GNU manual.''
 @node Emacs
 @section Emacs
 
-@code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, GNU Emacs} version 27.1 or later.
+@code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, GNU Emacs} version 28.1 or later.
 
 @node hyper-gateway
 @section hyper-gateway
@@ -215,6 +215,12 @@ hyper-gateway.
 
 @code{hyperdrive.el} relies on @uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for talking to the hypercore
 network (@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation instructions}).
+
+Once it's installed, you can start hyper-gateway manually by running:
+
+@example
+hyper-gateway run --writable true
+@end example
 
 @node hyperdriveel
 @section hyperdrive.el
@@ -231,16 +237,8 @@ NonGNU ELPA, MELPA, and @code{package-vc}.
 @node NonGNU ELPA
 @subsection NonGNU ELPA
 
-@code{hyperdrive.el} is available on @uref{https://elpa.nongnu.org/nongnu/hyperdrive.html, NonGNU ELPA}. On Emacs 28 or later,
-installation is as simple as @code{M-x package-refresh-contents} then @code{M-x
-package-install RET hyperdrive RET}.
-
-On Emacs 27, you'll first have to add the NonGNU ELPA repository:
-
-@lisp
-(with-eval-after-load 'package
-  (add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-@end lisp
+@code{hyperdrive.el} can be installed from @uref{https://elpa.nongnu.org/nongnu/hyperdrive.html, NonGNU ELPA} with @code{M-x
+package-refresh-contents} then @code{M-x package-install RET hyperdrive}.
 
 After installing with NonGNU ELPA, you can later upgrade to a newer
 version of @code{hyperdrive.el} by running @code{M-x package-refresh-contents}
@@ -251,15 +249,15 @@ list-packages}, select @code{hyperdrive}, and click the @code{Install} button.
 @node MELPA
 @subsection MELPA
 
-@code{hyperdrive.el} is also available on
-@uref{https://melpa.org/#/hyperdrive, MELPA}. First add the MELPA repository:
+@code{hyperdrive.el} is also available on @uref{https://melpa.org/#/hyperdrive, MELPA}.  First add the MELPA
+repository@dots{}
 
 @lisp
 (with-eval-after-load 'package
   (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/")))
 @end lisp
 
-Then follow the @ref{NonGNU ELPA} installation instructions.
+@dots{}then follow the @ref{NonGNU ELPA} installation instructions.
 
 @node package-vc
 @subsection package-vc
@@ -364,13 +362,13 @@ On the network it still may be there.
 @findex hyperdrive-menu-bar-mode
 @findex menu-bar-mode
 
-If you enabled @code{hyperdrive-menu-bar-mode} (either in your @ref{Example configuration, , configuration}
-or with @code{M-x hyperdrive-menu-bar-mode}), the ``Hyperdrive'' menu should
-appear inside the ``Tools'' menu at the top of the screen.  When the
-current buffer is visiting a hyperdrive file/directory, the
-``Hyperdrive'' menu will also be displayed as a top-level menu.  If you
-don't see the menu bar, please double check that @code{menu-bar-mode} is
-enabled (it is enabled by default).
+If you enabled @code{hyperdrive-menu-bar-mode}, either in your configuration
+(see @ref{Example configuration}) or with @code{M-x hyperdrive-menu-bar-mode},
+the ``Hyperdrive'' menu should appear inside the ``Tools'' menu at the top
+of the screen.  When the current buffer is visiting a hyperdrive
+file/directory, the ``Hyperdrive'' menu will also be displayed as a
+top-level menu.  If you don't see the menu bar, please double check
+that @code{menu-bar-mode} is enabled (it is enabled by default).
 
 @node Hyperdrive menu command
 @section Hyperdrive menu command
