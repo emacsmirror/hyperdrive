@@ -688,6 +688,14 @@ The following keybindings are available inside the directory view by
 default:
 
 @table @asis
+@item @kbd{n} (@code{hyperdrive-ewoc-next})
+@itemx @kbd{p} (@code{hyperdrive-ewoc-previous})
+@kindex n
+@kindex p
+@findex hyperdrive-ewoc-next
+@findex hyperdrive-ewoc-previous
+Move between entries.
+
 @item @kbd{+} (@code{hyperdrive-history-fill-version-ranges})
 @kindex +
 @findex hyperdrive-history-fill-version-ranges
@@ -699,14 +707,12 @@ Load version history for unknown ranges.
 Open the file at the start of the range at point.
 
 @item @kbd{o} (@code{hyperdrive-history-find-file-other-window})
+@itemx @kbd{<mouse-1>}
+@itemx @kbd{<mouse-2>}
 @kindex o
-@findex hyperdrive-history-find-file-other-window
-
-@item @kbd{<mouse-1>}
 @kindex <mouse-1>
-
-@item @kbd{<mouse-2>}
 @kindex <mouse-2>
+@findex hyperdrive-history-find-file-other-window
 Open the file at the start of the range at point in a new window.
 
 @item @kbd{v} (@code{hyperdrive-history-view-file})
