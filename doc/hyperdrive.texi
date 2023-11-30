@@ -758,6 +758,11 @@ You can download a hyperdrive file to your local filesystem. Download
 the current hyperdrive file with @code{hyperdrive-download} or paste
 in a @code{hyper://} URL after @code{hyperdrive-download-url}.
 
+@defopt hyperdrive-download-directory
+Location where @code{hyperdrive-download-url} will download files.  Defaults
+to @code{eww-download-directory} or, if not bound, the home directory.
+@end defopt
+
 @node Upload files from your filesystem
 @section Upload files from your filesystem
 
@@ -1259,11 +1264,6 @@ Defaults to @code{t}.
 Location where @code{persist} will store data, currently
 @code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}.  By default,
 uses the default @code{persist} location.
-@end defopt
-
-@defopt hyperdrive-download-directory
-Location where @code{hyperdrive-download-url} will download files.  Defaults
-to @code{eww-download-directory} or, if not bound, the home directory.
 @end defopt
 
 @defopt hyperdrive-timestamp-format

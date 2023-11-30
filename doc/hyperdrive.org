@@ -438,6 +438,11 @@ You can download a hyperdrive file to your local filesystem. Download
 the current hyperdrive file with ~hyperdrive-download~ or paste
 in a ~hyper://~ URL after ~hyperdrive-download-url~.
 
+- User Option: hyperdrive-download-directory ::
+
+  Location where ~hyperdrive-download-url~ will download files.  Defaults
+  to ~eww-download-directory~ or, if not bound, the home directory.
+
 ** Upload files from your filesystem
 #+findex: hyperdrive-upload-file
 #+findex: hyperdrive-upload-files
@@ -832,11 +837,6 @@ customize-group RET hyperdrive RET~:
   Location where ~persist~ will store data, currently
   ~hyperdrive-hyperdrives~ and ~hyperdrive-version-ranges~.  By default,
   uses the default ~persist~ location.
-
-- User Option: hyperdrive-download-directory ::
-
-  Location where ~hyperdrive-download-url~ will download files.  Defaults
-  to ~eww-download-directory~ or, if not bound, the home directory.
 
 - User Option: hyperdrive-timestamp-format ::
 
