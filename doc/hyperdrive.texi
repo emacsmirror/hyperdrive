@@ -520,7 +520,7 @@ Open @code{hyperdrive-menu} (see @ref{Hyperdrive menu command}).
 @kindex +
 @findex hyperdrive-create-directory-no-op
 This command signals an error, because you cannot create empty
-directories (@ref{No empty directories}).
+directories (see @ref{No empty directories}).
 @end table
 
 @node File view

@@ -286,7 +286,7 @@ default:
 - Key: + (hyperdrive-create-directory-no-op) ::
 
   This command signals an error, because you cannot create empty
-  directories ([[*No empty directories]]).
+  directories (see [[*No empty directories]]).
 
 *** File view
 
