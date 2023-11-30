@@ -1246,142 +1246,105 @@ DNS domains are checked for suspicious characters (see
 You can customize the following variables settings by running @code{M-x
 customize-group RET hyperdrive RET}:
 
-@vindex hyperdrive-hyper-gateway-port
-@table @asis
-@item @code{hyperdrive-hyper-gateway-port}
-Port on which to run the
-hyper-gateway server. Defaults to @code{4973}.
-@end table
+@defopt hyperdrive-hyper-gateway-port
+Port on which to run the hyper-gateway server.  Defaults to @code{4973}.
+@end defopt
 
-@vindex hyperdrive-honor-auto-mode-alist
-@table @asis
-@item @code{hyperdrive-honor-auto-mode-alist}
-If non-nil, use file extension
-of hyperdrive file to set @code{major-mode}. Defaults to @code{t}.
-@end table
+@defopt hyperdrive-honor-auto-mode-alist
+If non-nil, use file extension of hyperdrive file to set @code{major-mode}.
+Defaults to @code{t}.
+@end defopt
 
-@vindex hyperdrive-persist-location
-@table @asis
-@item @code{hyperdrive-persist-location}
-Location where @code{persist} will store
-data, currently @code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}.
-By default, uses the default @code{persist} location.
-@end table
+@defopt hyperdrive-persist-location
+Location where @code{persist} will store data, currently
+@code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}.  By default,
+uses the default @code{persist} location.
+@end defopt
 
-@vindex hyperdrive-download-directory
-@table @asis
-@item @code{hyperdrive-download-directory}
-Location where
-@code{hyperdrive-download-url} will download files. Defaults to
-@code{eww-download-directory} or, if not bound, the home directory.
-@end table
+@defopt hyperdrive-download-directory
+Location where @code{hyperdrive-download-url} will download files.  Defaults
+to @code{eww-download-directory} or, if not bound, the home directory.
+@end defopt
 
-@vindex hyperdrive-timestamp-format
-@table @asis
-@item @code{hyperdrive-timestamp-format}
-Format string used for
-timestamps. Passed to @code{format-time-string}, which see.
-@end table
+@defopt hyperdrive-timestamp-format
+Format string used for timestamps.  Passed to @code{format-time-string},
+which see.
+@end defopt
 
-@vindex hyperdrive-directory-display-buffer-action
-@table @asis
-@item @code{hyperdrive-directory-display-buffer-action}
-Display buffer action
-for hyperdrive directories. Passed to @code{display-buffer}, which see.
-@end table
+@defopt hyperdrive-directory-display-buffer-action
+Display buffer action for hyperdrive directories.  Passed to
+@code{display-buffer}, which see.
+@end defopt
 
-@vindex hyperdrive-directory-sort
-@table @asis
-@item @code{hyperdrive-directory-sort}
-Column by which directory entries are sorted.
-@end table
-Internally, a cons cell of (COLUMN . DIRECTION), the COLUMn being one
-of the directory listing columns (@code{name}, @code{size}, or @code{mtime}) and
+@defopt hyperdrive-directory-sort
+Column by which directory entries are sorted by default.
+Internally, a cons cell of (COLUMN .  DIRECTION), the COLUMN being
+one of the directory listing columns (@code{name}, @code{size}, or @code{mtime}) and
 DIRECTION being one of @code{:ascending} or @code{:descending}.
+@end defopt
 
-@vindex hyperdrive-history-display-buffer-action
-@table @asis
-@item @code{hyperdrive-history-display-buffer-action}
-Display buffer action
-for hyperdrive history buffers. Passed to @code{display-buffer}, which see.
-@end table
+@defopt hyperdrive-history-display-buffer-action
+Display buffer action for hyperdrive history buffers.  Passed to
+@code{display-buffer}, which see.
+@end defopt
 
-@vindex hyperdrive-stream-player-command
-@table @asis
-@item @code{hyperdrive-stream-player-command}
-Command used to play streamable
-URLs externally. Default uses @uref{https://mpv.io/, mpv}. There also exists a preconfigured
-option for @uref{https://www.videolan.org/vlc/, VLC media player}.
-@end table
+@defopt hyperdrive-stream-player-command
+Command used to play streamable URLs externally.  Default uses
+@uref{https://mpv.io/, mpv}.  There also exists a preconfigured option for @uref{https://www.videolan.org/vlc/, VLC media player}.
+@end defopt
 
-@vindex hyperdrive-queue-limit
-@table @asis
-@item @code{hyperdrive-queue-limit}
-Default number of request sent to
-@code{hyper-gateway} at a time in a queues. Defaults to @code{20}.
-@end table
+@defopt hyperdrive-queue-limit
+Default number of request sent to @code{hyper-gateway} at a time in a
+queues.  Defaults to @code{20}.
+@end defopt
 
-@vindex hyperdrive-fill-version-ranges-limit
-@table @asis
-@item @code{hyperdrive-queue-limit}
-Default maximum number of requests when
-filling version history. Defaults to @code{10}.
-@end table
+@defopt hyperdrive-fill-version-ranges-limit
+Default maximum number of requests when filling version history.
+Defaults to @code{10}.
+@end defopt
 
-@vindex hyperdrive-render-html
-@table @asis
-@item @code{hyperdrive-render-html}
-Control how HTML hyperdrive files are
-displayed. By default, HTML pages are rendered in Emacs with @ref{Top,EWW,,eww,}. If
-@code{nil}, raw HTML will be displayed.
-@end table
+@defopt hyperdrive-render-html
+Control how HTML hyperdrive files are displayed.  By default, HTML
+pages are rendered in Emacs with @ref{Top,EWW,,eww,}.  If @code{nil}, raw HTML will be
+displayed.
+@end defopt
 
-@vindex hyperdrive-reuse-buffers
-@table @asis
-@item @code{hyperdrive-reuse-buffers}
-How to reuse buffers when showing entries.
-By default (@code{any-version}), opening a hyperdrive file or directory
-reuses a buffer that is already visiting it, regardless of
-version. To have separate buffers for each version of a
-file/directory, use @code{same-version}.
-@end table
+@defopt hyperdrive-reuse-buffers
+How to reuse buffers when showing entries.  By default
+(@code{any-version}), opening a hyperdrive file or directory reuses a
+buffer that is already visiting it, regardless of version.  To have
+separate buffers for each version of a file/directory, use
+@code{same-version}.
+@end defopt
 
-@vindex hyperdrive-preferred-formats
-@table @asis
-@item @code{hyperdrive-preferred-formats}
-List of metadata types used to
-display hyperdrives.  Hyperdrives are displayed using the first
-available metadata type.  See @ref{Naming} section for what this means.
-@end table
+@defopt hyperdrive-preferred-formats
+List of metadata types used to display hyperdrives.  Hyperdrives are
+displayed using the first available metadata type.  See @ref{Naming}
+section for what this means.
+@end defopt
 
-@vindex hyperdrive-default-entry-format
-@table @asis
-@item @code{hyperdrive-default-entry-format}
-Format string for displaying
-hyperdrive entries (files/directories).  By default, entries are
-displayed with the preferred hyperdrive format in brackets (see
-@code{hyperdrive-preferred-formats}), followed by the full entry path,
-followed by ``version: '' and version in parentheses.
-@end table
+@defopt hyperdrive-default-entry-format
+Format string for displaying hyperdrive entries (files/directories).
+By default, entries are displayed with the preferred hyperdrive
+format in brackets (see @code{hyperdrive-preferred-formats}), followed by
+the full entry path, followed by ``version: '' and version in
+parentheses.
+@end defopt
 
-@vindex hyperdrive-buffer-name-format
-@table @asis
-@item @code{hyperdrive-buffer-name-format}
-Format string for buffer names of
-buffers visiting hyperdrive files/directories.  By default, this
-format is like @code{hyperdrive-default-entry-format} with the entry name
-sans directory instead of the full path.
-@end table
+@defopt hyperdrive-buffer-name-format
+Format string for buffer names of buffers visiting hyperdrive
+files/directories.  By default, this format is like
+@code{hyperdrive-default-entry-format} with the entry name sans directory
+instead of the full path.
+@end defopt
 
-@vindex hyperdrive-formats
-@table @asis
-@item @code{hyperdrive-formats}
-Alist mapping hyperdrive and hyperdrive
-entry metadata to a format string, used in
-@code{hyperdrive-default-entry-format} and @code{hyperdrive-buffer-name-format} as
-well as other places hyperdrives or entries are displayed.  By
-default, each metadatum is prefixed by its type, e.g., the petname
-@code{foo} is displayed by default as @code{petname:foo}.
+@defopt hyperdrive-formats
+Alist mapping hyperdrive and hyperdrive entry metadata to a format
+string, used in @code{hyperdrive-default-entry-format} and
+@code{hyperdrive-buffer-name-format} as well as other places hyperdrives or
+entries are displayed.  By default, each metadatum is prefixed by
+its type, e.g., the petname @code{foo} is displayed by default as
+@code{petname:foo}.
 
 Feel free to adjust the following example configuration for
 abbreviated labels:
@@ -1400,7 +1363,7 @@ abbreviated labels:
 
 With this snippet, the petname @code{foo} now displays as @code{p:foo}.  For further
 customization, run @code{M-x customize-group RET ~hyperdrive-entry-format}.
-@end table
+@end defopt
 
 @menu
 * Additional customization::
