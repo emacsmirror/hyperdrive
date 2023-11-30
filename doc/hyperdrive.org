@@ -935,7 +935,7 @@ customize-group RET hyperdrive RET~:
   #+end_src
 
   With this snippet, the petname ~foo~ now displays as ~p:foo~.  For further
-  customization, run ~M-x customize-group RET ~hyperdrive-entry-format~.
+  customization, run ~M-x customize-group RET hyperdrive-entry-format~.
 
 ** Additional customization
 

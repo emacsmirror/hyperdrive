@@ -1362,7 +1362,7 @@ abbreviated labels:
 @end lisp
 
 With this snippet, the petname @code{foo} now displays as @code{p:foo}.  For further
-customization, run @code{M-x customize-group RET ~hyperdrive-entry-format}.
+customization, run @code{M-x customize-group RET hyperdrive-entry-format}.
 @end defopt
 
 @menu
