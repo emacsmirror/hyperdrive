@@ -1667,7 +1667,7 @@ Compares only public key, version, and path."
                           (hyperdrive (cl-struct hyperdrive (public-key a-key))))
                a)
               ((cl-struct hyperdrive-entry (path b-path) (version b-version)
-                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
+                          (hyperdrive (cl-struct hyperdrive (public-key b-key))))
                b))
     (and (eq a-version b-version)
          (equal a-path b-path)

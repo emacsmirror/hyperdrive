@@ -54,7 +54,7 @@ last node."
 ;;;; Mode
 
 (defvar-keymap h/ewoc-mode-map
-  :parent  special-mode-map
+  :parent special-mode-map
   :doc "Local keymap for `hyperdrive-ewoc-mode' buffers."
   "n"   #'h/ewoc-next
   "p"   #'h/ewoc-previous)
