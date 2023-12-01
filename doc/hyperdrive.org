@@ -538,12 +538,17 @@ To act on the latest known version of the file, use these keybindings
 on the header line displaying the file description.
 
 ** Describe a hyperdrive
-#+findex: hyperdrive-describe-hyperdrive
 
 To see information about a hyperdrive, such as its public key, seed,
 petname, nickname, domains, writable, or other metadata, run
 ~hyperdrive-describe-hyperdrive~. For more on what this information
 means, see [[*Naming]].
+
+- Command: hyperdrive-describe-hyperdrive ::
+
+  Display the description of the hyperdrive containing the current
+  file or directory.  To describe a different hyperdrive, use the
+  universal prefix argument: ~C-u M-x hyperdrive-describe-hyperdrive~.
 
 ** Bookmark a hyperdrive
 #+findex: hyperdrive-bookmark-jump

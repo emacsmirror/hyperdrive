@@ -820,12 +820,16 @@ on the header line displaying the file description.
 @node Describe a hyperdrive
 @section Describe a hyperdrive
 
-@findex hyperdrive-describe-hyperdrive
-
 To see information about a hyperdrive, such as its public key, seed,
 petname, nickname, domains, writable, or other metadata, run
 @code{hyperdrive-describe-hyperdrive}. For more on what this information
 means, see @ref{Naming}.
+
+@deffn Command hyperdrive-describe-hyperdrive
+Display the description of the hyperdrive containing the current
+file or directory.  To describe a different hyperdrive, use the
+universal prefix argument: @code{C-u M-x hyperdrive-describe-hyperdrive}.
+@end deffn
 
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
