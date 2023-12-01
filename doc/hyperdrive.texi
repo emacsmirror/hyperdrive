@@ -979,15 +979,19 @@ only those files in @code{~/blog/} which are smaller than 5MB:
 @node Purge a hyperdrive
 @section Purge a hyperdrive
 
-@findex hyperdrive-purge
-
-To remove all data related to a hyperdrive, run @code{hyperdrive-purge}. This
-command will first prompt for confirmation.  In addition to the
-hyperdrive's file content and metadata, @code{hyperdrive-purge} also removes
-relevant data inside @code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}.
-
 @strong{Data which has been purged from your local machine may still be
 available on the network.}
+
+@strong{Data which has been purged from your local machine may not
+recoverable.}
+
+@deffn Command hyperdrive-purge
+Remove all data related to a hyperdrive.  This command will prompt
+for confirmation before deleting anything.  In addition to the
+hyperdrive's file content and metadata, @code{hyperdrive-purge} also
+deletes relevant metadata persisted in the @code{hyperdrive-hyperdrives}
+and @code{hyperdrive-version-ranges} variables.
+@end deffn
 
 @node Non-interactive use
 @section Non-interactive use
