@@ -20,6 +20,8 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
   hyperdrive to choose an alternative action.
 - Add customization options to control how hyperdrives, files, and
   folders are displayed: ~hyperdrive-entry-format~ customization group.
+- Add customization option ~hyperdrive-gateway-process-type~ to start ~hyper-gateway~
+  as an Emacs subprocess or systemd service
 
 ** Changed
 
