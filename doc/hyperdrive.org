@@ -551,13 +551,21 @@ means, see [[*Naming]].
   universal prefix argument: ~C-u M-x hyperdrive-describe-hyperdrive~.
 
 ** Bookmark a hyperdrive
-#+findex: hyperdrive-bookmark-jump
-#+findex: hyperdrive-bookmark-list
+#+findex: bookmark-set
+#+findex: bookmark-jump
+#+findex: bookmark-list
 
 You can use the built-in ~bookmark-set~, ~bookmark-jump~, and
 ~bookmark-list~ functions to store and jump to a hyperdrive file or
-directory. To jump to or view only hyperdrive bookmarks, use
-~hyperdrive-bookmark-jump~ and ~hyperdrive-bookmark-list~.
+directory.
+
+- Command: hyperdrive-bookmark-jump ::
+
+  Select a hyperdrive bookmark and jump to it.
+
+- Command: hyperdrive-bookmark-list ::
+
+  View a list of hyperdrive bookmarks.
 
 ** Stream audio and video
 

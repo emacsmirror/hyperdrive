@@ -834,13 +834,21 @@ universal prefix argument: @code{C-u M-x hyperdrive-describe-hyperdrive}.
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
 
-@findex hyperdrive-bookmark-jump
-@findex hyperdrive-bookmark-list
+@findex bookmark-set
+@findex bookmark-jump
+@findex bookmark-list
 
 You can use the built-in @code{bookmark-set}, @code{bookmark-jump}, and
 @code{bookmark-list} functions to store and jump to a hyperdrive file or
-directory. To jump to or view only hyperdrive bookmarks, use
-@code{hyperdrive-bookmark-jump} and @code{hyperdrive-bookmark-list}.
+directory.
+
+@deffn Command hyperdrive-bookmark-jump
+Select a hyperdrive bookmark and jump to it.
+@end deffn
+
+@deffn Command hyperdrive-bookmark-list
+View a list of hyperdrive bookmarks.
+@end deffn
 
 @node Stream audio and video
 @section Stream audio and video
