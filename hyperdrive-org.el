@@ -57,27 +57,23 @@ hyperdrive, insert a relative or absolute link according to
 To be called by `org-store-link'.  Calls `org-link-store-props',
 which see."
   (when h/current-entry
-    (pcase-let (((map type link description)
-                 (pcase major-mode
-                   ('org-mode (h/org--link))
-                   ('h/dir-mode
-                    (let ((entry (h/dir--entry-at-point)))
-                      `((type . "hyper://")
-                        (link . ,(he/url entry))
-                        (description . ,(h//format-entry entry)))))
-                   (_ `((type . "hyper://")
-                        (link . ,(he/url h/current-entry))
-                        (description . ,(h//format-entry h/current-entry)))))))
-      (org-link-store-props :type type :link link :description description)
-      t)))
+    (apply #'org-link-store-props
+           (pcase major-mode
+             ('org-mode (h/org--link))
+             ('h/dir-mode
+              (let ((entry (h/dir--entry-at-point)))
+                `( :type "hyper://"
+                   :link ,(he/url entry)
+                   :description ,(h//format-entry entry))))
+             (_ `( :type "hyper://"
+                   :link ,(he/url h/current-entry)
+                   :description ,(h//format-entry h/current-entry)))))
+    t))
 
 (defun h/org--link (&optional raw-url-p)
-  "Return Org alist for current Org buffer.
+  "Return Org plist for current Org buffer.
 Attempts to link to the entry at point.  If RAW-URL-P, return a
 raw URL, not an Org link."
-  ;; TODO: Since we depend on Emacs 28 now, we can rely on `map'
-  ;; being able to destructure a plist inside `pcase-let', so we
-  ;; should switch to using a plist instead of an alist.
   ;; NOTE: Ideally we would simply reuse Org's internal functions to
   ;; store links, like `org-store-link'.  However, its API is not
   ;; designed to be used by external libraries, and requires ugly
@@ -99,10 +95,7 @@ raw URL, not an Org link."
               (raw-url (he/url entry-copy)))
          (if raw-url-p
              raw-url
-           ;; NOTE: Due to annoying issues with older versions of Emacs
-           ;; that have older versions of map.el that don't support
-           ;; destructuring plists with pcase-let, we use an alist here.
-           `((type . "hyper") (link . ,raw-url) (description . ,heading))))))
+           `(:type "hyper" :link ,raw-url :description ,heading)))))
 
 ;;;###autoload
 (defun hyperdrive-org-link-follow (url &optional _prefix)
