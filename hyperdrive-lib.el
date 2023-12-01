@@ -1308,6 +1308,9 @@ If then, then call THEN with no arguments.  Default handler."
                         (or (not (h/writablep hyperdrive)) version))
                   (set-buffer-modified-p nil)
                   (set-visited-file-modtime (current-time))))
+              (when h/honor-auto-mode-alist
+                (let ((buffer-file-name (he/name entry)))
+                  (set-auto-mode)))
               (when target
                 (pcase major-mode
                   ('org-mode
@@ -1542,12 +1545,6 @@ Affected by option `hyperdrive-reuse-buffers', which see."
       (rename-buffer buffer-name)
       ;; NOTE: We do not erase the buffer because, e.g. the directory
       ;; handler needs to record point before it erases the buffer.
-      (cond ((h//entry-directory-p entry)
-             (h/dir-mode))
-            (h/honor-auto-mode-alist
-             ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-             (let ((buffer-file-name (he/name entry)))
-               (set-auto-mode))))
       (h/mode)
       (setq-local h/current-entry entry)
       (current-buffer))))

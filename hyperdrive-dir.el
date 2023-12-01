@@ -77,6 +77,7 @@ If THEN, call it in the directory buffer with no arguments."
         (setf (alist-get 'display-name (he/etc parent-entry))  "../")
         (push parent-entry entries))
       (with-current-buffer (h//get-buffer-create directory-entry)
+        (h/dir-mode)
         (with-silent-modifications
           (setf ewoc (or h/ewoc ; Bind this for lambdas.
                          (setf h/ewoc (ewoc-create #'h/dir-pp))))
