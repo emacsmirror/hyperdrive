@@ -655,13 +655,16 @@ where you want to store the file.
 @node Link to a hyperdrive
 @section Link to a hyperdrive
 
-@findex hyperdrive-copy-url
-@findex hyperdrive-dir-copy-url
+You can share a hyperdrive file with someone by copying and sending
+its link.  Anyone who has the link to a hyperdrive file or directory
+can load it and view its contents.
 
-In the directory view, you can copy the URL at point with
-@code{hyperdrive-dir-copy-url} (see @ref{Directory view}). Additionally, you can
-run @code{hyperdrive-copy-url} to copy the URL of the current hyperdrive
-file or directory.
+@deffn Command hyperdrive-copy-url
+Copy the URL of the current hyperdrive file or directory.
+@end deffn
+
+In the directory view, you can copy the URL of the file or directory
+at point by pressing @code{w} (see @ref{Directory view}).
 
 @menu
 * Org mode links::
@@ -670,6 +673,10 @@ file or directory.
 
 @node Org mode links
 @subsection Org mode links
+
+#findex: org-store-link
+#findex: org-insert-link
+#vindex: org-link-file-path-type
 
 If the current file is an org-mode file, @code{org-store-link} will store a
 link to the hyperdrive file, and if point is inside a heading, its
@@ -691,12 +698,18 @@ in org-mode), then typing @code{hyper:} and @code{RET}.  To change how
 @code{org-insert-link} inserts links to files within the same hyperdrive,
 adjust @code{hyperdrive-org-link-full-url} and @code{org-link-file-path-type}.
 
+@defopt hyperdrive-org-link-full-url
+This option controls whether relative links to hyperdrives are ever
+inserted with @code{org-insert-link}.  Set it to @code{t} if you always want to
+insert full @code{hyper://} links.
+@end defopt
+
 @node Markdown links
 @subsection Markdown links
 
 Relative links are supported; within @code{hyper://PUBLIC-KEY/foo.md}, the
-links @code{[bar](<bar.md>)}, @code{[bar](<./bar.md>)}, and @code{[bar](</bar.md>)} will
-all point to @code{hyper://PUBLIC-KEY/bar.md}.
+links @code{[bar](<bar.md>)}, @code{[bar](<./bar.md>)}, and @code{[bar](</bar.md>)} all
+point to @code{hyper://PUBLIC-KEY/bar.md}.
 
 @node Delete a hyperdrive file
 @section Delete a hyperdrive file
@@ -1328,7 +1341,7 @@ Port on which to run the hyper-gateway server.  Defaults to @code{4973}.
 @end defopt
 
 @defopt hyperdrive-honor-auto-mode-alist
-If non-nil, use file extension of hyperdrive file to set @code{major-mode}.
+If non-@code{nil}, use file extension of hyperdrive file to set @code{major-mode}.
 Defaults to @code{t}.
 @end defopt
 

@@ -402,15 +402,22 @@ new content.
   where you want to store the file.
 
 ** Link to a hyperdrive
-#+findex: hyperdrive-copy-url
-#+findex: hyperdrive-dir-copy-url
 
-In the directory view, you can copy the URL at point with
-~hyperdrive-dir-copy-url~ (see [[*Directory view]]). Additionally, you can
-run ~hyperdrive-copy-url~ to copy the URL of the current hyperdrive
-file or directory.
+You can share a hyperdrive file with someone by copying and sending
+its link.  Anyone who has the link to a hyperdrive file or directory
+can load it and view its contents.
+
+- Command: hyperdrive-copy-url ::
+
+  Copy the URL of the current hyperdrive file or directory.
+
+In the directory view, you can copy the URL of the file or directory
+at point by pressing ~w~ (see [[*Directory view]]).
 
 *** Org mode links
+#findex: org-store-link
+#findex: org-insert-link
+#vindex: org-link-file-path-type
 
 If the current file is an org-mode file, ~org-store-link~ will store a
 link to the hyperdrive file, and if point is inside a heading, its
@@ -432,11 +439,17 @@ in org-mode), then typing ~hyper:~ and ~RET~.  To change how
 ~org-insert-link~ inserts links to files within the same hyperdrive,
 adjust ~hyperdrive-org-link-full-url~ and ~org-link-file-path-type~.
 
+- User Option: hyperdrive-org-link-full-url ::
+
+  This option controls whether relative links to hyperdrives are ever
+  inserted with ~org-insert-link~.  Set it to ~t~ if you always want to
+  insert full ~hyper://~ links.
+
 *** Markdown links
 
 Relative links are supported; within ~hyper://PUBLIC-KEY/foo.md~, the
-links ~[bar](<bar.md>)~, ~[bar](<./bar.md>)~, and ~[bar](</bar.md>)~ will
-all point to ~hyper://PUBLIC-KEY/bar.md~.
+links ~[bar](<bar.md>)~, ~[bar](<./bar.md>)~, and ~[bar](</bar.md>)~ all
+point to ~hyper://PUBLIC-KEY/bar.md~.
 
 ** Delete a hyperdrive file
 #+findex: hyperdrive-delete
@@ -931,7 +944,7 @@ customize-group RET hyperdrive RET~:
 
 - User Option: hyperdrive-honor-auto-mode-alist ::
 
-  If non-nil, use file extension of hyperdrive file to set ~major-mode~.
+  If non-~nil~, use file extension of hyperdrive file to set ~major-mode~.
   Defaults to ~t~.
 
 - User Option: hyperdrive-persist-location ::
