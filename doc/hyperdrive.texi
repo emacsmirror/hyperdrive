@@ -883,21 +883,28 @@ to @code{eww-download-directory} or, if not bound, the home directory.
 @node Upload files from your filesystem
 @section Upload files from your filesystem
 
-@findex hyperdrive-upload-file
-@findex hyperdrive-upload-files
 @findex yank-media
 
-To upload a single file from your filesystem, use
-@code{hyperdrive-upload-file}. By default, the selected file will be placed
-in your hyperdrive's root directory, but you can edit the filepath
-before uploading.
+If you already have a file on your local filesystem that you'd like to
+put on a hyperdrive, you can ``upload'' it.  Note that the following
+commands add files to a hyperdrive, but those files are not
+automatically ``uploaded'' to anyone else's machine in the traditional
+sense.  Files are only shared on the network when other peers request
+them from your node.  The following commands may be run while offline.
 
-@code{hyperdrive-upload-files} lets you upload multiple files from your
-filesystem to a hyperdrive. As with the @code{cp} command, uploaded files
-will be placed into the same TARGET-DIRECTORY@.
+@deffn Command hyperdrive-upload-file
+Upload a single file from your filesystem.  By default, the selected
+file will be placed in your hyperdrive's root directory, but you can
+edit the filepath before uploading.
+@end deffn
 
-On Emacs 29 or later, you can upload an image which you previously
-copied to your clipboard from an external program with @code{yank-media}.
+@deffn Command hyperdrive-upload-files
+Upload multiple files from your filesystem.  The selected files will
+be uploaded into the same target directory in your hyperdrive.
+@end deffn
+
+On Emacs 29+, you can upload an image which you previously copied to
+your clipboard from an external program with @code{M-x yank-media}.
 
 @menu
 * Mirror a whole directory::
