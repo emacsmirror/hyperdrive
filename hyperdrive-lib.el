@@ -1403,7 +1403,15 @@ is the symbol `subprocess'."
   (process-live-p h/gateway-process))
 
 (defcustom h/gateway-process-type nil
-  "How to run the gateway process."
+  "How to run the gateway process.
+Value may be one of
+
+- nil             :: Autodetect
+- \\+`systemd'    :: systemd user-level service
+- \\+`subprocess' :: Emacs subprocess
+
+To customize the command run as a subprocess, see
+`hyperdrive-gateway-command'."
   ;; TODO: Can or should we use the :initialize function here?
   :set (lambda (option value)
          "Stop the gateway process before changing the type."
