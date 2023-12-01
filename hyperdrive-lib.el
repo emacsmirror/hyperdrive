@@ -983,32 +983,34 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                       (format (alist-get format formats)
                               (propertize value 'face face))
                     "")))
-      (format-spec format
-                   ;; TODO(deprecate-28): Use lambdas in each specifier.
-                   `((?H . ,(and (string-match-p (rx "%"
-                                                     ;; Flags
-                                                     (optional (1+ (or " " "0" "-" "<" ">" "^" "_")))
-                                                     (0+ digit) ;; Width
-                                                     (0+ digit) ;; Precision
-                                                     "H")
-                                                 format)
-                                 ;; HACK: Once using lambdas in this specifier,
-                                 ;; remove the `string-match-p' check.
-                                 (h//preferred-format hyperdrive)))
-                     (?P . ,(fmt 'petname petname 'h/petname))
-                     (?N . ,(fmt 'nickname nickname 'h/nickname))
-                     (?k . ,(fmt 'short-key public-key 'h/public-key))
-                     (?K . ,(fmt 'public-key public-key 'h/public-key))
-                     (?S . ,(fmt 'seed seed 'h/seed))
-                     (?D . ,(if (car domains)
-                                (format (alist-get 'domains formats)
-                                        (string-join
-                                         (mapcar (lambda (domain)
-                                                   (propertize domain
-                                                               'face 'h/domain))
-                                                 domains)
-                                         ","))
-                              "")))))))
+      (format-spec
+       format
+       ;; TODO(deprecate-28): Use lambdas in each specifier.
+       `((?H . ,(and (string-match-p (rx "%"
+                                         ;; Flags
+                                         (optional
+                                          (1+ (or " " "0" "-" "<" ">" "^" "_")))
+                                         (0+ digit) ;; Width
+                                         (0+ digit) ;; Precision
+                                         "H")
+                                     format)
+                     ;; HACK: Once using lambdas in this specifier,
+                     ;; remove the `string-match-p' check.
+                     (h//preferred-format hyperdrive)))
+         (?P . ,(fmt 'petname petname 'h/petname))
+         (?N . ,(fmt 'nickname nickname 'h/nickname))
+         (?k . ,(fmt 'short-key public-key 'h/public-key))
+         (?K . ,(fmt 'public-key public-key 'h/public-key))
+         (?S . ,(fmt 'seed seed 'h/seed))
+         (?D . ,(if (car domains)
+                    (format (alist-get 'domains formats)
+                            (string-join
+                             (mapcar (lambda (domain)
+                                       (propertize domain
+                                                   'face 'h/domain))
+                                     domains)
+                             ","))
+                  "")))))))
 
 (defun h//preferred-format (hyperdrive &optional format formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
