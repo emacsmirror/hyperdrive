@@ -359,7 +359,6 @@ On the network it still may be there.
 @node Menu bar support
 @section Menu bar support
 
-@findex hyperdrive-menu-bar-mode
 @findex menu-bar-mode
 
 If you enabled @code{hyperdrive-menu-bar-mode}, either in your configuration
@@ -369,6 +368,10 @@ of the screen.  When the current buffer is visiting a hyperdrive
 file/directory, the ``Hyperdrive'' menu will also be displayed as a
 top-level menu.  If you don't see the menu bar, please double check
 that @code{menu-bar-mode} is enabled (it is enabled by default).
+
+@deffn Command hyperdrive-menu-bar-mode
+Enable the ``Hyperdrive'' menu bar.
+@end deffn
 
 @node Hyperdrive menu command
 @section Hyperdrive menu command
