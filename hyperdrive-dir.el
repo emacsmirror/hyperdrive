@@ -70,8 +70,9 @@ If THEN, call it in the directory buffer with no arguments."
                 (update-footer (num-filled num-of)
                   (when (zerop (mod num-filled 5))
                     (ewoc-set-hf ewoc header
-                                 (propertize (format "Loading (%s/%s)..." num-filled num-of)
-					     'face 'font-lock-comment-face)))))
+                                 (propertize
+                                  (format "Loading (%s/%s)..." num-filled num-of)
+				  'face 'font-lock-comment-face)))))
       (setf directory-entry (h//fill directory-entry headers))
       (when parent-entry
         (setf (alist-get 'display-name (he/etc parent-entry))  "../")
@@ -80,29 +81,31 @@ If THEN, call it in the directory buffer with no arguments."
         (with-silent-modifications
           (setf ewoc (or h/ewoc ; Bind this for lambdas.
                          (setf h/ewoc (ewoc-create #'h/dir-pp))))
-          (setf metadata-queue (make-plz-queue
-				;; Experimentation seems to show that a
-				;; queue size of about 20 performs best.
-                                :limit h/queue-limit
-                                :finally (lambda ()
-                                           (with-current-buffer (ewoc-buffer ewoc)
-                                             (with-silent-modifications
-                                               ;; `with-silent-modifications' increases performance,
-                                               ;; but we still need `set-buffer-modified-p' below.
-                                               (ewoc-set-hf ewoc header "")
-                                               (setf entries (h/sort-entries entries))
-                                               (dolist (entry entries)
-                                                 (ewoc-enter-last ewoc entry))
-                                               (or (when prev-entry
-                                                     (goto-entry prev-entry ewoc))
-                                                   (goto-char prev-point)))
-                                             (set-buffer-modified-p nil))
-                                           ;; TODO: Remove this and the commented out `debug-start-time'
-                                           ;; binding when we're done experimenting.
-                                           ;; (message "Elapsed: %s"
-                                           ;;          (float-time (time-subtract (current-time)
-                                           ;;                                     debug-start-time)))
-                                           )))
+          (setf metadata-queue
+                (make-plz-queue
+		 ;; Experimentation seems to show that a
+		 ;; queue size of about 20 performs best.
+                 :limit h/queue-limit
+                 :finally (lambda ()
+                            (with-current-buffer (ewoc-buffer ewoc)
+                              (with-silent-modifications
+                                ;; `with-silent-modifications' increases performance,
+                                ;; but we still need `set-buffer-modified-p' below.
+                                (ewoc-set-hf ewoc header "")
+                                (setf entries (h/sort-entries entries))
+                                (dolist (entry entries)
+                                  (ewoc-enter-last ewoc entry))
+                                (or (when prev-entry
+                                      (goto-entry prev-entry ewoc))
+                                    (goto-char prev-point)))
+                              (set-buffer-modified-p nil))
+                            ;; TODO: Remove this and the commented out `debug-start-time'
+                            ;; binding when we're done experimenting.
+                            ;; (message "Elapsed: %s"
+                            ;;          (float-time (time-subtract
+                            ;;                       (current-time)
+                            ;;                       debug-start-time)))
+                            )))
           (setf prev-entry (when-let ((node (ewoc-locate h/ewoc)))
                              (ewoc-data node)))
           (setf prev-point (point))
