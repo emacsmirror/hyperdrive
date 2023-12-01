@@ -81,6 +81,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Prevent accidental loss of unsaved hyperdrive files
 - Prompt before overwriting with ~hyperdrive-write-buffer~
 - Fixed a native compilation bug related to ~kill-all-local-variables~
+- Fixed opening hyperdrive PDFs in ~doc-view~
 - Improved error handling
 
 ** Security
