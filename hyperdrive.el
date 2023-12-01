@@ -104,7 +104,8 @@ Customize behavior with `hyperdrive-gateway-process-type', which see."
 ;;;###autoload
 (defun hyperdrive-stop ()
   "Stop `hyper-gateway' if running.
-Customize behavior with `hyperdrive-gateway-process-type', which see." (interactive)
+Customize behavior with `hyperdrive-gateway-process-type', which see."
+  (interactive)
   (h//gateway-stop))
 
 ;;;###autoload
