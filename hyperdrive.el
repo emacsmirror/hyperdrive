@@ -804,8 +804,7 @@ The return value of this function is the retrieval buffer."
 ;;;;; `easy-menu' integration
 
 (defvar h/menu-bar-menu
-  '("Hyperdrive"
-    ("Gateway"
+  '(("Gateway"
      :label
      (format "Gateway (%s)" (if (h/status) "on" "off"))
      ["Start Gateway" h/start
