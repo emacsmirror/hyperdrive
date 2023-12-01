@@ -398,16 +398,34 @@ documentation,,transient,}.  To learn about the commands available in
 @node Start/stop the gateway
 @section Start/stop the gateway
 
-@findex hyperdrive-start
-@findex hyperdrive-stop
+To connect with peers, you'll need to start @code{hyper-gateway} (see
+@ref{Hyper-gateway}).  The current running status of the gateway can be
+seen in @code{hyperdrive-menu} (see @ref{Hyperdrive menu command}) and in the
+``Hyperdrive'' menu bar (see @ref{Menu bar support}).
 
-To connect with peers, you'll need to start @code{hyper-gateway}. If you
-@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd, install @code{hyper-gateway} as a SystemD
-service},
-you can connect and disconnect from the network with @code{M-x
-hyperdrive-start} and @code{M-x hyperdrive-stop}. Otherwise, follow @uref{https://github.com/RangerMauve/hyper-gateway#usage, these
-instructions} to
-run @code{hyper-gateway} manually.
+@deffn Command hyperdrive-start
+Start @code{hyper-gateway}.
+@end deffn
+
+@deffn Command hyperdrive-stop
+Stop @code{hyper-gateway}.
+@end deffn
+
+@defopt hyperdrive-gateway-process-type
+How to start and stop @code{hyper-gateway}.  By default, @code{hyperdrive.el} will
+autodetect the appropriate process type.  If you have configured
+@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd, hyper-gateway to run as a systemd service}, then @code{hyperdrive.el} will
+automatically use @code{systemd} to manage the gateway.  Otherwise,
+@code{hyperdrive.el} will start @code{hyper-gateway} as an Emacs subprocess.
+@end defopt
+
+@defopt hyperdrive-gateway-command
+The command run to start @code{hyper-gateway} as an Emacs subprocess.  This
+option only takes effect when @code{hyperdrive-gateway-process-type} is set
+to @code{subprocess}.
+@end defopt
+
+Alternatively, follow @uref{https://github.com/RangerMauve/hyper-gateway#usage, these instructions} to run @code{hyper-gateway} manually.
 
 @node Open a hyperdrive
 @section Open a hyperdrive

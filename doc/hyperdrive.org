@@ -191,16 +191,35 @@ documentation]].  To learn about the commands available in
 ~hyperdrive-menu~, read on!
 
 ** Start/stop the gateway
-#+findex: hyperdrive-start
-#+findex: hyperdrive-stop
 
-To connect with peers, you'll need to start ~hyper-gateway~. If you
-[[https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd][install ~hyper-gateway~ as a SystemD
-service]],
-you can connect and disconnect from the network with ~M-x
-hyperdrive-start~ and ~M-x hyperdrive-stop~. Otherwise, follow [[https://github.com/RangerMauve/hyper-gateway#usage][these
-instructions]] to
-run ~hyper-gateway~ manually.
+To connect with peers, you'll need to start ~hyper-gateway~ (see
+[[*Hyper-gateway]]).  The current running status of the gateway can be
+seen in ~hyperdrive-menu~ (see [[*Hyperdrive menu command]]) and in the
+"Hyperdrive" menu bar (see [[*Menu bar support]]).
+
+- Command: hyperdrive-start ::
+
+  Start ~hyper-gateway~.
+
+- Command: hyperdrive-stop ::
+
+  Stop ~hyper-gateway~.
+
+- User Option: hyperdrive-gateway-process-type ::
+
+  How to start and stop ~hyper-gateway~.  By default, ~hyperdrive.el~ will
+  autodetect the appropriate process type.  If you have configured
+  [[https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd][hyper-gateway to run as a systemd service]], then ~hyperdrive.el~ will
+  automatically use ~systemd~ to manage the gateway.  Otherwise,
+  ~hyperdrive.el~ will start ~hyper-gateway~ as an Emacs subprocess.
+
+- User Option: hyperdrive-gateway-command ::
+
+  The command run to start ~hyper-gateway~ as an Emacs subprocess.  This
+  option only takes effect when ~hyperdrive-gateway-process-type~ is set
+  to ~subprocess~.
+
+Alternatively, follow [[https://github.com/RangerMauve/hyper-gateway#usage][these instructions]] to run ~hyper-gateway~ manually.
 
 ** Open a hyperdrive
 #+findex: hyperdrive-open-url
