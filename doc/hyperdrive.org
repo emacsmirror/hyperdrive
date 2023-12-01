@@ -997,15 +997,16 @@ customize-group RET hyperdrive RET~:
   abbreviated labels:
 
   #+begin_src emacs-lisp
-    (setq hyperdrive-formats '((name . "%s")
-                               (version . " (%s)")
-                               (path . "%s")
-                               (petname . "p:%s")
-                               (nickname . "n:%s")
-                               (public-key . "k:%s")
-                               (short-key . "k:%.8s…")
-                               (seed . "s:%s")
-                               (domains . "d:%s")))
+    (setq hyperdrive-formats
+          '((name . "%s")
+            (version . " (%s)")
+            (path . "%s")
+            (petname . "p:%s")
+            (nickname . "n:%s")
+            (public-key . "k:%s")
+            (short-key . "k:%.8s…")
+            (seed . "s:%s")
+            (domains . "d:%s")))
   #+end_src
 
   With this snippet, the petname ~foo~ now displays as ~p:foo~.  For further

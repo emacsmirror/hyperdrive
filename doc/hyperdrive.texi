@@ -1392,15 +1392,16 @@ Feel free to adjust the following example configuration for
 abbreviated labels:
 
 @lisp
-(setq hyperdrive-formats '((name . "%s")
-                           (version . " (%s)")
-                           (path . "%s")
-                           (petname . "p:%s")
-                           (nickname . "n:%s")
-                           (public-key . "k:%s")
-                           (short-key . "k:%.8s…")
-                           (seed . "s:%s")
-                           (domains . "d:%s")))
+(setq hyperdrive-formats
+      '((name . "%s")
+        (version . " (%s)")
+        (path . "%s")
+        (petname . "p:%s")
+        (nickname . "n:%s")
+        (public-key . "k:%s")
+        (short-key . "k:%.8s…")
+        (seed . "s:%s")
+        (domains . "d:%s")))
 @end lisp
 
 With this snippet, the petname @code{foo} now displays as @code{p:foo}.  For further
