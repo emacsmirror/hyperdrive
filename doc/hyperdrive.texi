@@ -435,10 +435,6 @@ Alternatively, follow @uref{https://github.com/RangerMauve/hyper-gateway#usage, 
 @node Open a hyperdrive
 @section Open a hyperdrive
 
-@findex hyperdrive-open-url
-@findex hyperdrive-find-file
-@findex hyperdrive-view-file
-
 You can open a hyperdrive folder or file by pasting in a @code{hyper://} URL
 after @code{M-x hyperdrive-open-url}.  Try loading USHIN's hyperdrive:
 
@@ -446,10 +442,21 @@ after @code{M-x hyperdrive-open-url}.  Try loading USHIN's hyperdrive:
 hyper://aaj45d88g4eenu76rpmwzjiabsof1w8u6fufq6oogyhjk1ubygxy/
 @end example
 
-Alternatively, @code{M-x hyperdrive-find-file} remembers hyperdrives you have
-already created or visited.  It will prompt you for a known hyperdrive
-and a path inside it.  @code{hyperdrive-view-file} is like
-@code{hyperdrive-find-file}, but it opens the file in @ref{View Mode,view-mode,,emacs,}.
+@deffn Command hyperdrive-open-url
+Open a hyperdrive file or directory by its @code{hyper://} URL@.
+@end deffn
+
+The followings commands let you select and visit one of the
+hyperdrives you've already created or visited:
+
+@deffn Command hyperdrive-find-file
+Open a hyperdrive file or directory by choosing one of your known
+hyperdrives and a path inside it.
+@end deffn
+
+@deffn Command hyperdrive-view-file
+Like @code{hyperdrive-find-file}, but open the file in @ref{View Mode,view-mode,,emacs,}.
+@end deffn
 
 @menu
 * Directory view::
