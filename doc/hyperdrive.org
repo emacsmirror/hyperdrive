@@ -483,12 +483,17 @@ changes made to hyperdrive files (see [[*Versioning]]).
   version, leave the version blank.
 
 *** History buffer
-#+findex: hyperdrive-history
 
-To view the entire known history of a file, use ~hyperdrive-history~.
-For an explanation of the history buffer, see [[*Partial version data]].
+The history buffer displays the entire known history of a hyperdrive
+file.  For an explanation of how it works, see [[*Partial version data]].
 
-The following keybindings are available inside the directory view by
+- Command: hyperdrive-history ::
+
+  Open the history buffer for the current hyperdrive file.  To open
+  the history for a different file, use the universal prefix argument
+  like this: ~C-u M-x hyperdrive-history~.
+
+The following keybindings are available inside the history view by
 default:
 
 #+attr_texinfo: :compact t
@@ -499,29 +504,30 @@ default:
 
 - Key: + (hyperdrive-history-fill-version-ranges) ::
 
-  Load version history for unknown ranges.
+  Load version history for unknown version ranges.
 
 - Key: RET (hyperdrive-history-find-file) ::
 
-  Open the file at the start of the range at point.
+  Open the file at the start of the version range at point.
 
 - Key: o (hyperdrive-history-find-file-other-window) ::
 - Key: <mouse-1> ::
 - Key: <mouse-2> ::
 
-  Open the file at the start of the range at point in a new window.
+  Open the file at the start of the version range at point in a new
+  window.
 
 - Key: v (hyperdrive-history-view-file) ::
 
-  Open the file at the start of the range at point in [[info:emacs#View Mode][view-mode]].
+  Open the file at the start of the version range at point in [[info:emacs#View Mode][view-mode]].
 
 - Key: w (hyperdrive-history-copy-url) ::
 
-  Copy the URL of the file at the start of the range at point.
+  Copy the URL of the file at the start of the version range at point.
 
 - Key: d (hyperdrive-history-download-file) ::
 
-  Download the file at the start of the range at point.
+  Download the file at the start of the version range at point.
 
 - Key: = (hyperdrive-history-diff) ::
 

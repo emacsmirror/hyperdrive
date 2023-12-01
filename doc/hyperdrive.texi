@@ -751,12 +751,16 @@ version, leave the version blank.
 @node History buffer
 @subsection History buffer
 
-@findex hyperdrive-history
+The history buffer displays the entire known history of a hyperdrive
+file.  For an explanation of how it works, see @ref{Partial version data}.
 
-To view the entire known history of a file, use @code{hyperdrive-history}.
-For an explanation of the history buffer, see @ref{Partial version data}.
+@deffn Command hyperdrive-history
+Open the history buffer for the current hyperdrive file.  To open
+the history for a different file, use the universal prefix argument
+like this: @code{C-u M-x hyperdrive-history}.
+@end deffn
 
-The following keybindings are available inside the directory view by
+The following keybindings are available inside the history view by
 default:
 
 @table @asis
@@ -771,12 +775,12 @@ Move between entries.
 @item @kbd{+} (@code{hyperdrive-history-fill-version-ranges})
 @kindex +
 @findex hyperdrive-history-fill-version-ranges
-Load version history for unknown ranges.
+Load version history for unknown version ranges.
 
 @item @kbd{@key{RET}} (@code{hyperdrive-history-find-file})
 @kindex RET
 @findex hyperdrive-history-find-file
-Open the file at the start of the range at point.
+Open the file at the start of the version range at point.
 
 @item @kbd{o} (@code{hyperdrive-history-find-file-other-window})
 @itemx @kbd{<mouse-1>}
@@ -785,22 +789,23 @@ Open the file at the start of the range at point.
 @kindex <mouse-1>
 @kindex <mouse-2>
 @findex hyperdrive-history-find-file-other-window
-Open the file at the start of the range at point in a new window.
+Open the file at the start of the version range at point in a new
+window.
 
 @item @kbd{v} (@code{hyperdrive-history-view-file})
 @kindex v
 @findex hyperdrive-history-view-file
-Open the file at the start of the range at point in @ref{View Mode,view-mode,,emacs,}.
+Open the file at the start of the version range at point in @ref{View Mode,view-mode,,emacs,}.
 
 @item @kbd{w} (@code{hyperdrive-history-copy-url})
 @kindex w
 @findex hyperdrive-history-copy-url
-Copy the URL of the file at the start of the range at point.
+Copy the URL of the file at the start of the version range at point.
 
 @item @kbd{d} (@code{hyperdrive-history-download-file})
 @kindex d
 @findex hyperdrive-history-download-file
-Download the file at the start of the range at point.
+Download the file at the start of the version range at point.
 
 @item @kbd{=} (@code{hyperdrive-history-diff})
 @kindex =
