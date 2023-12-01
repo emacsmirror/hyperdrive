@@ -95,15 +95,16 @@
 
 ;;;###autoload
 (defun hyperdrive-start ()
-  "Start `hyper-gateway' systemd service if not already running."
+  "Start `hyper-gateway' if not already running.
+Customize behavior with `hyperdrive-gateway-process-type', which see."
   (interactive)
   ;; TODO: Verify that the latest version is installed.  See: <https://github.com/RangerMauve/hyper-gateway/issues/9>.
   (h//gateway-start))
 
 ;;;###autoload
 (defun hyperdrive-stop ()
-  "Stop `hyper-gateway' systemd service."
-  (interactive)
+  "Stop `hyper-gateway' if running.
+Customize behavior with `hyperdrive-gateway-process-type', which see." (interactive)
   (h//gateway-stop))
 
 ;;;###autoload
