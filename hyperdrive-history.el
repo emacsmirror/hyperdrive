@@ -68,24 +68,25 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                     (propertize " " 'display '(space :width h/timestamp-width)))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    (format "%7s  %19s  %6s  %s"
-            (propertize exists-marker
-                        'face (pcase-exhaustive existsp
-                                ('t 'h/history-existent)
-                                ('nil 'h/history-nonexistent)
-                                ('unknown 'h/history-unknown)))
-            (propertize formatted-range
-                        'face 'h/history-range
-                        'mouse-face 'highlight
-                        'help-echo (format (pcase-exhaustive existsp
-                                             ('t "Open version %s")
-                                             ('nil "Nonexistent at version %s")
-                                             ('unknown "Load history at version %s"))
-                                           range-start))
-            (propertize (or size "")
-                        'face 'h/size)
-            (propertize (or timestamp "")
-                        'face 'h/timestamp))))
+    (format
+     "%7s  %19s  %6s  %s"
+     (propertize exists-marker
+                 'face (pcase-exhaustive existsp
+                         ('t 'h/history-existent)
+                         ('nil 'h/history-nonexistent)
+                         ('unknown 'h/history-unknown)))
+     (propertize formatted-range
+                 'face 'h/history-range
+                 'mouse-face 'highlight
+                 'help-echo (format (pcase-exhaustive existsp
+                                      ('t "Open version %s")
+                                      ('nil "Nonexistent at version %s")
+                                      ('unknown "Load history at version %s"))
+                                    range-start))
+     (propertize (or size "")
+                 'face 'h/size)
+     (propertize (or timestamp "")
+                 'face 'h/timestamp))))
 
 (defun h/history-range-entry-at-point ()
   "Return range-entry at version at point.
