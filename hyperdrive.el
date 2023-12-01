@@ -133,8 +133,8 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
                 (string-match (rx bos (group "hyper://" (1+ nonl))) response)
                 (match-string 1 response)))
          (hyperdrive (he/hyperdrive (h/url-entry url))))
-    (setf (h/seed hyperdrive) seed
-          (h/writablep hyperdrive) t)
+    (setf (h/seed hyperdrive) seed)
+    (setf (h/writablep hyperdrive) t)
     (unwind-protect
         (h/set-petname seed hyperdrive)
       (h/persist hyperdrive)
@@ -584,8 +584,8 @@ Nil VERSION means open the entry at its hyperdrive's latest version."
   "Return a bookmark record for current hyperdrive buffer.
 Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   (let ((bookmark (bookmark-make-record-default 'no-file)))
-    (setf (alist-get 'handler bookmark) #'h/bookmark-handler
-          (alist-get 'location bookmark) (he/url h/current-entry))
+    (setf (alist-get 'handler bookmark) #'h/bookmark-handler)
+    (setf (alist-get 'location bookmark) (he/url h/current-entry))
     (cons (format "hyperdrive: %s" (h//format-entry h/current-entry)) bookmark)))
 
 ;;;###autoload

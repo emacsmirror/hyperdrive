@@ -133,8 +133,8 @@ Point is indicated by ★."
       ;; TODO: Initialize this buffer only once for this file's tests.
       (org-mode)
       (h/mode)
-      (setq-local h/current-entry (h/test-org-entry-create
-                                   :public-key public-key :path path))
+      (setq-local h/current-entry
+                  (h/test-org-entry-create :public-key public-key :path path))
       (org-insert-link nil url desc)
       (buffer-string))))
 

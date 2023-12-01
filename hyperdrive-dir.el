@@ -79,8 +79,8 @@ If THEN, call it in the directory buffer with no arguments."
       (with-current-buffer (h//get-buffer-create directory-entry)
         (with-silent-modifications
           (setf ewoc (or h/ewoc ; Bind this for lambdas.
-                         (setf h/ewoc (ewoc-create #'h/dir-pp)))
-                metadata-queue (make-plz-queue
+                         (setf h/ewoc (ewoc-create #'h/dir-pp))))
+          (setf metadata-queue (make-plz-queue
 				;; Experimentation seems to show that a
 				;; queue size of about 20 performs best.
                                 :limit h/queue-limit
@@ -102,10 +102,10 @@ If THEN, call it in the directory buffer with no arguments."
                                            ;; (message "Elapsed: %s"
                                            ;;          (float-time (time-subtract (current-time)
                                            ;;                                     debug-start-time)))
-                                           ))
-                prev-entry (when-let ((node (ewoc-locate h/ewoc)))
-                             (ewoc-data node))
-                prev-point (point))
+                                           )))
+          (setf prev-entry (when-let ((node (ewoc-locate h/ewoc)))
+                             (ewoc-data node)))
+          (setf prev-point (point))
           (ewoc-filter h/ewoc #'ignore)
           (update-footer num-filled num-entries)
           (dolist (entry entries)
@@ -257,9 +257,9 @@ With point on header, returns directory entry."
   "Major mode for Hyperdrive directory buffers."
   :group 'hyperdrive
   :interactive nil
-  (setq-local imenu-create-index-function #'h/dir--imenu-create-index-function
-              imenu-auto-rescan t
-              imenu-space-replacement " "))
+  (setq-local imenu-create-index-function #'h/dir--imenu-create-index-function)
+  (setq-local imenu-auto-rescan t)
+  (setq-local imenu-space-replacement " "))
 
 ;;;; Commands
 

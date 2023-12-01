@@ -654,9 +654,9 @@ Returns filled ENTRY."
       (setf (h/writablep hyperdrive) (string-match-p "PUT" allow)))
     (setf (he/size entry) (when content-length
                             (ignore-errors
-                              (cl-parse-integer content-length)))
-          (he/type entry) content-type
-          (he/mtime entry) last-modified)
+                              (cl-parse-integer content-length))))
+    (setf (he/type entry) content-type)
+    (setf (he/mtime entry) last-modified)
     (if persisted-hyperdrive
         (progn
           ;; Ensure that entry's hyperdrive is the persisted
@@ -727,10 +727,10 @@ Returns the ranges cons cell for ENTRY."
       (unless (and old-range-end (> old-range-end range-end))
         ;; If there already exists a longer existent range in
         ;; `h/version-ranges', there's nothing to do.
-        (setf (plist-get range :existsp) t
-              (plist-get range :range-end) range-end
-              (map-elt ranges range-start) range
-              (he/version-ranges entry) (cl-sort ranges #'< :key #'car))))))
+        (setf (plist-get range :existsp) t)
+        (setf (plist-get range :range-end) range-end)
+        (setf (map-elt ranges range-start) range)
+        (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car))))))
 
 (defun h/update-nonexistent-version-range (entry)
   "Update the version range for ENTRY which doesn't exist at its version.
@@ -767,8 +767,8 @@ Returns the ranges cons cell for ENTRY."
       ;; Delete next range if it's contiguous with current range.
       (when (and next-range (null next-exists-p))
         (setf ranges (map-delete ranges next-range-start)))
-      (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end)
-            (he/version-ranges entry) (cl-sort ranges #'< :key #'car)))))
+      (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end))
+      (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car)))))
 
 (cl-defun h/fill-version-ranges (entry &key (finally #'ignore))
   "Asynchronously fill in versions ranges before ENTRY.
@@ -1272,8 +1272,9 @@ If then, then call THEN with no arguments.  Default handler."
                   (with-silent-modifications
                     (erase-buffer)
                     (insert-buffer-substring response-buffer))
-                  (setf buffer-undo-list nil
-                        buffer-read-only (or (not (h/writablep hyperdrive)) version))
+                  (setf buffer-undo-list nil)
+                  (setf buffer-read-only
+                        (or (not (h/writablep hyperdrive)) version))
                   (set-buffer-modified-p nil)
                   (set-visited-file-modtime (current-time))))
               (when target

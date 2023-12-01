@@ -207,9 +207,10 @@ filter and set NO-CONFIRM to t."
                               (insert (propertize (format "Comparing files (%s/%s)..." num-filled num-of)
                                                   'face 'font-lock-comment-face)))))))
             (h/mirror-mode)
-            (setq-local h/mirror-query
-                        `(,source ,hyperdrive :target-dir ,target-dir :filter ,filter)
-                        h/mirror-parent-entry parent-entry)
+            (setq-local h/mirror-query `( ,source ,hyperdrive
+                                          :target-dir ,target-dir
+                                          :filter ,filter))
+            (setq-local h/mirror-parent-entry parent-entry)
             ;; TODO: Add command to clear plz queue.
             (setf metadata-queue
                   (make-plz-queue
@@ -271,8 +272,8 @@ Callback for queue finalizer in `hyperdrive-mirror'."
                                               :key #'h/mirror-item-status)))
         (setq-local h/mirror-files-and-urls files-and-urls)
         (when-let ((window (get-buffer-window (current-buffer))))
-          (setf window-point (window-point window)
-                window-start (window-start window)))
+          (setf window-point (window-point window))
+          (setf window-start (window-start window)))
         (when h/mirror-visibility-cache
           (setf magit-section-visibility-cache h/mirror-visibility-cache))
         (add-hook 'kill-buffer-hook #'h/mirror--cache-visibility nil 'local)
@@ -331,9 +332,9 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
                h/mirror-columns h/mirror-column-formatters
                taxy))
              (inhibit-read-only t))
-        (setf format-table (car format-cons)
-              column-sizes (cdr format-cons)
-              header-line-format (taxy-magit-section-format-header
+        (setf format-table (car format-cons))
+        (setf column-sizes (cdr format-cons))
+        (setf header-line-format (taxy-magit-section-format-header
                                   column-sizes h/mirror-column-formatters))
         ;; Before this point, no changes have been made to the buffer's contents.
         (save-excursion
