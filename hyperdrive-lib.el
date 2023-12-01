@@ -1603,6 +1603,9 @@ When PATH is nil or blank, return \"/\"."
 When BUFFER is nil, act on current buffer."
   (with-current-buffer (or buffer (current-buffer))
     (if (>= emacs-major-version 29)
+        ;; FIXME: This causes a native compilation error on Emacs 28 because the
+        ;; call to `kill-all-local-variables' with the argument gets compiled
+        ;; even though it wouldn't get called at runtime.
         (with-suppressed-warnings ((callargs kill-all-local-variables))
           (kill-all-local-variables t))
       ;; NOTE: On Emacs <29, this function will not kill permanent-local
