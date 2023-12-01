@@ -171,7 +171,6 @@ that ~menu-bar-mode~ is enabled (it is enabled by default).
   Enable the "Hyperdrive" menu bar.
 
 ** Hyperdrive menu command
-#+findex: hyperdrive-menu
 
 ~M-x hyperdrive-menu~ is a keyboard-driven interface to many
 ~hyperdrive.el~ commands.  With the menu open, press one of highlit keys
@@ -188,6 +187,10 @@ If you press ~C-u~ (universal prefix argument) before a key sequence,
 the command may behave differently, e.g., by prompting for more
 information.  You can jump between ~hyperdrive-menu~ commands with the
 ~up~ and ~down~ arrow keys.  Press ~C-g~ to close the menu.
+
+- Command: hyperdrive-menu ::
+
+  Show the hyperdrive menu interface.
 
 For more on this type of user interface, please refer to the [[info:transient#Introduction][Transient
 documentation]].  To learn about the commands available in
