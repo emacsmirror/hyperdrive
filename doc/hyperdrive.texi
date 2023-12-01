@@ -467,8 +467,9 @@ Like @code{hyperdrive-find-file}, but open the file in @ref{View Mode,view-mode,
 @node Directory view
 @subsection Directory view
 
-The following keybindings are available inside the directory view by
-default:
+@code{hyperdrive.el} offers a Dired-like (see @ref{Dired,,,emacs,}) interface for
+exploring hyperdrive directories.  The following keybindings are
+available inside the directory view by default:
 
 @table @asis
 @item @kbd{n} (@code{hyperdrive-ewoc-next})

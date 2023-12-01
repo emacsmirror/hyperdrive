@@ -254,8 +254,9 @@ hyperdrives you've already created or visited:
 
 *** Directory view
 
-The following keybindings are available inside the directory view by
-default:
+~hyperdrive.el~ offers a Dired-like (see [[info:emacs#Dired]]) interface for
+exploring hyperdrive directories.  The following keybindings are
+available inside the directory view by default:
 
 #+attr_texinfo: :compact t
 - Key: n (hyperdrive-ewoc-next) ::
