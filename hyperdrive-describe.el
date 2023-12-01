@@ -78,7 +78,7 @@ Universal prefix argument \\[universal-argument] forces
                        (org-table-align)
                        (buffer-string))
                    "[none]")))))
-    (setq buffer-read-only t)
+    (setf buffer-read-only t)
     (pop-to-buffer (current-buffer))))
 
 ;;;; Mode
