@@ -328,13 +328,13 @@ With @ref{Top,use-package,,use-package,}:
 @node Usage
 @chapter Usage
 
-@example
+@display
 Be careful about what you share!
 When you upload a file, beware:
   You may delete your own copy,
   But gone it may not be.
 On the network it still may be there.
-@end example
+@end display
 
 @menu
 * Menu bar support::

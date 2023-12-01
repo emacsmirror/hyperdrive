@@ -147,13 +147,13 @@ With [[info:use-package][use-package]]:
 
 * Usage
 
-#+begin_example
+#+begin_verse
 Be careful about what you share!
 When you upload a file, beware:
   You may delete your own copy,
   But gone it may not be.
 On the network it still may be there.
-#+end_example
+#+end_verse
 
 ** Menu bar support
 #+findex: hyperdrive-menu-bar-mode
