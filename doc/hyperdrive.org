@@ -1067,13 +1067,19 @@ display the ~bar~ entry but not the ~bar/~ entry prefix.
 
 ** Quick documentation access
 
-You can open the ~hyperdrive.el~ info manual from ~hyperdrive-menu~ by
-pressing ~?~ twice.
+There are many ways to read this info manual within Emacs:
 
-To view documentation for ~hyperdrive.el~ commands, functions, and
-variables, press ~C-h o~ (~describe-symbol~). Inside the ~*Help*~
-buffer that pops open, you can press ~i~ (~help-goto-info~) to jump to
-the relevant section in the ~hyperdrive.el~ manual.
+- Command: hyperdrive-info-manual ::
+
+  Open the hyperdrive.el info manual.
+
+You can also open the ~hyperdrive.el~ info manual from ~hyperdrive-menu~
+by pressing ~?~ twice.
+
+To view documentation for particular ~hyperdrive.el~ commands,
+functions, and variables, press ~C-h o~ (~describe-symbol~).  Inside the
+~*Help*~ buffer that pops open, you can press ~i~ (~help-goto-info~) to jump
+to the relevant section in the ~hyperdrive.el~ manual.
 
 * Troubleshooting
 

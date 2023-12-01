@@ -1491,13 +1491,19 @@ display the @code{bar} entry but not the @code{bar/} entry prefix.
 @node Quick documentation access
 @section Quick documentation access
 
-You can open the @code{hyperdrive.el} info manual from @code{hyperdrive-menu} by
-pressing @code{?} twice.
+There are many ways to read this info manual within Emacs:
 
-To view documentation for @code{hyperdrive.el} commands, functions, and
-variables, press @code{C-h o} (@code{describe-symbol}). Inside the @code{*Help*}
-buffer that pops open, you can press @code{i} (@code{help-goto-info}) to jump to
-the relevant section in the @code{hyperdrive.el} manual.
+@deffn Command hyperdrive-info-manual
+Open the hyperdrive.el info manual.
+@end deffn
+
+You can also open the @code{hyperdrive.el} info manual from @code{hyperdrive-menu}
+by pressing @code{?} twice.
+
+To view documentation for particular @code{hyperdrive.el} commands,
+functions, and variables, press @code{C-h o} (@code{describe-symbol}).  Inside the
+@code{*Help*} buffer that pops open, you can press @code{i} (@code{help-goto-info}) to jump
+to the relevant section in the @code{hyperdrive.el} manual.
 
 @node Troubleshooting
 @chapter Troubleshooting
