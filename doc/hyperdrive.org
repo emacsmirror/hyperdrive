@@ -452,13 +452,16 @@ links ~[bar](<bar.md>)~, ~[bar](<./bar.md>)~, and ~[bar](</bar.md>)~ all
 point to ~hyper://PUBLIC-KEY/bar.md~.
 
 ** Delete a hyperdrive file
-#+findex: hyperdrive-delete
 
-You can use ~hyperdrive-delete~ to delete the hyperdrive file in the
-current buffer.  This command has a keybinding in the [[*Directory view][directory view]].
+*Please note that deleted files can be accessed by loading a prior
+version of the hyperdrive (see [[*View the hyperdrive version history]]).*
 
-*Please note that deleted files can be accessed by [[*View the hyperdrive version history][loading a prior version]]
-of the hyperdrive.*
+- Command: hyperdrive-delete ::
+
+  Delete the hyperdrive file in the current buffer.
+
+This command also has a keybinding in the directory view (see
+[[*Directory view]]).
 
 ** View the hyperdrive version history
 #+findex: hyperdrive-open-previous-version

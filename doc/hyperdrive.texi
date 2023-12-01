@@ -714,13 +714,15 @@ point to @code{hyper://PUBLIC-KEY/bar.md}.
 @node Delete a hyperdrive file
 @section Delete a hyperdrive file
 
-@findex hyperdrive-delete
+@strong{Please note that deleted files can be accessed by loading a prior
+version of the hyperdrive (see @ref{View the hyperdrive version history}).}
 
-You can use @code{hyperdrive-delete} to delete the hyperdrive file in the
-current buffer.  This command has a keybinding in the @ref{Directory view, , directory view}.
+@deffn Command hyperdrive-delete
+Delete the hyperdrive file in the current buffer.
+@end deffn
 
-@strong{Please note that deleted files can be accessed by @ref{View the hyperdrive version history, , loading a prior version}
-of the hyperdrive.}
+This command also has a keybinding in the directory view (see
+@ref{Directory view}).
 
 @node View the hyperdrive version history
 @section View the hyperdrive version history
