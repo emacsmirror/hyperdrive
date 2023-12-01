@@ -464,16 +464,23 @@ This command also has a keybinding in the directory view (see
 [[*Directory view]]).
 
 ** View the hyperdrive version history
-#+findex: hyperdrive-open-previous-version
-#+findex: hyperdrive-open-next-version
-#+findex: hyperdrive-open-at-version
 
-Hyperdrives are versioned (see [[*Versioning]]).  To open the
-previous/next version of a hyperdrive file or directory, run
-~hyperdrive-open-previous-version~ or ~hyperdrive-open-next-version~.
-~hyperdrive-open-at-version~ lets you specify a version number; leaving
-the version blank opens the current file or directory at its
-hyperdrive's latest version.
+Hyperdrives are versioned, meaning that you can explore the history of
+changes made to hyperdrive files (see [[*Versioning]]).
+
+- Command: hyperdrive-open-previous-version ::
+
+  Open the previous version of the current hyperdrive file or directory.
+
+- Command: hyperdrive-open-previous-version ::
+
+  Open the next version of the current hyperdrive file or directory.
+
+- Command: hyperdrive-open-at-version ::
+
+  Open the current hyperdrive file or directory at a specific version
+  number.  To open the file or directory at its hyperdrive's latest
+  version, leave the version blank.
 
 *** History buffer
 #+findex: hyperdrive-history
