@@ -782,90 +782,91 @@ Once all requests return, call FINALLY with no arguments."
                                                         (funcall finally)))))
          ;; Flag used in the nonexistent-queue finalizer.
          finishedp)
-    (cl-labels ((fill-existent-at (version)
-                  (let ((prev-range-end (1- (car (he/version-range entry :version version)))))
-                    (if (and (cl-plusp total-requests-limit)
-                             (eq 'unknown (he/exists-p entry :version prev-range-end)))
-                        ;; Recurse backward through history.
-                        (fill-entry-at prev-range-end)
-                      (setf finishedp t))))
-                (fill-nonexistent-at (version)
-                  (let ((nonexistent-queue
-                         (make-plz-queue
-                          :limit h/queue-limit
-                          :finally (lambda ()
-                                     (setf outstanding-nonexistent-requests-p nil)
-                                     (if finishedp
-                                         ;; If the fill-nonexistent-at loop stopped
-                                         ;; prematurely, stop filling and call `finally'.
-                                         (funcall finally)
-                                       (let ((last-requested-version (- version h/queue-limit)))
-                                         (cl-decf total-requests-limit h/queue-limit)
-                                         (pcase-exhaustive (he/exists-p entry :version last-requested-version)
-                                           ('t (fill-existent-at last-requested-version))
-                                           ('nil (fill-nonexistent-at last-requested-version))
-                                           ('unknown
-                                            (h/error "Entry should have been filled at version: %s" last-requested-version))))))))
-                        ;; Make a copy of the version ranges for use in the HEAD request callback.
-                        (copy-entry-version-ranges (copy-sequence (he/version-ranges entry))))
-                    ;; For nonexistent entries, send requests in parallel.
-                    (cl-dotimes (i h/queue-limit)
-                      ;; Send the maximum number of simultaneous requests.
-                      (let ((prev-entry (h/copy-tree entry t)))
-                        (setf (he/version prev-entry) (- version i 1))
-                        (unless (and (cl-plusp (he/version prev-entry))
-                                     (eq 'unknown (he/exists-p prev-entry))
-                                     (> total-requests-limit i))
-                          ;; Stop at the beginning of the history, at a known
-                          ;; existent/nonexistent entry, or at the limit.
-                          (setf finishedp t)
-                          (cl-return))
-                        (h/api 'head (he/url prev-entry)
-                          :queue nonexistent-queue
-                          :as 'response
-                          :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
-                                  (pcase-let* ((range-start (string-to-number etag))
-                                               ((map (:existsp existsp)) (map-elt copy-entry-version-ranges range-start)))
-                                    (when (eq 'unknown existsp)
-                                      ;; Stop if the requested entry has a
-                                      ;; range-start that was already known
-                                      ;; before this batch of parallel requests.
-                                      (setf finishedp t))
-                                    (h/update-existent-version-range prev-entry range-start)))
-                          :else (lambda (err)
-                                  ;; TODO: Better error handling.
-                                  (pcase (plz-response-status (plz-error-response err))
-                                    ;; FIXME: If plz-error is a curl-error, this block will fail.
-                                    (404 (h/update-nonexistent-version-range prev-entry))
-                                    (_ (signal (car err) (cdr err)))))
-                          :noquery t)
-                        (setf outstanding-nonexistent-requests-p t)))))
-                (fill-entry-at (version)
-                  (let ((copy-entry (h/copy-tree entry t)))
-                    (setf (he/version copy-entry) version)
-                    (cl-decf total-requests-limit)
-                    (h/api 'head (he/url copy-entry)
-                      :queue fill-entry-queue
-                      :as 'response
-                      :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
-                              (pcase-let* ((range-start (string-to-number etag))
-                                           ((map (:existsp existsp))
-                                            (map-elt (he/version-ranges copy-entry) range-start)))
-                                (h/update-existent-version-range copy-entry range-start)
-                                (if (eq 't existsp)
-                                    ;; Stop if the requested entry has a
-                                    ;; range-start that was already known
-                                    ;; before this batch of parallel requests.
-                                    (setf finishedp t)
-                                  (fill-existent-at version))))
-                      :else (lambda (err)
-                              (pcase (plz-response-status (plz-error-response err))
-                                ;; FIXME: If plz-error is a curl-error, this block will fail.
-                                (404
-                                 (h/update-nonexistent-version-range copy-entry)
-                                 (fill-nonexistent-at version))
-                                (_ (signal (car err) (cdr err)))))
-                      :noquery t))))
+    (cl-labels
+        ((fill-existent-at (version)
+           (let ((prev-range-end (1- (car (he/version-range entry :version version)))))
+             (if (and (cl-plusp total-requests-limit)
+                      (eq 'unknown (he/exists-p entry :version prev-range-end)))
+                 ;; Recurse backward through history.
+                 (fill-entry-at prev-range-end)
+               (setf finishedp t))))
+         (fill-nonexistent-at (version)
+           (let ((nonexistent-queue
+                  (make-plz-queue
+                   :limit h/queue-limit
+                   :finally (lambda ()
+                              (setf outstanding-nonexistent-requests-p nil)
+                              (if finishedp
+                                  ;; If the fill-nonexistent-at loop stopped
+                                  ;; prematurely, stop filling and call `finally'.
+                                  (funcall finally)
+                                (let ((last-requested-version (- version h/queue-limit)))
+                                  (cl-decf total-requests-limit h/queue-limit)
+                                  (pcase-exhaustive (he/exists-p entry :version last-requested-version)
+                                    ('t (fill-existent-at last-requested-version))
+                                    ('nil (fill-nonexistent-at last-requested-version))
+                                    ('unknown
+                                     (h/error "Entry should have been filled at version: %s" last-requested-version))))))))
+                 ;; Make a copy of the version ranges for use in the HEAD request callback.
+                 (copy-entry-version-ranges (copy-sequence (he/version-ranges entry))))
+             ;; For nonexistent entries, send requests in parallel.
+             (cl-dotimes (i h/queue-limit)
+               ;; Send the maximum number of simultaneous requests.
+               (let ((prev-entry (h/copy-tree entry t)))
+                 (setf (he/version prev-entry) (- version i 1))
+                 (unless (and (cl-plusp (he/version prev-entry))
+                              (eq 'unknown (he/exists-p prev-entry))
+                              (> total-requests-limit i))
+                   ;; Stop at the beginning of the history, at a known
+                   ;; existent/nonexistent entry, or at the limit.
+                   (setf finishedp t)
+                   (cl-return))
+                 (h/api 'head (he/url prev-entry)
+                   :queue nonexistent-queue
+                   :as 'response
+                   :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
+                           (pcase-let* ((range-start (string-to-number etag))
+                                        ((map (:existsp existsp)) (map-elt copy-entry-version-ranges range-start)))
+                             (when (eq 'unknown existsp)
+                               ;; Stop if the requested entry has a
+                               ;; range-start that was already known
+                               ;; before this batch of parallel requests.
+                               (setf finishedp t))
+                             (h/update-existent-version-range prev-entry range-start)))
+                   :else (lambda (err)
+                           ;; TODO: Better error handling.
+                           (pcase (plz-response-status (plz-error-response err))
+                             ;; FIXME: If plz-error is a curl-error, this block will fail.
+                             (404 (h/update-nonexistent-version-range prev-entry))
+                             (_ (signal (car err) (cdr err)))))
+                   :noquery t)
+                 (setf outstanding-nonexistent-requests-p t)))))
+         (fill-entry-at (version)
+           (let ((copy-entry (h/copy-tree entry t)))
+             (setf (he/version copy-entry) version)
+             (cl-decf total-requests-limit)
+             (h/api 'head (he/url copy-entry)
+               :queue fill-entry-queue
+               :as 'response
+               :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
+                       (pcase-let* ((range-start (string-to-number etag))
+                                    ((map (:existsp existsp))
+                                     (map-elt (he/version-ranges copy-entry) range-start)))
+                         (h/update-existent-version-range copy-entry range-start)
+                         (if (eq 't existsp)
+                             ;; Stop if the requested entry has a
+                             ;; range-start that was already known
+                             ;; before this batch of parallel requests.
+                             (setf finishedp t)
+                           (fill-existent-at version))))
+               :else (lambda (err)
+                       (pcase (plz-response-status (plz-error-response err))
+                         ;; FIXME: If plz-error is a curl-error, this block will fail.
+                         (404
+                          (h/update-nonexistent-version-range copy-entry)
+                          (fill-nonexistent-at version))
+                         (_ (signal (car err) (cdr err)))))
+               :noquery t))))
       (fill-entry-at (he/version entry)))))
 
 (defun h/fill-metadata (hyperdrive)
