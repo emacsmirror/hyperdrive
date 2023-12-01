@@ -370,6 +370,10 @@ values are alists mapping version range starts to plists with
 
 ;;;;; Internals
 
+(defvar h/gateway-process nil
+  "Hyper-gateway process.
+Only used when `hyperdrive-gateway-process-type' is `subprocess'.")
+
 (defvar-local h/current-entry nil
   "Entry for current buffer.")
 (put 'h/current-entry 'permanent-local t)

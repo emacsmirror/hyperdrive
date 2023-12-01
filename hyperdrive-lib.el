@@ -1326,6 +1326,142 @@ Then calls THEN if given."
 		 (when then
 		   (funcall then)))))
 
+;;;; Gateway process
+
+;; NOTE: The below involves some slightly hacky workarounds due to using a
+;; setter for the `h/gateway-process-type' option.  The setter gets called
+;; unexpectedly early in the compilation and/or load process, which causes
+;; errors if the functions/methods and variables involved are not yet defined.
+;; So we define the variable first, giving it a nil value, and define a default
+;; for the running-p method (because the setter gets called before the option is
+;; given its default value), and then the variable is redefined as an option and
+;; given its default value.
+
+(defvar h/gateway-process-type nil)
+
+(cl-defmethod h//gateway-running-p ()
+  "Return non-nil if the gateway process is running.")
+
+(cl-defmethod h//gateway-running-p (&context (h/gateway-process-type (eql 'systemd)))
+  "Return non-nil if the gateway process is running.
+This does not mean that the gateway is responsive, only that the
+process is running.  Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE
+is the symbol `systemd'."
+  (zerop (call-process "systemctl" nil nil nil
+                       "--user" "is-active" "hyper-gateway.service")))
+
+(cl-defmethod h//gateway-running-p (&context (h/gateway-process-type (eql 'subprocess)))
+  "Return non-nil if the gateway process is running.
+This does not mean that the gateway is responsive, only that the
+process is running.  Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE
+is the symbol `subprocess'."
+  (process-live-p h/gateway-process))
+
+(defcustom h/gateway-process-type nil
+  "How to run the gateway process."
+  ;; TODO: Can or should we use the :initialize function here?
+  :set (lambda (option value)
+         "Stop the gateway process before changing the type."
+         (let ((value-changing-p (not (equal h/gateway-process-type value))))
+           (unless value
+             ;; Try to autodetect whether the gateway is already installed as a
+             ;; systemd service.  (If systemd is not installed, it will default to
+             ;; `subprocess'.)
+             (setf value
+                   (if (ignore-errors
+                         (zerop (call-process "systemctl" nil nil nil
+                                              "--user" "is-enabled" "hyper-gateway.service")))
+                       'systemd
+                     'subprocess)))
+           (let ((runningp (h//gateway-running-p)))
+             (when (and runningp value-changing-p)
+               (h//gateway-stop))
+             (set-default option value)
+             (when (and runningp value-changing-p)
+               (h//gateway-start)))))
+  :type '(choice (const :tag "systemd service" systemd)
+                 (const :tag "Emacs subprocess"
+                        :description "When Emacs exits, the gateway will be terminated."
+                        subprocess)
+                 (const :tag "Autodetect" nil))
+  :group 'hyperdrive)
+
+(defcustom h/gateway-command "hyper-gateway --writable true --silent true run"
+  ;; TODO: File Emacs bug report because the customization formatter handles the
+  ;; "symbol `subprocess'" part differently than `describe-variable' does.
+  "Command used to run the hyper-gateway.
+Only used when `hyperdrive-gateway-process-type' is the symbol `subprocess'."
+  :type 'string
+  :group 'hyperdrive)
+
+(cl-defmethod h//gateway-start (&context (h/gateway-process-type (eql 'systemd)))
+  "Start the gateway as a systemd service.
+Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
+`systemd'."
+  (when (h//gateway-running-p)
+    (user-error "Gateway already running"))
+  (let ((buffer (get-buffer-create " *hyperdrive-start*")))
+    (unwind-protect
+        (unless (zerop (call-process "systemctl" nil (list buffer t) nil
+                                     "--user" "start" "hyper-gateway.service"))
+          (h/error "Unable to start hyper-gateway: %S"
+                   (with-current-buffer buffer
+                     (string-trim-right (buffer-string)))))
+      (kill-buffer buffer))))
+
+(cl-defmethod h//gateway-start (&context (h/gateway-process-type (eql 'subprocess)))
+  "Start the gateway as an Emacs subprocess.
+Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
+`subprocess'."
+  (when (h//gateway-running-p)
+    (user-error "Gateway already running"))
+  (setf h/gateway-process
+        (make-process :name "hyper-gateway"
+                      :buffer " *hyperdrive-start*"
+                      :command (split-string-and-unquote h/gateway-command)
+                      :connection-type 'pipe))
+  (sleep-for 0.5)
+  (unless (process-live-p h/gateway-process)
+    (if (h/status)
+        (user-error "Gateway is already running outside of Emacs (see option `hyperdrive-gateway-process-type')")
+      (pop-to-buffer " *hyperdrive-start*")
+      (h/error "Gateway failed to start (see process buffer for errors)"))))
+
+(cl-defmethod h//gateway-stop (&context (h/gateway-process-type (eql 'systemd)))
+  "Stop the gateway service.
+Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
+`systemd'."
+  (unless (h//gateway-running-p)
+    (user-error "Gateway not running"))
+  (let ((buffer (get-buffer-create " *hyperdrive-stop*")))
+    (unwind-protect
+        (unless (zerop (call-process "systemctl" nil (list buffer t) nil
+                                     "--user" "stop" "hyper-gateway.service"))
+          (h/error "Unable to stop hyper-gateway: %S"
+                   (with-current-buffer buffer
+                     (string-trim-right (buffer-string)))))
+      (cl-loop for i below 40
+               do (sleep-for 0.1)
+               while (h//gateway-running-p))
+      (when (h//gateway-running-p)
+        (h/error "Gateway still running"))
+      (kill-buffer buffer))))
+
+(cl-defmethod h//gateway-stop (&context (h/gateway-process-type (eql 'subprocess)))
+  "Stop the gateway subprocess.
+Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
+`subprocess'."
+  (unless (h//gateway-running-p)
+    (user-error "Gateway not running"))
+  (interrupt-process h/gateway-process)
+  (cl-loop for i below 40
+           do (sleep-for 0.1)
+           while (h//gateway-running-p))
+  (when (h//gateway-running-p)
+    (h/error "Gateway still running"))
+  (kill-buffer (process-buffer h/gateway-process))
+  (setf h/gateway-process nil))
+
 ;;;; Misc.
 
 (defun h//get-buffer-create (entry)

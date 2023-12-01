@@ -98,28 +98,13 @@
   "Start `hyper-gateway' systemd service if not already running."
   (interactive)
   ;; TODO: Verify that the latest version is installed.  See: <https://github.com/RangerMauve/hyper-gateway/issues/9>.
-  (let ((buffer (get-buffer-create " *hyperdrive-start*")))
-    (unwind-protect
-        (unless (zerop (call-process "systemctl" nil (list buffer t) nil "--user" "start" "hyper-gateway.service"))
-          (h/error "Unable to start hyper-gateway: %S"
-                   (with-current-buffer buffer
-                     (string-trim-right (buffer-string)))))
-      (kill-buffer buffer))))
-
-;; TODO: Add user option to start the gateway without systemd (run as
-;; Emacs subprocess, or other script)
+  (h//gateway-start))
 
 ;;;###autoload
 (defun hyperdrive-stop ()
   "Stop `hyper-gateway' systemd service."
   (interactive)
-  (let ((buffer (get-buffer-create " *hyperdrive-stop*")))
-    (unwind-protect
-        (unless (zerop (call-process "systemctl" nil (list buffer t) nil "--user" "stop" "hyper-gateway.service"))
-          (h/error "Unable to stop hyper-gateway: %S"
-                   (with-current-buffer buffer
-                     (string-trim-right (buffer-string)))))
-      (kill-buffer buffer))))
+  (h//gateway-stop))
 
 ;;;###autoload
 (defun hyperdrive-hyper-gateway-version ()
