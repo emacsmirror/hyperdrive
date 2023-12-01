@@ -384,7 +384,8 @@ hyperdrive's latest-version slot, the final gap is filled."
       (unless final-known-range-end
         (setf final-known-range-end 0))
       (when (< final-known-range-end latest-version)
-        ;; Insert possible final gap between latest known range and hyperdrive's latest-version
+        ;; Insert possible final gap between latest known range
+        ;; and hyperdrive's latest-version
         (push `(,(1+ final-known-range-end) . (:range-end ,latest-version , :existsp unknown)) ranges)))
     (nreverse ranges)))
 
@@ -412,7 +413,8 @@ be \\+`unknown'."
          (if cache-only
              'unknown
            (when-let ((previous-entry (he/at previous-version entry)))
-             ;; Entry version is currently its range end, but it should be its version range start.
+             ;; Entry version is currently its range end, but it should be its
+             ;; version range start.
              (setf (he/version previous-entry) (car (he/version-range previous-entry)))
              previous-entry)))))))
 
@@ -553,9 +555,10 @@ echo area when the request for the file is made."
                      (if-let ((buffer
                                (get-buffer
                                 (h//format-entry entry h/buffer-name-format))))
-                         ;; Buffer already exists: likely the user deleted the entry
-                         ;; without killing the buffer.  Switch to the buffer and
-                         ;; alert the user that the entry no longer exists.
+                         ;; Buffer already exists: likely the user deleted the
+                         ;; entry without killing the buffer.  Switch to the
+                         ;; buffer and alert the user that the entry no longer
+                         ;; exists.
                          (progn
                            (switch-to-buffer buffer)
                            (h/message "Entry no longer exists!  %s"
@@ -667,7 +670,8 @@ Returns filled ENTRY."
           (setf (he/hyperdrive entry) persisted-hyperdrive)
           (when domain
             ;; The previous call to he/url may not have retrieved
-            ;; the persisted hyperdrive if we had only a domain but no public-key.
+            ;; the persisted hyperdrive if we had only a domain
+            ;; but no public-key.
             (cl-pushnew domain (h/domains (he/hyperdrive entry)) :test #'equal)))
       (setf (h/public-key hyperdrive) public-key))
     (if (and (h//entry-directory-p entry)

@@ -81,7 +81,8 @@ column headers."
   (let ((lines-below-header (- (line-number-at-pos) 2)))
     (if (cl-plusp lines-below-header)
         (h/ewoc-move n)
-      ;; Point on first line or column header: jump to first ewoc entry and then maybe move.
+      ;; Point on first line or column header:
+      ;; jump to first ewoc entry and then maybe move.
       (goto-char (ewoc-location (ewoc-nth h/ewoc 0)))
       (h/ewoc-move (1- n)))))
 
