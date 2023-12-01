@@ -996,13 +996,15 @@ and @code{hyperdrive-version-ranges} variables.
 @node Non-interactive use
 @section Non-interactive use
 
-@findex hyperdrive-by-slot
-
 In writing your own functions to extend @code{hyperdrive.el}, you can use
-@code{hyperdrive-by-slot} to access a hyperdrive by its seed, petname, or
-public key.
+@code{hyperdrive-by-slot} to access a hyperdrive by its metadata:
 
-For examples, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
+@defun hyperdrive-by-slot
+This function accepts a hyperdrive seed, petname, or public key, and
+returns the hyperdrive @code{struct}.
+@end defun
+
+For example usage, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
 
 @node Miscellaneous features
 @section Miscellaneous features
