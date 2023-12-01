@@ -368,7 +368,8 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
   ;; hyperdrive version by potentially a lot).
   (if (and h/mirror-files-and-urls h/mirror-parent-entry)
       (h//mirror h/mirror-files-and-urls h/mirror-parent-entry)
-    (h/user-error "Missing information about files to upload.  Are you in a \"*hyperdrive-mirror*\" buffer?")))
+    (h/user-error "Missing information about files to upload.  \
+Are you in a \"*hyperdrive-mirror*\" buffer?")))
 
 (defun h/mirror--cache-visibility ()
   "Save visibility cache.

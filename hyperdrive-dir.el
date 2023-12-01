@@ -324,7 +324,8 @@ Interactively, opens file or directory at point in
 (defun h/create-directory-no-op ()
   "Signal error that directory creation is not possible in hyperdrive."
   (interactive)
-  (h/user-error "Cannot create empty directory; to create a new file, use `hyperdrive-find-file' or \\[hyperdrive-find-file]"))
+  (h/user-error "Cannot create empty directory; to create a new file, use\
+ `hyperdrive-find-file' or \\[hyperdrive-find-file]"))
 
 (defun h/dir-sort (directory-sort)
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.

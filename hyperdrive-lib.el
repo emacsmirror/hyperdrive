@@ -569,8 +569,8 @@ echo area when the request for the file is made."
                      ;; Hyperdrive entry is not writable: prompt for action.
                      (not-found-action))))
                   (500 ;; Generic error, likely a mistyped URL
-                   (h/message "Generic hyper-gateway status 500 error. Is this URL correct? %s"
-                              (he/url entry)))
+                   (h/message "Generic hyper-gateway status 500 error. %s %s"
+                              "Is this URL correct?" (he/url entry)))
                   (_ (h/message "Unable to load URL \"%s\": %S"
                                 (he/url entry) err))))))
     (when messagep
