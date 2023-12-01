@@ -156,12 +156,13 @@ Columns are suffixed with up/down arrows according to
 
 (defun h/dir-complete-sort ()
   "Return a value for `hyperdrive-directory-sort' selected with completion."
-  (pcase-let* ((read-answer-short t)
-               (choices (mapcar (lambda (field)
-                                  (let ((desc (symbol-name (car field))))
-                                    (list desc (aref desc 0) (format "sort by %s" desc))))
-                                h/dir-sort-fields))
-               (column (intern (read-answer "Sort by column: " choices))))
+  (pcase-let*
+      ((read-answer-short t)
+       (choices (mapcar (lambda (field)
+                          (let ((desc (symbol-name (car field))))
+                            (list desc (aref desc 0) (format "sort by %s" desc))))
+                        h/dir-sort-fields))
+       (column (intern (read-answer "Sort by column: " choices))))
     (h/dir-toggle-sort-direction column h/directory-sort)))
 
 (defun h/dir-toggle-sort-direction (column sort)
@@ -184,14 +185,15 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun h/dir--format-entry (entry)
   "Return ENTRY formatted as a string."
-  (pcase-let* (((cl-struct hyperdrive-entry size mtime) entry)
-               (size (when size
-                       (file-size-human-readable size)))
-               (directoryp (h//entry-directory-p entry))
-               (face (if directoryp 'h/directory 'default))
-               (timestamp (if mtime
-                              (format-time-string h/timestamp-format mtime)
-                            (propertize " " 'display '(space :width h/timestamp-width)))))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry size mtime) entry)
+       (size (when size
+               (file-size-human-readable size)))
+       (directoryp (h//entry-directory-p entry))
+       (face (if directoryp 'h/directory 'default))
+       (timestamp (if mtime
+                      (format-time-string h/timestamp-format mtime)
+                    (propertize " " 'display '(space :width h/timestamp-width)))))
     (format "%6s  %s  %s"
             (propertize (or size "")
                         'face 'h/size)

@@ -258,31 +258,34 @@ If URL does not begin with \"hyper://\" prefix, it will be added
 before making the entry struct."
   (unless (string-prefix-p "hyper://" url)
     (setf url (concat "hyper://" url)))
-  (pcase-let* (((cl-struct url host (filename path) target)
-                (url-generic-parse-url url))
-               ;; TODO: For now, no other function besides `h/url-entry' calls
-               ;; `h/create', but perhaps it would be good to add a function which wraps
-               ;; `h/create' and returns either an existing hyperdrive or a new one?
-               (hyperdrive (pcase host
-                             ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
-                             ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
-                              (when (and (>= emacs-major-version 29)
-                                         (textsec-suspicious-p host 'domain))
-                                ;; Check DNSLink domains for suspicious characters; don't bother
-                                ;; checking public keys since they're not recognizable anyway.
-                                (unless (y-or-n-p
-	                                 (format "Suspicious domain: %s; continue anyway?" host))
-                                  (user-error "Suspicious domain %s" host)))
-                              (h/create :domains (list host)))
-                             (_  ;; Assume host is a public-key
-                              (or (gethash host h/hyperdrives)
-                                  (h/create :public-key host)))))
-               (etc (when target
-                      `((target . ,(substring (url-unhex-string target) (length "::"))))))
-               (version (pcase path
-                          ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
-                           (setf path p)
-                           (string-to-number v)))))
+  (pcase-let*
+      (((cl-struct url host (filename path) target)
+        (url-generic-parse-url url))
+       ;; TODO: For now, no other function besides `h/url-entry' calls
+       ;; `h/create', but perhaps it would be good to add a function which wraps
+       ;; `h/create' and returns either an existing hyperdrive or a new one?
+       (hyperdrive (pcase host
+                     ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
+                     ((rx ".") ; Assume host is a DNSLink domain.
+                      ;; See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
+                      (when (and (>= emacs-major-version 29)
+                                 (textsec-suspicious-p host 'domain))
+                        ;; Check DNSLink domains for suspicious characters;
+                        ;; don't bother checking public keys since they're
+                        ;; not recognizable anyway.
+                        (unless (y-or-n-p
+                                 (format "Suspicious domain: %s; continue anyway?" host))
+                          (user-error "Suspicious domain %s" host)))
+                      (h/create :domains (list host)))
+                     (_  ;; Assume host is a public-key
+                      (or (gethash host h/hyperdrives)
+                          (h/create :public-key host)))))
+       (etc (when target
+              `((target . ,(substring (url-unhex-string target) (length "::"))))))
+       (version (pcase path
+                  ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
+                   (setf path p)
+                   (string-to-number v)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (he/create :hyperdrive hyperdrive :path (url-unhex-string path)
@@ -330,9 +333,10 @@ Returns nil when ENTRY is not known to exist at its version.
 
 With non-nil VERSION, use it instead of ENTRY's version."
   (declare (indent defun))
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
-               (version (or version entry-version (h/latest-version hyperdrive)))
-               (ranges (he/version-ranges entry)))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
+       (version (or version entry-version (h/latest-version hyperdrive)))
+       (ranges (he/version-ranges entry)))
     (when ranges
       (cl-find-if (pcase-lambda (`(,range-start . ,(map (:range-end range-end))))
                     (<= range-start version range-end))
@@ -634,15 +638,16 @@ The following ENTRY hyperdrive slots are filled:
 - \\+`domains' (merged with current persisted value)
 
 Returns filled ENTRY."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) entry)
-               ((cl-struct hyperdrive writablep domains) hyperdrive)
-               ((map link content-length content-type etag last-modified allow) headers)
-               ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
-               (public-key (progn
-                             (string-match h//public-key-re link)
-                             (match-string 1 link)))
-               (persisted-hyperdrive (gethash public-key h/hyperdrives))
-               (domain (car domains)))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive) entry)
+       ((cl-struct hyperdrive writablep domains) hyperdrive)
+       ((map link content-length content-type etag last-modified allow) headers)
+       ;; If URL hostname was a DNSLink domain,
+       ;; entry doesn't yet have a public-key slot.
+       (public-key (progn (string-match h//public-key-re link)
+                          (match-string 1 link)))
+       (persisted-hyperdrive (gethash public-key h/hyperdrives))
+       (domain (car domains)))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (when (and allow (eq 'unknown writablep))
@@ -741,23 +746,24 @@ Returns the ranges cons cell for ENTRY."
               (he/version-range entry)
               ;; Don't store ranges for entries which have never existed.
               (not (he/version-ranges entry)))
-    (pcase-let* ((ranges (he/version-ranges entry))
-                 ((cl-struct hyperdrive-entry hyperdrive path version) entry)
-                 (version (or version (h/latest-version hyperdrive)))
-                 (previous-range (he/version-range
-                                   (he/create :hyperdrive hyperdrive :path path :version (1- version))))
-                 (`(,previous-range-start . ,(map (:existsp previous-exists-p))) previous-range)
-                 (next-range (he/version-range
-                               (he/create :hyperdrive hyperdrive :path path :version (1+ version))))
-                 (`(,next-range-start . ,(map (:existsp next-exists-p) (:range-end next-range-end))) next-range)
-                 (range-start (if (and previous-range (null previous-exists-p))
-                                  ;; Extend previous nonexistent range
-                                  previous-range-start
-                                version))
-                 (range-end (if (and next-range (null next-exists-p))
-                                ;; Extend next nonexistent range
-                                next-range-end
-                              version)))
+    (pcase-let*
+        ((ranges (he/version-ranges entry))
+         ((cl-struct hyperdrive-entry hyperdrive path version) entry)
+         (version (or version (h/latest-version hyperdrive)))
+         (previous-range (he/version-range
+                           (he/create :hyperdrive hyperdrive :path path :version (1- version))))
+         (`(,previous-range-start . ,(map (:existsp previous-exists-p))) previous-range)
+         (next-range (he/version-range
+                       (he/create :hyperdrive hyperdrive :path path :version (1+ version))))
+         (`(,next-range-start . ,(map (:existsp next-exists-p) (:range-end next-range-end))) next-range)
+         (range-start (if (and previous-range (null previous-exists-p))
+                          ;; Extend previous nonexistent range
+                          previous-range-start
+                        version))
+         (range-end (if (and next-range (null next-exists-p))
+                        ;; Extend next nonexistent range
+                        next-range-end
+                      version)))
       ;; Delete next range if it's contiguous with current range.
       (when (and next-range (null next-exists-p))
         (setf ranges (map-delete ranges next-range-start)))
@@ -867,26 +873,27 @@ Once all requests return, call FINALLY with no arguments."
 Sends a synchronous request to get the latest contents of
 HYPERDRIVE's public metadata file."
   (declare (indent defun))
-  (pcase-let* ((entry (he/create
-                       :hyperdrive hyperdrive
-                       :path "/.well-known/host-meta.json"
-                       ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
-                       :version nil))
-               (metadata (condition-case err
-                             (h/api 'get (he/url entry)
-                               :as (lambda ()
-                                     (condition-case err
-                                         (json-read)
-                                       (json-error
-                                        (h/message "Error parsing JSON metadata file: %s"
-                                                   (he/url entry)))
-                                       (_ (signal (car err) (cdr err)))))
-                               :noquery t)
-                           (plz-error
-                            (pcase (plz-response-status (plz-error-response (caddr err)))
-                              ;; FIXME: If plz-error is a curl-error, this block will fail.
-                              (404 nil)
-                              (_ (signal (car err) (cdr err))))))))
+  (pcase-let*
+      ((entry (he/create
+               :hyperdrive hyperdrive
+               :path "/.well-known/host-meta.json"
+               ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
+               :version nil))
+       (metadata (condition-case err
+                     (h/api 'get (he/url entry)
+                       :as (lambda ()
+                             (condition-case err
+                                 (json-read)
+                               (json-error
+                                (h/message "Error parsing JSON metadata file: %s"
+                                           (he/url entry)))
+                               (_ (signal (car err) (cdr err)))))
+                       :noquery t)
+                   (plz-error
+                    (pcase (plz-response-status (plz-error-response (caddr err)))
+                      ;; FIXME: If plz-error is a curl-error, this block will fail.
+                      (404 nil)
+                      (_ (signal (car err) (cdr err))))))))
     (setf (h/metadata hyperdrive) metadata)
     (h/persist hyperdrive)
     hyperdrive))
@@ -1249,9 +1256,10 @@ If then, then call THEN with no arguments.  Default handler."
   (h/api 'get (he/url entry)
     :noquery t
     :as (lambda ()
-          (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
-                       ((map target) etc)
-                       (response-buffer (current-buffer)))
+          (pcase-let*
+              (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
+               ((map target) etc)
+               (response-buffer (current-buffer)))
             (with-current-buffer (h//get-buffer-create entry)
               ;; TODO: Don't reload if we're jumping to a link on the
               ;; same page (but ensure that reverting still works).

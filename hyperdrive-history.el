@@ -50,21 +50,22 @@ To be used as the pretty-printer for `ewoc-create'."
 RANGE-ENTRY is a cons cell whose car is a range according to
 `hyperdrive-version-ranges', except that \\+`:existsp' may have the
 value \\+`unknown', and whose cdr is a hyperdrive entry."
-  (pcase-let* ((`(,range . ,entry) range-entry)
-               (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) range)
-               ((cl-struct hyperdrive-entry size mtime) entry)
-               (formatted-range (if (eq range-start range-end)
-                                    (format "%d" range-start)
-                                  (format "%d-%d" range-start range-end)))
-               (exists-marker (format "%7s" (pcase-exhaustive existsp
-                                              ('t "Yes")
-                                              ('nil "No")
-                                              ('unknown "Unknown"))))
-               (size (when size
-                       (file-size-human-readable size)))
-               (timestamp (if mtime
-                              (format-time-string h/timestamp-format mtime)
-                            (propertize " " 'display '(space :width h/timestamp-width)))))
+  (pcase-let*
+      ((`(,range . ,entry) range-entry)
+       (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) range)
+       ((cl-struct hyperdrive-entry size mtime) entry)
+       (formatted-range (if (eq range-start range-end)
+                            (format "%d" range-start)
+                          (format "%d-%d" range-start range-end)))
+       (exists-marker (format "%7s" (pcase-exhaustive existsp
+                                      ('t "Yes")
+                                      ('nil "No")
+                                      ('unknown "Unknown"))))
+       (size (when size
+               (file-size-human-readable size)))
+       (timestamp (if mtime
+                      (format-time-string h/timestamp-format mtime)
+                    (propertize " " 'display '(space :width h/timestamp-width)))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
     (format "%7s  %19s  %6s  %s"
@@ -165,29 +166,30 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   ;; TODO: Highlight range for ENTRY
   (when (h//entry-directory-p entry)
     (h/user-error "Directory history not implemented"))
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (range-entries
-                (mapcar (lambda (range)
-                          ;; Some entries may not exist at `range-start',
-                          ;; as in the version before it was created, see:
-                          ;; (info "(hyperdrive)Versioning")
-                          (cons range
-                                (he/create
-                                 :hyperdrive hyperdrive
-                                 :path path
-                                 ;; Set version to range-start
-                                 :version (car range))))
-                        ;; Display in reverse chronological order
-                        (nreverse (he/version-ranges-no-gaps entry))))
-               (main-header (h//format-entry entry "[%H] %p"))
-               (header (concat main-header "\n"
-                               (format "%7s  %19s  %6s  %s"
-                                       (propertize "Exists" 'face 'h/column-header)
-                                       (propertize "Drive Version Range" 'face 'h/column-header)
-                                       (propertize "Size" 'face 'h/column-header)
-                                       (format (format "%%%ds" h/timestamp-width)
-                                               (propertize "Last Modified" 'face 'h/column-header)))))
-               (queue) (ewoc))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive path) entry)
+       (range-entries
+        (mapcar (lambda (range)
+                  ;; Some entries may not exist at `range-start',
+                  ;; as in the version before it was created, see:
+                  ;; (info "(hyperdrive)Versioning")
+                  (cons range
+                        (he/create
+                         :hyperdrive hyperdrive
+                         :path path
+                         ;; Set version to range-start
+                         :version (car range))))
+                ;; Display in reverse chronological order
+                (nreverse (he/version-ranges-no-gaps entry))))
+       (main-header (h//format-entry entry "[%H] %p"))
+       (header (concat main-header "\n"
+                       (format "%7s  %19s  %6s  %s"
+                               (propertize "Exists" 'face 'h/column-header)
+                               (propertize "Drive Version Range" 'face 'h/column-header)
+                               (propertize "Size" 'face 'h/column-header)
+                               (format (format "%%%ds" h/timestamp-width)
+                                       (propertize "Last Modified" 'face 'h/column-header)))))
+       (queue) (ewoc))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
                                   (h//format-entry entry "[%H] %p")))

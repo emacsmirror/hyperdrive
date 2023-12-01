@@ -145,12 +145,13 @@ the logic for handling links of \"file\" type."
                ;; Don't treat link as a relative/absolute path in the
                ;; hyperdrive if "file:" protocol prefix is explicit.
                (not (string-prefix-p "file:" raw-link-type)))
-      (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) h/current-entry)
-                   (entry (he/create
-                           :hyperdrive hyperdrive
-                           :path (expand-file-name (org-element-property :path context)
-                                                   (file-name-directory path))
-                           :etc `((target . ,(org-element-property :search-option context))))))
+      (pcase-let*
+          (((cl-struct hyperdrive-entry hyperdrive path) h/current-entry)
+           (entry (he/create
+                   :hyperdrive hyperdrive
+                   :path (expand-file-name (org-element-property :path context)
+                                           (file-name-directory path))
+                   :etc `((target . ,(org-element-property :search-option context))))))
         entry))))
 
 (defun h/org--insert-link-after-advice (&rest _)
