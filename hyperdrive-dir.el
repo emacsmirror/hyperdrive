@@ -105,7 +105,7 @@ If THEN, call it in the directory buffer with no arguments."
                             ;;                       (current-time)
                             ;;                       debug-start-time)))
                             )))
-          (setf prev-entry (when-let ((node (ewoc-locate h/ewoc)))
+          (setf prev-entry (and-let* ((node (ewoc-locate h/ewoc)))
                              (ewoc-data node)))
           (setf prev-point (point))
           (ewoc-filter h/ewoc #'ignore)
@@ -191,8 +191,7 @@ To be used as the pretty-printer for `ewoc-create'."
   "Return ENTRY formatted as a string."
   (pcase-let*
       (((cl-struct hyperdrive-entry size mtime) entry)
-       (size (when size
-               (file-size-human-readable size)))
+       (size (and size (file-size-human-readable size)))
        (directoryp (h//entry-directory-p entry))
        (face (if directoryp 'h/directory 'default))
        (timestamp (if mtime
@@ -358,8 +357,8 @@ For use as `imenu-create-index-function'."
   (cl-loop for node in (h/ewoc-collect-nodes h/ewoc #'identity)
            collect (let* ((location (goto-char (ewoc-location node)))
                           (entry (ewoc-data node))
-                          (face (when (h//entry-directory-p entry)
-                                  'h/directory)))
+                          (face (and (h//entry-directory-p entry)
+                                     'h/directory)))
                      (cons (propertize (he/name entry)
                                        'face face)
                            location))))

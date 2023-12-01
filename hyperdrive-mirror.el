@@ -264,8 +264,8 @@ Callback for queue finalizer in `hyperdrive-mirror'."
   (with-current-buffer buffer
     (with-silent-modifications
       (let ((pos (point))
-            (section-ident (when (magit-current-section)
-                             (magit-section-ident (magit-current-section))))
+            (section-ident (and (magit-current-section)
+                                (magit-section-ident (magit-current-section))))
             (window-start 0) (window-point 0)
             (uploadable (cl-remove-if-not (lambda (status)
                                             (member status '(new newer)))

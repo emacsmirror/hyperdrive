@@ -242,7 +242,7 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
   "Return parent entry for ENTRY.
 If already at top-level directory, return nil."
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version) entry))
-    (when-let ((parent-path (file-name-parent-directory path)))
+    (and-let* ((parent-path (file-name-parent-directory path)))
       (he/create :hyperdrive hyperdrive :path parent-path :version version))))
 
 ;; For Emacsen <29.1.
@@ -280,8 +280,9 @@ before making the entry struct."
                      (_  ;; Assume host is a public-key
                       (or (gethash host h/hyperdrives)
                           (h/create :public-key host)))))
-       (etc (when target
-              `((target . ,(substring (url-unhex-string target) (length "::"))))))
+       (etc (and target
+                 `((target . ,(substring (url-unhex-string target)
+                                         (length "::"))))))
        (version (pcase path
                   ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
                    (setf path p)
@@ -337,10 +338,10 @@ With non-nil VERSION, use it instead of ENTRY's version."
       (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
        (version (or version entry-version (h/latest-version hyperdrive)))
        (ranges (he/version-ranges entry)))
-    (when ranges
-      (cl-find-if (pcase-lambda (`(,range-start . ,(map (:range-end range-end))))
-                    (<= range-start version range-end))
-                  ranges))))
+    (and ranges
+         (cl-find-if (pcase-lambda (`(,range-start . ,(map (:range-end range-end))))
+                       (<= range-start version range-end))
+                     ranges))))
 
 (cl-defun he/exists-p (entry &key version)
   "Return status of ENTRY's existence at its version.
@@ -405,8 +406,10 @@ be \\+`unknown'."
   (if (h//entry-directory-p entry)
       (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
                    (version (or version (h/latest-version hyperdrive))))
-        (when (> version 1)
-          (he/create :hyperdrive hyperdrive :path path :version (1- version))))
+        (and (> version 1)
+             (he/create :hyperdrive hyperdrive
+                        :path path
+                        :version (1- version))))
     (let ((previous-version (1- (car (he/version-range entry)))))
       (pcase-exhaustive (he/version-range entry :version previous-version)
         (`(,range-start . ,(map (:existsp existsp)))
@@ -419,9 +422,9 @@ be \\+`unknown'."
          ;; Entry is not known to exist, optionally send a request.
          (if cache-only
              'unknown
-           (when-let ((previous-entry (he/at previous-version entry)))
-             ;; Entry version is currently its range end, but it should be its
-             ;; version range start.
+           (and-let* ((previous-entry (he/at previous-version entry)))
+             ;; Entry version is currently its range end,
+             ;; but it should be its version range start.
              (setf (he/version previous-entry)
                    (car (he/version-range previous-entry)))
              previous-entry)))))))
@@ -667,9 +670,9 @@ Returns filled ENTRY."
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (when (and allow (eq 'unknown writablep))
       (setf (h/writablep hyperdrive) (string-match-p "PUT" allow)))
-    (setf (he/size entry) (when content-length
-                            (ignore-errors
-                              (cl-parse-integer content-length))))
+    (setf (he/size entry) (and content-length
+                               (ignore-errors
+                                 (cl-parse-integer content-length))))
     (setf (he/type entry) content-type)
     (setf (he/mtime entry) last-modified)
     (if persisted-hyperdrive
@@ -965,20 +968,21 @@ Path and target fragment are URI-encoded."
   ;; will be filled in later.
   (pcase-let* (((cl-struct hyperdrive-entry path version etc)
                 entry)
-               (protocol (when with-protocol
-                           "hyper://"))
-               (host (when host-format
-                       ;; FIXME: Update docstring to say that host-format can be nil to omit it.
-                       (h//preferred-format (he/hyperdrive entry)
-                                            host-format h/raw-formats)))
+               (protocol (and with-protocol "hyper://"))
+               (host (and host-format
+                          ;; FIXME: Update docstring to say that host-format can be nil to omit it.
+                          (h//preferred-format (he/hyperdrive entry)
+                                               host-format h/raw-formats)))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
-               (target-part (when (and with-target target)
-                              (concat "#" (url-hexify-string "::")
-                                      (url-hexify-string target))))
-               (path (when with-path
-                       ;; TODO: Consider removing this argument if it's not needed.
-                       (h//url-hexify-string path)))
+               (target-part (and with-target
+                                 target
+                                 (concat "#"
+                                         (url-hexify-string "::")
+                                         (url-hexify-string target))))
+               (path (and with-path
+                          ;; TODO: Consider removing this argument if it's not needed.
+                          (h//url-hexify-string path)))
                (url (concat protocol host version-part path target-part)))
     (if with-help-echo
         (propertize url 'help-echo (h//format-entry-url
@@ -1093,11 +1097,12 @@ case, when PREDICATE, only offer hyperdrives matching it."
     (cl-return-from h/complete-hyperdrive current-hyperdrive))
 
   ;; Otherwise, prompt for drive.
-  (let* ((current-hyperdrive (when h/current-entry
-                               (he/hyperdrive h/current-entry)))
+  (let* ((current-hyperdrive (and h/current-entry
+                                  (he/hyperdrive h/current-entry)))
          (hyperdrives (cl-remove-if-not predicate (hash-table-values h/hyperdrives)))
-         (default (when (and h/current-entry (funcall predicate current-hyperdrive))
-                    (h//format-hyperdrive (he/hyperdrive h/current-entry))))
+         (default (and h/current-entry
+                       (funcall predicate current-hyperdrive)
+                       (h//format-hyperdrive (he/hyperdrive h/current-entry))))
          (prompt (format-prompt "Hyperdrive" default))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (h//format-hyperdrive hyperdrive) hyperdrive))
@@ -1144,16 +1149,16 @@ Otherwise, prompt for a version number."
   (let* ((hyperdrive (or hyperdrive
                          (h/complete-hyperdrive :predicate predicate
                                                 :force-prompt force-prompt-drive)))
-         (default-version (when (and (not latest-version)
-                                     h/current-entry
-                                     (h/equal-p
-                                      hyperdrive (he/hyperdrive h/current-entry)))
-                            (he/version h/current-entry)))
-         (version (unless latest-version
-                    (if read-version
-                        (h/read-version :hyperdrive hyperdrive
-                                        :initial-input-number default-version)
-                      default-version)))
+         (default-version (and (not latest-version)
+                               h/current-entry
+                               (h/equal-p hyperdrive
+                                          (he/hyperdrive h/current-entry))
+                               (he/version h/current-entry)))
+         (version (cond (latest-version nil)
+                        (read-version
+                         (h/read-version :hyperdrive hyperdrive
+                                         :initial-input-number default-version))
+                        (default-version)))
          (default-path (h//format-path
                         (or default-path
                             (and h/current-entry
@@ -1179,8 +1184,8 @@ INITIAL-INPUT-NUMBER is converted to a string and passed to
          ;; Don't use read-number since it cannot return nil.
          (version (read-string
                    (format-prompt prompt nil (h//format-hyperdrive hyperdrive))
-                   (when initial-input-number
-                     (number-to-string initial-input-number))
+                   (and initial-input-number
+                        (number-to-string initial-input-number))
                    'h//version-history)))
     (unless (string-blank-p version)
       (string-to-number version))))
@@ -1208,8 +1213,8 @@ is passed to `read-string' as its DEFAULT-VALUE argument."
 (cl-defun h/read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
 Prompts with PROMPT.  Defaults to current entry if it exists."
-  (let ((default (when h/current-entry
-                   (he/url h/current-entry))))
+  (let ((default (and h/current-entry
+                      (he/url h/current-entry))))
     (string-trim (read-string (format-prompt prompt default)
                               nil 'h//url-history default))))
 
@@ -1521,21 +1526,21 @@ Affected by option `hyperdrive-reuse-buffers', which see."
   (let* ((buffer-name (h//format-entry
                        entry h/buffer-name-format))
          (buffer
-          (or (when (eq 'any-version h/reuse-buffers)
-                (cl-loop for buffer in (buffer-list)
-                         when (h//buffer-visiting-entry-p buffer entry)
-                         return buffer))
+          (or (and (eq 'any-version h/reuse-buffers)
+                   (cl-loop for buffer in (buffer-list)
+                            when (h//buffer-visiting-entry-p buffer entry)
+                            return buffer))
               (get-buffer-create buffer-name))))
     (with-current-buffer buffer
       (rename-buffer buffer-name)
       ;; NOTE: We do not erase the buffer because, e.g. the directory
       ;; handler needs to record point before it erases the buffer.
-      (if (h//entry-directory-p entry)
-          (h/dir-mode)
-        (when h/honor-auto-mode-alist
-          ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-          (let ((buffer-file-name (he/name entry)))
-            (set-auto-mode))))
+      (cond ((h//entry-directory-p entry)
+             (h/dir-mode))
+            (h/honor-auto-mode-alist
+             ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+             (let ((buffer-file-name (he/name entry)))
+               (set-auto-mode))))
       (h/mode)
       (setq-local h/current-entry entry)
       (current-buffer))))

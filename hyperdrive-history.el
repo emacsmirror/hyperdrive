@@ -61,8 +61,7 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                                       ('t "Yes")
                                       ('nil "No")
                                       ('unknown "Unknown"))))
-       (size (when size
-               (file-size-human-readable size)))
+       (size (and size (file-size-human-readable size)))
        (timestamp (if mtime
                       (format-time-string h/timestamp-format mtime)
                     (propertize " " 'display '(space :width h/timestamp-width)))))
@@ -343,19 +342,20 @@ buffer."
 (defun h/history-download-file (range-entry filename)
   "Download entry in RANGE-ENTRY at point to FILENAME on disk."
   (interactive
-   (pcase-let* ((range-entry (h/history-range-entry-at-point))
-                ((cl-struct hyperdrive-entry name) (cdr range-entry))
-                (read-filename (when (eq t (h/range-entry-exists-p range-entry))
-                                 ;; Only prompt for filename when entry exists
+   (pcase-let*
+       ((range-entry (h/history-range-entry-at-point))
+        ((cl-struct hyperdrive-entry name) (cdr range-entry))
+        (read-filename (and (eq t (h/range-entry-exists-p range-entry))
+                            ;; Only prompt for filename when entry exists
 
-                                 ;; FIXME: This function is only intended for
-                                 ;; interactive use. Is it acceptable to have a nil
-                                 ;; argument list and perform the user interactions
-                                 ;; in the body? This change would deduplicate the
-                                 ;; check for the existence of the entry.
-                                 (read-file-name
-                                  "Filename: "
-                                  (expand-file-name name h/download-directory)))))
+                            ;; FIXME: This function is only intended for
+                            ;; interactive use. Is it acceptable to have a nil
+                            ;; argument list and perform the user interactions
+                            ;; in the body? This change would deduplicate the
+                            ;; check for the existence of the entry.
+                            (read-file-name
+                             "Filename: "
+                             (expand-file-name name h/download-directory)))))
      (list range-entry read-filename)) h/history-mode)
   (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t
