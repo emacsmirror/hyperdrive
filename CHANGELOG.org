@@ -80,6 +80,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Allow entering URLs without ~hyper://~
 - Prevent accidental loss of unsaved hyperdrive files
 - Prompt before overwriting with ~hyperdrive-write-buffer~
+- Fixed a native compilation bug related to ~kill-all-local-variables~
 - Improved error handling
 
 ** Security
