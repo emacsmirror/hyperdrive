@@ -118,9 +118,7 @@ This function is intended to diff files, not directories."
       (goto-char (point-min))
       (delete-line)
       (when (h/diff-empty-diff-p (current-buffer))
-        (insert (format "No difference between entries:
-%s
-%s"
+        (insert (format "No difference between entries:\n%s\n%s"
                         (h//format-entry (car h/diff-entries))
                         (h//format-entry (cdr h/diff-entries)))))
       (goto-char (point-max))
