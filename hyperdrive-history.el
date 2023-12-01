@@ -52,7 +52,7 @@ RANGE-ENTRY is a cons cell whose car is a range according to
 value \\+`unknown', and whose cdr is a hyperdrive entry."
   (pcase-let*
       ((`(,range . ,entry) range-entry)
-       (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) range)
+       (`(,range-start . ,(map :range-end :existsp)) range)
        ((cl-struct hyperdrive-entry size mtime) entry)
        (formatted-range (if (eq range-start range-end)
                             (format "%d" range-start)
@@ -116,7 +116,7 @@ and ENTRY's version are nil."
 - nil     :: ENTRY is known to not exist.
 - unknown :: ENTRY is not known to exist."
   (pcase-let* ((range (car range-entry))
-               ((map (:existsp existsp)) (cdr range)))
+               ((map :existsp) (cdr range)))
     existsp))
 
 (defun h/history-revert-buffer (&optional _ignore-auto _noconfirm)
@@ -238,7 +238,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   "Fill version ranges starting from RANGE-ENTRY at point."
   (interactive (list (h/history-range-entry-at-point)))
   (pcase-let* ((`(,range . ,entry) range-entry)
-               (`(,_range-start . ,(map (:range-end range-end))) range)
+               (`(,_range-start . ,(map :range-end)) range)
                (range-end-entry (h/copy-tree entry))
                (ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
     (setf (he/version range-end-entry) range-end)

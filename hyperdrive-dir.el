@@ -128,7 +128,7 @@ Columns are suffixed with up/down arrows according to
                (arrow (propertize (if (eq direction :ascending) "^" "v")
                                   'face 'h/header-arrow))
                (headers))
-    (pcase-dolist (`(,column . ,(map (:desc desc))) h/dir-sort-fields)
+    (pcase-dolist (`(,column . ,(map :desc)) h/dir-sort-fields)
       (let* ((selected (eq column sort-column))
              ;; Put the arrow after desc, since the column is left-aligned.
              (left-aligned (eq column 'name))

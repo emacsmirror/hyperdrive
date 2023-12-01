@@ -147,7 +147,7 @@ variables and the expected link."
   (let ((scenario (intern (string-trim-right (symbol-name name)
                                              (rx "/" (1+ anything) eos))))
         body-forms)
-    (pcase-dolist ((map (:let vars) (:result result)) results)
+    (pcase-dolist ((map (:let vars) :result) results)
       (let* ((olfpt (cadadr (assoc 'org-link-file-path-type vars)))
              (test-name (intern (format "hyperdrive-test-org-insert-link/%s/%s"
                                         name olfpt))))

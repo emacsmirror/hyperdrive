@@ -135,7 +135,7 @@ generated from PATH."
   "Return ENTRIES sorted by DIRECTION.
 See `hyperdrive-directory-sort' for the type of DIRECTION."
   (pcase-let* ((`(,column . ,direction) direction)
-               ((map (:accessor accessor) (direction sort-function))
+               ((map :accessor (direction sort-function))
                 (alist-get column h/dir-sort-fields)))
     (cl-sort entries (lambda (a b)
                        (cond ((and a b) (funcall sort-function a b))
@@ -339,7 +339,7 @@ With non-nil VERSION, use it instead of ENTRY's version."
        (version (or version entry-version (h/latest-version hyperdrive)))
        (ranges (he/version-ranges entry)))
     (and ranges
-         (cl-find-if (pcase-lambda (`(,range-start . ,(map (:range-end range-end))))
+         (cl-find-if (pcase-lambda (`(,range-start . ,(map :range-end)))
                        (<= range-start version range-end))
                      ranges))))
 
@@ -354,7 +354,7 @@ Does not make a request to the gateway; checks the cached value
 in `hyperdrive-version-ranges'.
 With non-nil VERSION, use it instead of ENTRY's version."
   (if-let ((range (he/version-range entry :version version)))
-      (pcase-let ((`(,_range-start . ,(map (:existsp existsp))) range))
+      (pcase-let ((`(,_range-start . ,(map :existsp)) range))
         existsp)
     'unknown))
 
@@ -371,8 +371,7 @@ When the final range's range-end is less than ENTRY's
 hyperdrive's latest-version slot, the final gap is filled."
   (let ((ranges '())
         (previous-range-end 0))
-    (pcase-dolist (`(,range-start . ,(map (:range-end range-end)
-                                          (:existsp existsp)))
+    (pcase-dolist (`(,range-start . ,(map :range-end :existsp))
                    (he/version-ranges entry))
       ;; If he/version-ranges returns nil, this whole loop will be skipped.
       (let ((next-range-start (1+ previous-range-end)))
@@ -412,7 +411,7 @@ be \\+`unknown'."
                         :version (1- version))))
     (let ((previous-version (1- (car (he/version-range entry)))))
       (pcase-exhaustive (he/version-range entry :version previous-version)
-        (`(,range-start . ,(map (:existsp existsp)))
+        (`(,range-start . ,(map :existsp))
          (if existsp
              ;; Return entry if it's known existent.
              (he/at range-start entry)
@@ -477,7 +476,7 @@ Sends a request to the gateway for hyperdrive's latest version."
       (cl-return-from he/next next-entry))
 
     ;; ENTRY is a file...
-    (pcase-let* ((`(,_range-start . ,(map (:range-end range-end)))
+    (pcase-let* ((`(,_range-start . ,(map :range-end))
                   (he/version-range entry))
                  (next-range-start (1+ range-end))
                  ((map (:existsp next-range-existsp)
@@ -847,7 +846,7 @@ Once all requests return, call FINALLY with no arguments."
                    :as 'response
                    :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
                            (pcase-let* ((range-start (string-to-number etag))
-                                        ((map (:existsp existsp)) (map-elt copy-entry-version-ranges range-start)))
+                                        ((map :existsp) (map-elt copy-entry-version-ranges range-start)))
                              (when (eq 'unknown existsp)
                                ;; Stop if the requested entry has a
                                ;; range-start that was already known
@@ -871,7 +870,7 @@ Once all requests return, call FINALLY with no arguments."
                :as 'response
                :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
                        (pcase-let* ((range-start (string-to-number etag))
-                                    ((map (:existsp existsp))
+                                    ((map :existsp)
                                      (map-elt (he/version-ranges copy-entry) range-start)))
                          (h/update-existent-version-range copy-entry range-start)
                          (if (eq 't existsp)
