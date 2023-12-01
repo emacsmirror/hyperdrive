@@ -115,9 +115,9 @@ you can use the following snippet to install from that repository:
 
 In your ~init.el~, type ~M-x eval-buffer RET~.
 
-If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-menu~
-should now be available.  The documentation for ~hyperdrive.el~ should
-also be installed.
+If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-menu~ are
+now available and the documentation for ~hyperdrive.el~ is installed
+(see [[*Quick documentation access]]).
 
 After installing with ~package-vc~, you can later upgrade to a newer
 version of ~hyperdrive.el~ by running ~M-x package-vc-upgrade RET
@@ -341,8 +341,8 @@ hyperdrive directory from any hyperdrive file or directory buffer.
 When you attempt to load a file or folder that doesn't appear to
 exist, ~hyperdrive.el~ will prompt you to take action:
 
-- ~h~ (history) to open the [[*View the hyperdrive version history][version history]] for that file. (This only
-  works for files, not folders)
+- ~h~ (history) to open the [[*View the hyperdrive version history][version history]] for that file. This only
+  works for files, not folders (see [[*No directory version history]])
 - ~u~ (up) to open the parent directory containing that file or folder
 - ~r~ (recurse) to go up the directory tree until a directory is found
   or until you get to the root directory.

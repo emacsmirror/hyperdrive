@@ -294,9 +294,9 @@ you can use the following snippet to install from that repository:
 
 In your @code{init.el}, type @code{M-x eval-buffer RET}.
 
-If all goes well, @code{hyperdrive.el} commands like @code{M-x hyperdrive-menu}
-should now be available.  The documentation for @code{hyperdrive.el} should
-also be installed.
+If all goes well, @code{hyperdrive.el} commands like @code{M-x hyperdrive-menu} are
+now available and the documentation for @code{hyperdrive.el} is installed
+(see @ref{Quick documentation access}).
 
 After installing with @code{package-vc}, you can later upgrade to a newer
 version of @code{hyperdrive.el} by running @code{M-x package-vc-upgrade RET
@@ -581,8 +581,8 @@ exist, @code{hyperdrive.el} will prompt you to take action:
 
 @itemize
 @item
-@code{h} (history) to open the @ref{View the hyperdrive version history, , version history} for that file. (This only
-works for files, not folders)
+@code{h} (history) to open the @ref{View the hyperdrive version history, , version history} for that file. This only
+works for files, not folders (see @ref{No directory version history})
 @item
 @code{u} (up) to open the parent directory containing that file or folder
 @item
