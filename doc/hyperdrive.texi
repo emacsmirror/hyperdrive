@@ -451,7 +451,8 @@ hyperdrives you've already created or visited:
 
 @deffn Command hyperdrive-find-file
 Open a hyperdrive file or directory by choosing one of your known
-hyperdrives and a path inside it.
+hyperdrives and a path inside it.  Like @code{find-file}, this command can
+be used to create a new file inside your own hyperdrives.
 @end deffn
 
 @deffn Command hyperdrive-view-file
@@ -608,31 +609,48 @@ URL@.
 @node Create a hyperdrive
 @section Create a hyperdrive
 
-@findex hyperdrive-new
-
 You can have multiple hyperdrives, each one containing its own set of
 files. Run @code{M-x hyperdrive-new} then type in a @code{seed} (see @ref{Seeds}) to
 create a new hyperdrive. That seed will be combined with your secret
 master key (see @ref{Master key}) to produce a public key (see @ref{Public keys}) that uniquely identifies that hyperdrive.
 
+@deffn Command hyperdrive-new
+Create a new hyperdrive from a seed string.
+@end deffn
+
 @node Write to a hyperdrive
 @section Write to a hyperdrive
 
-@findex hyperdrive-write-buffer
-@findex save-buffer
-@findex save-some-buffers
 @vindex save-some-buffers-default-predicate
 
-You can write a buffer to a hyperdrive with @code{hyperdrive-write-buffer},
-which will prompt you for one of hyperdrives you have created as well
-as the path in that hyperdrive where you want to store the file. If
-you are editing an existing hyperdrive file, @code{save-buffer} will
-silently update the current hyperdrive file with the new content.
+After creating or opening a file in one of your hyperdrives,
+@code{save-buffer} will silently update the current hyperdrive file with the
+new content.
+
+@table @asis
+@item @kbd{C-x C-s} (@code{save-buffer})
+@kindex C-x C-s
+@findex save-buffer
+Save the current hyperdrive file buffer to its location.
+
+@item @kbd{C-x s} (@code{save-some-buffers})
+@kindex C-x s
+@findex save-some-buffers
+Save all modified hyperdrive file buffers to their locations.  This
+command's primary purpose is to save normal file buffers, and
+@code{hyperdrive.el} has integrated with it.
 
 @code{hyperdrive.el} will prompt to save modified hyperdrive files before
-exiting Emacs. If you want the command @code{save-some-buffers} to always
+exiting Emacs.  If you want the command @code{save-some-buffers} to always
 prompt to save hyperdrive files in addition to regular files, set
 @code{save-some-buffers-default-predicate} to @code{t}.
+@end table
+
+@deffn Command hyperdrive-write-buffer
+Write the current buffer to a hyperdrive by choosing one of
+hyperdrives you have created as well as the path in that hyperdrive
+where you want to store the file.
+@end deffn
 
 @node Link to a hyperdrive
 @section Link to a hyperdrive
