@@ -557,7 +557,9 @@ directories (see @ref{No empty directories}).
 @node File view
 @subsection File view
 
-The following keybindings are available inside the directory view by
+@findex dired-jump
+
+The following keybindings are available inside the file view by
 default:
 
 @table @asis

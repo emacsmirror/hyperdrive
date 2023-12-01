@@ -323,8 +323,9 @@ available inside the directory view by default:
   directories (see [[*No empty directories]]).
 
 *** File view
+#+findex: dired-jump
 
-The following keybindings are available inside the directory view by
+The following keybindings are available inside the file view by
 default:
 
 - Key: C-x x g (revert-buffer-quick) ::
