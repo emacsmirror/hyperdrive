@@ -146,8 +146,9 @@ through a shell)."
 When \\+`any-version', try to reuse an existing buffer showing the
 same entry at any version.  When \\+`same-version', try to reuse
 an existing buffer at the same version, or make a new buffer."
-  :type '(choice (const :tag "Use an existing buffer at any version" any-version)
-                 (const :tag "Use an existing buffer at the same version" same-version)))
+  :type '(choice
+          (const :tag "Use an existing buffer at any version" any-version)
+          (const :tag "Use an existing buffer at the same version" same-version)))
 
 ;;;;;; Entry formatting
 

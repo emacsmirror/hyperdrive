@@ -422,7 +422,8 @@ be \\+`unknown'."
            (when-let ((previous-entry (he/at previous-version entry)))
              ;; Entry version is currently its range end, but it should be its
              ;; version range start.
-             (setf (he/version previous-entry) (car (he/version-range previous-entry)))
+             (setf (he/version previous-entry)
+                   (car (he/version-range previous-entry)))
              previous-entry)))))))
 
 (defun he/at (version entry)
@@ -474,9 +475,11 @@ Sends a request to the gateway for hyperdrive's latest version."
       (cl-return-from he/next next-entry))
 
     ;; ENTRY is a file...
-    (pcase-let* ((`(,_range-start . ,(map (:range-end range-end))) (he/version-range entry))
+    (pcase-let* ((`(,_range-start . ,(map (:range-end range-end)))
+                  (he/version-range entry))
                  (next-range-start (1+ range-end))
-                 ((map (:existsp next-range-existsp) (:range-end next-range-end))
+                 ((map (:existsp next-range-existsp)
+                       (:range-end next-range-end))
                   ;; TODO: If cl struct copiers are extended like this:
                   ;;       https://lists.gnu.org/archive/html/help-gnu-emacs/2021-10/msg00797.html
                   ;;       replace following sexp with
@@ -503,7 +506,9 @@ Sends a request to the gateway for hyperdrive's latest version."
 (cl-defun h/open
     (entry &key recurse (createp t) (messagep t)
            (then (lambda ()
-                   (pop-to-buffer (current-buffer) '((display-buffer-reuse-window display-buffer-same-window))))))
+                   (pop-to-buffer (current-buffer)
+                                  '((display-buffer-reuse-window
+                                     display-buffer-same-window))))))
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
 not found.  THEN is a function to pass to the handler which will
@@ -519,7 +524,8 @@ echo area when the request for the file is made."
     (h/fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-                           (handler (alist-get type h/type-handlers nil nil #'string-match-p)))
+                           (handler (alist-get type h/type-handlers
+                                               nil nil #'string-match-p)))
                 (unless (h//entry-directory-p entry)
                   ;; No need to fill latest version for directories,
                   ;; since we do it in `h//fill' already.
@@ -716,7 +722,8 @@ correct ETag header.  Returns the latest version number."
   ;; places where this function is called. Better yet, update
   ;; `h/version-ranges' (and `h/hyperdrives'?) in a
   ;; lower-level function, perhaps a wrapper for `h/api'?
-  (setf (h/latest-version hyperdrive) (string-to-number (map-elt headers 'etag))))
+  (setf (h/latest-version hyperdrive)
+        (string-to-number (map-elt headers 'etag))))
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
@@ -1173,7 +1180,8 @@ INITIAL-INPUT-NUMBER is converted to a string and passed to
          ;; Don't use read-number since it cannot return nil.
          (version (read-string
                    (format-prompt prompt nil (h//format-hyperdrive hyperdrive))
-                   (when initial-input-number (number-to-string initial-input-number))
+                   (when initial-input-number
+                     (number-to-string initial-input-number))
                    'h//version-history)))
     (unless (string-blank-p version)
       (string-to-number version))))
@@ -1203,7 +1211,8 @@ is passed to `read-string' as its DEFAULT-VALUE argument."
 Prompts with PROMPT.  Defaults to current entry if it exists."
   (let ((default (when h/current-entry
                    (he/url h/current-entry))))
-    (string-trim (read-string (format-prompt prompt default) nil 'h//url-history default))))
+    (string-trim (read-string (format-prompt prompt default)
+                              nil 'h//url-history default))))
 
 (defvar h//name-history nil
   "Minibuffer history of `hyperdrive-read-name'.")
@@ -1212,7 +1221,8 @@ Prompts with PROMPT.  Defaults to current entry if it exists."
   "Wrapper for `read-string' with common history.
 Prompts with PROMPT and DEFAULT, according to `format-prompt'.
 DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
-  (read-string (format-prompt prompt default) initial-input 'h//name-history default))
+  (read-string (format-prompt prompt default)
+               initial-input 'h//name-history default))
 
 (cl-defun h/put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."

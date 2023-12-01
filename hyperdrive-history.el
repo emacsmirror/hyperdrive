@@ -269,7 +269,8 @@ Interactively, diff range entry at point with previous entry."
 
 (cl-defun h/history-find-file
     (range-entry &key (then (lambda ()
-                              (pop-to-buffer (current-buffer) '(display-buffer-same-window)))))
+                              (pop-to-buffer (current-buffer)
+                                             '(display-buffer-same-window)))))
   "Visit hyperdrive entry in RANGE-ENTRY at point.
 Then call THEN.  When entry does not exist, does nothing and
 returns nil.  When entry is not known to exist, attempts to load
@@ -353,8 +354,9 @@ buffer."
                                  ;; argument list and perform the user interactions
                                  ;; in the body? This change would deduplicate the
                                  ;; check for the existence of the entry.
-                                 (read-file-name "Filename: "
-                                                 (expand-file-name name h/download-directory)))))
+                                 (read-file-name
+                                  "Filename: "
+                                  (expand-file-name name h/download-directory)))))
      (list range-entry read-filename)) h/history-mode)
   (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t

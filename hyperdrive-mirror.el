@@ -103,8 +103,7 @@ STATUS is one of:
     (propertize url 'display short-url)))
 
 (unless h/mirror-columns
-  (setq-default h/mirror-columns
-                (get 'h/mirror-columns 'standard-value)))
+  (setq-default h/mirror-columns (get 'h/mirror-columns 'standard-value)))
 
 ;;;; Functions
 
@@ -119,7 +118,9 @@ After uploading files, open PARENT-ENTRY."
                                    (or (eq status 'new) (eq status 'newer)))
                                  files-and-urls))
          (progress-reporter
-          (make-progress-reporter (format "Uploading %s files: " (length upload-files-and-urls)) 0 (length upload-files-and-urls)))
+          (make-progress-reporter
+           (format "Uploading %s files: " (length upload-files-and-urls))
+           0 (length upload-files-and-urls)))
          (queue (make-plz-queue
                  :limit h/queue-limit
                  :finally (lambda ()
@@ -206,8 +207,10 @@ filter and set NO-CONFIRM to t."
                           (with-current-buffer buffer
                             (with-silent-modifications
                               (erase-buffer)
-                              (insert (propertize (format "Comparing files (%s/%s)..." num-filled num-of)
-                                                  'face 'font-lock-comment-face)))))))
+                              (insert (propertize
+                                       (format "Comparing files (%s/%s)..."
+                                               num-filled num-of)
+                                       'face 'font-lock-comment-face)))))))
             (h/mirror-mode)
             (setq-local h/mirror-query `( ,source ,hyperdrive
                                           :target-dir ,target-dir
@@ -352,7 +355,8 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
             ("Lambda function" .
              (lambda () (read--expression "Lambda: " "(lambda (filename) )")))
             ("Named function"   .
-             (lambda () (intern (completing-read "Named function: " obarray #'functionp t))))))
+             (lambda () (intern (completing-read "Named function: "
+                                            obarray #'functionp t))))))
          ;; TODO(transient): Implement returning values from prefixes,
          ;; allowing us to use a sub-prefix here instead of completing-read.
          (reader (completing-read "Filter type: " readers nil t))
