@@ -623,9 +623,8 @@ Create a new hyperdrive from a seed string.
 
 @vindex save-some-buffers-default-predicate
 
-After creating or opening a file in one of your hyperdrives,
-@code{save-buffer} will silently update the current hyperdrive file with the
-new content.
+After modifying a file in one of your hyperdrives, @code{save-buffer} will
+silently update the current hyperdrive file with the new content.
 
 @table @asis
 @item @kbd{C-x C-s} (@code{save-buffer})

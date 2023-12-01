@@ -376,9 +376,8 @@ keys]]) that uniquely identifies that hyperdrive.
 ** Write to a hyperdrive
 #+vindex: save-some-buffers-default-predicate
 
-After creating or opening a file in one of your hyperdrives,
-~save-buffer~ will silently update the current hyperdrive file with the
-new content.
+After modifying a file in one of your hyperdrives, ~save-buffer~ will
+silently update the current hyperdrive file with the new content.
 
 - Key: C-x C-s (save-buffer) ::
 
