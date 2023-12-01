@@ -776,10 +776,11 @@ Once all requests return, call FINALLY with no arguments."
   (declare (indent defun))
   (let* ((outstanding-nonexistent-requests-p)
          (total-requests-limit h/fill-version-ranges-limit)
-         (fill-entry-queue (make-plz-queue :limit h/queue-limit
-                                           :finally (lambda ()
-                                                      (unless outstanding-nonexistent-requests-p
-                                                        (funcall finally)))))
+         (fill-entry-queue (make-plz-queue
+                            :limit h/queue-limit
+                            :finally (lambda ()
+                                       (unless outstanding-nonexistent-requests-p
+                                         (funcall finally)))))
          ;; Flag used in the nonexistent-queue finalizer.
          finishedp)
     (cl-labels
@@ -963,10 +964,13 @@ Path and target fragment are URI-encoded."
                        (h//url-hexify-string path)))
                (url (concat protocol host version-part path target-part)))
     (if with-help-echo
-        (propertize url
-                    'help-echo (h//format-entry-url
-                                entry :with-protocol t :host-format '(public-key domain)
-                                :with-path with-path :with-help-echo nil :with-target with-target))
+        (propertize url 'help-echo (h//format-entry-url
+                                    entry
+                                    :with-protocol t
+                                    :host-format '(public-key domain)
+                                    :with-path with-path
+                                    :with-help-echo nil
+                                    :with-target with-target))
       url)))
 
 (defun h//format (hyperdrive &optional format formats)
@@ -1130,7 +1134,8 @@ Otherwise, prompt for a version number."
                             (he/version h/current-entry)))
          (version (unless latest-version
                     (if read-version
-                        (h/read-version :hyperdrive hyperdrive :initial-input-number default-version)
+                        (h/read-version :hyperdrive hyperdrive
+                                        :initial-input-number default-version)
                       default-version)))
          (default-path (h//format-path
                         (or default-path
@@ -1138,7 +1143,9 @@ Otherwise, prompt for a version number."
                                  (h/equal-p
                                   hyperdrive (he/hyperdrive h/current-entry))
                                  (he/path h/current-entry)))))
-         (path (h/read-path :hyperdrive hyperdrive :version version :default default-path)))
+         (path (h/read-path :hyperdrive hyperdrive
+                            :version version
+                            :default default-path)))
     (he/create :hyperdrive hyperdrive :path path :version version)))
 
 (defvar h//version-history nil
