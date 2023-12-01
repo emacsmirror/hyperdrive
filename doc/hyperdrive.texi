@@ -861,12 +861,19 @@ audio/video file is stored locally.
 @node Download hyperdrive files
 @section Download hyperdrive files
 
-@findex hyperdrive-download
-@findex hyperdrive-download-url
+You can ``download'' a hyperdrive file to your local filesystem, meaning
+that @code{hyperdrive.el} will (1) download the file from the network if it
+hasn't done so already and then (2) copy the file contents to a
+file-path on your machine of your choosing.  The following commands
+may be run while offline.
 
-You can download a hyperdrive file to your local filesystem. Download
-the current hyperdrive file with @code{hyperdrive-download} or paste
-in a @code{hyper://} URL after @code{hyperdrive-download-url}.
+@deffn Command hyperdrive-download
+Download a hyperdrive file by selecting a hyperdrive and a path.
+@end deffn
+
+@deffn Command hyperdrive-download-url
+Download a hyperdrive file by pasting in a @code{hyper://} URL@.
+@end deffn
 
 @defopt hyperdrive-download-directory
 Location where @code{hyperdrive-download-url} will download files.  Defaults

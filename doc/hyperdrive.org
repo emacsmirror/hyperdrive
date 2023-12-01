@@ -575,12 +575,20 @@ stream that video from the network.  After the stream finishes, the
 audio/video file is stored locally.
 
 ** Download hyperdrive files
-#+findex: hyperdrive-download
-#+findex: hyperdrive-download-url
 
-You can download a hyperdrive file to your local filesystem. Download
-the current hyperdrive file with ~hyperdrive-download~ or paste
-in a ~hyper://~ URL after ~hyperdrive-download-url~.
+You can "download" a hyperdrive file to your local filesystem, meaning
+that ~hyperdrive.el~ will (1) download the file from the network if it
+hasn't done so already and then (2) copy the file contents to a
+file-path on your machine of your choosing.  The following commands
+may be run while offline.
+
+- Command: hyperdrive-download ::
+
+  Download a hyperdrive file by selecting a hyperdrive and a path.
+
+- Command: hyperdrive-download-url ::
+
+  Download a hyperdrive file by pasting in a ~hyper://~ URL.
 
 - User Option: hyperdrive-download-directory ::
 
