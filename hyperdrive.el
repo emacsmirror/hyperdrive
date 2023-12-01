@@ -112,7 +112,7 @@
 Gateway must be running."
   (interactive)
   (condition-case err
-      (let ((url (concat "http://localhost:" (number-to-string h/hyper-gateway-port) "/")))
+      (let ((url (format "http://localhost:%d/" h/hyper-gateway-port)))
         (h/message "hyper-gateway version %s"
                    (alist-get 'version (plz 'get url :as #'json-read))))
     (plz-error (h/api-default-else nil (caddr err)))))

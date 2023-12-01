@@ -219,12 +219,13 @@ PLZ-ERR should be a `plz-error' struct."
   "Return non-nil if `hyper-gateway' is running and accessible."
   ;; FIXME: Ensure a very short timeout for this request.
   (condition-case nil
-      (plz 'get (concat "http://localhost:" (number-to-string h/hyper-gateway-port) "/"))
+      (plz 'get (format "http://localhost:%d/" h/hyper-gateway-port))
     (error nil)))
 
 (defun h//httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
-  (concat "http://localhost:" (number-to-string h/hyper-gateway-port) "/hyper/"
+  (format "http://localhost:%d/hyper/%s"
+          h/hyper-gateway-port
           (substring url (length h//hyper-prefix))))
 
 (cl-defun h//write (url &key body then else queue)
@@ -1208,7 +1209,8 @@ With PURGE, delete hash table entry for HYPERDRIVE."
 That is, if the SEED has been used to create a local
 hyperdrive."
   (condition-case err
-      (pcase (h/api 'get (concat "hyper://localhost/?key=" (url-hexify-string seed))
+      (pcase (h/api 'get (format "hyper://localhost/?key=%s"
+                                 (url-hexify-string seed))
                :as 'response :noquery t)
         ((and (pred plz-response-p)
               response
