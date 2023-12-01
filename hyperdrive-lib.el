@@ -514,24 +514,24 @@ echo area when the request for the file is made."
                 (h/persist hyperdrive)
                 (funcall (or handler #'h/handler-default) entry :then then)))
       :else (lambda (err)
-              (cl-labels ((not-found-action
-                            () (if recurse
-                                   (h/open (h/parent entry) :recurse t)
-                                 (pcase (prompt)
-                                   ('history (h/history entry))
-                                   ('up (h/open (h/parent entry)))
-                                   ('recurse (h/open (h/parent entry) :recurse t)))))
-                          (prompt
-                            () (pcase-exhaustive
-                                   (read-answer (format "URL not found: \"%s\". " (he/url entry))
-                                                '(("history" ?h "open version history")
-                                                  ("up" ?u "open parent directory")
-                                                  ("recurse" ?r "go up until a directory is found")
-                                                  ("exit" ?q "exit")))
-                                 ("history" 'history)
-                                 ("up" 'up)
-                                 ("recurse" 'recurse)
-                                 ("exit" nil))))
+              (cl-labels ((not-found-action ()
+                            (if recurse
+                                (h/open (h/parent entry) :recurse t)
+                              (pcase (prompt)
+                                ('history (h/history entry))
+                                ('up (h/open (h/parent entry)))
+                                ('recurse (h/open (h/parent entry) :recurse t)))))
+                          (prompt ()
+                            (pcase-exhaustive
+                                (read-answer (format "URL not found: \"%s\". " (he/url entry))
+                                             '(("history" ?h "open version history")
+                                               ("up" ?u "open parent directory")
+                                               ("recurse" ?r "go up until a directory is found")
+                                               ("exit" ?q "exit")))
+                              ("history" 'history)
+                              ("up" 'up)
+                              ("recurse" 'recurse)
+                              ("exit" nil))))
                 (pcase (plz-response-status (plz-error-response err))
                   ;; FIXME: If plz-error is a curl-error, this block will fail.
                   (404 ;; Path not found.

@@ -48,8 +48,8 @@
 (defmacro h/deftest (name &rest args)
   (declare (indent defun))
   (let ((name (intern (concat "hyperdrive-" (symbol-name name)))))
-    `(cl-macrolet ((make-url
-                     (&rest args) `(concat "hyper://" test-hyperdrive-public-key ,@args)))
+    `(cl-macrolet ((make-url (&rest args)
+                     `(concat "hyper://" test-hyperdrive-public-key ,@args)))
        (ert-deftest ,name () ,@args))))
 
 ;;;; Tests

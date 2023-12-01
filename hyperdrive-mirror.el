@@ -297,7 +297,8 @@ Callback for queue finalizer in `hyperdrive-mirror'."
 NAME is the name of the section.  KEYS should be a list of
 grouping keys, as in `hyperdrive-mirror-default-keys'."
   (let (format-table column-sizes)
-    (cl-labels ((format-item (item) (gethash item format-table))
+    (cl-labels ((format-item (item)
+                  (gethash item format-table))
                 (make-fn (&rest args)
                   (apply #'make-taxy-magit-section
                          :make #'make-fn
