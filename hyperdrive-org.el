@@ -146,7 +146,7 @@ the logic for handling links of \"file\" type."
                              (org-element-property :path context)
                              (file-name-directory path))
                       :etc `((target . ,(org-element-property
-                                      :search-option context))))))
+                                         :search-option context))))))
            entry))))
 
 (defun h/org--insert-link-after-advice (&rest _)
