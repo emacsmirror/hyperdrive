@@ -29,6 +29,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
   selecting a hyperdrive into ~hyperdrive-menu-hyperdrive~.
 - Refactored the ~*hyperdrive-mirror*~ buffer to use [[https://github.com/alphapapa/taxy.el/tree/package/taxy-magit-section][taxy-magit-section]]
 - Removed ~rx~ form option in ~hyperdrive-mirror~
+- The "Hyperdrive" menu bar now shows up at the top-level.
 - Require at least Emacs 28.1+
 
 ** Fixed

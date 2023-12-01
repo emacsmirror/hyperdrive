@@ -104,7 +104,8 @@ Customize behavior with `hyperdrive-gateway-process-type', which see."
 ;;;###autoload
 (defun hyperdrive-stop ()
   "Stop `hyper-gateway' if running.
-Customize behavior with `hyperdrive-gateway-process-type', which see." (interactive)
+Customize behavior with `hyperdrive-gateway-process-type', which see."
+  (interactive)
   (h//gateway-stop))
 
 ;;;###autoload
@@ -803,8 +804,7 @@ The return value of this function is the retrieval buffer."
 ;;;;; `easy-menu' integration
 
 (defvar h/menu-bar-menu
-  '("Hyperdrive"
-    ("Gateway"
+  '(("Gateway"
      :label
      (format "Gateway (%s)" (if (h/status) "on" "off"))
      ["Start Gateway" h/start
@@ -1173,16 +1173,16 @@ The return value of this function is the retrieval buffer."
     ["User Manual" h/info-manual
      :help "Open hyperdrive.el info manual"]))
 
-(easy-menu-define h/easy-menu h/mode-map
-  "Menu with all Hyperdrive commands." h/menu-bar-menu)
-
 ;;;###autoload
 (define-minor-mode hyperdrive-menu-bar-mode "Show hyperdrive in \"Tools\" menu bar."
   :global t :group 'hyperdrive
   (if h/menu-bar-mode
-      (easy-menu-add-item menu-bar-tools-menu nil h/menu-bar-menu
-                          "Read Net News")
-    (easy-menu-remove-item menu-bar-tools-menu nil "Hyperdrive")))
+      ;; Inspired by https://utcc.utoronto.ca/~cks/space/blog/programming/EmacsEasyMenuAndMenubarOrder
+      (define-key-after global-map [menu-bar hyperdrive]
+        (easy-menu-binding
+         (easy-menu-create-menu "Hyperdrive" h/menu-bar-menu) "Hyperdrive")
+        "Tools")
+    (define-key global-map [menu-bar hyperdrive] nil)))
 
 ;;;;; Miscellaneous commands
 
