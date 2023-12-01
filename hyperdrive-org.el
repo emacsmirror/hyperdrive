@@ -89,20 +89,20 @@ raw URL, not an Org link."
   ;; The URL's "fragment" (aka "target" in org-link jargon) is the
   ;; CUSTOM_ID if it exists or headline search string if it exists.
   (cl-assert (eq 'org-mode major-mode))
-  (when h/mode
-    (let* ((heading (org-entry-get (point) "ITEM"))
-           (custom-id (org-entry-get (point) "CUSTOM_ID"))
-           (fragment (cond (custom-id (concat "#" custom-id))
-                           (heading (concat "*" heading))))
-           (entry-copy (h/copy-tree h/current-entry t))
-           (_ (setf (alist-get 'target (he/etc entry-copy)) fragment))
-           (raw-url (he/url entry-copy)))
-      (if raw-url-p
-          raw-url
-        ;; NOTE: Due to annoying issues with older versions of Emacs
-        ;; that have older versions of map.el that don't support
-        ;; destructuring plists with pcase-let, we use an alist here.
-        `((type . "hyper") (link . ,raw-url) (description . ,heading))))))
+  (and h/mode
+       (let* ((heading (org-entry-get (point) "ITEM"))
+              (custom-id (org-entry-get (point) "CUSTOM_ID"))
+              (fragment (cond (custom-id (concat "#" custom-id))
+                              (heading (concat "*" heading))))
+              (entry-copy (h/copy-tree h/current-entry t))
+              (_ (setf (alist-get 'target (he/etc entry-copy)) fragment))
+              (raw-url (he/url entry-copy)))
+         (if raw-url-p
+             raw-url
+           ;; NOTE: Due to annoying issues with older versions of Emacs
+           ;; that have older versions of map.el that don't support
+           ;; destructuring plists with pcase-let, we use an alist here.
+           `((type . "hyper") (link . ,raw-url) (description . ,heading))))))
 
 ;;;###autoload
 (defun hyperdrive-org-link-follow (url &optional _prefix)
@@ -140,18 +140,21 @@ the logic for handling links of \"file\" type."
          (element-type (org-element-type context))
          (link-type (org-element-property :type context))
          (raw-link-type (org-element-property :raw-link context)))
-    (when (and (eq element-type 'link)
-               (equal "file" link-type)
-               ;; Don't treat link as a relative/absolute path in the
-               ;; hyperdrive if "file:" protocol prefix is explicit.
-               (not (string-prefix-p "file:" raw-link-type)))
-      (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) h/current-entry)
-                   (entry (he/create
-                           :hyperdrive hyperdrive
-                           :path (expand-file-name (org-element-property :path context)
-                                                   (file-name-directory path))
-                           :etc `((target . ,(org-element-property :search-option context))))))
-        entry))))
+    (and (eq element-type 'link)
+         (equal "file" link-type)
+         ;; Don't treat link as a relative/absolute path in the
+         ;; hyperdrive if "file:" protocol prefix is explicit.
+         (not (string-prefix-p "file:" raw-link-type))
+         (pcase-let*
+             (((cl-struct hyperdrive-entry hyperdrive path) h/current-entry)
+              (entry (he/create
+                      :hyperdrive hyperdrive
+                      :path (expand-file-name
+                             (org-element-property :path context)
+                             (file-name-directory path))
+                      :etc `((target . ,(org-element-property
+                                      :search-option context))))))
+           entry))))
 
 (defun h/org--insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
@@ -186,10 +189,8 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
 
     (let ((adaptive-target-p
            ;; See the `adaptive' option in `org-link-file-path-type'.
-           (string-prefix-p
-            (file-name-directory
-             (he/path h/current-entry))
-            (he/path entry))))
+           (string-prefix-p (file-name-directory (he/path h/current-entry))
+                            (he/path entry))))
       (h//ensure-dot-slash-prefix-path
        (concat
         (pcase org-link-file-path-type
@@ -210,8 +211,8 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
 (defun h/org--link-description (link)
   "Return description of Org LINK or nil if it has none."
   ;; TODO: Is there a built-in solution?
-  (when-let* ((desc-begin (org-element-property :contents-begin link))
-              (desc-end (org-element-property :contents-end link)))
+  (and-let* ((desc-begin (org-element-property :contents-begin link))
+             (desc-end (org-element-property :contents-end link)))
     (buffer-substring desc-begin desc-end)))
 
 ;; NOTE: Autoloads do not support shorthands (see bug#63480), so we use the full symbol

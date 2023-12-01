@@ -103,8 +103,7 @@ STATUS is one of:
     (propertize url 'display short-url)))
 
 (unless h/mirror-columns
-  (setq-default h/mirror-columns
-                (get 'h/mirror-columns 'standard-value)))
+  (setq-default h/mirror-columns (get 'h/mirror-columns 'standard-value)))
 
 ;;;; Functions
 
@@ -119,7 +118,9 @@ After uploading files, open PARENT-ENTRY."
                                    (or (eq status 'new) (eq status 'newer)))
                                  files-and-urls))
          (progress-reporter
-          (make-progress-reporter (format "Uploading %s files: " (length upload-files-and-urls)) 0 (length upload-files-and-urls)))
+          (make-progress-reporter
+           (format "Uploading %s files: " (length upload-files-and-urls))
+           0 (length upload-files-and-urls)))
          (queue (make-plz-queue
                  :limit h/queue-limit
                  :finally (lambda ()
@@ -175,7 +176,9 @@ filter and set NO-CONFIRM to t."
      (list source hyperdrive
            ;; TODO: Get path from any visible hyperdrive-dir buffer and
            ;; auto-fill (or add as "future history") in target-dir prompt.
-           :target-dir (h/read-path :hyperdrive hyperdrive :prompt "Target directory in `%s'" :default "/")
+           :target-dir (h/read-path :hyperdrive hyperdrive
+                                    :prompt "Target directory in `%s'"
+                                    :default "/")
            :no-confirm (equal '(16) current-prefix-arg)
            :filter (if current-prefix-arg
                        (h/mirror-read-filter)
@@ -204,12 +207,15 @@ filter and set NO-CONFIRM to t."
                           (with-current-buffer buffer
                             (with-silent-modifications
                               (erase-buffer)
-                              (insert (propertize (format "Comparing files (%s/%s)..." num-filled num-of)
-                                                  'face 'font-lock-comment-face)))))))
+                              (insert (propertize
+                                       (format "Comparing files (%s/%s)..."
+                                               num-filled num-of)
+                                       'face 'font-lock-comment-face)))))))
             (h/mirror-mode)
-            (setq-local h/mirror-query
-                        `(,source ,hyperdrive :target-dir ,target-dir :filter ,filter)
-                        h/mirror-parent-entry parent-entry)
+            (setq-local h/mirror-query `( ,source ,hyperdrive
+                                          :target-dir ,target-dir
+                                          :filter ,filter))
+            (setq-local h/mirror-parent-entry parent-entry)
             ;; TODO: Add command to clear plz queue.
             (setf metadata-queue
                   (make-plz-queue
@@ -258,8 +264,8 @@ Callback for queue finalizer in `hyperdrive-mirror'."
   (with-current-buffer buffer
     (with-silent-modifications
       (let ((pos (point))
-            (section-ident (when (magit-current-section)
-                             (magit-section-ident (magit-current-section))))
+            (section-ident (and (magit-current-section)
+                                (magit-section-ident (magit-current-section))))
             (window-start 0) (window-point 0)
             (uploadable (cl-remove-if-not (lambda (status)
                                             (member status '(new newer)))
@@ -271,8 +277,8 @@ Callback for queue finalizer in `hyperdrive-mirror'."
                                               :key #'h/mirror-item-status)))
         (setq-local h/mirror-files-and-urls files-and-urls)
         (when-let ((window (get-buffer-window (current-buffer))))
-          (setf window-point (window-point window)
-                window-start (window-start window)))
+          (setf window-point (window-point window))
+          (setf window-start (window-start window)))
         (when h/mirror-visibility-cache
           (setf magit-section-visibility-cache h/mirror-visibility-cache))
         (add-hook 'kill-buffer-hook #'h/mirror--cache-visibility nil 'local)
@@ -297,7 +303,8 @@ Callback for queue finalizer in `hyperdrive-mirror'."
 NAME is the name of the section.  KEYS should be a list of
 grouping keys, as in `hyperdrive-mirror-default-keys'."
   (let (format-table column-sizes)
-    (cl-labels ((format-item (item) (gethash item format-table))
+    (cl-labels ((format-item (item)
+                  (gethash item format-table))
                 (make-fn (&rest args)
                   (apply #'make-taxy-magit-section
                          :make #'make-fn
@@ -330,9 +337,9 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
                h/mirror-columns h/mirror-column-formatters
                taxy))
              (inhibit-read-only t))
-        (setf format-table (car format-cons)
-              column-sizes (cdr format-cons)
-              header-line-format (taxy-magit-section-format-header
+        (setf format-table (car format-cons))
+        (setf column-sizes (cdr format-cons))
+        (setf header-line-format (taxy-magit-section-format-header
                                   column-sizes h/mirror-column-formatters))
         ;; Before this point, no changes have been made to the buffer's contents.
         (save-excursion
@@ -348,7 +355,8 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
             ("Lambda function" .
              (lambda () (read--expression "Lambda: " "(lambda (filename) )")))
             ("Named function"   .
-             (lambda () (intern (completing-read "Named function: " obarray #'functionp t))))))
+             (lambda () (intern (completing-read "Named function: "
+                                            obarray #'functionp t))))))
          ;; TODO(transient): Implement returning values from prefixes,
          ;; allowing us to use a sub-prefix here instead of completing-read.
          (reader (completing-read "Filter type: " readers nil t))
@@ -364,7 +372,8 @@ grouping keys, as in `hyperdrive-mirror-default-keys'."
   ;; hyperdrive version by potentially a lot).
   (if (and h/mirror-files-and-urls h/mirror-parent-entry)
       (h//mirror h/mirror-files-and-urls h/mirror-parent-entry)
-    (h/user-error "Missing information about files to upload.  Are you in a \"*hyperdrive-mirror*\" buffer?")))
+    (h/user-error "Missing information about files to upload.  \
+Are you in a \"*hyperdrive-mirror*\" buffer?")))
 
 (defun h/mirror--cache-visibility ()
   "Save visibility cache.
@@ -388,7 +397,7 @@ Sets `hyperdrive-mirror-visibility-cache' to the value of
   :group 'hyperdrive
   :interactive nil
   ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29) (or maybe taxy-magit-section)
-  (setq revert-buffer-function #'h/mirror-revert-buffer))
+  (setf revert-buffer-function #'h/mirror-revert-buffer))
 
 ;;;; Footer
 

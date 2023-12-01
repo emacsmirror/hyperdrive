@@ -146,8 +146,9 @@ through a shell)."
 When \\+`any-version', try to reuse an existing buffer showing the
 same entry at any version.  When \\+`same-version', try to reuse
 an existing buffer at the same version, or make a new buffer."
-  :type '(choice (const :tag "Use an existing buffer at any version" any-version)
-                 (const :tag "Use an existing buffer at the same version" same-version)))
+  :type '(choice
+          (const :tag "Use an existing buffer at any version" any-version)
+          (const :tag "Use an existing buffer at the same version" same-version)))
 
 ;;;;;; Entry formatting
 
@@ -201,30 +202,32 @@ Specifiers are as in `hyperdrive-default-entry-format', which
 see."
   :type 'string)
 
-(defvar h/raw-formats '(;; Entry metadata
-                        (name    . "%s")
-                        (path    . "%s")
-                        (version . "%s")
-                        ;; Hyperdrive metadata
-                        (petname    . "%s")
-                        (nickname   . "%s")
-                        (public-key . "%s")
-                        (short-key  . "%s")
-                        (seed       . "%s")
-                        (domains    . "%s"))
+(defvar h/raw-formats
+  '(;; Entry metadata
+    (name    . "%s")
+    (path    . "%s")
+    (version . "%s")
+    ;; Hyperdrive metadata
+    (petname    . "%s")
+    (nickname   . "%s")
+    (public-key . "%s")
+    (short-key  . "%s")
+    (seed       . "%s")
+    (domains    . "%s"))
   "Like `hyperdrive-formats', without any special formatting.")
 
-(defcustom h/formats '(;; Entry metadata
-                       (name       . "%s")
-                       (version    . " (version:%s)")
-                       (path       . "%s")
-                       ;; Hyperdrive metadata
-                       (petname    . "petname:%s")
-                       (nickname   . "nickname:%s")
-                       (public-key . "public-key:%s")
-                       (short-key  . "public-key:%.8s…")
-                       (seed       . "seed:%s")
-                       (domains    . "domains:%s"))
+(defcustom h/formats
+  '(;; Entry metadata
+    (name       . "%s")
+    (version    . " (version:%s)")
+    (path       . "%s")
+    ;; Hyperdrive metadata
+    (petname    . "petname:%s")
+    (nickname   . "nickname:%s")
+    (public-key . "public-key:%s")
+    (short-key  . "public-key:%.8s…")
+    (seed       . "seed:%s")
+    (domains    . "domains:%s"))
   "Alist mapping hyperdrive and hyperdrive entry metadata item to format string.
 Each metadata item may be one of:
 

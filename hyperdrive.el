@@ -112,7 +112,7 @@
 Gateway must be running."
   (interactive)
   (condition-case err
-      (let ((url (concat "http://localhost:" (number-to-string h/hyper-gateway-port) "/")))
+      (let ((url (format "http://localhost:%d/" h/hyper-gateway-port)))
         (h/message "hyper-gateway version %s"
                    (alist-get 'version (plz 'get url :as #'json-read))))
     (plz-error (h/api-default-else nil (caddr err)))))
@@ -133,8 +133,8 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
                 (string-match (rx bos (group "hyper://" (1+ nonl))) response)
                 (match-string 1 response)))
          (hyperdrive (he/hyperdrive (h/url-entry url))))
-    (setf (h/seed hyperdrive) seed
-          (h/writablep hyperdrive) t)
+    (setf (h/seed hyperdrive) seed)
+    (setf (h/writablep hyperdrive) t)
     (unwind-protect
         (h/set-petname seed hyperdrive)
       (h/persist hyperdrive)
@@ -376,7 +376,7 @@ directory.  Otherwise, or with universal prefix argument
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
               ;; `save-buffer' re-saves files after they've been deleted.
               (dolist (buf (match-buffers (lambda (buf deleted-entry)
-                                            (when-let ((current-entry (buffer-local-value 'h/current-entry buf)))
+                                            (and-let* ((current-entry (buffer-local-value 'h/current-entry buf)))
                                               (he/equal-p current-entry deleted-entry)))
                                           nil entry))
                 (with-current-buffer buf
@@ -425,8 +425,8 @@ without prompting.
 This function is for interactive use only; for non-interactive
 use, see `hyperdrive-write'."
   (interactive (list (h/read-entry :predicate #'h/writablep
-                                   :default-path (when h/current-entry
-                                                   (he/path h/current-entry))
+                                   :default-path (and h/current-entry
+                                                      (he/path h/current-entry))
                                    :latest-version t)
                      current-prefix-arg))
   (unless (or overwritep (not (he/at nil entry)))
@@ -584,8 +584,8 @@ Nil VERSION means open the entry at its hyperdrive's latest version."
   "Return a bookmark record for current hyperdrive buffer.
 Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   (let ((bookmark (bookmark-make-record-default 'no-file)))
-    (setf (alist-get 'handler bookmark) #'h/bookmark-handler
-          (alist-get 'location bookmark) (he/url h/current-entry))
+    (setf (alist-get 'handler bookmark) #'h/bookmark-handler)
+    (setf (alist-get 'location bookmark) (he/url h/current-entry))
     (cons (format "hyperdrive: %s" (h//format-entry h/current-entry)) bookmark)))
 
 ;;;###autoload
@@ -778,9 +778,9 @@ The return value of this function is the retrieval buffer."
                   (?n "no" "exit without doing anything")
                   (?s "save and then kill" "save the buffer and then kill it"))
                 nil nil (and (not use-short-answers)
-                             (not (when (fboundp 'use-dialog-box-p)
-                                    (with-no-warnings
-                                      (use-dialog-box-p)))))))))
+                             (not (and (fboundp 'use-dialog-box-p)
+                                       (with-no-warnings
+                                         (use-dialog-box-p)))))))))
     (if (equal response "no")
         nil
       (unless (equal response "yes")
@@ -1039,8 +1039,8 @@ The return value of this function is the retrieval buffer."
                      (h/dir-toggle-sort-direction
                       'name h/directory-sort)))
         :suffix (pcase-let ((`(,column . ,direction) h/directory-sort))
-                  (when (eq 'name column)
-                    (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
+                  (and (eq 'name column)
+                       (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
         :help "Sort directory by name"]
        ["By Size" (lambda ()
                     (interactive)
@@ -1048,8 +1048,8 @@ The return value of this function is the retrieval buffer."
                      (h/dir-toggle-sort-direction
                       'size h/directory-sort)))
         :suffix (pcase-let ((`(,column . ,direction) h/directory-sort))
-                  (when (string= 'size column)
-                    (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
+                  (and (string= 'size column)
+                       (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
         :help "Sort directory by size"]
        ["By Last Modified Time" (lambda ()
                                   (interactive)
@@ -1057,8 +1057,8 @@ The return value of this function is the retrieval buffer."
                                    (h/dir-toggle-sort-direction
                                     'mtime h/directory-sort)))
         :suffix (pcase-let ((`(,column . ,direction) h/directory-sort))
-                  (when (string= 'mtime column)
-                    (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
+                  (and (string= 'mtime column)
+                       (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
         :help "Sort directory by last modified time"])
       ["Copy URL" (lambda ()
                     (interactive)
@@ -1090,7 +1090,7 @@ The return value of this function is the retrieval buffer."
       ["Download" (lambda ()
                     (interactive)
                     (call-interactively #'h/download))
-       :active (when-let ((entry-at-point (h/dir--entry-at-point)))
+       :active (and-let* ((entry-at-point (h/dir--entry-at-point)))
                  (not (h//entry-directory-p entry-at-point)))
        ;; TODO: Change to "file/directory" when it's possible to download a whole directory
        :help "Download file at point"]
@@ -1116,7 +1116,7 @@ The return value of this function is the retrieval buffer."
       ["View" (lambda ()
                 (interactive)
                 (call-interactively #'h/dir-view-file))
-       :active (when-let ((entry-at-point (h/dir--entry-at-point)))
+       :active (and-let* ((entry-at-point (h/dir--entry-at-point)))
                  (not (h//entry-directory-p entry-at-point)))
        :help "View file at point"])
      ("Version"
@@ -1140,13 +1140,13 @@ The return value of this function is the retrieval buffer."
        :active (and (he/version h/current-entry)
                     (he/next h/current-entry))
        :label (concat "Next Version"
-                      (when-let* ((entry h/current-entry)
-                                  (next-entry (he/next entry))
-                                  ;; Don't add ": latest" if we're already at the latest version
-                                  ((not (eq entry next-entry)))
-                                  (display-version (if-let ((next-version (he/version next-entry)))
-                                                       (number-to-string next-version)
-                                                     "latest")))
+                      (and-let* ((entry h/current-entry)
+                                 (next-entry (he/next entry))
+                                 ;; Don't add ": latest" if we're already at the latest version
+                                 ((not (eq entry next-entry)))
+                                 (display-version (if-let ((next-version (he/version next-entry)))
+                                                      (number-to-string next-version)
+                                                    "latest")))
                         (format " (%s)" display-version)))
        :help "Open next version"]
       ["Open Specific Version" (lambda ()

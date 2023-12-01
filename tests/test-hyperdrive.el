@@ -48,8 +48,8 @@
 (defmacro h/deftest (name &rest args)
   (declare (indent defun))
   (let ((name (intern (concat "hyperdrive-" (symbol-name name)))))
-    `(cl-macrolet ((make-url
-                     (&rest args) `(concat "hyper://" test-hyperdrive-public-key ,@args)))
+    `(cl-macrolet ((make-url (&rest args)
+                     `(concat "hyper://" test-hyperdrive-public-key ,@args)))
        (ert-deftest ,name () ,@args))))
 
 ;;;; Tests
@@ -117,21 +117,22 @@
 (h/deftest entry-url-round-trip ()
 
   (let ((url (he/url (h/url-entry (make-url "")))))
-    (should (equal url (concat "hyper://" test-hyperdrive-public-key "/"))))
+    (should (equal url (format "hyper://%s/" test-hyperdrive-public-key))))
 
   (let ((url (he/url (h/url-entry (make-url "/")))))
-    (should (equal url (concat "hyper://" test-hyperdrive-public-key "/"))))
+    (should (equal url (format "hyper://%s/" test-hyperdrive-public-key))))
 
   (let ((url (he/url (h/url-entry (make-url "/name-without-spaces")))))
-    (should (equal url (concat "hyper://" test-hyperdrive-public-key "/name-without-spaces"))))
+    (should (equal url (format "hyper://%s/name-without-spaces"
+                               test-hyperdrive-public-key))))
 
   (let ((url (he/url (h/url-entry (make-url "/name%20without%20spaces")))))
-    (should (equal url (concat "hyper://" test-hyperdrive-public-key "/name%20without%20spaces"))))
+    (should (equal url (format "hyper://%s/name%%20without%%20spaces"
+                               test-hyperdrive-public-key))))
 
-  (let ((url (he/url (h/url-entry
-                      (make-url "/name%20without%20spaces/subdir")))))
-    (should (equal url (concat "hyper://" test-hyperdrive-public-key
-                               "/name%20without%20spaces/subdir")))))
+  (let ((url (he/url (h/url-entry (make-url "/name%20without%20spaces/subdir")))))
+    (should (equal url (format "hyper://%s/name%%20without%%20spaces/subdir"
+                               test-hyperdrive-public-key)))))
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (

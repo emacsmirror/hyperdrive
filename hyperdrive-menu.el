@@ -107,15 +107,15 @@
                             (he/p (he/next entry)))))
      :description (lambda ()
                     (concat "Next"
-                            (when-let* ((entry (h/menu--scope))
-                                        (next-entry (he/next entry))
-                                        ;; Don't add ": latest" if we're already at the latest
-                                        ;; version or if the next version is `unknown'.
-                                        ((and (he/version entry)
-                                              (he/p (he/next entry))))
-                                        (display-version (if-let ((next-version (he/version next-entry)))
-                                                             (number-to-string next-version)
-                                                           "latest")))
+                            (and-let* ((entry (h/menu--scope))
+                                       (next-entry (he/next entry))
+                                       ;; Don't add ": latest" if we're already at the latest
+                                       ;; version or if the next version is `unknown'.
+                                       ((and (he/version entry)
+                                             (he/p (he/next entry))))
+                                       (display-version (if-let ((next-version (he/version next-entry)))
+                                                            (number-to-string next-version)
+                                                          "latest")))
                               (concat ": " (propertize display-version 'face 'transient-value)))))
      )
     ("V a" "At..." h/open-at-version)
@@ -183,7 +183,7 @@
         :pad-keys t
         ("d" "Download" h/download
          :inapt-if (lambda ()
-                     (when-let ((entry-at-point (h/dir--entry-at-point)))
+                     (and-let* ((entry-at-point (h/dir--entry-at-point)))
                        (h//entry-directory-p entry-at-point))))
         ("D" "Delete" h/delete
          :inapt-if (lambda ()
@@ -199,7 +199,7 @@
         ("RET" "Open" h/dir-find-file)
         ("v" "View" h/dir-view-file
          :inapt-if (lambda ()
-                     (when-let ((entry-at-point (h/dir--entry-at-point)))
+                     (and-let* ((entry-at-point (h/dir--entry-at-point)))
                        (h//entry-directory-p entry-at-point))))]]
   [["Gateway"
     :description

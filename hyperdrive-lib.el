@@ -219,12 +219,13 @@ PLZ-ERR should be a `plz-error' struct."
   "Return non-nil if `hyper-gateway' is running and accessible."
   ;; FIXME: Ensure a very short timeout for this request.
   (condition-case nil
-      (plz 'get (concat "http://localhost:" (number-to-string h/hyper-gateway-port) "/"))
+      (plz 'get (format "http://localhost:%d/" h/hyper-gateway-port))
     (error nil)))
 
 (defun h//httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
-  (concat "http://localhost:" (number-to-string h/hyper-gateway-port) "/hyper/"
+  (format "http://localhost:%d/hyper/%s"
+          h/hyper-gateway-port
           (substring url (length h//hyper-prefix))))
 
 (cl-defun h//write (url &key body then else queue)
@@ -241,7 +242,7 @@ THEN and ELSE are passed to `hyperdrive-api', which see."
   "Return parent entry for ENTRY.
 If already at top-level directory, return nil."
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive path version) entry))
-    (when-let ((parent-path (file-name-parent-directory path)))
+    (and-let* ((parent-path (file-name-parent-directory path)))
       (he/create :hyperdrive hyperdrive :path parent-path :version version))))
 
 ;; For Emacsen <29.1.
@@ -257,31 +258,35 @@ If URL does not begin with \"hyper://\" prefix, it will be added
 before making the entry struct."
   (unless (string-prefix-p "hyper://" url)
     (setf url (concat "hyper://" url)))
-  (pcase-let* (((cl-struct url host (filename path) target)
-                (url-generic-parse-url url))
-               ;; TODO: For now, no other function besides `h/url-entry' calls
-               ;; `h/create', but perhaps it would be good to add a function which wraps
-               ;; `h/create' and returns either an existing hyperdrive or a new one?
-               (hyperdrive (pcase host
-                             ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
-                             ((rx ".") ; Assume host is a DNSLink domain. See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
-                              (when (and (>= emacs-major-version 29)
-                                         (textsec-suspicious-p host 'domain))
-                                ;; Check DNSLink domains for suspicious characters; don't bother
-                                ;; checking public keys since they're not recognizable anyway.
-                                (unless (y-or-n-p
-	                                 (format "Suspicious domain: %s; continue anyway?" host))
-                                  (user-error "Suspicious domain %s" host)))
-                              (h/create :domains (list host)))
-                             (_  ;; Assume host is a public-key
-                              (or (gethash host h/hyperdrives)
-                                  (h/create :public-key host)))))
-               (etc (when target
-                      `((target . ,(substring (url-unhex-string target) (length "::"))))))
-               (version (pcase path
-                          ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
-                           (setf path p)
-                           (string-to-number v)))))
+  (pcase-let*
+      (((cl-struct url host (filename path) target)
+        (url-generic-parse-url url))
+       ;; TODO: For now, no other function besides `h/url-entry' calls
+       ;; `h/create', but perhaps it would be good to add a function which wraps
+       ;; `h/create' and returns either an existing hyperdrive or a new one?
+       (hyperdrive (pcase host
+                     ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
+                     ((rx ".") ; Assume host is a DNSLink domain.
+                      ;; See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
+                      (when (and (>= emacs-major-version 29)
+                                 (textsec-suspicious-p host 'domain))
+                        ;; Check DNSLink domains for suspicious characters;
+                        ;; don't bother checking public keys since they're
+                        ;; not recognizable anyway.
+                        (unless (y-or-n-p
+                                 (format "Suspicious domain: %s; continue anyway?" host))
+                          (user-error "Suspicious domain %s" host)))
+                      (h/create :domains (list host)))
+                     (_  ;; Assume host is a public-key
+                      (or (gethash host h/hyperdrives)
+                          (h/create :public-key host)))))
+       (etc (and target
+                 `((target . ,(substring (url-unhex-string target)
+                                         (length "::"))))))
+       (version (pcase path
+                  ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
+                   (setf path p)
+                   (string-to-number v)))))
     ;; e.g. for hyper://PUBLIC-KEY/path/to/basename, we do:
     ;; :path "/path/to/basename" :name "basename"
     (he/create :hyperdrive hyperdrive :path (url-unhex-string path)
@@ -329,13 +334,14 @@ Returns nil when ENTRY is not known to exist at its version.
 
 With non-nil VERSION, use it instead of ENTRY's version."
   (declare (indent defun))
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
-               (version (or version entry-version (h/latest-version hyperdrive)))
-               (ranges (he/version-ranges entry)))
-    (when ranges
-      (cl-find-if (pcase-lambda (`(,range-start . ,(map (:range-end range-end))))
-                    (<= range-start version range-end))
-                  ranges))))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
+       (version (or version entry-version (h/latest-version hyperdrive)))
+       (ranges (he/version-ranges entry)))
+    (and ranges
+         (cl-find-if (pcase-lambda (`(,range-start . ,(map (:range-end range-end))))
+                       (<= range-start version range-end))
+                     ranges))))
 
 (cl-defun he/exists-p (entry &key version)
   "Return status of ENTRY's existence at its version.
@@ -365,21 +371,29 @@ When the final range's range-end is less than ENTRY's
 hyperdrive's latest-version slot, the final gap is filled."
   (let ((ranges '())
         (previous-range-end 0))
-    (pcase-dolist (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) (he/version-ranges entry))
+    (pcase-dolist (`(,range-start . ,(map (:range-end range-end)
+                                          (:existsp existsp)))
+                   (he/version-ranges entry))
       ;; If he/version-ranges returns nil, this whole loop will be skipped.
       (let ((next-range-start (1+ previous-range-end)))
         (when (> range-start next-range-start)
           ;; Insert an "unknown" gap range
-          (push `(,next-range-start . (:range-end ,(1- range-start) :existsp unknown)) ranges))
-        (push `(,range-start . (:range-end ,range-end :existsp ,existsp)) ranges)
+          (push `(,next-range-start . ( :range-end ,(1- range-start)
+                                        :existsp unknown))
+                ranges))
+        (push `(,range-start . ( :range-end ,range-end
+                                 :existsp ,existsp))
+              ranges)
         (setf previous-range-end range-end)))
     (pcase-let* ((final-known-range (car ranges))
-                 (`(,_range-start . ,(map (:range-end final-known-range-end))) final-known-range)
+                 (`(,_range-start . ,(map (:range-end final-known-range-end)))
+                  final-known-range)
                  (latest-version (h/latest-version (he/hyperdrive entry))))
       (unless final-known-range-end
         (setf final-known-range-end 0))
       (when (< final-known-range-end latest-version)
-        ;; Insert possible final gap between latest known range and hyperdrive's latest-version
+        ;; Insert possible final gap between latest known range
+        ;; and hyperdrive's latest-version
         (push `(,(1+ final-known-range-end) . (:range-end ,latest-version , :existsp unknown)) ranges)))
     (nreverse ranges)))
 
@@ -392,8 +406,10 @@ be \\+`unknown'."
   (if (h//entry-directory-p entry)
       (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
                    (version (or version (h/latest-version hyperdrive))))
-        (when (> version 1)
-          (he/create :hyperdrive hyperdrive :path path :version (1- version))))
+        (and (> version 1)
+             (he/create :hyperdrive hyperdrive
+                        :path path
+                        :version (1- version))))
     (let ((previous-version (1- (car (he/version-range entry)))))
       (pcase-exhaustive (he/version-range entry :version previous-version)
         (`(,range-start . ,(map (:existsp existsp)))
@@ -406,9 +422,11 @@ be \\+`unknown'."
          ;; Entry is not known to exist, optionally send a request.
          (if cache-only
              'unknown
-           (when-let ((previous-entry (he/at previous-version entry)))
-             ;; Entry version is currently its range end, but it should be its version range start.
-             (setf (he/version previous-entry) (car (he/version-range previous-entry)))
+           (and-let* ((previous-entry (he/at previous-version entry)))
+             ;; Entry version is currently its range end,
+             ;; but it should be its version range start.
+             (setf (he/version previous-entry)
+                   (car (he/version-range previous-entry)))
              previous-entry)))))))
 
 (defun he/at (version entry)
@@ -443,8 +461,7 @@ Sends a request to the gateway for hyperdrive's latest version."
 
   ;; ENTRY's version is not nil.
   (let ((next-entry (h/copy-tree entry t))
-        (latest-version (h/fill-latest-version
-                         (he/hyperdrive entry))))
+        (latest-version (h/fill-latest-version (he/hyperdrive entry))))
 
     ;; ENTRY version is the latest version: return ENTRY with nil version.
     (when (eq latest-version (he/version entry))
@@ -460,9 +477,11 @@ Sends a request to the gateway for hyperdrive's latest version."
       (cl-return-from he/next next-entry))
 
     ;; ENTRY is a file...
-    (pcase-let* ((`(,_range-start . ,(map (:range-end range-end))) (he/version-range entry))
+    (pcase-let* ((`(,_range-start . ,(map (:range-end range-end)))
+                  (he/version-range entry))
                  (next-range-start (1+ range-end))
-                 ((map (:existsp next-range-existsp) (:range-end next-range-end))
+                 ((map (:existsp next-range-existsp)
+                       (:range-end next-range-end))
                   ;; TODO: If cl struct copiers are extended like this:
                   ;;       https://lists.gnu.org/archive/html/help-gnu-emacs/2021-10/msg00797.html
                   ;;       replace following sexp with
@@ -489,7 +508,9 @@ Sends a request to the gateway for hyperdrive's latest version."
 (cl-defun h/open
     (entry &key recurse (createp t) (messagep t)
            (then (lambda ()
-                   (pop-to-buffer (current-buffer) '((display-buffer-reuse-window display-buffer-same-window))))))
+                   (pop-to-buffer (current-buffer)
+                                  '((display-buffer-reuse-window
+                                     display-buffer-same-window))))))
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
 not found.  THEN is a function to pass to the handler which will
@@ -505,7 +526,8 @@ echo area when the request for the file is made."
     (h/fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
-                           (handler (alist-get type h/type-handlers nil nil #'string-match-p)))
+                           (handler (alist-get type h/type-handlers
+                                               nil nil #'string-match-p)))
                 (unless (h//entry-directory-p entry)
                   ;; No need to fill latest version for directories,
                   ;; since we do it in `h//fill' already.
@@ -513,24 +535,24 @@ echo area when the request for the file is made."
                 (h/persist hyperdrive)
                 (funcall (or handler #'h/handler-default) entry :then then)))
       :else (lambda (err)
-              (cl-labels ((not-found-action
-                            () (if recurse
-                                   (h/open (h/parent entry) :recurse t)
-                                 (pcase (prompt)
-                                   ('history (h/history entry))
-                                   ('up (h/open (h/parent entry)))
-                                   ('recurse (h/open (h/parent entry) :recurse t)))))
-                          (prompt
-                            () (pcase-exhaustive
-                                   (read-answer (format "URL not found: \"%s\". " (he/url entry))
-                                                '(("history" ?h "open version history")
-                                                  ("up" ?u "open parent directory")
-                                                  ("recurse" ?r "go up until a directory is found")
-                                                  ("exit" ?q "exit")))
-                                 ("history" 'history)
-                                 ("up" 'up)
-                                 ("recurse" 'recurse)
-                                 ("exit" nil))))
+              (cl-labels ((not-found-action ()
+                            (if recurse
+                                (h/open (h/parent entry) :recurse t)
+                              (pcase (prompt)
+                                ('history (h/history entry))
+                                ('up (h/open (h/parent entry)))
+                                ('recurse (h/open (h/parent entry) :recurse t)))))
+                          (prompt ()
+                            (pcase-exhaustive
+                                (read-answer (format "URL not found: \"%s\". " (he/url entry))
+                                             '(("history" ?h "open version history")
+                                               ("up" ?u "open parent directory")
+                                               ("recurse" ?r "go up until a directory is found")
+                                               ("exit" ?q "exit")))
+                              ("history" 'history)
+                              ("up" 'up)
+                              ("recurse" 'recurse)
+                              ("exit" nil))))
                 (pcase (plz-response-status (plz-error-response err))
                   ;; FIXME: If plz-error is a curl-error, this block will fail.
                   (404 ;; Path not found.
@@ -548,9 +570,10 @@ echo area when the request for the file is made."
                      (if-let ((buffer
                                (get-buffer
                                 (h//format-entry entry h/buffer-name-format))))
-                         ;; Buffer already exists: likely the user deleted the entry
-                         ;; without killing the buffer.  Switch to the buffer and
-                         ;; alert the user that the entry no longer exists.
+                         ;; Buffer already exists: likely the user deleted the
+                         ;; entry without killing the buffer.  Switch to the
+                         ;; buffer and alert the user that the entry no longer
+                         ;; exists.
                          (progn
                            (switch-to-buffer buffer)
                            (h/message "Entry no longer exists!  %s"
@@ -561,8 +584,8 @@ echo area when the request for the file is made."
                      ;; Hyperdrive entry is not writable: prompt for action.
                      (not-found-action))))
                   (500 ;; Generic error, likely a mistyped URL
-                   (h/message "Generic hyper-gateway status 500 error. Is this URL correct? %s"
-                              (he/url entry)))
+                   (h/message "Generic hyper-gateway status 500 error. %s %s"
+                              "Is this URL correct?" (he/url entry)))
                   (_ (h/message "Unable to load URL \"%s\": %S"
                                 (he/url entry) err))))))
     (when messagep
@@ -633,24 +656,25 @@ The following ENTRY hyperdrive slots are filled:
 - \\+`domains' (merged with current persisted value)
 
 Returns filled ENTRY."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive) entry)
-               ((cl-struct hyperdrive writablep domains) hyperdrive)
-               ((map link content-length content-type etag last-modified allow) headers)
-               ;; If URL hostname was a DNSLink domain, entry doesn't yet have a public-key slot.
-               (public-key (progn
-                             (string-match h//public-key-re link)
-                             (match-string 1 link)))
-               (persisted-hyperdrive (gethash public-key h/hyperdrives))
-               (domain (car domains)))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive) entry)
+       ((cl-struct hyperdrive writablep domains) hyperdrive)
+       ((map link content-length content-type etag last-modified allow) headers)
+       ;; If URL hostname was a DNSLink domain,
+       ;; entry doesn't yet have a public-key slot.
+       (public-key (progn (string-match h//public-key-re link)
+                          (match-string 1 link)))
+       (persisted-hyperdrive (gethash public-key h/hyperdrives))
+       (domain (car domains)))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (when (and allow (eq 'unknown writablep))
       (setf (h/writablep hyperdrive) (string-match-p "PUT" allow)))
-    (setf (he/size entry) (when content-length
-                            (ignore-errors
-                              (cl-parse-integer content-length)))
-          (he/type entry) content-type
-          (he/mtime entry) last-modified)
+    (setf (he/size entry) (and content-length
+                               (ignore-errors
+                                 (cl-parse-integer content-length))))
+    (setf (he/type entry) content-type)
+    (setf (he/mtime entry) last-modified)
     (if persisted-hyperdrive
         (progn
           ;; Ensure that entry's hyperdrive is the persisted
@@ -661,7 +685,8 @@ Returns filled ENTRY."
           (setf (he/hyperdrive entry) persisted-hyperdrive)
           (when domain
             ;; The previous call to he/url may not have retrieved
-            ;; the persisted hyperdrive if we had only a domain but no public-key.
+            ;; the persisted hyperdrive if we had only a domain
+            ;; but no public-key.
             (cl-pushnew domain (h/domains (he/hyperdrive entry)) :test #'equal)))
       (setf (h/public-key hyperdrive) public-key))
     (if (and (h//entry-directory-p entry)
@@ -699,7 +724,8 @@ correct ETag header.  Returns the latest version number."
   ;; places where this function is called. Better yet, update
   ;; `h/version-ranges' (and `h/hyperdrives'?) in a
   ;; lower-level function, perhaps a wrapper for `h/api'?
-  (setf (h/latest-version hyperdrive) (string-to-number (map-elt headers 'etag))))
+  (setf (h/latest-version hyperdrive)
+        (string-to-number (map-elt headers 'etag))))
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
@@ -721,10 +747,10 @@ Returns the ranges cons cell for ENTRY."
       (unless (and old-range-end (> old-range-end range-end))
         ;; If there already exists a longer existent range in
         ;; `h/version-ranges', there's nothing to do.
-        (setf (plist-get range :existsp) t
-              (plist-get range :range-end) range-end
-              (map-elt ranges range-start) range
-              (he/version-ranges entry) (cl-sort ranges #'< :key #'car))))))
+        (setf (plist-get range :existsp) t)
+        (setf (plist-get range :range-end) range-end)
+        (setf (map-elt ranges range-start) range)
+        (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car))))))
 
 (defun h/update-nonexistent-version-range (entry)
   "Update the version range for ENTRY which doesn't exist at its version.
@@ -740,28 +766,29 @@ Returns the ranges cons cell for ENTRY."
               (he/version-range entry)
               ;; Don't store ranges for entries which have never existed.
               (not (he/version-ranges entry)))
-    (pcase-let* ((ranges (he/version-ranges entry))
-                 ((cl-struct hyperdrive-entry hyperdrive path version) entry)
-                 (version (or version (h/latest-version hyperdrive)))
-                 (previous-range (he/version-range
-                                   (he/create :hyperdrive hyperdrive :path path :version (1- version))))
-                 (`(,previous-range-start . ,(map (:existsp previous-exists-p))) previous-range)
-                 (next-range (he/version-range
-                               (he/create :hyperdrive hyperdrive :path path :version (1+ version))))
-                 (`(,next-range-start . ,(map (:existsp next-exists-p) (:range-end next-range-end))) next-range)
-                 (range-start (if (and previous-range (null previous-exists-p))
-                                  ;; Extend previous nonexistent range
-                                  previous-range-start
-                                version))
-                 (range-end (if (and next-range (null next-exists-p))
-                                ;; Extend next nonexistent range
-                                next-range-end
-                              version)))
+    (pcase-let*
+        ((ranges (he/version-ranges entry))
+         ((cl-struct hyperdrive-entry hyperdrive path version) entry)
+         (version (or version (h/latest-version hyperdrive)))
+         (previous-range (he/version-range
+                           (he/create :hyperdrive hyperdrive :path path :version (1- version))))
+         (`(,previous-range-start . ,(map (:existsp previous-exists-p))) previous-range)
+         (next-range (he/version-range
+                       (he/create :hyperdrive hyperdrive :path path :version (1+ version))))
+         (`(,next-range-start . ,(map (:existsp next-exists-p) (:range-end next-range-end))) next-range)
+         (range-start (if (and previous-range (null previous-exists-p))
+                          ;; Extend previous nonexistent range
+                          previous-range-start
+                        version))
+         (range-end (if (and next-range (null next-exists-p))
+                        ;; Extend next nonexistent range
+                        next-range-end
+                      version)))
       ;; Delete next range if it's contiguous with current range.
       (when (and next-range (null next-exists-p))
         (setf ranges (map-delete ranges next-range-start)))
-      (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end)
-            (he/version-ranges entry) (cl-sort ranges #'< :key #'car)))))
+      (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end))
+      (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car)))))
 
 (cl-defun h/fill-version-ranges (entry &key (finally #'ignore))
   "Asynchronously fill in versions ranges before ENTRY.
@@ -769,96 +796,98 @@ Once all requests return, call FINALLY with no arguments."
   (declare (indent defun))
   (let* ((outstanding-nonexistent-requests-p)
          (total-requests-limit h/fill-version-ranges-limit)
-         (fill-entry-queue (make-plz-queue :limit h/queue-limit
-                                           :finally (lambda ()
-                                                      (unless outstanding-nonexistent-requests-p
-                                                        (funcall finally)))))
+         (fill-entry-queue (make-plz-queue
+                            :limit h/queue-limit
+                            :finally (lambda ()
+                                       (unless outstanding-nonexistent-requests-p
+                                         (funcall finally)))))
          ;; Flag used in the nonexistent-queue finalizer.
          finishedp)
-    (cl-labels ((fill-existent-at (version)
-                  (let ((prev-range-end (1- (car (he/version-range entry :version version)))))
-                    (if (and (cl-plusp total-requests-limit)
-                             (eq 'unknown (he/exists-p entry :version prev-range-end)))
-                        ;; Recurse backward through history.
-                        (fill-entry-at prev-range-end)
-                      (setf finishedp t))))
-                (fill-nonexistent-at (version)
-                  (let ((nonexistent-queue
-                         (make-plz-queue
-                          :limit h/queue-limit
-                          :finally (lambda ()
-                                     (setf outstanding-nonexistent-requests-p nil)
-                                     (if finishedp
-                                         ;; If the fill-nonexistent-at loop stopped
-                                         ;; prematurely, stop filling and call `finally'.
-                                         (funcall finally)
-                                       (let ((last-requested-version (- version h/queue-limit)))
-                                         (cl-decf total-requests-limit h/queue-limit)
-                                         (pcase-exhaustive (he/exists-p entry :version last-requested-version)
-                                           ('t (fill-existent-at last-requested-version))
-                                           ('nil (fill-nonexistent-at last-requested-version))
-                                           ('unknown
-                                            (h/error "Entry should have been filled at version: %s" last-requested-version))))))))
-                        ;; Make a copy of the version ranges for use in the HEAD request callback.
-                        (copy-entry-version-ranges (copy-sequence (he/version-ranges entry))))
-                    ;; For nonexistent entries, send requests in parallel.
-                    (cl-dotimes (i h/queue-limit)
-                      ;; Send the maximum number of simultaneous requests.
-                      (let ((prev-entry (h/copy-tree entry t)))
-                        (setf (he/version prev-entry) (- version i 1))
-                        (unless (and (cl-plusp (he/version prev-entry))
-                                     (eq 'unknown (he/exists-p prev-entry))
-                                     (> total-requests-limit i))
-                          ;; Stop at the beginning of the history, at a known
-                          ;; existent/nonexistent entry, or at the limit.
-                          (setf finishedp t)
-                          (cl-return))
-                        (h/api 'head (he/url prev-entry)
-                          :queue nonexistent-queue
-                          :as 'response
-                          :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
-                                  (pcase-let* ((range-start (string-to-number etag))
-                                               ((map (:existsp existsp)) (map-elt copy-entry-version-ranges range-start)))
-                                    (when (eq 'unknown existsp)
-                                      ;; Stop if the requested entry has a
-                                      ;; range-start that was already known
-                                      ;; before this batch of parallel requests.
-                                      (setf finishedp t))
-                                    (h/update-existent-version-range prev-entry range-start)))
-                          :else (lambda (err)
-                                  ;; TODO: Better error handling.
-                                  (pcase (plz-response-status (plz-error-response err))
-                                    ;; FIXME: If plz-error is a curl-error, this block will fail.
-                                    (404 (h/update-nonexistent-version-range prev-entry))
-                                    (_ (signal (car err) (cdr err)))))
-                          :noquery t)
-                        (setf outstanding-nonexistent-requests-p t)))))
-                (fill-entry-at (version)
-                  (let ((copy-entry (h/copy-tree entry t)))
-                    (setf (he/version copy-entry) version)
-                    (cl-decf total-requests-limit)
-                    (h/api 'head (he/url copy-entry)
-                      :queue fill-entry-queue
-                      :as 'response
-                      :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
-                              (pcase-let* ((range-start (string-to-number etag))
-                                           ((map (:existsp existsp))
-                                            (map-elt (he/version-ranges copy-entry) range-start)))
-                                (h/update-existent-version-range copy-entry range-start)
-                                (if (eq 't existsp)
-                                    ;; Stop if the requested entry has a
-                                    ;; range-start that was already known
-                                    ;; before this batch of parallel requests.
-                                    (setf finishedp t)
-                                  (fill-existent-at version))))
-                      :else (lambda (err)
-                              (pcase (plz-response-status (plz-error-response err))
-                                ;; FIXME: If plz-error is a curl-error, this block will fail.
-                                (404
-                                 (h/update-nonexistent-version-range copy-entry)
-                                 (fill-nonexistent-at version))
-                                (_ (signal (car err) (cdr err)))))
-                      :noquery t))))
+    (cl-labels
+        ((fill-existent-at (version)
+           (let ((prev-range-end (1- (car (he/version-range entry :version version)))))
+             (if (and (cl-plusp total-requests-limit)
+                      (eq 'unknown (he/exists-p entry :version prev-range-end)))
+                 ;; Recurse backward through history.
+                 (fill-entry-at prev-range-end)
+               (setf finishedp t))))
+         (fill-nonexistent-at (version)
+           (let ((nonexistent-queue
+                  (make-plz-queue
+                   :limit h/queue-limit
+                   :finally (lambda ()
+                              (setf outstanding-nonexistent-requests-p nil)
+                              (if finishedp
+                                  ;; If the fill-nonexistent-at loop stopped
+                                  ;; prematurely, stop filling and call `finally'.
+                                  (funcall finally)
+                                (let ((last-requested-version (- version h/queue-limit)))
+                                  (cl-decf total-requests-limit h/queue-limit)
+                                  (pcase-exhaustive (he/exists-p entry :version last-requested-version)
+                                    ('t (fill-existent-at last-requested-version))
+                                    ('nil (fill-nonexistent-at last-requested-version))
+                                    ('unknown
+                                     (h/error "Entry should have been filled at version: %s" last-requested-version))))))))
+                 ;; Make a copy of the version ranges for use in the HEAD request callback.
+                 (copy-entry-version-ranges (copy-sequence (he/version-ranges entry))))
+             ;; For nonexistent entries, send requests in parallel.
+             (cl-dotimes (i h/queue-limit)
+               ;; Send the maximum number of simultaneous requests.
+               (let ((prev-entry (h/copy-tree entry t)))
+                 (setf (he/version prev-entry) (- version i 1))
+                 (unless (and (cl-plusp (he/version prev-entry))
+                              (eq 'unknown (he/exists-p prev-entry))
+                              (> total-requests-limit i))
+                   ;; Stop at the beginning of the history, at a known
+                   ;; existent/nonexistent entry, or at the limit.
+                   (setf finishedp t)
+                   (cl-return))
+                 (h/api 'head (he/url prev-entry)
+                   :queue nonexistent-queue
+                   :as 'response
+                   :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
+                           (pcase-let* ((range-start (string-to-number etag))
+                                        ((map (:existsp existsp)) (map-elt copy-entry-version-ranges range-start)))
+                             (when (eq 'unknown existsp)
+                               ;; Stop if the requested entry has a
+                               ;; range-start that was already known
+                               ;; before this batch of parallel requests.
+                               (setf finishedp t))
+                             (h/update-existent-version-range prev-entry range-start)))
+                   :else (lambda (err)
+                           ;; TODO: Better error handling.
+                           (pcase (plz-response-status (plz-error-response err))
+                             ;; FIXME: If plz-error is a curl-error, this block will fail.
+                             (404 (h/update-nonexistent-version-range prev-entry))
+                             (_ (signal (car err) (cdr err)))))
+                   :noquery t)
+                 (setf outstanding-nonexistent-requests-p t)))))
+         (fill-entry-at (version)
+           (let ((copy-entry (h/copy-tree entry t)))
+             (setf (he/version copy-entry) version)
+             (cl-decf total-requests-limit)
+             (h/api 'head (he/url copy-entry)
+               :queue fill-entry-queue
+               :as 'response
+               :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
+                       (pcase-let* ((range-start (string-to-number etag))
+                                    ((map (:existsp existsp))
+                                     (map-elt (he/version-ranges copy-entry) range-start)))
+                         (h/update-existent-version-range copy-entry range-start)
+                         (if (eq 't existsp)
+                             ;; Stop if the requested entry has a
+                             ;; range-start that was already known
+                             ;; before this batch of parallel requests.
+                             (setf finishedp t)
+                           (fill-existent-at version))))
+               :else (lambda (err)
+                       (pcase (plz-response-status (plz-error-response err))
+                         ;; FIXME: If plz-error is a curl-error, this block will fail.
+                         (404
+                          (h/update-nonexistent-version-range copy-entry)
+                          (fill-nonexistent-at version))
+                         (_ (signal (car err) (cdr err)))))
+               :noquery t))))
       (fill-entry-at (he/version entry)))))
 
 (defun h/fill-metadata (hyperdrive)
@@ -866,26 +895,27 @@ Once all requests return, call FINALLY with no arguments."
 Sends a synchronous request to get the latest contents of
 HYPERDRIVE's public metadata file."
   (declare (indent defun))
-  (pcase-let* ((entry (he/create
-                       :hyperdrive hyperdrive
-                       :path "/.well-known/host-meta.json"
-                       ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
-                       :version nil))
-               (metadata (condition-case err
-                             (h/api 'get (he/url entry)
-                               :as (lambda ()
-                                     (condition-case err
-                                         (json-read)
-                                       (json-error
-                                        (h/message "Error parsing JSON metadata file: %s"
-                                                   (he/url entry)))
-                                       (_ (signal (car err) (cdr err)))))
-                               :noquery t)
-                           (plz-error
-                            (pcase (plz-response-status (plz-error-response (caddr err)))
-                              ;; FIXME: If plz-error is a curl-error, this block will fail.
-                              (404 nil)
-                              (_ (signal (car err) (cdr err))))))))
+  (pcase-let*
+      ((entry (he/create
+               :hyperdrive hyperdrive
+               :path "/.well-known/host-meta.json"
+               ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
+               :version nil))
+       (metadata (condition-case err
+                     (h/api 'get (he/url entry)
+                       :as (lambda ()
+                             (condition-case err
+                                 (json-read)
+                               (json-error
+                                (h/message "Error parsing JSON metadata file: %s"
+                                           (he/url entry)))
+                               (_ (signal (car err) (cdr err)))))
+                       :noquery t)
+                   (plz-error
+                    (pcase (plz-response-status (plz-error-response (caddr err)))
+                      ;; FIXME: If plz-error is a curl-error, this block will fail.
+                      (404 nil)
+                      (_ (signal (car err) (cdr err))))))))
     (setf (h/metadata hyperdrive) metadata)
     (h/persist hyperdrive)
     hyperdrive))
@@ -938,26 +968,30 @@ Path and target fragment are URI-encoded."
   ;; will be filled in later.
   (pcase-let* (((cl-struct hyperdrive-entry path version etc)
                 entry)
-               (protocol (when with-protocol
-                           "hyper://"))
-               (host (when host-format
-                       ;; FIXME: Update docstring to say that host-format can be nil to omit it.
-                       (h//preferred-format (he/hyperdrive entry)
-                                            host-format h/raw-formats)))
+               (protocol (and with-protocol "hyper://"))
+               (host (and host-format
+                          ;; FIXME: Update docstring to say that host-format can be nil to omit it.
+                          (h//preferred-format (he/hyperdrive entry)
+                                               host-format h/raw-formats)))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
-               (target-part (when (and with-target target)
-                              (concat "#" (url-hexify-string "::")
-                                      (url-hexify-string target))))
-               (path (when with-path
-                       ;; TODO: Consider removing this argument if it's not needed.
-                       (h//url-hexify-string path)))
+               (target-part (and with-target
+                                 target
+                                 (concat "#"
+                                         (url-hexify-string "::")
+                                         (url-hexify-string target))))
+               (path (and with-path
+                          ;; TODO: Consider removing this argument if it's not needed.
+                          (h//url-hexify-string path)))
                (url (concat protocol host version-part path target-part)))
     (if with-help-echo
-        (propertize url
-                    'help-echo (h//format-entry-url
-                                entry :with-protocol t :host-format '(public-key domain)
-                                :with-path with-path :with-help-echo nil :with-target with-target))
+        (propertize url 'help-echo (h//format-entry-url
+                                    entry
+                                    :with-protocol t
+                                    :host-format '(public-key domain)
+                                    :with-path with-path
+                                    :with-help-echo nil
+                                    :with-target with-target))
       url)))
 
 (defun h//format (hyperdrive &optional format formats)
@@ -974,32 +1008,34 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                       (format (alist-get format formats)
                               (propertize value 'face face))
                     "")))
-      (format-spec format
-                   ;; TODO(deprecate-28): Use lambdas in each specifier.
-                   `((?H . ,(and (string-match-p (rx "%"
-                                                     ;; Flags
-                                                     (optional (1+ (or " " "0" "-" "<" ">" "^" "_")))
-                                                     (0+ digit) ;; Width
-                                                     (0+ digit) ;; Precision
-                                                     "H")
-                                                 format)
-                                 ;; HACK: Once using lambdas in this specifier,
-                                 ;; remove the `string-match-p' check.
-                                 (h//preferred-format hyperdrive)))
-                     (?P . ,(fmt 'petname petname 'h/petname))
-                     (?N . ,(fmt 'nickname nickname 'h/nickname))
-                     (?k . ,(fmt 'short-key public-key 'h/public-key))
-                     (?K . ,(fmt 'public-key public-key 'h/public-key))
-                     (?S . ,(fmt 'seed seed 'h/seed))
-                     (?D . ,(if (car domains)
-                                (format (alist-get 'domains formats)
-                                        (string-join
-                                         (mapcar (lambda (domain)
-                                                   (propertize domain
-                                                               'face 'h/domain))
-                                                 domains)
-                                         ","))
-                              "")))))))
+      (format-spec
+       format
+       ;; TODO(deprecate-28): Use lambdas in each specifier.
+       `((?H . ,(and (string-match-p (rx "%"
+                                         ;; Flags
+                                         (optional
+                                          (1+ (or " " "0" "-" "<" ">" "^" "_")))
+                                         (0+ digit) ;; Width
+                                         (0+ digit) ;; Precision
+                                         "H")
+                                     format)
+                     ;; HACK: Once using lambdas in this specifier,
+                     ;; remove the `string-match-p' check.
+                     (h//preferred-format hyperdrive)))
+         (?P . ,(fmt 'petname petname 'h/petname))
+         (?N . ,(fmt 'nickname nickname 'h/nickname))
+         (?k . ,(fmt 'short-key public-key 'h/public-key))
+         (?K . ,(fmt 'public-key public-key 'h/public-key))
+         (?S . ,(fmt 'seed seed 'h/seed))
+         (?D . ,(if (car domains)
+                    (format (alist-get 'domains formats)
+                            (string-join
+                             (mapcar (lambda (domain)
+                                       (propertize domain
+                                                   'face 'h/domain))
+                                     domains)
+                             ","))
+                  "")))))))
 
 (defun h//preferred-format (hyperdrive &optional format formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
@@ -1061,11 +1097,12 @@ case, when PREDICATE, only offer hyperdrives matching it."
     (cl-return-from h/complete-hyperdrive current-hyperdrive))
 
   ;; Otherwise, prompt for drive.
-  (let* ((current-hyperdrive (when h/current-entry
-                               (he/hyperdrive h/current-entry)))
+  (let* ((current-hyperdrive (and h/current-entry
+                                  (he/hyperdrive h/current-entry)))
          (hyperdrives (cl-remove-if-not predicate (hash-table-values h/hyperdrives)))
-         (default (when (and h/current-entry (funcall predicate current-hyperdrive))
-                    (h//format-hyperdrive (he/hyperdrive h/current-entry))))
+         (default (and h/current-entry
+                       (funcall predicate current-hyperdrive)
+                       (h//format-hyperdrive (he/hyperdrive h/current-entry))))
          (prompt (format-prompt "Hyperdrive" default))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (h//format-hyperdrive hyperdrive) hyperdrive))
@@ -1112,22 +1149,25 @@ Otherwise, prompt for a version number."
   (let* ((hyperdrive (or hyperdrive
                          (h/complete-hyperdrive :predicate predicate
                                                 :force-prompt force-prompt-drive)))
-         (default-version (when (and (not latest-version)
-                                     h/current-entry
-                                     (h/equal-p
-                                      hyperdrive (he/hyperdrive h/current-entry)))
-                            (he/version h/current-entry)))
-         (version (unless latest-version
-                    (if read-version
-                        (h/read-version :hyperdrive hyperdrive :initial-input-number default-version)
-                      default-version)))
+         (default-version (and (not latest-version)
+                               h/current-entry
+                               (h/equal-p hyperdrive
+                                          (he/hyperdrive h/current-entry))
+                               (he/version h/current-entry)))
+         (version (cond (latest-version nil)
+                        (read-version
+                         (h/read-version :hyperdrive hyperdrive
+                                         :initial-input-number default-version))
+                        (default-version)))
          (default-path (h//format-path
                         (or default-path
                             (and h/current-entry
                                  (h/equal-p
                                   hyperdrive (he/hyperdrive h/current-entry))
                                  (he/path h/current-entry)))))
-         (path (h/read-path :hyperdrive hyperdrive :version version :default default-path)))
+         (path (h/read-path :hyperdrive hyperdrive
+                            :version version
+                            :default default-path)))
     (he/create :hyperdrive hyperdrive :path path :version version)))
 
 (defvar h//version-history nil
@@ -1144,7 +1184,8 @@ INITIAL-INPUT-NUMBER is converted to a string and passed to
          ;; Don't use read-number since it cannot return nil.
          (version (read-string
                    (format-prompt prompt nil (h//format-hyperdrive hyperdrive))
-                   (when initial-input-number (number-to-string initial-input-number))
+                   (and initial-input-number
+                        (number-to-string initial-input-number))
                    'h//version-history)))
     (unless (string-blank-p version)
       (string-to-number version))))
@@ -1172,9 +1213,10 @@ is passed to `read-string' as its DEFAULT-VALUE argument."
 (cl-defun h/read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
 Prompts with PROMPT.  Defaults to current entry if it exists."
-  (let ((default (when h/current-entry
-                   (he/url h/current-entry))))
-    (string-trim (read-string (format-prompt prompt default) nil 'h//url-history default))))
+  (let ((default (and h/current-entry
+                      (he/url h/current-entry))))
+    (string-trim (read-string (format-prompt prompt default)
+                              nil 'h//url-history default))))
 
 (defvar h//name-history nil
   "Minibuffer history of `hyperdrive-read-name'.")
@@ -1183,7 +1225,8 @@ Prompts with PROMPT.  Defaults to current entry if it exists."
   "Wrapper for `read-string' with common history.
 Prompts with PROMPT and DEFAULT, according to `format-prompt'.
 DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
-  (read-string (format-prompt prompt default) initial-input 'h//name-history default))
+  (read-string (format-prompt prompt default)
+               initial-input 'h//name-history default))
 
 (cl-defun h/put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
@@ -1208,7 +1251,8 @@ With PURGE, delete hash table entry for HYPERDRIVE."
 That is, if the SEED has been used to create a local
 hyperdrive."
   (condition-case err
-      (pcase (h/api 'get (concat "hyper://localhost/?key=" (url-hexify-string seed))
+      (pcase (h/api 'get (format "hyper://localhost/?key=%s"
+                                 (url-hexify-string seed))
                :as 'response :noquery t)
         ((and (pred plz-response-p)
               response
@@ -1247,9 +1291,10 @@ If then, then call THEN with no arguments.  Default handler."
   (h/api 'get (he/url entry)
     :noquery t
     :as (lambda ()
-          (pcase-let* (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
-                       ((map target) etc)
-                       (response-buffer (current-buffer)))
+          (pcase-let*
+              (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
+               ((map target) etc)
+               (response-buffer (current-buffer)))
             (with-current-buffer (h//get-buffer-create entry)
               ;; TODO: Don't reload if we're jumping to a link on the
               ;; same page (but ensure that reverting still works).
@@ -1259,8 +1304,9 @@ If then, then call THEN with no arguments.  Default handler."
                   (with-silent-modifications
                     (erase-buffer)
                     (insert-buffer-substring response-buffer))
-                  (setf buffer-undo-list nil
-                        buffer-read-only (or (not (h/writablep hyperdrive)) version))
+                  (setf buffer-undo-list nil)
+                  (setf buffer-read-only
+                        (or (not (h/writablep hyperdrive)) version))
                   (set-buffer-modified-p nil)
                   (set-visited-file-modtime (current-time))))
               (when target
@@ -1278,8 +1324,7 @@ If then, then call THEN with no arguments.  Default handler."
   ;; TODO: Is there any reason to not pass THEN through?
   "Stream ENTRY."
   (h/message "Streaming %s..." (h//format-entry-url entry))
-  (pcase-let ((`(,command . ,args)
-               (split-string h/stream-player-command)))
+  (pcase-let ((`(,command . ,args) (split-string h/stream-player-command)))
     (apply #'start-process "hyperdrive-stream-player"
            nil command (cl-substitute (h//httpify-url
                                        (he/url entry))
@@ -1311,7 +1356,7 @@ with `hyperdrive-handler-default'."
           ;; for remapped keybindings for, e.g., `h/up'.
           (setq-local h/current-entry entry)
           (h/mode)
-          (setq buffer (current-buffer)))
+          (setf buffer (current-buffer)))
         (set-buffer buffer)
         (when then
           (funcall then)))
@@ -1481,21 +1526,21 @@ Affected by option `hyperdrive-reuse-buffers', which see."
   (let* ((buffer-name (h//format-entry
                        entry h/buffer-name-format))
          (buffer
-          (or (when (eq 'any-version h/reuse-buffers)
-                (cl-loop for buffer in (buffer-list)
-                         when (h//buffer-visiting-entry-p buffer entry)
-                         return buffer))
+          (or (and (eq 'any-version h/reuse-buffers)
+                   (cl-loop for buffer in (buffer-list)
+                            when (h//buffer-visiting-entry-p buffer entry)
+                            return buffer))
               (get-buffer-create buffer-name))))
     (with-current-buffer buffer
       (rename-buffer buffer-name)
       ;; NOTE: We do not erase the buffer because, e.g. the directory
       ;; handler needs to record point before it erases the buffer.
-      (if (h//entry-directory-p entry)
-          (h/dir-mode)
-        (when h/honor-auto-mode-alist
-          ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
-          (let ((buffer-file-name (he/name entry)))
-            (set-auto-mode))))
+      (cond ((h//entry-directory-p entry)
+             (h/dir-mode))
+            (h/honor-auto-mode-alist
+             ;; Inspired by https://emacs.stackexchange.com/a/2555/39549
+             (let ((buffer-file-name (he/name entry)))
+               (set-auto-mode))))
       (h/mode)
       (setq-local h/current-entry entry)
       (current-buffer))))
@@ -1568,15 +1613,19 @@ function is a convenience wrapper used by `describe-package-1'."
       (let (result)
 	(while (consp tree)
 	  (let ((newcar (car tree)))
-	    (if (or (consp (car tree)) (and vecp (or (vectorp (car tree)) (recordp (car tree)))))
-		(setq newcar (h/copy-tree (car tree) vecp)))
+	    (if (or (consp (car tree))
+                    (and vecp (or (vectorp (car tree))
+                                  (recordp (car tree)))))
+		(setf newcar (h/copy-tree (car tree) vecp)))
 	    (push newcar result))
-	  (setq tree (cdr tree)))
+	  (setf tree (cdr tree)))
 	(nconc (nreverse result)
-               (if (and vecp (or (vectorp tree) (recordp tree))) (h/copy-tree tree vecp) tree)))
+               (if (and vecp (or (vectorp tree) (recordp tree)))
+                   (h/copy-tree tree vecp)
+                 tree)))
     (if (and vecp (or (vectorp tree) (recordp tree)))
-	(let ((i (length (setq tree (copy-sequence tree)))))
-	  (while (>= (setq i (1- i)) 0)
+	(let ((i (length (setf tree (copy-sequence tree)))))
+	  (while (>= (setf i (1- i)) 0)
 	    (aset tree i (h/copy-tree (aref tree i) vecp)))
 	  tree)
       tree)))
@@ -1623,7 +1672,7 @@ Compares only public key, version, and path."
                           (hyperdrive (cl-struct hyperdrive (public-key a-key))))
                a)
               ((cl-struct hyperdrive-entry (path b-path) (version b-version)
-                          (hyperdrive (cl-struct hyperdrive (public-key b-key))) )
+                          (hyperdrive (cl-struct hyperdrive (public-key b-key))))
                b))
     (and (eq a-version b-version)
          (equal a-path b-path)

@@ -67,36 +67,38 @@ This function is intended to diff files, not directories."
          new-response
          (queue (make-plz-queue
                  :limit h/queue-limit
-                 :finally (lambda ()
-                            (unless (or old-response new-response)
-                              (h/error "Files non-existent"))
-                            (let ((old-buffer (generate-new-buffer
-                                               (h//format-entry
-                                                old-entry h/buffer-name-format)))
-                                  (new-buffer (generate-new-buffer
-                                               (h//format-entry
-                                                new-entry h/buffer-name-format)))
-                                  ;; TODO: Improve diff buffer name.
-                                  (diff-buffer (get-buffer-create "*hyperdrive-diff*")))
-                              (when old-response
-                                (with-current-buffer old-buffer
-                                  (insert (plz-response-body old-response))))
-                              (when new-response
-                                (with-current-buffer new-buffer
-                                  (insert (plz-response-body new-response))))
-                              (unwind-protect
-                                  (condition-case err
-                                      (progn
-                                        (diff-no-select old-buffer new-buffer nil t diff-buffer)
-                                        (with-current-buffer diff-buffer
-                                          (setf h/diff-entries (cons old-entry new-entry))
-                                          (h/diff-mode)
-                                          (when then
-                                            (funcall then))))
-                                    (error (kill-buffer diff-buffer)
-                                           (signal (car err) (cdr err))))
-                                (kill-buffer old-buffer)
-                                (kill-buffer new-buffer)))))))
+                 :finally
+                 (lambda ()
+                   (unless (or old-response new-response)
+                     (h/error "Files non-existent"))
+                   (let ((old-buffer (generate-new-buffer
+                                      (h//format-entry
+                                       old-entry h/buffer-name-format)))
+                         (new-buffer (generate-new-buffer
+                                      (h//format-entry
+                                       new-entry h/buffer-name-format)))
+                         ;; TODO: Improve diff buffer name.
+                         (diff-buffer (get-buffer-create "*hyperdrive-diff*")))
+                     (when old-response
+                       (with-current-buffer old-buffer
+                         (insert (plz-response-body old-response))))
+                     (when new-response
+                       (with-current-buffer new-buffer
+                         (insert (plz-response-body new-response))))
+                     (unwind-protect
+                         (condition-case err
+                             (progn
+                               (diff-no-select old-buffer
+                                               new-buffer nil t diff-buffer)
+                               (with-current-buffer diff-buffer
+                                 (setf h/diff-entries (cons old-entry new-entry))
+                                 (h/diff-mode)
+                                 (when then
+                                   (funcall then))))
+                           (error (kill-buffer diff-buffer)
+                                  (signal (car err) (cdr err))))
+                       (kill-buffer old-buffer)
+                       (kill-buffer new-buffer)))))))
     (h/api 'get (he/url old-entry)
       :queue queue :as 'response :else #'ignore
       :then (lambda (response)
@@ -118,9 +120,7 @@ This function is intended to diff files, not directories."
       (goto-char (point-min))
       (delete-line)
       (when (h/diff-empty-diff-p (current-buffer))
-        (insert (format "No difference between entries:
-%s
-%s"
+        (insert (format "No difference between entries:\n%s\n%s"
                         (h//format-entry (car h/diff-entries))
                         (h//format-entry (cdr h/diff-entries)))))
       (goto-char (point-max))

@@ -128,13 +128,14 @@ Point is indicated by ★."
 (cl-defun h/test-org-insert-link-string (scenario &key public-key path)
   "Return link for SCENARIO inserted into entry with PUBLIC-KEY and PATH."
   (declare (indent defun))
-  (pcase-let (((map :url :desc) (alist-get scenario h/test-org-store-link-scenarios)))
+  (pcase-let (((map :url :desc)
+               (alist-get scenario h/test-org-store-link-scenarios)))
     (with-temp-buffer
       ;; TODO: Initialize this buffer only once for this file's tests.
       (org-mode)
       (h/mode)
-      (setq-local h/current-entry (h/test-org-entry-create
-                                   :public-key public-key :path path))
+      (setq-local h/current-entry
+                  (h/test-org-entry-create :public-key public-key :path path))
       (org-insert-link nil url desc)
       (buffer-string))))
 

@@ -51,15 +51,14 @@ If THEN, call it in the directory buffer with no arguments."
                                    :version version))
                                 entry-names))
                (parent-entry (h/parent directory-entry))
-               (header
-                (progn
-                  ;; Fill metadata first to get the current nickname.
-                  ;; TODO: Consider filling metadata earlier, outside
-                  ;; of this function (e.g. so it will be available if
-                  ;; the user loads a non-directory file directly).
-                  (h/fill-metadata hyperdrive)
-                  (h/dir-column-headers
-                   (h//format-entry directory-entry))))
+               (header (progn
+                         ;; Fill metadata first to get the current nickname.
+                         ;; TODO: Consider filling metadata earlier, outside
+                         ;; of this function (e.g. so it will be available if
+                         ;; the user loads a non-directory file directly).
+                         (h/fill-metadata hyperdrive)
+                         (h/dir-column-headers
+                          (h//format-entry directory-entry))))
                (num-entries (length entries)) (num-filled 0)
 	       ;; (debug-start-time (current-time))
                (metadata-queue) (ewoc) (prev-entry) (prev-point))
@@ -70,8 +69,9 @@ If THEN, call it in the directory buffer with no arguments."
                 (update-footer (num-filled num-of)
                   (when (zerop (mod num-filled 5))
                     (ewoc-set-hf ewoc header
-                                 (propertize (format "Loading (%s/%s)..." num-filled num-of)
-					     'face 'font-lock-comment-face)))))
+                                 (propertize
+                                  (format "Loading (%s/%s)..." num-filled num-of)
+				  'face 'font-lock-comment-face)))))
       (setf directory-entry (h//fill directory-entry headers))
       (when parent-entry
         (setf (alist-get 'display-name (he/etc parent-entry))  "../")
@@ -79,33 +79,35 @@ If THEN, call it in the directory buffer with no arguments."
       (with-current-buffer (h//get-buffer-create directory-entry)
         (with-silent-modifications
           (setf ewoc (or h/ewoc ; Bind this for lambdas.
-                         (setf h/ewoc (ewoc-create #'h/dir-pp)))
-                metadata-queue (make-plz-queue
-				;; Experimentation seems to show that a
-				;; queue size of about 20 performs best.
-                                :limit h/queue-limit
-                                :finally (lambda ()
-                                           (with-current-buffer (ewoc-buffer ewoc)
-                                             (with-silent-modifications
-                                               ;; `with-silent-modifications' increases performance,
-                                               ;; but we still need `set-buffer-modified-p' below.
-                                               (ewoc-set-hf ewoc header "")
-                                               (setf entries (h/sort-entries entries))
-                                               (dolist (entry entries)
-                                                 (ewoc-enter-last ewoc entry))
-                                               (or (when prev-entry
-                                                     (goto-entry prev-entry ewoc))
-                                                   (goto-char prev-point)))
-                                             (set-buffer-modified-p nil))
-                                           ;; TODO: Remove this and the commented out `debug-start-time'
-                                           ;; binding when we're done experimenting.
-                                           ;; (message "Elapsed: %s"
-                                           ;;          (float-time (time-subtract (current-time)
-                                           ;;                                     debug-start-time)))
-                                           ))
-                prev-entry (when-let ((node (ewoc-locate h/ewoc)))
-                             (ewoc-data node))
-                prev-point (point))
+                         (setf h/ewoc (ewoc-create #'h/dir-pp))))
+          (setf metadata-queue
+                (make-plz-queue
+		 ;; Experimentation seems to show that a
+		 ;; queue size of about 20 performs best.
+                 :limit h/queue-limit
+                 :finally (lambda ()
+                            (with-current-buffer (ewoc-buffer ewoc)
+                              (with-silent-modifications
+                                ;; `with-silent-modifications' increases performance,
+                                ;; but we still need `set-buffer-modified-p' below.
+                                (ewoc-set-hf ewoc header "")
+                                (setf entries (h/sort-entries entries))
+                                (dolist (entry entries)
+                                  (ewoc-enter-last ewoc entry))
+                                (or (when prev-entry
+                                      (goto-entry prev-entry ewoc))
+                                    (goto-char prev-point)))
+                              (set-buffer-modified-p nil))
+                            ;; TODO: Remove this and the commented out `debug-start-time'
+                            ;; binding when we're done experimenting.
+                            ;; (message "Elapsed: %s"
+                            ;;          (float-time (time-subtract
+                            ;;                       (current-time)
+                            ;;                       debug-start-time)))
+                            )))
+          (setf prev-entry (and-let* ((node (ewoc-locate h/ewoc)))
+                             (ewoc-data node)))
+          (setf prev-point (point))
           (ewoc-filter h/ewoc #'ignore)
           (update-footer num-filled num-entries)
           (dolist (entry entries)
@@ -156,12 +158,15 @@ Columns are suffixed with up/down arrows according to
 
 (defun h/dir-complete-sort ()
   "Return a value for `hyperdrive-directory-sort' selected with completion."
-  (pcase-let* ((read-answer-short t)
-               (choices (mapcar (lambda (field)
-                                  (let ((desc (symbol-name (car field))))
-                                    (list desc (aref desc 0) (format "sort by %s" desc))))
-                                h/dir-sort-fields))
-               (column (intern (read-answer "Sort by column: " choices))))
+  (pcase-let*
+      ((read-answer-short t)
+       (choices (mapcar (lambda (field)
+                          (let ((desc (symbol-name (car field))))
+                            (list desc
+                                  (aref desc 0)
+                                  (format "sort by %s" desc))))
+                        h/dir-sort-fields))
+       (column (intern (read-answer "Sort by column: " choices))))
     (h/dir-toggle-sort-direction column h/directory-sort)))
 
 (defun h/dir-toggle-sort-direction (column sort)
@@ -184,14 +189,14 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun h/dir--format-entry (entry)
   "Return ENTRY formatted as a string."
-  (pcase-let* (((cl-struct hyperdrive-entry size mtime) entry)
-               (size (when size
-                       (file-size-human-readable size)))
-               (directoryp (h//entry-directory-p entry))
-               (face (if directoryp 'h/directory 'default))
-               (timestamp (if mtime
-                              (format-time-string h/timestamp-format mtime)
-                            (propertize " " 'display '(space :width h/timestamp-width)))))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry size mtime) entry)
+       (size (and size (file-size-human-readable size)))
+       (directoryp (h//entry-directory-p entry))
+       (face (if directoryp 'h/directory 'default))
+       (timestamp (if mtime
+                      (format-time-string h/timestamp-format mtime)
+                    (propertize " " 'display '(space :width h/timestamp-width)))))
     (format "%6s  %s  %s"
             (propertize (or size "")
                         'face 'h/size)
@@ -255,9 +260,9 @@ With point on header, returns directory entry."
   "Major mode for Hyperdrive directory buffers."
   :group 'hyperdrive
   :interactive nil
-  (setq-local imenu-create-index-function #'h/dir--imenu-create-index-function
-              imenu-auto-rescan t
-              imenu-space-replacement " "))
+  (setq-local imenu-create-index-function #'h/dir--imenu-create-index-function)
+  (setq-local imenu-auto-rescan t)
+  (setq-local imenu-space-replacement " "))
 
 ;;;; Commands
 
@@ -322,7 +327,8 @@ Interactively, opens file or directory at point in
 (defun h/create-directory-no-op ()
   "Signal error that directory creation is not possible in hyperdrive."
   (interactive)
-  (h/user-error "Cannot create empty directory; to create a new file, use `hyperdrive-find-file' or \\[hyperdrive-find-file]"))
+  (h/user-error "Cannot create empty directory; to create a new file, use\
+ `hyperdrive-find-file' or \\[hyperdrive-find-file]"))
 
 (defun h/dir-sort (directory-sort)
   "Sort current `hyperdrive-dir' buffer by DIRECTORY-SORT.
@@ -351,8 +357,8 @@ For use as `imenu-create-index-function'."
   (cl-loop for node in (h/ewoc-collect-nodes h/ewoc #'identity)
            collect (let* ((location (goto-char (ewoc-location node)))
                           (entry (ewoc-data node))
-                          (face (when (h//entry-directory-p entry)
-                                  'h/directory)))
+                          (face (and (h//entry-directory-p entry)
+                                     'h/directory)))
                      (cons (propertize (he/name entry)
                                        'face face)
                            location))))

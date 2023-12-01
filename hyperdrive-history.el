@@ -50,41 +50,42 @@ To be used as the pretty-printer for `ewoc-create'."
 RANGE-ENTRY is a cons cell whose car is a range according to
 `hyperdrive-version-ranges', except that \\+`:existsp' may have the
 value \\+`unknown', and whose cdr is a hyperdrive entry."
-  (pcase-let* ((`(,range . ,entry) range-entry)
-               (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) range)
-               ((cl-struct hyperdrive-entry size mtime) entry)
-               (formatted-range (if (eq range-start range-end)
-                                    (format "%d" range-start)
-                                  (format "%d-%d" range-start range-end)))
-               (exists-marker (format "%7s" (pcase-exhaustive existsp
-                                              ('t "Yes")
-                                              ('nil "No")
-                                              ('unknown "Unknown"))))
-               (size (when size
-                       (file-size-human-readable size)))
-               (timestamp (if mtime
-                              (format-time-string h/timestamp-format mtime)
-                            (propertize " " 'display '(space :width h/timestamp-width)))))
+  (pcase-let*
+      ((`(,range . ,entry) range-entry)
+       (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) range)
+       ((cl-struct hyperdrive-entry size mtime) entry)
+       (formatted-range (if (eq range-start range-end)
+                            (format "%d" range-start)
+                          (format "%d-%d" range-start range-end)))
+       (exists-marker (format "%7s" (pcase-exhaustive existsp
+                                      ('t "Yes")
+                                      ('nil "No")
+                                      ('unknown "Unknown"))))
+       (size (and size (file-size-human-readable size)))
+       (timestamp (if mtime
+                      (format-time-string h/timestamp-format mtime)
+                    (propertize " " 'display '(space :width h/timestamp-width)))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    (format "%7s  %19s  %6s  %s"
-            (propertize exists-marker
-                        'face (pcase-exhaustive existsp
-                                ('t 'h/history-existent)
-                                ('nil 'h/history-nonexistent)
-                                ('unknown 'h/history-unknown)))
-            (propertize formatted-range
-                        'face 'h/history-range
-                        'mouse-face 'highlight
-                        'help-echo (format (pcase-exhaustive existsp
-                                             ('t "Open version %s")
-                                             ('nil "Nonexistent at version %s")
-                                             ('unknown "Load history at version %s"))
-                                           range-start))
-            (propertize (or size "")
-                        'face 'h/size)
-            (propertize (or timestamp "")
-                        'face 'h/timestamp))))
+    (format
+     "%7s  %19s  %6s  %s"
+     (propertize exists-marker
+                 'face (pcase-exhaustive existsp
+                         ('t 'h/history-existent)
+                         ('nil 'h/history-nonexistent)
+                         ('unknown 'h/history-unknown)))
+     (propertize formatted-range
+                 'face 'h/history-range
+                 'mouse-face 'highlight
+                 'help-echo (format (pcase-exhaustive existsp
+                                      ('t "Open version %s")
+                                      ('nil "Nonexistent at version %s")
+                                      ('unknown "Load history at version %s"))
+                                    range-start))
+     (propertize (or size "")
+                 'face 'h/size)
+     (propertize (or timestamp "")
+                 'face 'h/timestamp))))
 
 (defun h/history-range-entry-at-point ()
   "Return range-entry at version at point.
@@ -165,29 +166,30 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   ;; TODO: Highlight range for ENTRY
   (when (h//entry-directory-p entry)
     (h/user-error "Directory history not implemented"))
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (range-entries
-                (mapcar (lambda (range)
-                          ;; Some entries may not exist at `range-start',
-                          ;; as in the version before it was created, see:
-                          ;; (info "(hyperdrive)Versioning")
-                          (cons range
-                                (he/create
-                                 :hyperdrive hyperdrive
-                                 :path path
-                                 ;; Set version to range-start
-                                 :version (car range))))
-                        ;; Display in reverse chronological order
-                        (nreverse (he/version-ranges-no-gaps entry))))
-               (main-header (h//format-entry entry "[%H] %p"))
-               (header (concat main-header "\n"
-                               (format "%7s  %19s  %6s  %s"
-                                       (propertize "Exists" 'face 'h/column-header)
-                                       (propertize "Drive Version Range" 'face 'h/column-header)
-                                       (propertize "Size" 'face 'h/column-header)
-                                       (format (format "%%%ds" h/timestamp-width)
-                                               (propertize "Last Modified" 'face 'h/column-header)))))
-               (queue) (ewoc))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive path) entry)
+       (range-entries
+        (mapcar (lambda (range)
+                  ;; Some entries may not exist at `range-start',
+                  ;; as in the version before it was created, see:
+                  ;; (info "(hyperdrive)Versioning")
+                  (cons range
+                        (he/create
+                         :hyperdrive hyperdrive
+                         :path path
+                         ;; Set version to range-start
+                         :version (car range))))
+                ;; Display in reverse chronological order
+                (nreverse (he/version-ranges-no-gaps entry))))
+       (main-header (h//format-entry entry "[%H] %p"))
+       (header (concat main-header "\n"
+                       (format "%7s  %19s  %6s  %s"
+                               (propertize "Exists" 'face 'h/column-header)
+                               (propertize "Drive Version Range" 'face 'h/column-header)
+                               (propertize "Size" 'face 'h/column-header)
+                               (format (format "%%%ds" h/timestamp-width)
+                                       (propertize "Last Modified" 'face 'h/column-header)))))
+       (queue) (ewoc))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
                                   (h//format-entry entry "[%H] %p")))
@@ -203,24 +205,26 @@ prefix argument \\[universal-argument], prompt for ENTRY."
               range-entries))
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
       (display-buffer (current-buffer) h/history-display-buffer-action)
-      (setf queue (make-plz-queue :limit h/queue-limit
-                                  :finally (lambda ()
-                                             ;; NOTE: Ensure that the buffer's window is selected,
-                                             ;; if it has one.  (Workaround a possible bug in EWOC.)
-                                             (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                                                 (with-selected-window buffer-window
-                                                   ;; TODO: Use `ewoc-invalidate' on individual entries
-                                                   ;; (maybe later, as performance comes to matter more).
-                                                   (with-silent-modifications (ewoc-refresh h/ewoc))
-                                                   (goto-char (point-min)))
-                                               (with-current-buffer (ewoc-buffer ewoc)
-                                                 (with-silent-modifications (ewoc-refresh h/ewoc))
-                                                 (goto-char (point-min))))
-                                             ;; TODO: Accept then argument?
-                                             ;; (with-current-buffer (ewoc-buffer ewoc)
-                                             ;;   (when then
-                                             ;;     (funcall then)))
-                                             )))
+      (setf queue
+            (make-plz-queue
+             :limit h/queue-limit
+             :finally (lambda ()
+                        ;; NOTE: Ensure that the buffer's window is selected,
+                        ;; if it has one.  (Workaround a possible bug in EWOC.)
+                        (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                            (with-selected-window buffer-window
+                              ;; TODO: Use `ewoc-invalidate' on individual entries
+                              ;; (maybe later, as performance comes to matter more).
+                              (with-silent-modifications (ewoc-refresh h/ewoc))
+                              (goto-char (point-min)))
+                          (with-current-buffer (ewoc-buffer ewoc)
+                            (with-silent-modifications (ewoc-refresh h/ewoc))
+                            (goto-char (point-min))))
+                        ;; TODO: Accept then argument?
+                        ;; (with-current-buffer (ewoc-buffer ewoc)
+                        ;;   (when then
+                        ;;     (funcall then)))
+                        )))
       (mapc (lambda (range-entry)
               (when (eq t (h/range-entry-exists-p range-entry))
                 ;; TODO: Handle failures?
@@ -264,7 +268,8 @@ Interactively, diff range entry at point with previous entry."
 
 (cl-defun h/history-find-file
     (range-entry &key (then (lambda ()
-                              (pop-to-buffer (current-buffer) '(display-buffer-same-window)))))
+                              (pop-to-buffer (current-buffer)
+                                             '(display-buffer-same-window)))))
   "Visit hyperdrive entry in RANGE-ENTRY at point.
 Then call THEN.  When entry does not exist, does nothing and
 returns nil.  When entry is not known to exist, attempts to load
@@ -294,8 +299,7 @@ Interactively, visit entry at point in `hyperdrive-history'
 buffer."
   (interactive (list (h/history-range-entry-at-point)) h/history-mode)
   (h/history-find-file
-   range-entry :then (lambda ()
-                       (pop-to-buffer (current-buffer) t))))
+   range-entry :then (lambda () (pop-to-buffer (current-buffer) t))))
 
 (declare-function h/view-file "hyperdrive")
 (defun h/history-view-file (range-entry)
@@ -338,18 +342,20 @@ buffer."
 (defun h/history-download-file (range-entry filename)
   "Download entry in RANGE-ENTRY at point to FILENAME on disk."
   (interactive
-   (pcase-let* ((range-entry (h/history-range-entry-at-point))
-                ((cl-struct hyperdrive-entry name) (cdr range-entry))
-                (read-filename (when (eq t (h/range-entry-exists-p range-entry))
-                                 ;; Only prompt for filename when entry exists
+   (pcase-let*
+       ((range-entry (h/history-range-entry-at-point))
+        ((cl-struct hyperdrive-entry name) (cdr range-entry))
+        (read-filename (and (eq t (h/range-entry-exists-p range-entry))
+                            ;; Only prompt for filename when entry exists
 
-                                 ;; FIXME: This function is only intended for
-                                 ;; interactive use. Is it acceptable to have a nil
-                                 ;; argument list and perform the user interactions
-                                 ;; in the body? This change would deduplicate the
-                                 ;; check for the existence of the entry.
-                                 (read-file-name "Filename: "
-                                                 (expand-file-name name h/download-directory)))))
+                            ;; FIXME: This function is only intended for
+                            ;; interactive use. Is it acceptable to have a nil
+                            ;; argument list and perform the user interactions
+                            ;; in the body? This change would deduplicate the
+                            ;; check for the existence of the entry.
+                            (read-file-name
+                             "Filename: "
+                             (expand-file-name name h/download-directory)))))
      (list range-entry read-filename)) h/history-mode)
   (pcase-exhaustive (h/range-entry-exists-p range-entry)
     ('t

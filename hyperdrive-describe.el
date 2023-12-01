@@ -49,8 +49,8 @@ Universal prefix argument \\[universal-argument] forces
   (interactive (list (h/complete-hyperdrive :force-prompt current-prefix-arg)))
   ;; TODO: Do we want to asynchronously fill the hyperdrive's latest version?
   (h/fill-latest-version hyperdrive)
-  (with-current-buffer (get-buffer-create
-                        (format "*Hyperdrive: %s*" (h//format hyperdrive "%k")))
+  (with-current-buffer
+      (get-buffer-create (h//format hyperdrive "*Hyperdrive: %k"))
     (with-silent-modifications
       (h/describe-mode)
       (setq-local h/describe-current-hyperdrive hyperdrive)
@@ -78,7 +78,7 @@ Universal prefix argument \\[universal-argument] forces
                        (org-table-align)
                        (buffer-string))
                    "[none]")))))
-    (setq buffer-read-only t)
+    (setf buffer-read-only t)
     (pop-to-buffer (current-buffer))))
 
 ;;;; Mode
