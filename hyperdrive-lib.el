@@ -1431,7 +1431,7 @@ is the symbol `subprocess'."
                  (const :tag "Autodetect" nil))
   :group 'hyperdrive)
 
-(defcustom h/gateway-command "hyper-gateway --writable true --silent true run"
+(defcustom h/gateway-command "hyper-gateway run --writable true --silent true"
   ;; TODO: File Emacs bug report because the customization formatter handles the
   ;; "symbol `subprocess'" part differently than `describe-variable' does.
   "Command used to run the hyper-gateway.
