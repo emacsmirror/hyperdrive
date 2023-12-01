@@ -1659,15 +1659,12 @@ When PATH is nil or blank, return \"/\"."
   "Remove all local variables, overlays, and text properties in BUFFER.
 When BUFFER is nil, act on current buffer."
   (with-current-buffer (or buffer (current-buffer))
-    (if (>= emacs-major-version 29)
-        ;; FIXME: This causes a native compilation error on Emacs 28 because the
-        ;; call to `kill-all-local-variables' with the argument gets compiled
-        ;; even though it wouldn't get called at runtime.
-        (with-suppressed-warnings ((callargs kill-all-local-variables))
-          (kill-all-local-variables t))
-      ;; NOTE: On Emacs <29, this function will not kill permanent-local
-      ;; variables.  We're not sure if that will be a problem.
-      (kill-all-local-variables))
+    ;; TODO(deprecate-28): Call `kill-all-local-variables' with argument to also kill permanent-local variables.
+    ;; We're not sure if this is absolutely necessary, but it seems like a good
+    ;; idea.  But on Emacs 28 that function does not take an argument, and
+    ;; trying to do so conditionally causes a native-compilation error, so we
+    ;; omit it for now.
+    (kill-all-local-variables)
     (let ((inhibit-read-only t))
       (delete-all-overlays)
       (set-text-properties (point-min) (point-max) nil))))
