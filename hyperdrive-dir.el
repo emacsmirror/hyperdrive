@@ -51,15 +51,14 @@ If THEN, call it in the directory buffer with no arguments."
                                    :version version))
                                 entry-names))
                (parent-entry (h/parent directory-entry))
-               (header
-                (progn
-                  ;; Fill metadata first to get the current nickname.
-                  ;; TODO: Consider filling metadata earlier, outside
-                  ;; of this function (e.g. so it will be available if
-                  ;; the user loads a non-directory file directly).
-                  (h/fill-metadata hyperdrive)
-                  (h/dir-column-headers
-                   (h//format-entry directory-entry))))
+               (header (progn
+                         ;; Fill metadata first to get the current nickname.
+                         ;; TODO: Consider filling metadata earlier, outside
+                         ;; of this function (e.g. so it will be available if
+                         ;; the user loads a non-directory file directly).
+                         (h/fill-metadata hyperdrive)
+                         (h/dir-column-headers
+                          (h//format-entry directory-entry))))
                (num-entries (length entries)) (num-filled 0)
 	       ;; (debug-start-time (current-time))
                (metadata-queue) (ewoc) (prev-entry) (prev-point))

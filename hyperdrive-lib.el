@@ -458,8 +458,7 @@ Sends a request to the gateway for hyperdrive's latest version."
 
   ;; ENTRY's version is not nil.
   (let ((next-entry (h/copy-tree entry t))
-        (latest-version (h/fill-latest-version
-                         (he/hyperdrive entry))))
+        (latest-version (h/fill-latest-version (he/hyperdrive entry))))
 
     ;; ENTRY version is the latest version: return ENTRY with nil version.
     (when (eq latest-version (he/version entry))
@@ -1320,8 +1319,7 @@ If then, then call THEN with no arguments.  Default handler."
   ;; TODO: Is there any reason to not pass THEN through?
   "Stream ENTRY."
   (h/message "Streaming %s..." (h//format-entry-url entry))
-  (pcase-let ((`(,command . ,args)
-               (split-string h/stream-player-command)))
+  (pcase-let ((`(,command . ,args) (split-string h/stream-player-command)))
     (apply #'start-process "hyperdrive-stream-player"
            nil command (cl-substitute (h//httpify-url
                                        (he/url entry))

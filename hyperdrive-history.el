@@ -300,8 +300,7 @@ Interactively, visit entry at point in `hyperdrive-history'
 buffer."
   (interactive (list (h/history-range-entry-at-point)) h/history-mode)
   (h/history-find-file
-   range-entry :then (lambda ()
-                       (pop-to-buffer (current-buffer) t))))
+   range-entry :then (lambda () (pop-to-buffer (current-buffer) t))))
 
 (declare-function h/view-file "hyperdrive")
 (defun h/history-view-file (range-entry)

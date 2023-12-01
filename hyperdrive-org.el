@@ -188,10 +188,8 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
 
     (let ((adaptive-target-p
            ;; See the `adaptive' option in `org-link-file-path-type'.
-           (string-prefix-p
-            (file-name-directory
-             (he/path h/current-entry))
-            (he/path entry))))
+           (string-prefix-p (file-name-directory (he/path h/current-entry))
+                            (he/path entry))))
       (h//ensure-dot-slash-prefix-path
        (concat
         (pcase org-link-file-path-type
