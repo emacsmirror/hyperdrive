@@ -434,7 +434,7 @@
 
 (defun h/menu--scope ()
   "Return the current entry as understood by `hyperdrive-menu'."
-  (oref (or transient--prefix transient-current-prefix) scope))
+  (oref (transient-prefix-object) scope))
 
 ;;;; Footer
 
