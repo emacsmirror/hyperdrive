@@ -370,16 +370,23 @@ When the final range's range-end is less than ENTRY's
 hyperdrive's latest-version slot, the final gap is filled."
   (let ((ranges '())
         (previous-range-end 0))
-    (pcase-dolist (`(,range-start . ,(map (:range-end range-end) (:existsp existsp))) (he/version-ranges entry))
+    (pcase-dolist (`(,range-start . ,(map (:range-end range-end)
+                                          (:existsp existsp)))
+                   (he/version-ranges entry))
       ;; If he/version-ranges returns nil, this whole loop will be skipped.
       (let ((next-range-start (1+ previous-range-end)))
         (when (> range-start next-range-start)
           ;; Insert an "unknown" gap range
-          (push `(,next-range-start . (:range-end ,(1- range-start) :existsp unknown)) ranges))
-        (push `(,range-start . (:range-end ,range-end :existsp ,existsp)) ranges)
+          (push `(,next-range-start . ( :range-end ,(1- range-start)
+                                        :existsp unknown))
+                ranges))
+        (push `(,range-start . ( :range-end ,range-end
+                                 :existsp ,existsp))
+              ranges)
         (setf previous-range-end range-end)))
     (pcase-let* ((final-known-range (car ranges))
-                 (`(,_range-start . ,(map (:range-end final-known-range-end))) final-known-range)
+                 (`(,_range-start . ,(map (:range-end final-known-range-end)))
+                  final-known-range)
                  (latest-version (h/latest-version (he/hyperdrive entry))))
       (unless final-known-range-end
         (setf final-known-range-end 0))
