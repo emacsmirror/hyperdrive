@@ -1522,6 +1522,7 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                       (format (alist-get format formats) value)
                     "")))
       (propertize
+       ;; TODO(deprecate-28): Use lambdas in each specifier.
        (format-spec (or format h/default-entry-format)
                     `((?n . ,(fmt 'name name))
                       (?p . ,(fmt 'path path))
