@@ -163,7 +163,9 @@ Columns are suffixed with up/down arrows according to
       ((read-answer-short t)
        (choices (mapcar (lambda (field)
                           (let ((desc (symbol-name (car field))))
-                            (list desc (aref desc 0) (format "sort by %s" desc))))
+                            (list desc
+                                  (aref desc 0)
+                                  (format "sort by %s" desc))))
                         h/dir-sort-fields))
        (column (intern (read-answer "Sort by column: " choices))))
     (h/dir-toggle-sort-direction column h/directory-sort)))
