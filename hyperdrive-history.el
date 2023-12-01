@@ -206,24 +206,26 @@ prefix argument \\[universal-argument], prompt for ENTRY."
               range-entries))
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
       (display-buffer (current-buffer) h/history-display-buffer-action)
-      (setf queue (make-plz-queue :limit h/queue-limit
-                                  :finally (lambda ()
-                                             ;; NOTE: Ensure that the buffer's window is selected,
-                                             ;; if it has one.  (Workaround a possible bug in EWOC.)
-                                             (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                                                 (with-selected-window buffer-window
-                                                   ;; TODO: Use `ewoc-invalidate' on individual entries
-                                                   ;; (maybe later, as performance comes to matter more).
-                                                   (with-silent-modifications (ewoc-refresh h/ewoc))
-                                                   (goto-char (point-min)))
-                                               (with-current-buffer (ewoc-buffer ewoc)
-                                                 (with-silent-modifications (ewoc-refresh h/ewoc))
-                                                 (goto-char (point-min))))
-                                             ;; TODO: Accept then argument?
-                                             ;; (with-current-buffer (ewoc-buffer ewoc)
-                                             ;;   (when then
-                                             ;;     (funcall then)))
-                                             )))
+      (setf queue
+            (make-plz-queue
+             :limit h/queue-limit
+             :finally (lambda ()
+                        ;; NOTE: Ensure that the buffer's window is selected,
+                        ;; if it has one.  (Workaround a possible bug in EWOC.)
+                        (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+                            (with-selected-window buffer-window
+                              ;; TODO: Use `ewoc-invalidate' on individual entries
+                              ;; (maybe later, as performance comes to matter more).
+                              (with-silent-modifications (ewoc-refresh h/ewoc))
+                              (goto-char (point-min)))
+                          (with-current-buffer (ewoc-buffer ewoc)
+                            (with-silent-modifications (ewoc-refresh h/ewoc))
+                            (goto-char (point-min))))
+                        ;; TODO: Accept then argument?
+                        ;; (with-current-buffer (ewoc-buffer ewoc)
+                        ;;   (when then
+                        ;;     (funcall then)))
+                        )))
       (mapc (lambda (range-entry)
               (when (eq t (h/range-entry-exists-p range-entry))
                 ;; TODO: Handle failures?
