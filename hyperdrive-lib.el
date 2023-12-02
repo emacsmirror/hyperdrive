@@ -612,8 +612,7 @@ the given `plz-queue'"
                     ;; (e.g. if the user reverted too quickly).
                     nil)
                    (_
-                    (h/message
-                     (format "hyperdrive-fill: error: %S" plz-error)))))))
+                    (h/message "hyperdrive-fill: error: %S" plz-error))))))
   (pcase then
     ('sync (condition-case err
                (h//fill entry
