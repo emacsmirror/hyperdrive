@@ -10,26 +10,26 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 - Redesigned ~*hyperdrive-mirror*~ buffer using ~taxy-magit-section~
 - ~hyperdrive-open-at-version~: Open the current file or directory at a
-  specific version.
+  specific version
 - Support following relative filename links in hyperdrive
   ~markdown-mode~ buffers
 - ~find-file-at-point~ integration
 - Added ~hyperdrive~ completion category which affects the
-  ~hyperdrive-complete-hyperdrive~ ~completing-read~ interface.
+  ~hyperdrive-complete-hyperdrive~ ~completing-read~ interface
 - Embark integration: Run ~embark-act~ while interactively selecting a
-  hyperdrive to choose an alternative action.
+  hyperdrive to choose an alternative action
 - Add customization options to control how hyperdrives, files, and
-  folders are displayed: ~hyperdrive-entry-format~ customization group.
-- Add customization option ~hyperdrive-gateway-process-type~ to start ~hyper-gateway~
-  as an Emacs subprocess or systemd service
+  folders are displayed: ~hyperdrive-entry-format~ customization group
+- Add customization option ~hyperdrive-gateway-process-type~ to start
+  ~hyper-gateway~ as an Emacs subprocess or systemd service
 
 ** Changed
 
 - Simplified ~hyperdrive-menu~ by moving commands which required
-  selecting a hyperdrive into ~hyperdrive-menu-hyperdrive~.
+  selecting a hyperdrive into ~hyperdrive-menu-hyperdrive~
 - Refactored the ~*hyperdrive-mirror*~ buffer to use [[https://github.com/alphapapa/taxy.el/tree/package/taxy-magit-section][taxy-magit-section]]
 - Removed ~rx~ form option in ~hyperdrive-mirror~
-- The "Hyperdrive" menu bar now shows up at the top-level.
+- The "Hyperdrive" menu bar now shows up at the top-level
 - Use positional arguments in ~hyperdrive-mirror~ and ~hyperdrive-upload-files~
 - Require at least Emacs 28.1+
 
@@ -37,7 +37,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 - Fixed single click on directory column header
 - Fixed a bug which caused ~hyperdrive-menu~ to fail when the current
-  entry's next version was ~unknown~.
+  entry's next version was ~unknown~
 - Uploaded files now retain the timestamp of the local file
 
 ** Internal
@@ -48,18 +48,18 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 ** Added
 
-- ~hyperdrive-menu~ is the new control panel. Bind it to a convenient key!
+- ~hyperdrive-menu~ is the new control panel.  Bind it to a convenient key!
 - ~hyperdrive-menu-bar-mode~ enables the "Hyperdrive" menu bar inside "Tools"
 - ~org-insert-link~ automatically inserts relative links to hyperdrive
   files within the same drive
 - ~hyperdrive-find-file-other-window~: Press ~o~ in the directory or
   history buffer to open a new window
 - ~yank-media~: On Emacs 29 or later, run ~M-x yank-media~ in a
-  hyperdrive directory to upload the image in the clipboard.
-- ~info-look~: Press ~i~ in ~*help*~ to open the user manual.
+  hyperdrive directory to upload the image in the clipboard
+- ~info-look~: Press ~i~ in ~*help*~ to open the user manual
 - ~save-some-buffers~ integration
 - ~view-mode~: Press ~v~ in the directory or history buffer to
-  open a file in ~view-mode~.
+  open a file in ~view-mode~
 - Org-mode link completion
 - directory view sorting by column (with clickable headers)
 
