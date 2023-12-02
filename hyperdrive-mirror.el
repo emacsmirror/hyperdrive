@@ -112,6 +112,9 @@ STATUS is one of:
   "Upload each file to its corresponding URL in FILES-AND-URLs.
 FILES-AND-URLS is structured like `hyperdrive-mirror-files-and-urls'.
 After uploading files, open PARENT-ENTRY."
+  ;; TODO: Sort by size, smallest to largest, before uploading, so that if the
+  ;; process is interrupted, the most number of files will have been uploaded,
+  ;; and only a few will remain.
   (let* ((count 0)
          (upload-files-and-urls (cl-remove-if-not
                                  (pcase-lambda ((cl-struct hyperdrive-mirror-item status))
