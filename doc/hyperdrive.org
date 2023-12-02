@@ -685,7 +685,7 @@ You can use the following snippet to recursively upload all of the
 files from your local filesystem's ~~/blog/~ directory into the ~/blog/~
 directory of a hyperdrive you previously created with petname ~"foo"~:
 
-#+begin_src elisp
+#+begin_src emacs-lisp
   (hyperdrive-mirror
    "~/blog/"
    (hyperdrive-by-slot 'petname "foo")
@@ -699,7 +699,7 @@ Now let's say that you want to upload only those files tagged as
 following snippet includes a ~FILTER~ key whose value is a regular
 expression against which every expanded filename will be tested.
 
-#+begin_src elisp
+#+begin_src emacs-lisp
   (hyperdrive-mirror
    "~/blog/"
    (hyperdrive-by-slot 'petname "foo")
@@ -715,7 +715,7 @@ public and private files exist in the same directory.
 as its only argument. For example, the following snippet will mirror
 only those files in ~~/blog/~ which are smaller than 5MB:
 
-#+begin_src elisp
+#+begin_src emacs-lisp
   (hyperdrive-mirror
    "~/blog/"
    (hyperdrive-by-slot 'petname "foo")
@@ -1193,7 +1193,7 @@ to the relevant section in the ~hyperdrive.el~ manual.
 If you run into issues, please first try resetting the values of
 ~hyperdrive-hyperdrives~ and ~hyperdrive-version-ranges~:
 
-#+begin_src elisp
+#+begin_src emacs-lisp
   (progn
     (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
     (persist-save 'hyperdrive-hyperdrives)
