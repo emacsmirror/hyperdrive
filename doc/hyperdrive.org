@@ -371,6 +371,9 @@ keys]]) that uniquely identifies that hyperdrive.
 
   Create a new hyperdrive from a seed string.
 
+When you create a new drive, your chosen seed is used as its petname
+(see [[*Petnames]]) by default.
+
 ** Write to a hyperdrive
 #+vindex: save-some-buffers-default-predicate
 
@@ -546,6 +549,26 @@ means, see [[*Naming]].
   Display the description of the hyperdrive containing the current
   file or directory.  To describe a different hyperdrive, use the
   universal prefix argument: ~C-u M-x hyperdrive-describe-hyperdrive~.
+
+** Name a hyperdrive
+
+~hyperdrive.el~ supports different ways to identify hyperdrives (see
+[[*Naming]]).  The following commands can be used to name hyperdrives:
+
+- Command: hyperdrive-set-petname ::
+
+  Set the petname (see [[*Petnames]]) of the hyperdrive for the current
+  hyperdrive file or directory.  You can't use the same petname for
+  multiple hyperdrives.  To set the petname of a different hyperdrive,
+  use the universal prefix argument: ~C-u M-x hyperdrive-set-petname~.
+
+- Command: hyperdrive-set-nickname ::
+
+  Set the nickname (see [[*Nicknames]]) of the hyperdrive for the current
+  hyperdrive file or directory.  You can only set the nickname for a
+  hyperdrive which you previously created.  To set the nickname of a
+  different hyperdrive, use the universal prefix argument like this:
+  ~C-u M-x hyperdrive-set-nickname~.
 
 ** Bookmark a hyperdrive
 #+findex: bookmark-set
@@ -954,7 +977,6 @@ Each drive may also have one or both of the following attributes:
 
 *** Public keys
 #+cindex: Public keys
-#+findex: hyperdrive-new
 
 Public keys are globally unique identifiers for hyperdrives.  They
 make up the first part of a ~hyper://~ URL.  Public keys are
@@ -965,7 +987,6 @@ public key.
 
 *** Nicknames
 #+cindex: Nicknames
-#+findex: hyperdrive-set-nickname
 
 Nicknames are public, memorable names which you can give to your own
 hyperdrives to make them easier for others to recognize.  Other users
@@ -973,19 +994,13 @@ can see your nicknames but cannot change them.
 
 Nicknames are stored in each hyperdrive inside
 ~/.well-known/host-meta.json~ under the ~name~ key, as specified in
-[[https://www.rfc-editor.org/rfc/rfc6415#section-6.1][RFC6415]].  You can update a hyperdrive's nickname with
-~hyperdrive-set-nickname~.
+[[https://www.rfc-editor.org/rfc/rfc6415#section-6.1][RFC6415]].
 
 *** Petnames
 #+cindex: Petnames
-#+findex: hyperdrive-set-petname
 
 Petnames are locally unique hyperdrive identifiers. You can give a
 petname to any hyperdrive you load, whether you created it or not.
-
-When creating a new drive, your chosen seed (see [[*Seeds]]) is used as its
-petname by default. Petnames can be changed with
-~hyperdrive-set-petname~, but drives cannot share a petname.
 
 *** Seeds
 #+cindex: Seeds

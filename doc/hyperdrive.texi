@@ -90,6 +90,7 @@ Usage
 * Delete a hyperdrive file::
 * View the hyperdrive version history::
 * Describe a hyperdrive::
+* Name a hyperdrive::
 * Bookmark a hyperdrive::
 * Stream audio and video::
 * Download hyperdrive files::
@@ -351,6 +352,7 @@ On the network it still may be there.
 * Delete a hyperdrive file::
 * View the hyperdrive version history::
 * Describe a hyperdrive::
+* Name a hyperdrive::
 * Bookmark a hyperdrive::
 * Stream audio and video::
 * Download hyperdrive files::
@@ -620,6 +622,9 @@ master key (see @ref{Master key}) to produce a public key (see @ref{Public keys}
 Create a new hyperdrive from a seed string.
 @end deffn
 
+When you create a new drive, your chosen seed is used as its petname
+(see @ref{Petnames}) by default.
+
 @node Write to a hyperdrive
 @section Write to a hyperdrive
 
@@ -830,6 +835,27 @@ means, see @ref{Naming}.
 Display the description of the hyperdrive containing the current
 file or directory.  To describe a different hyperdrive, use the
 universal prefix argument: @code{C-u M-x hyperdrive-describe-hyperdrive}.
+@end deffn
+
+@node Name a hyperdrive
+@section Name a hyperdrive
+
+@code{hyperdrive.el} supports different ways to identify hyperdrives (see
+@ref{Naming}).  The following commands can be used to name hyperdrives:
+
+@deffn Command hyperdrive-set-petname
+Set the petname (see @ref{Petnames}) of the hyperdrive for the current
+hyperdrive file or directory.  You can't use the same petname for
+multiple hyperdrives.  To set the petname of a different hyperdrive,
+use the universal prefix argument: @code{C-u M-x hyperdrive-set-petname}.
+@end deffn
+
+@deffn Command hyperdrive-set-nickname
+Set the nickname (see @ref{Nicknames}) of the hyperdrive for the current
+hyperdrive file or directory.  You can only set the nickname for a
+hyperdrive which you previously created.  To set the nickname of a
+different hyperdrive, use the universal prefix argument like this:
+@code{C-u M-x hyperdrive-set-nickname}.
 @end deffn
 
 @node Bookmark a hyperdrive
@@ -1350,7 +1376,6 @@ public, globally unique, human-memorable
 @subsection Public keys
 
 @cindex Public keys
-@findex hyperdrive-new
 
 Public keys are globally unique identifiers for hyperdrives.  They
 make up the first part of a @code{hyper://} URL@.  Public keys are
@@ -1363,7 +1388,6 @@ public key.
 @subsection Nicknames
 
 @cindex Nicknames
-@findex hyperdrive-set-nickname
 
 Nicknames are public, memorable names which you can give to your own
 hyperdrives to make them easier for others to recognize.  Other users
@@ -1371,21 +1395,15 @@ can see your nicknames but cannot change them.
 
 Nicknames are stored in each hyperdrive inside
 @code{/.well-known/host-meta.json} under the @code{name} key, as specified in
-@uref{https://www.rfc-editor.org/rfc/rfc6415#section-6.1, RFC6415}.  You can update a hyperdrive's nickname with
-@code{hyperdrive-set-nickname}.
+@uref{https://www.rfc-editor.org/rfc/rfc6415#section-6.1, RFC6415}.
 
 @node Petnames
 @subsection Petnames
 
 @cindex Petnames
-@findex hyperdrive-set-petname
 
 Petnames are locally unique hyperdrive identifiers. You can give a
 petname to any hyperdrive you load, whether you created it or not.
-
-When creating a new drive, your chosen seed (see @ref{Seeds}) is used as its
-petname by default. Petnames can be changed with
-@code{hyperdrive-set-petname}, but drives cannot share a petname.
 
 @node Seeds
 @subsection Seeds
