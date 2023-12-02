@@ -375,7 +375,7 @@
      (list filename entry)))
   (h/upload-file filename entry))
 
-(transient-define-suffix h/menu-upload-files (files hyperdrive target-directory)
+(transient-define-suffix h/menu-upload-files (files hyperdrive target-dir)
   (interactive
    (let ((drive (h/menu--scope)))
      (list
@@ -385,7 +385,7 @@
        :hyperdrive drive
        :prompt "Target directory in `%s'"
        :default "/"))))
-  (h/upload-files files hyperdrive target-directory))
+  (h/upload-files files hyperdrive target-dir))
 
 (transient-define-suffix h/menu-describe-hyperdrive ()
   :description "Describe"
