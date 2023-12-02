@@ -188,7 +188,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                 (propertize "Drive Version Range" 'face 'h/column-header)
                 (propertize "Size" 'face 'h/column-header)
                 (string-pad (propertize "Last Modified" 'face 'h/column-header)
-                            nil t)))
+                            h/timestamp-width nil t)))
        (queue) (ewoc))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
