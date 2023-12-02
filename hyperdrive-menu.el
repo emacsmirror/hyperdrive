@@ -35,7 +35,7 @@
 (require 'hyperdrive)
 (require 'hyperdrive-vars)
 (require 'hyperdrive-lib)
-(require 'h/mirror)
+(require 'hyperdrive-mirror)
 
 ;;;; Declarations
 
