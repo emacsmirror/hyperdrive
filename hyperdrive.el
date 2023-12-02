@@ -662,7 +662,7 @@ After successful upload, call THEN.  When QUEUE, use it."
            while (not (string-blank-p file))
            collect file))
 
-(cl-defun h/upload-files (files hyperdrive &key (target-directory "/"))
+(defun h/upload-files (files hyperdrive target-directory)
   "Upload FILES to TARGET-DIRECTORY in HYPERDRIVE.
 
 Universal prefix argument \\[universal-argument] forces
@@ -673,7 +673,7 @@ Universal prefix argument \\[universal-argument] forces
                                              :force-prompt current-prefix-arg))
           ;; TODO: Consider offering target dirs in hyperdrive with completion.
           (target-dir (h/read-path :hyperdrive hyperdrive :prompt "Target directory in `%s'" :default "/")))
-     (list files hyperdrive :target-directory target-dir)))
+     (list files hyperdrive target-dir)))
   (cl-assert (cl-notany #'file-directory-p files))
   (cl-assert (cl-every #'file-readable-p files))
   (setf files (delete-dups files))
@@ -869,8 +869,7 @@ The return value of this function is the retrieval buffer."
                                                                                    :hyperdrive ,drive
                                                                                    :prompt "Target directory in `%s'"
                                                                                    :default "/")))
-                                                                 (h/upload-files files ,drive
-                                                                                 :target-directory target-dir)))
+                                                                 (h/upload-files files ,drive target-dir)))
                                                             :active `(h/writablep ,drive)
                                                             :help "Upload files to hyperdrive")
                                                     (vector "Mirror" #'h/mirror
@@ -974,8 +973,7 @@ The return value of this function is the retrieval buffer."
                              :hyperdrive drive
                              :prompt "Target directory in `%s'"
                              :default "/")))
-           (h/upload-files files drive
-                           :target-directory target-dir)))
+           (h/upload-files files drive target-dir)))
        :active (h/writablep (he/hyperdrive h/current-entry))
        :help "Upload files to hyperdrive"]
       ["Mirror" h/mirror
