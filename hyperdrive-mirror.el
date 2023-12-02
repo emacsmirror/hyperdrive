@@ -397,7 +397,7 @@ Sets `hyperdrive-mirror-visibility-cache' to the value of
   :group 'hyperdrive
   :interactive nil
   ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29) (or maybe taxy-magit-section)
-  (setf revert-buffer-function #'h/mirror-revert-buffer))
+  (setq-local revert-buffer-function #'h/mirror-revert-buffer))
 
 ;;;; Footer
 
