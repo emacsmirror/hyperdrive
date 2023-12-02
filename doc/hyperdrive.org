@@ -635,8 +635,7 @@ upload), run ~hyperdrive-mirror-do-upload~ (bound to ~C-c C-c~ by default)
 in the ~*hyperdrive-mirror*~ buffer which opens.
 
 #+begin_src elisp
-(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
-                   :target-dir "/blog/")
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/")
 #+end_src
 
 To upload the same files without confirming, add ~:no-confirm
@@ -658,8 +657,7 @@ regular expression against which every expanded filename inside will
 be tested.
 
 #+begin_src elisp
-(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
-                   :target-dir "/blog/"
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/"
                    :filter ".*_public.*")
 #+end_src
 
@@ -672,8 +670,7 @@ as its only argument. For example, the following snippet will mirror
 only those files in ~~/blog/~ which are smaller than 5MB:
 
 #+begin_src elisp
-(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo")
-                   :target-dir "/blog/"
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/"
                    :filter (lambda (file) (> (* 5 1024 1024)
                                               (file-attribute-size (file-attributes file)))))
 #+end_src

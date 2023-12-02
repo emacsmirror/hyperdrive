@@ -146,7 +146,7 @@ Runs `hyperdrive-mirror' again with the same query."
 
 ;;;###autoload
 (cl-defun hyperdrive-mirror
-    (source hyperdrive &key target-dir (filter #'always) no-confirm)
+    (source hyperdrive target-dir &key (filter #'always) no-confirm)
   "Mirror SOURCE to TARGET-DIR in HYPERDRIVE.
 
 Only mirror paths within SOURCE for which FILTER returns
@@ -176,9 +176,9 @@ filter and set NO-CONFIRM to t."
      (list source hyperdrive
            ;; TODO: Get path from any visible hyperdrive-dir buffer and
            ;; auto-fill (or add as "future history") in target-dir prompt.
-           :target-dir (h/read-path :hyperdrive hyperdrive
-                                    :prompt "Target directory in `%s'"
-                                    :default "/")
+           (h/read-path :hyperdrive hyperdrive
+                        :prompt "Target directory in `%s'"
+                        :default "/")
            :no-confirm (equal '(16) current-prefix-arg)
            :filter (if current-prefix-arg
                        (h/mirror-read-filter)
@@ -212,8 +212,7 @@ filter and set NO-CONFIRM to t."
                                                num-filled num-of)
                                        'face 'font-lock-comment-face)))))))
             (h/mirror-mode)
-            (setq-local h/mirror-query `( ,source ,hyperdrive
-                                          :target-dir ,target-dir
+            (setq-local h/mirror-query `( ,source ,hyperdrive ,target-dir
                                           :filter ,filter))
             (setq-local h/mirror-parent-entry parent-entry)
             ;; TODO: Add command to clear plz queue.

@@ -276,7 +276,7 @@
   (interactive)
   (h/mirror (or h/mirror-source default-directory)
             (h/menu--scope)
-            :target-dir h/mirror-target
+            h/mirror-target
             :filter h/mirror-filter
             :no-confirm (not h/mirror-confirm)))
 
