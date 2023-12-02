@@ -1284,7 +1284,6 @@ to write files to a hyperdrive.
 @section Naming
 
 @cindex Naming
-@vindex hyperdrive-formats
 
 Inspired by Marc Stiegler's @uref{http://www.skyhunter.com/marcs/petnames/IntroPetNames.html, An Introduction to Petname Systems},
 @code{hyperdrive.el} names drives in a three different ways:
