@@ -116,7 +116,10 @@ View the hyperdrive version history
 Upload files from your filesystem
 
 * Mirror a whole directory::
-* Mirror files by tag or other attributes::
+
+Non-interactive use
+
+* Non-interactive use example @code{hyperdrive-mirror}::
 
 Miscellaneous features
 
@@ -906,70 +909,49 @@ your clipboard from an external program with @code{M-x yank-media}.
 
 @menu
 * Mirror a whole directory::
-* Mirror files by tag or other attributes::
 @end menu
 
 @node Mirror a whole directory
 @subsection Mirror a whole directory
 
-@findex hyperdrive-mirror
+For uploading more than a few files, you can use @code{hyperdrive-mirror}.
+
+@deffn Command hyperdrive-mirror
+Upload a directory, mirroring its subdirectory structure in your
+hyperdrive.  This command prompts for a source directory on your
+local filesystem from which to upload files as well as a hyperdrive
+and target directory inside of it where the files will end up.
+
+The source and target directories will be compared, and only the
+files which are ``new locally'' (they don't already exist on the
+drive) or ``newer locally'' (they have been locally modified since a
+previous upload) will be uploaded.  Files which are the ``same'' (they
+have the same timestamp as in the drive) or are ``older locally''
+(they have been modified on the drive more recently than on the
+filesystem) will not be uploaded.
+
+With a universal prefix argument (@code{C-u M-x hyperdrive-mirror}), it
+additionally prompts for a filter argument to programmatically
+determine which files will be considered for upload.  With two
+universal prefix arguments (@code{C-u C-u M-x hyperdrive-mirror}), matching
+files will be uploaded without the confirmation step.
+@end deffn
+
+As a confirmation step, @code{hyperdrive-mirror} displays each file to be
+uploaded alongside the URL in the hyperdrive where it will end up.
+The following keybindings are available in @code{hyperdrive-mirror-mode}:
+
+@table @asis
+@item @kbd{C-c C-c} (@code{hyperdrive-mirror-do-upload})
+@kindex C-c C-c
 @findex hyperdrive-mirror-do-upload
+Upload all of the files in the ``To Upload'' section.
 
-@code{hyperdrive-mirror} uploads a directory, mirroring its subdirectory
-structure in your hyperdrive. It is an interactive command, but the
-following example shows its non-interactive use.
-
-Let's say you have some files on your filesystem in the @code{~/blog/}
-directory, and you want to upload them all into a hyperdrive you
-already created with the petname ``foo''. The following snippet will
-show you the list of files which will be uploaded as well as the @code{hyper}
-URL at which they will be available after upload. To upload the files
-which are ``locally new'' (they don't already exist on the drive) or
-``locally newer'' (they have been locally modified since a previous
-upload), run @code{hyperdrive-mirror-do-upload} (bound to @code{C-c C-c} by default)
-in the @code{*hyperdrive-mirror*} buffer which opens.
-
-@lisp
-(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/")
-@end lisp
-
-To upload the same files without confirming, add @code{:no-confirm
-t}.  Interactively, use two universal prefix arguments @code{C-u C-u}.
-
-@node Mirror files by tag or other attributes
-@subsection Mirror files by tag or other attributes
-
-@code{hyperdrive-mirror} can accept a @code{FILTER} argument, which you can
-use to upload only certain files.  Interactively, one universal prefix
-argument @code{C-u} make this command prompt you for @code{FILTER}.
-
-Let's say that you have some files on your filesystem in the @code{~/blog/}
-directory, but you only want to upload those files which have been
-tagged as ``public'' using Protesilaos Stavrou's @uref{https://protesilaos.com/emacs/denote, Denote} file-naming
-scheme.
-
-The following snippet includes a @code{FILTER} key whose value is a
-regular expression against which every expanded filename inside will
-be tested.
-
-@lisp
-(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/"
-                   :filter ".*_public.*")
-@end lisp
-
-Alternatively, you could select files by tag with Karl Voit's
-@uref{https://github.com/novoid/filetags/, filetags}. Either way allows for a ``non-splitting'' approach where
-public and private files exist in the same directory.
-
-@code{FILTER} may also be a function, which receives the expanded filename
-as its only argument. For example, the following snippet will mirror
-only those files in @code{~/blog/} which are smaller than 5MB:
-
-@lisp
-(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/"
-                   :filter (lambda (file) (> (* 5 1024 1024)
-                                              (file-attribute-size (file-attributes file)))))
-@end lisp
+@item @kbd{@key{TAB}} (@code{magit-section-toggle})
+@kindex TAB
+@findex magit-section-toggle
+Fold or unfold the section at point.
+@end table
 
 @node Purge a hyperdrive
 @section Purge a hyperdrive
@@ -999,7 +981,47 @@ This function accepts a hyperdrive seed, petname, or public key, and
 returns the hyperdrive @code{struct}.
 @end defun
 
-For example usage, see @ref{Mirror a whole directory} and @ref{Mirror files by tag or other attributes}.
+@menu
+* Non-interactive use example @code{hyperdrive-mirror}::
+@end menu
+
+@node Non-interactive use example @code{hyperdrive-mirror}
+@subsection Non-interactive use example: @code{hyperdrive-mirror}
+
+You can use the following snippet to recursively upload all of the
+files from your local filesystem's @code{~/blog/} directory into the @code{/blog/}
+directory of a hyperdrive you previously created with petname @code{"foo"}:
+
+@lisp
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/")
+@end lisp
+
+To upload the same files without confirmation, add @code{:no-confirm t}.
+
+Now let's say that you want to upload only those files tagged as
+``public'' using Protesilaos Stavrou's @uref{https://protesilaos.com/emacs/denote, Denote} file-naming scheme.  The
+following snippet includes a @code{FILTER} key whose value is a regular
+expression against which every expanded filename will be tested.
+
+@lisp
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/"
+                   :filter "_public")
+@end lisp
+
+Alternatively, you could select files by tag with Karl Voit's
+@uref{https://github.com/novoid/filetags/, filetags}. Either way allows for a ``non-splitting'' approach where
+public and private files exist in the same directory.
+
+@code{FILTER} may also be a function, which receives the expanded filename
+as its only argument. For example, the following snippet will mirror
+only those files in @code{~/blog/} which are smaller than 5MB:
+
+@lisp
+(hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/"
+                   :filter (lambda (file) (> (* 5 1024 1024)
+                                              (file-attribute-size
+                                               (file-attributes file)))))
+@end lisp
 
 @node Miscellaneous features
 @section Miscellaneous features
