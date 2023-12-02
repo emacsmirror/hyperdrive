@@ -393,7 +393,7 @@ hyperdrive's latest-version slot, the final gap is filled."
       (when (< final-known-range-end latest-version)
         ;; Insert possible final gap between latest known range
         ;; and hyperdrive's latest-version
-        (push `(,(1+ final-known-range-end) . (:range-end ,latest-version , :existsp unknown)) ranges)))
+        (push `(,(1+ final-known-range-end) . (:range-end ,latest-version :existsp unknown)) ranges)))
     (nreverse ranges)))
 
 (cl-defun he/previous (entry &key cache-only)
