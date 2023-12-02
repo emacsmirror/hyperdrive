@@ -1071,7 +1071,8 @@ customize-group RET hyperdrive RET~:
 
 - User Option: hyperdrive-hyper-gateway-port ::
 
-  Port on which to run the hyper-gateway server.  Defaults to ~4973~.
+  ~hyperdrive.el~ will send HTTP requests to ~hyper-gateway~ on this port.
+  Defaults to ~4973~.
 
 - User Option: hyperdrive-persist-location ::
 

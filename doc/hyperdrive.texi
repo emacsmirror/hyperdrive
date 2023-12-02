@@ -1478,7 +1478,8 @@ You can customize the following variables settings by running @code{M-x
 customize-group RET hyperdrive RET}:
 
 @defopt hyperdrive-hyper-gateway-port
-Port on which to run the hyper-gateway server.  Defaults to @code{4973}.
+@code{hyperdrive.el} will send HTTP requests to @code{hyper-gateway} on this port.
+Defaults to @code{4973}.
 @end defopt
 
 @defopt hyperdrive-persist-location
