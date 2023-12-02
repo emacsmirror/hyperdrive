@@ -662,8 +662,8 @@ After successful upload, call THEN.  When QUEUE, use it."
            while (not (string-blank-p file))
            collect file))
 
-(defun h/upload-files (files hyperdrive target-directory)
-  "Upload FILES to TARGET-DIRECTORY in HYPERDRIVE.
+(defun h/upload-files (files hyperdrive target-dir)
+  "Upload FILES to TARGET-DIR in HYPERDRIVE.
 
 Universal prefix argument \\[universal-argument] forces
 `hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
@@ -681,16 +681,16 @@ Universal prefix argument \\[universal-argument] forces
     (unless (= 1 (cl-count (file-name-nondirectory file) files
                            :test #'equal :key #'file-name-nondirectory))
       (h/user-error "Can't upload multiple files with same name: %S" (file-name-nondirectory file))))
-  (setf target-directory (h//format-path target-directory :directoryp t))
+  (setf target-dir (h//format-path target-dir :directoryp t))
   (let ((queue (make-plz-queue
                 :limit h/queue-limit
                 :finally (lambda ()
                            ;; FIXME: Offer more informative message in case of errors?
                            (h/open (he/create :hyperdrive hyperdrive
-                                              :path target-directory))
+                                              :path target-dir))
                            (h/message "Uploaded %s files." (length files))))))
     (dolist (file files)
-      (let* ((path (file-name-concat target-directory (file-name-nondirectory file)))
+      (let* ((path (file-name-concat target-dir (file-name-nondirectory file)))
              (entry (he/create :hyperdrive hyperdrive :path path)))
         ;; TODO: Handle failures? Retry?
         (h/upload-file file entry :queue queue :then #'ignore)))
