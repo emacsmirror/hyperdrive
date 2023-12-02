@@ -686,7 +686,10 @@ files from your local filesystem's ~~/blog/~ directory into the ~/blog/~
 directory of a hyperdrive you previously created with petname ~"foo"~:
 
 #+begin_src elisp
-  (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/")
+  (hyperdrive-mirror
+   "~/blog/"
+   (hyperdrive-by-slot 'petname "foo")
+   "/blog/")
 #+end_src
 
 To upload the same files without confirmation, add ~:no-confirm t~.
@@ -697,8 +700,11 @@ following snippet includes a ~FILTER~ key whose value is a regular
 expression against which every expanded filename will be tested.
 
 #+begin_src elisp
-  (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/"
-                     :filter "_public")
+  (hyperdrive-mirror
+   "~/blog/"
+   (hyperdrive-by-slot 'petname "foo")
+   "/blog/"
+   :filter "_public")
 #+end_src
 
 Alternatively, you could select files by tag with Karl Voit's
@@ -710,10 +716,13 @@ as its only argument. For example, the following snippet will mirror
 only those files in ~~/blog/~ which are smaller than 5MB:
 
 #+begin_src elisp
-  (hyperdrive-mirror "~/blog/" (hyperdrive-by-slot 'petname "foo") "/blog/"
-                     :filter (lambda (file) (> (* 5 1024 1024)
-                                                (file-attribute-size
-                                                 (file-attributes file)))))
+  (hyperdrive-mirror
+   "~/blog/"
+   (hyperdrive-by-slot 'petname "foo")
+   "/blog/"
+   :filter (lambda (file) (> (* 5 1024 1024)
+                        (file-attribute-size
+                         (file-attributes file)))))
 #+end_src
 
 ** Miscellaneous features
