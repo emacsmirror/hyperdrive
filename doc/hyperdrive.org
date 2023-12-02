@@ -723,6 +723,19 @@ Embark users can run ~embark-act~ in the ~hyperdrive-complete-hyperdrive~
 ~completing-read~ interface in order to select an alternative action for
 the selected hyperdrive.
 
+*** Webjump integration
+#+findex: webjump
+#+vindex: webjump-sites
+
+You can jump to a ~hyper://~ link with ~M-x webjump~ after adding it to
+~webjump-sites~:
+
+#+begin_src emacs-lisp
+  (add-to-list
+   'webjump-sites
+   '("USHIN Hyperdrive" . "hyper://aaj45d88g4eenu76rpmwzjiabsof1w8u6fufq6oogyhjk1ubygxy/"))
+#+end_src
+
 * Concepts
 
 ** Hyperdrive

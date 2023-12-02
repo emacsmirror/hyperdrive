@@ -122,6 +122,7 @@ Miscellaneous features
 
 * Find file at point integration::
 * Embark integration::
+* Webjump integration::
 
 Concepts
 
@@ -1009,6 +1010,7 @@ For example usage, see @ref{Mirror a whole directory} and @ref{Mirror files by t
 @menu
 * Find file at point integration::
 * Embark integration::
+* Webjump integration::
 @end menu
 
 @node Find file at point integration
@@ -1028,6 +1030,21 @@ it and pressing @code{C-x C-f}.
 Embark users can run @code{embark-act} in the @code{hyperdrive-complete-hyperdrive}
 @code{completing-read} interface in order to select an alternative action for
 the selected hyperdrive.
+
+@node Webjump integration
+@subsection Webjump integration
+
+@findex webjump
+@vindex webjump-sites
+
+You can jump to a @code{hyper://} link with @code{M-x webjump} after adding it to
+@code{webjump-sites}:
+
+@lisp
+(add-to-list
+ 'webjump-sites
+ '("USHIN Hyperdrive" . "hyper://aaj45d88g4eenu76rpmwzjiabsof1w8u6fufq6oogyhjk1ubygxy/"))
+@end lisp
 
 @node Concepts
 @chapter Concepts
