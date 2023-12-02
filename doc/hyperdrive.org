@@ -321,6 +321,20 @@ available inside the directory view by default:
   This command signals an error, because you cannot create empty
   directories (see [[*No empty directories]]).
 
+You can customize the directory view with the following options:
+
+- User Option: hyperdrive-directory-display-buffer-action ::
+
+  Display buffer action for hyperdrive directories.  Passed to
+  ~display-buffer~, which see.
+
+- User Option: hyperdrive-directory-sort ::
+
+  Column by which directory entries are sorted by default.
+  Internally, a cons cell of (COLUMN .  DIRECTION), the COLUMN being
+  one of the directory listing columns (~name~, ~size~, or ~mtime~) and
+  DIRECTION being one of ~:ascending~ or ~:descending~.
+
 *** File view
 #+findex: dired-jump
 
@@ -1051,18 +1065,6 @@ customize-group RET hyperdrive RET~:
 
   Format string used for timestamps.  Passed to ~format-time-string~,
   which see.
-
-- User Option: hyperdrive-directory-display-buffer-action ::
-
-  Display buffer action for hyperdrive directories.  Passed to
-  ~display-buffer~, which see.
-
-- User Option: hyperdrive-directory-sort ::
-
-  Column by which directory entries are sorted by default.
-  Internally, a cons cell of (COLUMN .  DIRECTION), the COLUMN being
-  one of the directory listing columns (~name~, ~size~, or ~mtime~) and
-  DIRECTION being one of ~:ascending~ or ~:descending~.
 
 - User Option: hyperdrive-history-display-buffer-action ::
 

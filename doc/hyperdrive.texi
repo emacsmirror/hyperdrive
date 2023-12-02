@@ -559,6 +559,20 @@ This command signals an error, because you cannot create empty
 directories (see @ref{No empty directories}).
 @end table
 
+You can customize the directory view with the following options:
+
+@defopt hyperdrive-directory-display-buffer-action
+Display buffer action for hyperdrive directories.  Passed to
+@code{display-buffer}, which see.
+@end defopt
+
+@defopt hyperdrive-directory-sort
+Column by which directory entries are sorted by default.
+Internally, a cons cell of (COLUMN .  DIRECTION), the COLUMN being
+one of the directory listing columns (@code{name}, @code{size}, or @code{mtime}) and
+DIRECTION being one of @code{:ascending} or @code{:descending}.
+@end defopt
+
 @node File view
 @subsection File view
 
@@ -1458,18 +1472,6 @@ uses the default @code{persist} location.
 @defopt hyperdrive-timestamp-format
 Format string used for timestamps.  Passed to @code{format-time-string},
 which see.
-@end defopt
-
-@defopt hyperdrive-directory-display-buffer-action
-Display buffer action for hyperdrive directories.  Passed to
-@code{display-buffer}, which see.
-@end defopt
-
-@defopt hyperdrive-directory-sort
-Column by which directory entries are sorted by default.
-Internally, a cons cell of (COLUMN .  DIRECTION), the COLUMN being
-one of the directory listing columns (@code{name}, @code{size}, or @code{mtime}) and
-DIRECTION being one of @code{:ascending} or @code{:descending}.
 @end defopt
 
 @defopt hyperdrive-history-display-buffer-action
