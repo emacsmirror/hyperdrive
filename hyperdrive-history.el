@@ -182,13 +182,13 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                 ;; Display in reverse chronological order
                 (nreverse (he/version-ranges-no-gaps entry))))
        (main-header (h//format-entry entry "[%H] %p"))
-       (header (concat main-header "\n"
-                       (format "%7s  %19s  %6s  %s"
-                               (propertize "Exists" 'face 'h/column-header)
-                               (propertize "Drive Version Range" 'face 'h/column-header)
-                               (propertize "Size" 'face 'h/column-header)
-                               (format (format "%%%ds" h/timestamp-width)
-                                       (propertize "Last Modified" 'face 'h/column-header)))))
+       (header (format
+                "%s\n%7s  %19s  %6s  %s" main-header
+                (propertize "Exists" 'face 'h/column-header)
+                (propertize "Drive Version Range" 'face 'h/column-header)
+                (propertize "Size" 'face 'h/column-header)
+                (string-pad (propertize "Last Modified" 'face 'h/column-header)
+                            nil t)))
        (queue) (ewoc))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
