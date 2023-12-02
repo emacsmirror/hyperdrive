@@ -349,6 +349,17 @@ If you have bound ~dired-jump~ in the global keymap (people often choose
 ~C-x C-j~), you can use the same binding to jump to the parent
 hyperdrive directory from any hyperdrive file or directory buffer.
 
+- User Option: hyperdrive-honor-auto-mode-alist ::
+
+  If non-~nil~, use file extension of hyperdrive file to set ~major-mode~.
+  Defaults to ~t~.
+
+- User Option: hyperdrive-render-html ::
+
+  Control how HTML hyperdrive files are displayed.  By default, HTML
+  pages are rendered in Emacs with [[info:eww#Top][EWW]].  If ~nil~, raw HTML will be
+  displayed.
+
 *** Unknown paths
 
 When you attempt to load a file or folder that doesn't appear to
@@ -551,6 +562,13 @@ default:
 To act on the latest known version of the file, use these keybindings
 on the header line displaying the file description.
 
+You can customize the history view:
+
+- User Option: hyperdrive-history-display-buffer-action ::
+
+  Display buffer action for hyperdrive history buffers.  Passed to
+  ~display-buffer~, which see.
+
 ** Describe a hyperdrive
 
 To see information about a hyperdrive, such as its public key, seed,
@@ -607,6 +625,11 @@ When you use ~hyperdrive-find-file~ or some other command to open a
 streamable audio/video file, Emacs will use an external program to
 stream that video from the network.  After the stream finishes, the
 audio/video file is stored locally.
+
+- User Option: hyperdrive-stream-player-command ::
+
+  Command used to play streamable URLs externally.  Default uses
+  [[https://mpv.io/][mpv]].  There also exists a preconfigured option for [[https://www.videolan.org/vlc/][VLC media player]].
 
 ** Download hyperdrive files
 
@@ -1050,11 +1073,6 @@ customize-group RET hyperdrive RET~:
 
   Port on which to run the hyper-gateway server.  Defaults to ~4973~.
 
-- User Option: hyperdrive-honor-auto-mode-alist ::
-
-  If non-~nil~, use file extension of hyperdrive file to set ~major-mode~.
-  Defaults to ~t~.
-
 - User Option: hyperdrive-persist-location ::
 
   Location where ~persist~ will store data, currently
@@ -1066,16 +1084,6 @@ customize-group RET hyperdrive RET~:
   Format string used for timestamps.  Passed to ~format-time-string~,
   which see.
 
-- User Option: hyperdrive-history-display-buffer-action ::
-
-  Display buffer action for hyperdrive history buffers.  Passed to
-  ~display-buffer~, which see.
-
-- User Option: hyperdrive-stream-player-command ::
-
-  Command used to play streamable URLs externally.  Default uses
-  [[https://mpv.io/][mpv]].  There also exists a preconfigured option for [[https://www.videolan.org/vlc/][VLC media player]].
-
 - User Option: hyperdrive-queue-limit ::
 
   Default number of request sent to ~hyper-gateway~ at a time in a
@@ -1085,12 +1093,6 @@ customize-group RET hyperdrive RET~:
 
   Default maximum number of requests when filling version history.
   Defaults to ~10~.
-
-- User Option: hyperdrive-render-html ::
-
-  Control how HTML hyperdrive files are displayed.  By default, HTML
-  pages are rendered in Emacs with [[info:eww#Top][EWW]].  If ~nil~, raw HTML will be
-  displayed.
 
 - User Option: hyperdrive-reuse-buffers ::
 

@@ -592,6 +592,17 @@ If you have bound @code{dired-jump} in the global keymap (people often choose
 @code{C-x C-j}), you can use the same binding to jump to the parent
 hyperdrive directory from any hyperdrive file or directory buffer.
 
+@defopt hyperdrive-honor-auto-mode-alist
+If non-@code{nil}, use file extension of hyperdrive file to set @code{major-mode}.
+Defaults to @code{t}.
+@end defopt
+
+@defopt hyperdrive-render-html
+Control how HTML hyperdrive files are displayed.  By default, HTML
+pages are rendered in Emacs with @ref{Top,EWW,,eww,}.  If @code{nil}, raw HTML will be
+displayed.
+@end defopt
+
 @node Unknown paths
 @subsection Unknown paths
 
@@ -837,6 +848,13 @@ version.
 To act on the latest known version of the file, use these keybindings
 on the header line displaying the file description.
 
+You can customize the history view:
+
+@defopt hyperdrive-history-display-buffer-action
+Display buffer action for hyperdrive history buffers.  Passed to
+@code{display-buffer}, which see.
+@end defopt
+
 @node Describe a hyperdrive
 @section Describe a hyperdrive
 
@@ -898,6 +916,11 @@ When you use @code{hyperdrive-find-file} or some other command to open a
 streamable audio/video file, Emacs will use an external program to
 stream that video from the network.  After the stream finishes, the
 audio/video file is stored locally.
+
+@defopt hyperdrive-stream-player-command
+Command used to play streamable URLs externally.  Default uses
+@uref{https://mpv.io/, mpv}.  There also exists a preconfigured option for @uref{https://www.videolan.org/vlc/, VLC media player}.
+@end defopt
 
 @node Download hyperdrive files
 @section Download hyperdrive files
@@ -1458,11 +1481,6 @@ customize-group RET hyperdrive RET}:
 Port on which to run the hyper-gateway server.  Defaults to @code{4973}.
 @end defopt
 
-@defopt hyperdrive-honor-auto-mode-alist
-If non-@code{nil}, use file extension of hyperdrive file to set @code{major-mode}.
-Defaults to @code{t}.
-@end defopt
-
 @defopt hyperdrive-persist-location
 Location where @code{persist} will store data, currently
 @code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}.  By default,
@@ -1474,16 +1492,6 @@ Format string used for timestamps.  Passed to @code{format-time-string},
 which see.
 @end defopt
 
-@defopt hyperdrive-history-display-buffer-action
-Display buffer action for hyperdrive history buffers.  Passed to
-@code{display-buffer}, which see.
-@end defopt
-
-@defopt hyperdrive-stream-player-command
-Command used to play streamable URLs externally.  Default uses
-@uref{https://mpv.io/, mpv}.  There also exists a preconfigured option for @uref{https://www.videolan.org/vlc/, VLC media player}.
-@end defopt
-
 @defopt hyperdrive-queue-limit
 Default number of request sent to @code{hyper-gateway} at a time in a
 queues.  Defaults to @code{20}.
@@ -1492,12 +1500,6 @@ queues.  Defaults to @code{20}.
 @defopt hyperdrive-fill-version-ranges-limit
 Default maximum number of requests when filling version history.
 Defaults to @code{10}.
-@end defopt
-
-@defopt hyperdrive-render-html
-Control how HTML hyperdrive files are displayed.  By default, HTML
-pages are rendered in Emacs with @ref{Top,EWW,,eww,}.  If @code{nil}, raw HTML will be
-displayed.
 @end defopt
 
 @defopt hyperdrive-reuse-buffers
