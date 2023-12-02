@@ -399,7 +399,7 @@ Sets `hyperdrive-mirror-visibility-cache' to the value of
 
 ;;;; Footer
 
-(provide 'h/mirror)
+(provide 'hyperdrive-mirror)
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (

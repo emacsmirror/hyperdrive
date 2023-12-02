@@ -368,7 +368,7 @@ buffer."
      ;; Not known to exist: warn user.
      (h/user-error "File not known to exist!"))))
 
-(provide 'h/history)
+(provide 'hyperdrive-history)
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (

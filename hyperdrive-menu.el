@@ -437,7 +437,7 @@
 
 ;;;; Footer
 
-(provide 'h/menu)
+(provide 'hyperdrive-menu)
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (

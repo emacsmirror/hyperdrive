@@ -127,7 +127,7 @@ PREDICATE is called with the full node."
            when (funcall predicate node)
            collect node))
 
-(provide 'h/ewoc)
+(provide 'hyperdrive-ewoc)
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (
