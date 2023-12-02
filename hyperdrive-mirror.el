@@ -131,14 +131,54 @@ After uploading files, open PARENT-ENTRY."
                               (kill-buffer "*hyperdrive-mirror*"))
                             (h/open parent-entry)
                             (progress-reporter-done progress-reporter)))))
-    (unless upload-files-and-urls
-      (h/user-error "No new/newer files to upload"))
-    (pcase-dolist ((cl-struct hyperdrive-mirror-item file url) upload-files-and-urls)
-      (h/upload-file file (h/url-entry url)
-        :queue queue
-        ;; TODO: Error handling (e.g. in case one or more files fails to upload).
-        :then (lambda (_)
-                (progress-reporter-update progress-reporter (cl-incf count)))))))
+    (if (not upload-files-and-urls)
+        (h/message "No new/newer files to upload")
+      (pcase-dolist ((cl-struct hyperdrive-mirror-item file url) upload-files-and-urls)
+        (h/upload-file file (h/url-entry url)
+          :queue queue
+          ;; TODO: Error handling (e.g. in case one or more files fails to upload).
+          :then (lambda (_)
+                  (progress-reporter-update progress-reporter (cl-incf count))))))))
+
+(cl-defun h/mirror--check-items (source files hyperdrive target-dir &key then progress-fn)
+  "Call THEN with list of FILES to mirror from SOURCE to TARGET-DIR in HYPERDRIVE.
+If PROGRESS-FN, call it with no arguments after each item has been checked."
+  (let* ((items)
+         (metadata-queue (make-plz-queue
+                          :limit h/queue-limit
+                          :finally (lambda ()
+                                     (funcall then items)))))
+    (dolist (file files)
+      (let ((entry (he/create
+                    :hyperdrive hyperdrive
+                    :path (expand-file-name (file-relative-name file source) target-dir))))
+        (h/fill entry :queue metadata-queue
+          :then (lambda (entry)
+                  (let* ((drive-mtime (floor (float-time (he/mtime entry))))
+                         (local-mtime (floor (float-time (file-attribute-modification-time (file-attributes file)))))
+                         (status (cond
+                                  ((time-less-p drive-mtime local-mtime) 'newer)
+                                  ((time-equal-p drive-mtime local-mtime) 'same)
+                                  (t 'older)))
+                         (url (he/url entry)))
+                    (push (make-hyperdrive-mirror-item :file file :url url :status status)
+                          items)
+                    (when progress-fn
+                      (funcall progress-fn))))
+          :else (lambda (plz-error)
+                  (let ((status-code (plz-response-status (plz-error-response plz-error))))
+                    (pcase status-code
+                      (404 ;; Entry doesn't exist: Set `status' to `new'".
+                       ;; TODO: Consider moving `h/update-nonexistent-version-range' call...
+                       (h/update-nonexistent-version-range entry)
+                       (push (make-hyperdrive-mirror-item
+                              :file file :url (he/url entry) :status 'new)
+                             items)
+                       (when progress-fn
+                         (funcall progress-fn)))
+                      (_
+                       (h/error "Unable to get metadata for URL \"%s\": %S"
+                                (he/url entry) plz-error))))))))))
 
 (defun h/mirror-revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-mirror-mode' buffer.
@@ -197,16 +237,21 @@ filter and set NO-CONFIRM to t."
          (buffer (unless no-confirm
                    (get-buffer-create "*hyperdrive-mirror*")))
          (num-filled 0)
-         (num-of (length files))
-         metadata-queue files-and-urls)
+         (num-of (length files)))
     (unless files
       (h/user-error "No files selected for mirroring (double-check filter)"))
     (if no-confirm
-        (h//mirror files-and-urls parent-entry)
+        (let ((reporter (make-progress-reporter "Checking files" 0 num-of)))
+          (h/mirror--check-items source files hyperdrive target-dir
+                                 :progress-fn (lambda ()
+                                                (progress-reporter-update reporter (cl-incf num-filled)))
+                                 :then (lambda (items)
+                                         (progress-reporter-done reporter)
+                                         (h//mirror items parent-entry))))
       (with-current-buffer buffer
         (with-silent-modifications
-          (cl-labels ((update-progress (num-filled num-of)
-                        (when (zerop (mod num-filled 5))
+          (cl-labels ((update-progress ()
+                        (when (zerop (mod (cl-incf num-filled) 5))
                           (with-current-buffer buffer
                             (with-silent-modifications
                               (erase-buffer)
@@ -219,45 +264,16 @@ filter and set NO-CONFIRM to t."
                                           :filter ,filter))
             (setq-local h/mirror-parent-entry parent-entry)
             ;; TODO: Add command to clear plz queue.
-            (setf metadata-queue
-                  (make-plz-queue
-                   :limit h/queue-limit
-                   :finally (lambda ()
-                              (h/mirror--metadata-finally
-                               buffer
-                               (sort files-and-urls
-                                     (pcase-lambda ((cl-struct hyperdrive-mirror-item (file a-file))
-                                                    (cl-struct hyperdrive-mirror-item (file b-file)))
-                                       (string< a-file b-file)))))))
-            (dolist (file files)
-              (let ((entry (he/create
-                            :hyperdrive hyperdrive
-                            :path (expand-file-name (file-relative-name file source) target-dir))))
-                (h/fill entry :queue metadata-queue
-                  :then (lambda (entry)
-                          (let* ((drive-mtime (floor (float-time (he/mtime entry))))
-                                 (local-mtime (floor (float-time (file-attribute-modification-time (file-attributes file)))))
-                                 (status (cond
-                                          ((time-less-p drive-mtime local-mtime) 'newer)
-                                          ((time-equal-p drive-mtime local-mtime) 'same)
-                                          (t 'older)))
-                                 (url (he/url entry)))
-                            (push (make-hyperdrive-mirror-item :file file :url url :status status)
-                                  files-and-urls)
-                            (update-progress (cl-incf num-filled) num-of)))
-                  :else (lambda (plz-error)
-                          (let ((status-code (plz-response-status (plz-error-response plz-error))))
-                            (pcase status-code
-                              (404 ;; Entry doesn't exist: Set `status' to `new'".
-                               ;; TODO: Consider moving `h/update-nonexistent-version-range' call...
-                               (h/update-nonexistent-version-range entry)
-                               (push (make-hyperdrive-mirror-item
-                                      :file file :url (he/url entry) :status 'new)
-                                     files-and-urls)
-                               (update-progress (cl-incf num-filled) num-of))
-                              (_
-                               (h/error "Unable to get metadata for URL \"%s\": %S"
-                                        (he/url entry) plz-error))))))))
+            (h/mirror--check-items
+             source files hyperdrive target-dir
+             :progress-fn #'update-progress
+             :then (lambda (items)
+                     (h/mirror--metadata-finally
+                      buffer
+                      (sort items
+                            (pcase-lambda ((cl-struct hyperdrive-mirror-item (file a-file))
+                                           (cl-struct hyperdrive-mirror-item (file b-file)))
+                              (string< a-file b-file))))))
             (pop-to-buffer (current-buffer))))))))
 
 (defun h/mirror--metadata-finally (buffer files-and-urls)
