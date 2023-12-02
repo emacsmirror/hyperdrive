@@ -179,10 +179,10 @@ filter and set NO-CONFIRM to t."
            (h/read-path :hyperdrive hyperdrive
                         :prompt "Target directory in `%s'"
                         :default "/")
-           :no-confirm (equal '(16) current-prefix-arg)
            :filter (if current-prefix-arg
                        (h/mirror-read-filter)
-                     #'always))))
+                     #'always)
+           :no-confirm (equal '(16) current-prefix-arg))))
   (cl-callf expand-file-name source)
   (setf target-dir (h//format-path target-dir :directoryp t))
   (when (stringp filter)
