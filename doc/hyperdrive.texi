@@ -705,9 +705,9 @@ at point by pressing @code{w} (see @ref{Directory view}).
 @node Org mode links
 @subsection Org mode links
 
-#findex: org-store-link
-#findex: org-insert-link
-#vindex: org-link-file-path-type
+@findex org-store-link
+@findex org-insert-link
+@vindex org-link-file-path-type
 
 If the current file is an org-mode file, @code{org-store-link} will store a
 link to the hyperdrive file, and if point is inside a heading, its

@@ -440,9 +440,9 @@ In the directory view, you can copy the URL of the file or directory
 at point by pressing ~w~ (see [[*Directory view]]).
 
 *** Org mode links
-#findex: org-store-link
-#findex: org-insert-link
-#vindex: org-link-file-path-type
+#+findex: org-store-link
+#+findex: org-insert-link
+#+vindex: org-link-file-path-type
 
 If the current file is an org-mode file, ~org-store-link~ will store a
 link to the hyperdrive file, and if point is inside a heading, its
