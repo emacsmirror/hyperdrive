@@ -39,7 +39,7 @@
   :prefix "hyperdrive-")
 
 (defcustom h/hyper-gateway-port 4973
-  "Port on which to run the hyper-gateway server."
+  "Port to use to send requests to the hyper-gateway server."
   :type 'natnum)
 
 (defcustom h/honor-auto-mode-alist t
