@@ -396,7 +396,6 @@ Sets `hyperdrive-mirror-visibility-cache' to the value of
   "Major mode for buffers for mirror local directories to a hyperdrive."
   :group 'hyperdrive
   :interactive nil
-  ;; TODO: When possible, use vtable.el (currently only available in Emacs >=29) (or maybe taxy-magit-section)
   (setq-local revert-buffer-function #'h/mirror-revert-buffer))
 
 ;;;; Footer
