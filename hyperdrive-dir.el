@@ -29,7 +29,7 @@
 (require 'cl-lib)
 
 (require 'hyperdrive-lib)
-(require 'h/ewoc)
+(require 'hyperdrive-ewoc)
 
 ;;;; Functions
 
