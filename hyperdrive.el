@@ -6,7 +6,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Joseph Turner <~ushin/ushin@lists.sr.ht>
 ;; Created: 2022
-;; Version: 0.3-pre
+;; Version: 0.3
 ;; Package-Requires: ((emacs "28.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5") (taxy-magit-section "0.12.1") (transient "0.5.0"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
