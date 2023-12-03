@@ -35,7 +35,6 @@ These steps should be followed when releasing a new version:
    2. [ ] Update CHANGELOG (with release date and version).
    3. [ ] Rebuild .texi manual.
    4. [ ] Commit changes.
-   5. [ ] Merge ~master~ into ~release/elpa~ branch.
 
 2. Commit new pre-release.
 
