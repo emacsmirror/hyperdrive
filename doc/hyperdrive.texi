@@ -220,12 +220,6 @@ hyper-gateway.
 @code{hyperdrive.el} relies on @uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for talking to the hypercore
 network (@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation instructions}).
 
-Once it's installed, you can start hyper-gateway manually by running:
-
-@example
-hyper-gateway run --writable true
-@end example
-
 @node hyperdriveel
 @section hyperdrive.el
 
@@ -389,7 +383,13 @@ option only takes effect when @code{hyperdrive-gateway-process-type} is set
 to @code{subprocess}.
 @end defopt
 
-Alternatively, follow @uref{https://github.com/RangerMauve/hyper-gateway#usage, these instructions} to run @code{hyper-gateway} manually.
+Alternatively, you can start hyper-gateway manually by running:
+
+@example
+hyper-gateway run --writable true
+@end example
+
+For full installation instructions, see the @uref{https://github.com/RangerMauve/hyper-gateway#usage, hyper-gateway README}.
 
 @node Open a hyperdrive
 @section Open a hyperdrive
