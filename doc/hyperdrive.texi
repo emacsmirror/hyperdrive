@@ -1270,13 +1270,17 @@ is specified in a hyper URL@.
 @node Partial version data
 @subsubsection Partial version data
 
-Because hyperdrives are sparsely replicated (see @ref{Sparse replication}), you
-might not know the full version history of a file.  For example, when
-you load the most recent version of @code{/bar.org}, the gateway
-(see @ref{Hyper-gateway}) will also return the start of the version range
-containing the most recent version of @code{/bar.org}.  Since we also know
-the latest version of the hyperdrive, the version ranges table with
-the same data from the prior section would look like this:
+Because hyperdrives are sparsely replicated (see @ref{Sparse replication}),
+@code{hyperdrive.el} might not know the full version history of a file.  When
+the gateway (see @ref{Hyper-gateway}) loads a file from the network, it
+also loads some version metadata about that file.  Specifically, it
+loads the hyperdrive version number at which the file was modified.
+For example, if I load the most recent version of @code{/bar.org} from your
+hyperdrive (see @ref{Versioning, , the prior section}), my gateway would also load the
+start of the version range containing the most recent version of
+@code{/bar.org}.  My @code{hyperdrive.el} knows the latest version number of your
+drive, but with partial version history, the history of @code{/bar.org} in
+your drive looks like this for me:
 
 @multitable {aaaaaaaaaaaaa} {aaaaaaa}
 @headitem Version range
@@ -1287,10 +1291,10 @@ the same data from the prior section would look like this:
 @tab unknown
 @end multitable
 
-Running @code{hyperdrive-previous} inside of the buffer for the latest
-version of @code{/bar.org} will load @code{/bar.org} at version 52. The gateway will
-inform us that the version range for @code{/bar.org} that contains version 52
-started at 51:
+If I run @code{M-x hyperdrive-previous} while looking at the latest version
+of @code{/bar.org}, @code{hyperdrive.el} will display @code{/bar.org} at version 52.  In
+the background, the gateway will report that @code{/bar.org} at version 52 of
+your hyperdrive was actually created at version 51 of your hyperdrive:
 
 @multitable {aaaaaaaaaaaaa} {aaaaaaa}
 @headitem Version range
@@ -1303,30 +1307,25 @@ started at 51:
 @tab unknown
 @end multitable
 
-Running @code{hyperdrive-previous} inside of the buffer for @code{/bar.org} at
-version 51 or 52 will attempt to load @code{/bar.org} at
-version 50. @code{/bar.org} does not exist at version 50, so the table will
-now look like:
+Running @code{hyperdrive-previous} while looking at @code{/bar.org} at version 51 or
+52 will send a request for @code{/bar.org} at version 50.  @code{hyper-gateway} will
+report that @code{/bar.org} does not exist at version 50, but it won't report
+whether @code{/bar.org} ever existed @emph{before} version 50.  For example,
+@code{/bar.org} might have been created at version 6, deleted at 14, then
+created again at version 51.  @code{hyperdrive.el} will keep sending requests
+to the network (up to @code{hyperdrive-fill-version-ranges-limit}) until the
+history view looks like:
 
-@multitable {aaaaaaaaaaaaa} {aaaaaaa}
+@multitable {aaaaaaaaaaaaa} {aaaaaa}
 @headitem Version range
 @tab exists
 @item 53
 @tab yes
 @item 51-52
 @tab yes
-@item 50
+@item 1-50
 @tab no
-@item 1-49
-@tab unknown
 @end multitable
-
-Crucially, when a file does not exist at a particular version, the
-gateway does not tell us whether it ever existed in the past.  In
-theory, @code{/bar.org} could have been created at version 6 and deleted
-again at version 8.  The only way to determine that a file is
-nonexistent for some version range is to query the network for that
-file at every single version in the range.
 
 @node No directory version history
 @subsubsection No directory version history
