@@ -12,7 +12,7 @@ Nothing yet...
 
 ** Added
 
-- Redesigned ~*hyperdrive-mirror*~ buffer using ~taxy-magit-section~
+- Added ~hyperdrive-mirror~ interface to the [[info:transient][Transient]] ~hyperdrive-menu~
 - ~hyperdrive-open-at-version~: Open the current file or directory at a
   specific version
 - Support following relative filename links in hyperdrive
