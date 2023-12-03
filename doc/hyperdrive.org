@@ -1091,7 +1091,7 @@ customize-group RET hyperdrive RET~:
 - User Option: hyperdrive-fill-version-ranges-limit ::
 
   Default maximum number of requests when filling version history.
-  Defaults to ~10~.
+  Defaults to ~100~.
 
 - User Option: hyperdrive-reuse-buffers ::
 

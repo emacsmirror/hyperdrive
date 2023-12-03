@@ -1498,7 +1498,7 @@ queues.  Defaults to @code{20}.
 
 @defopt hyperdrive-fill-version-ranges-limit
 Default maximum number of requests when filling version history.
-Defaults to @code{10}.
+Defaults to @code{100}.
 @end defopt
 
 @defopt hyperdrive-reuse-buffers
