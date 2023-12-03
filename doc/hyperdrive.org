@@ -819,21 +819,20 @@ You can jump to a ~hyper://~ link with ~M-x webjump~ after adding it to
 ** Hyperdrive
 
 [[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is a virtual filesystem which you can use to share files on
-the peer-to-peer (P2P) ~hyper~ network.  It's a special folder with a
-long, unique link starting with ~hyper://~ that you can put files into
-and other peers can pull files out of (if they have the link).
+the peer-to-peer (P2P) ~hyper~ network.  It's a folder with a globally
+unique link starting with ~hyper://~ that you can put files into and
+other peers can pull files out of (if they have the link).
 
-Anyone with that link can download its contents directly from your
-computer.  There's no need to make an account or rely on a third party
-to pass the data along.  What's more, anyone who has a copy of the
-content in your hyperdrive can serve it to others.  This means that
-your hyperdrive can circulate on the ~hyper~ network even when you're
-offline.
+Anyone with the link to your hyperdrive can download its contents
+directly from your computer.  There's no need to make an account or
+rely on a third party to pass the data along.  What's more, anyone who
+has a copy of the content in your hyperdrive can serve it to others.
+This means that your hyperdrive can circulate on the ~hyper~ network
+even when you're offline.
 
-Hyperdrive is single-writer, since only one peer (one machine) can
-make changes to a hyperdrive.  No one can pretend to be you, since
-files in a hyperdrive are cryptographically signed to ensure their
-integrity and authenticity.
+Hyperdrive is single-writer, meaning that you are the only one who
+change a hyperdrive that you've created.  Files in a hyperdrive are
+cryptographically signed to ensure their integrity and authenticity.
 
 You can make as many hyperdrives as you like; the only limitation is
 your own disk space.
@@ -852,50 +851,50 @@ be accessed.  See [[*Versioning]] for more information.
 *** Sparse replication
 #+cindex: Sparse replication
 
-Hyperdrive is sparsely replicated, meaning that peers can download
-particular files from a hyperdrive without having to get the whole
-drive. This reduces both load times and disk usage.
+Hyperdrives are sparsely replicated, meaning that peers can download
+particular files from a hyperdrive without having to download the
+whole drive.  This reduces both load times and disk usage.
 
 *** Versioning
 #+cindex: Versioning
 
 Hyperdrives are versioned, meaning that it is possible to explore a
-hyperdrive as it was in the past. Version numbers indicate the
-hyperdrive's version. For example, ~hyper://PUBLIC-KEY/$/version/50/~
+hyperdrive as it was in the past.  Version numbers indicate the
+hyperdrive's version.  For example, ~hyper://PUBLIC-KEY/$/version/50/~
 refers to the fiftieth version of the hyperdrive identified by
-~PUBLIC-KEY~. If you want to load the latest version, leave out the
+~PUBLIC-KEY~.  If you want to load the latest version, leave out the
 ~/$/version/N~ part.  For example, if you run...
 
 #+begin_example
 M-x hyperdrive-open-url RET hyper://PUBLIC-KEY/foo.org RET
 #+end_example
 
-...then ~hyperdrive.el~ will attempt to find ~/foo.org~ inside the latest version
-of that hyperdrive.
+...then ~hyperdrive.el~ will attempt to find ~/foo.org~ inside the latest
+version of that hyperdrive.
 
 Whenever you add a file, remove a file, or change a file, the
-hyperdrive's version number gets incremented by 1. The version number
+hyperdrive's version number gets incremented by 1.  The version number
 tells you how many times the hyperdrive has been modified, not how
-many times a particular file has been modified. For example, let's say
+many times a particular file has been modified.  For example, let's say
 that the current version of your hyperdrive at ~hyper://PUBLIC-KEY/~
-is 50. If you add a new file at ~hyper://PUBLIC-KEY/bar.org~, the latest
+is 50.  If you add a new file at ~hyper://PUBLIC-KEY/bar.org~, the latest
 version of your hyperdrive will become 51.
 
-Since ~/bar.org~ did not exist before version 51, ~hyperdrive.el~ should
-warn you that nothing exists at
-~hyper://PUBLIC-KEY/$/version/50/bar.org~. If you add another file
+Since ~/bar.org~ did not exist before version 51, if you attempt to load
+~hyper://PUBLIC-KEY/$/version/50/bar.org~, ~hyperdrive.el~ should warn you
+that nothing exists at that URL.  If you add another file at
 ~hyper://PUBLIC-KEY/quux.org~, your hyperdrive's latest version will
-become 52. For the moment, ~hyper://PUBLIC-KEY/bar.org~,
+become 52.  For the moment, ~hyper://PUBLIC-KEY/bar.org~,
 ~hyper://PUBLIC-KEY/$/version/51/bar.org~, and
 ~hyper://PUBLIC-KEY/$/version/52/bar.org~, all point to the same version
-of ~/bar.org~. If you then make a change to ~/bar.org~, your hyperdrive's
-latest version will become 53. Now ~hyper://PUBLIC-KEY/bar.org~ and
+of ~/bar.org~.  If you then make a change to ~/bar.org~, your hyperdrive's
+latest version will become 53.  Now ~hyper://PUBLIC-KEY/bar.org~ and
 ~hyper://PUBLIC-KEY/$/version/53/bar.org~ will point to the latest
-version of ~/bar.org~, while the 51- and 52-versioned URLs will continue
-to point to the original version.
+version of ~/bar.org~, while the original version will be available at
+version 51 or 52.
 
-Here's the history of ~/bar.org~ so far (the hyperdrive's latest version
-is 53):
+Here's the mockup of the history view for ~/bar.org~ so far, the
+hyperdrive's latest version being 53:
 
 | Version range | exists |
 |---------------+--------|
@@ -903,16 +902,15 @@ is 53):
 |         51-52 | yes    |
 |          1-50 | no     |
 
-The table shows that ~/bar.org~ did not exist from the beginning of the
-hyperdrive history until version 51 (when it was created) and that it
-was modified at version 53.  Since the final range number in the table
-is 53, we also know that the hyperdrive's latest version is 53.
+The table shows that ~/bar.org~ was created at version 51 and modified
+at version 53.  The final version range number in the table is 53,
+indicating that the hyperdrive's latest version is 53.
 
 If you delete ~/bar.org~ then try to load ~hyper://PUBLIC-KEY/bar.org~,
 ~hyperdrive.el~ will open an empty buffer for you to author a new file.
-If another user (not you) attempts to load that URL, ~hyperdrive.el~
-will warn ~"URL not found"~.  All users can still access the old file
-contents at the versioned URLs.
+If another peer attempts to load that URL, ~hyperdrive.el~ will warn
+~"URL not found"~, since you are the only one who can modify your drive.
+All peers can view the old file contents at the versioned URLs.
 
 Since only the current version of a hyperdrive file can be updated,
 ~hyperdrive.el~ sets the buffer to read-only whenever a version number
