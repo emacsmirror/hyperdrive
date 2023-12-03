@@ -39,6 +39,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Fixed a bug which caused ~hyperdrive-menu~ to fail when the current
   entry's next version was ~unknown~
 - Uploaded files now retain the timestamp of the local file
+- Fixed a regression in ~hyperdrive-mirror~ without confirmation
 
 ** Internal
 
