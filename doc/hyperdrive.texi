@@ -76,7 +76,6 @@ hyperdrive.el
 
 * NonGNU ELPA::
 * MELPA::
-* package-vc::
 
 Usage
 
@@ -230,13 +229,12 @@ hyper-gateway run --writable true
 @node hyperdriveel
 @section hyperdrive.el
 
-There are three recommended options for installing @code{hyperdrive.el}:
-NonGNU ELPA, MELPA, and @code{package-vc}.
+The recommended options for installing @code{hyperdrive.el} are: NonGNU ELPA
+and MELPA@.
 
 @menu
 * NonGNU ELPA::
 * MELPA::
-* package-vc::
 @end menu
 
 @node NonGNU ELPA
@@ -246,8 +244,8 @@ NonGNU ELPA, MELPA, and @code{package-vc}.
 package-refresh-contents} then @code{M-x package-install RET hyperdrive}.
 
 After installing with NonGNU ELPA, you can later upgrade to a newer
-version of @code{hyperdrive.el} by running @code{M-x package-refresh-contents}
-then @code{M-x package-upgrade RET hyperdrive}. If @code{package-upgrade} is not
+version of @code{hyperdrive.el} by running @code{M-x package-refresh-contents} then
+@code{M-x package-upgrade RET hyperdrive}.  On Emacs 28, If @code{package-upgrade} is not
 available as a command, display the list of packages with @code{M-x
 list-packages}, select @code{hyperdrive}, and click the @code{Install} button.
 
@@ -263,49 +261,6 @@ repository@dots{}
 @end lisp
 
 @dots{}then follow the @ref{NonGNU ELPA} installation instructions.
-
-@node package-vc
-@subsection package-vc
-
-@emph{package-vc only works on Emacs 29.2 or later.}
-
-@enumerate
-@item
-Ensure you have @code{git}, @code{makeinfo} (part of the @code{texinfo} package), and
-Emacs 29.2 or newer.
-
-@item
-Add the following lines to your @code{init.el} startup file:
-@end enumerate
-
-@lisp
-(unless (package-installed-p 'hyperdrive)
-  ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
-  (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-  (package-vc-install 'hyperdrive))
-@end lisp
-
-Alternatively, if you have already cloned the @code{hyperdrive.el} repository,
-you can use the following snippet to install from that repository:
-
-@lisp
-(unless (package-installed-p 'hyperdrive)
-  (require 'package-vc)
-  ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
-  (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-  ;; Change the path below to the location of your local hyperdrive.el repository.
-  (package-vc-install-from-checkout "~/.local/src/hyperdrive.el" "hyperdrive"))
-@end lisp
-
-In your @code{init.el}, type @code{M-x eval-buffer RET}.
-
-If all goes well, @code{hyperdrive.el} commands like @code{M-x hyperdrive-menu} are
-now available and the documentation for @code{hyperdrive.el} is installed
-(see @ref{Quick documentation access}).
-
-After installing with @code{package-vc}, you can later upgrade to a newer
-version of @code{hyperdrive.el} by running @code{M-x package-vc-upgrade RET
-hyperdrive RET}.
 
 @node Example configuration
 @chapter Example configuration

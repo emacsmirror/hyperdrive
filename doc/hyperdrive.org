@@ -59,8 +59,8 @@ hyper-gateway run --writable true
 
 ** hyperdrive.el
 
-There are three recommended options for installing ~hyperdrive.el~:
-NonGNU ELPA, MELPA, and ~package-vc~.
+The recommended options for installing ~hyperdrive.el~ are: NonGNU ELPA
+and MELPA.
 
 *** NonGNU ELPA
 
@@ -68,8 +68,8 @@ NonGNU ELPA, MELPA, and ~package-vc~.
 package-refresh-contents~ then ~M-x package-install RET hyperdrive~.
 
 After installing with NonGNU ELPA, you can later upgrade to a newer
-version of ~hyperdrive.el~ by running ~M-x package-refresh-contents~
-then ~M-x package-upgrade RET hyperdrive~. If ~package-upgrade~ is not
+version of ~hyperdrive.el~ by running ~M-x package-refresh-contents~ then
+~M-x package-upgrade RET hyperdrive~.  On Emacs 28, If ~package-upgrade~ is not
 available as a command, display the list of packages with ~M-x
 list-packages~, select ~hyperdrive~, and click the ~Install~ button.
 
@@ -85,43 +85,46 @@ repository...
 
 ...then follow the [[*NonGNU ELPA][NonGNU ELPA]] installation instructions.
 
-*** package-vc
 
-/package-vc only works on Emacs 29.2 or later./
+# TODO: Uncomment package-vc instructions when Emacs 29.2 is out
 
-1. Ensure you have ~git~, ~makeinfo~ (part of the ~texinfo~ package), and
-   Emacs 29.2 or newer.
+# *** package-vc
 
-2. Add the following lines to your ~init.el~ startup file:
+# /package-vc only works on Emacs 29.2 or later./
 
-#+begin_src emacs-lisp
-  (unless (package-installed-p 'hyperdrive)
-    ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
-    (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-    (package-vc-install 'hyperdrive))
-#+end_src
+# 1. Ensure you have ~git~, ~makeinfo~ (part of the ~texinfo~ package), and
+#    Emacs 29.2 or newer.
 
-Alternatively, if you have already cloned the ~hyperdrive.el~ repository,
-you can use the following snippet to install from that repository:
+# 2. Add the following lines to your ~init.el~ startup file:
 
-#+begin_src emacs-lisp
-  (unless (package-installed-p 'hyperdrive)
-    (require 'package-vc)
-    ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
-    (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-    ;; Change the path below to the location of your local hyperdrive.el repository.
-    (package-vc-install-from-checkout "~/.local/src/hyperdrive.el" "hyperdrive"))
-#+end_src
+# #+begin_src emacs-lisp
+#   (unless (package-installed-p 'hyperdrive)
+#     ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
+#     (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
+#     (package-vc-install 'hyperdrive))
+# #+end_src
 
-In your ~init.el~, type ~M-x eval-buffer RET~.
+# Alternatively, if you have already cloned the ~hyperdrive.el~ repository,
+# you can use the following snippet to install from that repository:
 
-If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-menu~ are
-now available and the documentation for ~hyperdrive.el~ is installed
-(see [[*Quick documentation access]]).
+# #+begin_src emacs-lisp
+#   (unless (package-installed-p 'hyperdrive)
+#     (require 'package-vc)
+#     ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
+#     (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
+#     ;; Change the path below to the location of your local hyperdrive.el repository.
+#     (package-vc-install-from-checkout "~/.local/src/hyperdrive.el" "hyperdrive"))
+# #+end_src
 
-After installing with ~package-vc~, you can later upgrade to a newer
-version of ~hyperdrive.el~ by running ~M-x package-vc-upgrade RET
-hyperdrive RET~.
+# In your ~init.el~, type ~M-x eval-buffer RET~.
+
+# If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-menu~ are
+# now available and the documentation for ~hyperdrive.el~ is installed
+# (see [[*Quick documentation access]]).
+
+# After installing with ~package-vc~, you can later upgrade to a newer
+# version of ~hyperdrive.el~ by running ~M-x package-vc-upgrade RET
+# hyperdrive RET~.
 
 * Example configuration
 
