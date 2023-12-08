@@ -1426,8 +1426,8 @@ DNS domains are checked for suspicious characters (see
 @node Customization
 @chapter Customization
 
-You can customize the following variables settings by running @code{M-x
-customize-group RET hyperdrive RET}:
+You can adjust the following options in the customization interface by
+running @code{M-x customize-group RET hyperdrive RET}:
 
 @defopt hyperdrive-hyper-gateway-port
 @code{hyperdrive.el} will send HTTP requests to @code{hyper-gateway} on this port.

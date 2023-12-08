@@ -1067,8 +1067,8 @@ DNS domains are checked for suspicious characters (see
 
 * Customization
 
-You can customize the following variables settings by running ~M-x
-customize-group RET hyperdrive RET~:
+You can adjust the following options in the customization interface by
+running ~M-x customize-group RET hyperdrive RET~:
 
 - User Option: hyperdrive-hyper-gateway-port ::
 
