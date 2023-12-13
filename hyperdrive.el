@@ -1172,7 +1172,7 @@ The return value of this function is the retrieval buffer."
      :help "Open hyperdrive.el info manual"]))
 
 ;;;###autoload
-(define-minor-mode hyperdrive-menu-bar-mode "Show hyperdrive in \"Tools\" menu bar."
+(define-minor-mode hyperdrive-menu-bar-mode "Show \"Hyperdrive\" menu bar."
   :global t :group 'hyperdrive
   (if h/menu-bar-mode
       ;; Inspired by https://utcc.utoronto.ca/~cks/space/blog/programming/EmacsEasyMenuAndMenubarOrder
