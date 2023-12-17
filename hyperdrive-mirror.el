@@ -87,6 +87,10 @@ STATUS is one of:
 
 ;;;; Columns
 
+(defgroup hyperdrive-mirror nil
+  "Display information about a hyperdrive."
+  :group 'hyperdrive)
+
 ;; These forms define the columns used to display items with `taxy-magit-section'.
 
 (eval-and-compile
