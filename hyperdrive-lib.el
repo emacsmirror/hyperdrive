@@ -1463,11 +1463,10 @@ To customize the command run as a subprocess, see
                  (const :tag "Autodetect" nil))
   :group 'hyperdrive)
 
-(defcustom h/gateway-command
-  "hyper-gateway-ushin run --writable true --silent true"
+(defcustom h/gateway-command-args "run --writable true --silent true"
   ;; TODO: File Emacs bug report because the customization formatter handles the
   ;; "symbol `subprocess'" part differently than `describe-variable' does.
-  "Command used to run hyper-gateway-ushin.
+  "Arguments passed to hyper-gateway-ushin.
 Only used when `hyperdrive-gateway-process-type' is the symbol `subprocess'."
   :type 'string
   :group 'hyperdrive)
@@ -1488,28 +1487,43 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
                      (string-trim-right (buffer-string)))))
       (kill-buffer buffer))))
 
-(cl-defmethod h//gateway-start (&context (h/gateway-process-type (eql 'subprocess)))
+(defun h//hyper-gateway-ushin-path ()
+  "Return path to hyper-gateway-ushin executable, or nil if not found."
+  (cond ((file-exists-p
+          (expand-file-name "hyper-gateway-ushin" hyperdrive-gateway-directory))
+         (expand-file-name "hyper-gateway-ushin" hyperdrive-gateway-directory))
+        ((executable-find "hyper-gateway-ushin"))))
+
+(cl-defmethod h//gateway-start
+  (&context (h/gateway-process-type (eql 'subprocess)))
   "Start the gateway as an Emacs subprocess.
 Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
 `subprocess'."
   (when (h//gateway-running-p)
     (user-error "Gateway already running"))
-  (condition-case nil
-      (setf h/gateway-process
-            (make-process :name "hyper-gateway-ushin"
-                          :buffer " *hyperdrive-start*"
-                          :command (split-string-and-unquote h/gateway-command)
-                          :connection-type 'pipe))
-    (file-missing
-     (info "(hyperdrive) hyper-gateway-ushin")
-     (user-error
-      "hyper-gateway-ushin not found; Please see installation instructions")))
-  (sleep-for 0.5)
-  (unless (process-live-p h/gateway-process)
-    (if (h/status)
-        (user-error "Gateway is already running outside of Emacs (see option `hyperdrive-gateway-process-type')")
-      (pop-to-buffer " *hyperdrive-start*")
-      (h/error "Gateway failed to start (see process buffer for errors)"))))
+  (let ((hyper-gateway-ushin-path
+         (or (h//hyper-gateway-ushin-path)
+             (user-error (substitute-command-keys
+                          "Executable \"hyper-gateway-ushin\" not found.\
+  Try \\[hyperdrive-install]")))))
+    (condition-case nil
+        (setf h/gateway-process
+              (make-process
+               :name "hyper-gateway-ushin"
+               :buffer " *hyperdrive-start*"
+               :command (cons hyper-gateway-ushin-path
+                              (split-string-and-unquote h/gateway-command-args))
+               :connection-type 'pipe))
+      (file-missing
+       (info "(hyperdrive) hyper-gateway-ushin")
+       (user-error
+        "hyper-gateway-ushin not found; Please see installation instructions")))
+    (sleep-for 0.5)
+    (unless (process-live-p h/gateway-process)
+      (if (h/status)
+          (user-error "Gateway is already running outside of Emacs (see option `hyperdrive-gateway-process-type')")
+        (pop-to-buffer " *hyperdrive-start*")
+        (h/error "Gateway failed to start (see process buffer for errors)")))))
 
 (cl-defmethod h//gateway-stop (&context (h/gateway-process-type (eql 'systemd)))
   "Stop the gateway service.

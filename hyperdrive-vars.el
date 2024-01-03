@@ -255,6 +255,13 @@ value (and should only be present once in the string).  Used in
                (cons :tag "Hyperdrive domains" (const domains)
                      (string :tag "Format string"))))
 
+(defcustom h/gateway-directory (expand-file-name "~/.local/lib/hyperdrive.el")
+  "Where the hyper-gateway executable is found.
+If not found here, the \"PATH\" environment variable is checked
+with `executable-find'.  Command `hyperdrive-install' installs to
+this directory."
+  :type 'directory)
+
 ;;;;; Faces
 
 (defgroup hyperdrive-faces nil
