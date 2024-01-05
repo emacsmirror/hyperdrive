@@ -231,15 +231,15 @@ see."
   "Alist mapping hyperdrive and hyperdrive entry metadata item to format string.
 Each metadata item may be one of:
 
-- \\=`name' (Entry name)
-- \\=`path' (Entry path)
-- \\=`version' (Entry version)
-- \\=`petname' (Hyperdrive petname)
-- \\=`nickname' (Hyperdrive nickname)
-- \\=`domains' (Hyperdrive domains)
-- \\=`public-key' (Hyperdrive public key)
-- \\=`short-key' (Hyperdrive short key)
-- \\=`seed' (Hyperdrive seed)
+- \\+`name' (Entry name)
+- \\+`path' (Entry path)
+- \\+`version' (Entry version)
+- \\+`petname' (Hyperdrive petname)
+- \\+`nickname' (Hyperdrive nickname)
+- \\+`domains' (Hyperdrive domains)
+- \\+`public-key' (Hyperdrive public key)
+- \\+`short-key' (Hyperdrive short key)
+- \\+`seed' (Hyperdrive seed)
 
 In each corresponding format string, \"%s\" is replaced with the
 value (and should only be present once in the string).  Used in
