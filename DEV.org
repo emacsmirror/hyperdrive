@@ -49,7 +49,7 @@ So, e.g. ~makem~'s ~lint-declare~ rule, which uses ~check-declare~, gives false 
   + [X] Add a command to set a petname.
 
 + *UI*
-  + The user must be able to clearly distinguish between petnames, nicknames, and public keys.  Each type should be visually distinctive and umambiguous.
+  + The user must be able to clearly distinguish between petnames, nicknames, and public keys.  Each type should be visually distinctive and unambiguous.
 
   + [X] Empty string as a petname should be treated as an unset petname.
   + [ ] Have an option to automatically prompt the user to set a petname for newly visited hyperdrives.

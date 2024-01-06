@@ -241,7 +241,7 @@ hyper://aaj45d88g4eenu76rpmwzjiabsof1w8u6fufq6oogyhjk1ubygxy/
 
   Open a hyperdrive file or directory by its ~hyper://~ URL.
 
-The followings commands let you select and visit one of the
+The following commands let you select and visit one of the
 hyperdrives you've already created or visited:
 
 - Command: hyperdrive-find-file ::
