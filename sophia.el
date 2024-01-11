@@ -146,31 +146,48 @@
 (sophia-test
  sophia-relations)
 
-(cl-defun sophia-filter (relations &key topic from predicate (hops 1))
+(defun sophia-score (from to topic relations)
+  "Return the computed score from FROM to TO in RELATIONS regarding TOPIC.")
+
+(cl-defun sophia-filter (relations &key topic from predicate (hops 1) (initial-weight 1.0))
   (let* ((topic-relations (map-elt relations topic))
          (relations-from (map-elt topic-relations from))
-         (valid-relations (cl-remove-if-not (pcase-lambda ((cl-struct sophia-relation from to weight))
-                                              (funcall predicate :from from :to to :weight weight :hops hops))
+         (valid-relations (cl-remove-if-not (lambda (relation )
+                                              (funcall predicate :relation relation :hops hops :source-weight initial-weight))
                                             relations-from)))
     (remq nil
           (append valid-relations
                   (mapcar (lambda (relation)
                             (sophia-filter relations :topic topic :from (sophia-relation-to relation)
-                                           :predicate predicate :hops (1+ hops)))
+                                           :predicate predicate :hops (1+ hops)
+                                           :initial-weight (sophia-relation-weight relation)))
                           valid-relations)))))
+
+(cl-defstruct sophia-path
+  from to edges)
+
+(defun sophia-paths (from to relations)
+  "Return a list of paths from FROM to TO in RELATIONS."
+  )
+
+(cl-defun sophia-weight (path &key (decay (lambda (a b)
+                                            "Return the decayed weight from edge "
+                                            )))
+  "Return the computed weight along PATH."
+  )
 
 (sophia-test
  (sophia-filter sophia-relations
                 :topic "tofu"
                 :from "alice"
                 :predicate (cl-function
-                            (lambda (&key from to weight hops)
-                              (and (<= hops 5)
-                                   (>= weight 0.2)))) ))
+                            (lambda (&key relation hops source-weight)
+                              (<= hops 5)))))
 (#s(sophia-relation "alice" "carole" 0.8)
  #s(sophia-relation "alice" "bob" 0.25)
  (#s(sophia-relation "carole" "eve" 0.5)
   #s(sophia-relation "carole" "david" 0.8)
   (#s(sophia-relation "david" "eve" 0.8))))
+
 
 
