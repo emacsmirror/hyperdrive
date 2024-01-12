@@ -18,18 +18,23 @@
                          collect (make-sophia-path
                                   :score (sophia-relation-score relation)
                                   :relations (list relation)))))
-    (unless (zerop max-hops)
+    (unless (zerop (cl-decf max-hops))
       ;; Add hops up to the limit.
       (dolist (path paths)
         (let* ((last-relation (car (last (sophia-path-relations path))))
                (last-to (sophia-relation-to last-relation))
-               (new-paths (sophia-paths last-to topic :max-hops (1- max-hops))))
+               (new-paths (sophia-paths last-to topic :max-hops max-hops)))
           (dolist (new-path new-paths)
             (let ((duplicate-path (copy-sequence path)))
               (cl-callf append (sophia-path-relations duplicate-path)
                 (sophia-path-relations new-path))
+              (setf (sophia-path-score duplicate-path)
+                    (string-to-number (format "%.2f" (sophia-score duplicate-path))))
               (push duplicate-path paths))))))
     paths))
+
+(defun sophia-score (path)
+  (cl-reduce #'* (sophia-path-relations path) :key #'sophia-relation-score))
 
 (provide 'hyperdrive-sophia)
 
