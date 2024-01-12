@@ -11,35 +11,20 @@
      (sophia-add-relation "carole" "david" 0.8 "tofu" sophia-relations)
      (sophia-add-relation "carole" "eve" 0.5 "tofu" sophia-relations)
      (sophia-add-relation "david" "eve" 0.8 "tofu" sophia-relations)
-     (cl-labels ((sophia-relations-for (peer)
-                   (cdar (map-filter (lambda (from data)
-                                       (equal from peer))
-                                     sophia-relations))))
+     (cl-letf (((symbol-function #'sophia-relations-from)
+                (lambda (peer)
+                  (cdar (map-filter (lambda (from data)
+                                      (equal from peer))
+                                    sophia-relations)))))
        ,@body)))
 
-(sophia-test
-  (sophia-relations-for "alice"))
-(("tofu" #s(sophia-relation "alice" "carole" 0.8)
-  #s(sophia-relation "alice" "bob" 0.25)))
-
-
-
-
+;; (sophia-test
+;;   (sophia-relations-for "alice"))
 
 (ert-deftest sophia-paths-alice-tofu-2-hop ()
   "Return alice's paths for \"tofu\" up to 2 hops away."
   (sophia-test 
-    (let* ((from-alice (sophia-relations-for "alice"))
-           (about-tofu (map-elt from-alice "tofu"))
-           (1-hop-paths (cl-loop for relation in from-alice
-                                 collect (make-sophia-path
-                                          :score (sophia-relation-score relation)
-                                          :relations (list relation))))
-           (2-hop-paths (cl-loop for relation in from-alice
-                                 collect (make-sophia-path
-                                          :score (sophia-relation-score relation)
-                                          :relations (list relation))))
-           (paths (append 1-hop-paths 2-hop-paths)))
+    (let* ((paths (sophia-paths "alice" "tofu" :max-hops 2)))
       (should
        (seq-set-equal-p
         paths
@@ -76,3 +61,12 @@
               (make-sophia-path
                :score 0.8
                :relations (list (make-sophia-relation :from "alice" :to "carole" :score 0.8)))))))))
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("hs/"  . "hyperdrive-sophia-")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
