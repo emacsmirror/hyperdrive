@@ -70,9 +70,9 @@
                   (lambda (&rest args)
                     (push args sophia-relations-called-with)
                     (apply orig-fn args))))
-        (let* ((_paths (sophia-paths "alice" "tofu" :max-hops 3)))
-          (should (seq-contains-p sophia-relations-called-with '("frank")))
-          (should-not (seq-contains-p sophia-relations-called-with '("georgie"))))))))
+        (sophia-paths "alice" "tofu" :max-hops 3)
+        (should (seq-contains-p sophia-relations-called-with '("frank")))
+        (should-not (seq-contains-p sophia-relations-called-with '("georgie")))))))
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (
