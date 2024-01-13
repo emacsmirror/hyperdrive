@@ -40,13 +40,18 @@
                :score 0.8
                :relations (list (make-sophia-relation :from "alice" :to "carole" :score 0.8)))
               (make-sophia-path
-               :score 0.64
+               :score 0.6400000000000001
                :relations (list (make-sophia-relation :from "alice" :to "carole" :score 0.8)
                                 (make-sophia-relation :from "carole" :to "david" :score 0.8)))
               (make-sophia-path
                :score 0.4
                :relations (list (make-sophia-relation :from "alice" :to "carole" :score 0.8)
-                                (make-sophia-relation :from "carole" :to "eve" :score 0.5)))))))))
+                                (make-sophia-relation :from "carole" :to "eve" :score 0.5)))
+              (make-sophia-path
+               :score 0.5120000000000001
+               :relations (list (make-sophia-relation :from "alice" :to "carole" :score 0.8)
+                                (make-sophia-relation :from "carole" :to "david" :score 0.8)
+                                (make-sophia-relation :from "david" :to "eve" :score 0.8)))))))))
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (
