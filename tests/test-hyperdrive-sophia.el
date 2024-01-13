@@ -7,15 +7,21 @@
 
 (defvar test-hyperdrive-sophia-relations (make-hash-table :test 'equal))
 
-(defmacro sophia-test (&rest body)
+(defvar test-hyperdrive-sophia-default-relations-fn
+  (lambda ()
+    (sophia-add-relation "alice" "bob" 0.25 "tofu" test-hyperdrive-sophia-relations)
+    (sophia-add-relation "alice" "carole" 0.8 "tofu" test-hyperdrive-sophia-relations)
+    (sophia-add-relation "carole" "david" 0.8 "tofu" test-hyperdrive-sophia-relations)
+    (sophia-add-relation "carole" "eve" 0.5 "tofu" test-hyperdrive-sophia-relations)
+    (sophia-add-relation "david" "eve" 0.8 "tofu" test-hyperdrive-sophia-relations)))
+
+(cl-defmacro sophia-test ((&optional relations-fn) &rest body)
   (declare (indent defun) (debug (def-form)))
   `(progn
      (clrhash test-hyperdrive-sophia-relations)
-     (sophia-add-relation "alice" "bob" 0.25 "tofu" test-hyperdrive-sophia-relations)
-     (sophia-add-relation "alice" "carole" 0.8 "tofu" test-hyperdrive-sophia-relations)
-     (sophia-add-relation "carole" "david" 0.8 "tofu" test-hyperdrive-sophia-relations)
-     (sophia-add-relation "carole" "eve" 0.5 "tofu" test-hyperdrive-sophia-relations)
-     (sophia-add-relation "david" "eve" 0.8 "tofu" test-hyperdrive-sophia-relations)
+     (funcall ,(if relations-fn
+                   relations-fn
+                 test-hyperdrive-sophia-default-relations-fn))
      (cl-letf (((symbol-function 'sophia-relations)
                 (lambda (peer-name)
                   (cdar (map-filter (lambda (from data)
