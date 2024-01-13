@@ -45,6 +45,30 @@
 (defun sophia-score (path)
   (cl-reduce #'* (sophia-path-relations path) :key #'sophia-relation-score))
 
+;; (cl-defun sophia-filter-to (to paths)
+;;   "Return PATHS that end at TO."
+;;   (cl-remove-if-not
+;;    (lambda (path)
+;;      (equal to (sophia-relation-to (car (last (sophia-path-relations path))))))
+;;    paths))
+
+;; (sophia-filter-to "eve" paths)
+
+;; (defcustom sophia-aggregate-fn #'sophia-aggregate-score-default
+;;   "Path aggregation function."
+;;   :type 'function
+;;   :group 'hyperdrive)
+
+;; (defun sophia-aggregate-score (paths)
+;;   "Return aggregate score of PATHS."
+;;   (funcall sophia-aggregate-fn paths))
+
+;; (defun sophia-aggregate-score-default (paths)
+;;   "Return the aggregate score for PATHS."
+;;   ;; TODO: Consider using a weighted mean based on path length.
+;;   (cl-loop for path in paths
+;;            maximizing (sophia-path-score path)))
+
 (provide 'hyperdrive-sophia)
 
 ;; Local Variables:
