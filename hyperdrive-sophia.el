@@ -16,6 +16,10 @@
                                      (sophia-relation-from relation))
                             topic))))
 
+(defun sophia-relations (_from)
+  "Return relations from user FROM."
+  (error "Not yet implemented (bound in tests)"))
+
 (cl-defun sophia-paths (from topic &key (max-hops 3))
   "Return paths from FROM up to MAX-HOPS in RELATIONS about TOPIC."
   (let* ((relations (map-elt (sophia-relations from) topic))
