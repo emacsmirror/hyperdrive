@@ -1,5 +1,10 @@
 ;;; hyperdrive-sophia.el ---      -*- lexical-binding: t; -*-
 
+(require 'cl-lib)
+(require 'map)
+
+;; TODO: Naming is hard.  (This struct doesn't really describe the relationship
+;; between two people; it's one-directional.)
 (cl-defstruct sophia-relation
   from to score)
 
@@ -13,7 +18,7 @@
 
 (cl-defun sophia-paths (from topic &key (max-hops 3))
   "Return paths from FROM up to MAX-HOPS in RELATIONS about TOPIC."
-  (let* ((relations (map-elt (sophia-relations-from from) topic))
+  (let* ((relations (map-elt (sophia-relations from) topic))
          (paths (cl-loop for relation in relations
                          collect (make-sophia-path
                                   :score (sophia-relation-score relation)
@@ -28,8 +33,7 @@
             (let ((duplicate-path (copy-sequence path)))
               (cl-callf append (sophia-path-relations duplicate-path)
                 (sophia-path-relations new-path))
-              (setf (sophia-path-score duplicate-path)
-                    (string-to-number (format "%.2f" (sophia-score duplicate-path))))
+              (setf (sophia-path-score duplicate-path) (sophia-score duplicate-path))
               (push duplicate-path paths))))))
     paths))
 
