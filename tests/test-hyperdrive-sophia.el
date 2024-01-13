@@ -29,9 +29,6 @@
                                     test-hyperdrive-sophia-relations)))))
        ,@body)))
 
-;; (sophia-test
-;;   (sophia-relations-for "alice"))
-
 (ert-deftest sophia-paths-alice-tofu-3-hops ()
   "Return alice's paths for \"tofu\" up to 3 hops away."
   (sophia-test ()
