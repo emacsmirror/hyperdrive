@@ -56,6 +56,24 @@
                                 (make-sophia-relation :from "carole" :to "david" :score 0.8)
                                 (make-sophia-relation :from "david" :to "eve" :score 0.8)))))))))
 
+(ert-deftest sophia-filter-short-circuits ()
+  ;; NEXT: Write this test to ensure that the paths from alice to georgie and to
+  ;; hobart are filtered out.
+  (sophia-test ((lambda ()
+                  (funcall test-hyperdrive-sophia-default-relations-fn)
+                  (sophia-add-relation "alice" "frank" 1 "tofu" test-hyperdrive-sophia-relations)
+                  (sophia-add-relation "frank" "georgie" 0.2 "tofu" test-hyperdrive-sophia-relations)
+                  (sophia-add-relation "georgie" "hobart" 0.8 "tofu" test-hyperdrive-sophia-relations)))
+    (let (sophia-relations-called-with)
+      (cl-letf* ((orig-fn (symbol-function 'sophia-relations))
+                 ((symbol-function 'sophia-relations)
+                  (lambda (&rest args)
+                    (push args sophia-relations-called-with)
+                    (apply orig-fn args))))
+        (let* ((_paths (sophia-paths "alice" "tofu" :max-hops 3)))
+          (should (seq-contains-p sophia-relations-called-with '("frank")))
+          (should-not (seq-contains-p sophia-relations-called-with '("georgie"))))))))
+
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")
