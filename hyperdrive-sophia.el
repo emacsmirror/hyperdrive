@@ -27,6 +27,7 @@
                          collect (make-sophia-path
                                   :score (sophia-relation-score relation)
                                   :relations (list relation)))))
+    ;; NOTE: At this point, `paths' only has one-hop paths.
     (unless (zerop (cl-decf max-hops))
       ;; Add hops up to the limit.
       (dolist (path paths)
