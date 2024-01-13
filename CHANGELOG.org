@@ -6,7 +6,9 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 * 0.4-pre
 
-Nothing yet...
+** Internal
+
+- Bumped ~persist.el~ dependency to version ~0.6~
 
 * 0.3 [2023-12-02 Sat]
 

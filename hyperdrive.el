@@ -7,7 +7,7 @@
 ;; Maintainer: Joseph Turner <~ushin/ushin@lists.sr.ht>
 ;; Created: 2022
 ;; Version: 0.4-pre
-;; Package-Requires: ((emacs "28.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.5") (taxy-magit-section "0.12.1") (transient "0.5.2"))
+;; Package-Requires: ((emacs "28.1") (map "3.0") (compat "29.1.4.0") (plz "0.7") (persist "0.6") (taxy-magit-section "0.12.1") (transient "0.5.2"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
