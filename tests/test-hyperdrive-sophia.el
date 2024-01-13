@@ -34,7 +34,7 @@
 
 (ert-deftest sophia-paths-alice-tofu-3-hops ()
   "Return alice's paths for \"tofu\" up to 3 hops away."
-  (sophia-test 
+  (sophia-test ()
     (let* ((paths (sophia-paths "alice" "tofu" :max-hops 3)))
       (should
        (seq-set-equal-p
