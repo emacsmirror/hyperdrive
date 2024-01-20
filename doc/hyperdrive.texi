@@ -214,9 +214,6 @@ modify this GNU manual.''
 @node hyper-gateway
 @section hyper-gateway
 
-@strong{NOTICE}: Soon @code{hyperdrive.el} will depend on @uref{https://github.com/RangerMauve/hyper-sdk-rpc, hyper-sdk-rpc} instead of
-hyper-gateway.
-
 @code{hyperdrive.el} relies on @uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for talking to the hypercore
 network (@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation instructions}).
 

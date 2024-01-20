@@ -45,9 +45,6 @@ modify this GNU manual."
 
 ** hyper-gateway
 
-*NOTICE*: Soon ~hyperdrive.el~ will depend on [[https://github.com/RangerMauve/hyper-sdk-rpc][hyper-sdk-rpc]] instead of
-hyper-gateway.
-
 ~hyperdrive.el~ relies on [[https://github.com/RangerMauve/hyper-gateway/][hyper-gateway]] for talking to the hypercore
 network ([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway][installation instructions]]).
 
