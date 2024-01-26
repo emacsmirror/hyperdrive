@@ -39,25 +39,35 @@
         paths
         (list (make-fons-path
                :score 0.25
-               :relations (list (make-fons-relation :from "alice" :to "bob" :score 0.25)))
+               :relations (list (make-fons-relation
+                                 :from "alice" :to "bob" :score 0.25)))
               (make-fons-path
                :score 0.8
-               :relations (list (make-fons-relation :from "alice" :to "carole" :score 0.8)))
+               :relations (list (make-fons-relation
+                                 :from "alice" :to "carole" :score 0.8)))
               (make-fons-path
                :score 0.6400000000000001
-               :relations (list (make-fons-relation :from "alice" :to "carole" :score 0.8)
-                                (make-fons-relation :from "carole" :to "david" :score 0.8)))
+               :relations (list (make-fons-relation
+                                 :from "alice" :to "carole" :score 0.8)
+                                (make-fons-relation
+                                 :from "carole" :to "david" :score 0.8)))
               (make-fons-path
                :score 0.4
-               :relations (list (make-fons-relation :from "alice" :to "carole" :score 0.8)
-                                (make-fons-relation :from "carole" :to "eve" :score 0.5)))
+               :relations (list (make-fons-relation
+                                 :from "alice" :to "carole" :score 0.8)
+                                (make-fons-relation
+                                 :from "carole" :to "eve" :score 0.5)))
               (make-fons-path
                :score 0.5120000000000001
-               :relations (list (make-fons-relation :from "alice" :to "carole" :score 0.8)
-                                (make-fons-relation :from "carole" :to "david" :score 0.8)
-                                (make-fons-relation :from "david" :to "eve" :score 0.8)))))))))
+               :relations (list (make-fons-relation
+                                 :from "alice" :to "carole" :score 0.8)
+                                (make-fons-relation
+                                 :from "carole" :to "david" :score 0.8)
+                                (make-fons-relation
+                                 :from "david" :to "eve" :score 0.8)))))))))
 
 (ert-deftest fons-filter-short-circuits ()
+  "Relations of sources with scores below the threshold are skipped."
   ;; NEXT: Write this test to ensure that the paths from alice to georgie and to
   ;; hobart are filtered out.
   (fons-test ((lambda ()
