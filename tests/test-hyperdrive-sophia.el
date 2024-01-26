@@ -7,13 +7,14 @@
 
 (defvar test-hyperdrive-fons-relations (make-hash-table :test 'equal))
 
-(defvar test-hyperdrive-fons-default-relations-fn
-  (lambda ()
-    (fons-add-relation "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-relations)
-    (fons-add-relation "alice" "carole" 0.8 "tofu" test-hyperdrive-fons-relations)
-    (fons-add-relation "carole" "david" 0.8 "tofu" test-hyperdrive-fons-relations)
-    (fons-add-relation "carole" "eve" 0.5 "tofu" test-hyperdrive-fons-relations)
-    (fons-add-relation "david" "eve" 0.8 "tofu" test-hyperdrive-fons-relations)))
+(eval-and-compile
+  (defvar test-hyperdrive-fons-default-relations-fn
+    (lambda ()
+      (fons-add-relation "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-relations)
+      (fons-add-relation "alice" "carole" 0.8 "tofu" test-hyperdrive-fons-relations)
+      (fons-add-relation "carole" "david" 0.8 "tofu" test-hyperdrive-fons-relations)
+      (fons-add-relation "carole" "eve" 0.5 "tofu" test-hyperdrive-fons-relations)
+      (fons-add-relation "david" "eve" 0.8 "tofu" test-hyperdrive-fons-relations))))
 
 (cl-defmacro fons-test ((&optional relations-fn) &rest body)
   (declare (indent defun) (debug (def-form)))
@@ -60,10 +61,10 @@
   ;; NEXT: Write this test to ensure that the paths from alice to georgie and to
   ;; hobart are filtered out.
   (fons-test ((lambda ()
-                  (funcall test-hyperdrive-fons-default-relations-fn)
-                  (fons-add-relation "alice" "frank" 1 "tofu" test-hyperdrive-fons-relations)
-                  (fons-add-relation "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-relations)
-                  (fons-add-relation "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-relations)))
+                (funcall test-hyperdrive-fons-default-relations-fn)
+                (fons-add-relation "alice" "frank" 1 "tofu" test-hyperdrive-fons-relations)
+                (fons-add-relation "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-relations)
+                (fons-add-relation "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-relations)))
     (let (fons-relations-called-with)
       (cl-letf* ((orig-fn (symbol-function 'fons-relations))
                  ((symbol-function 'fons-relations)
