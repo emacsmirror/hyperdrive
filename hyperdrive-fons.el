@@ -8,73 +8,70 @@
 (require 'cl-lib)
 (require 'map)
 
-;; TODO: Naming is hard.  (This struct doesn't really describe the relationship
-;; between two people; it's one-directional.)
-
 ;;;; Types
 
-(cl-defstruct fons-relation
+(cl-defstruct fons-hop
   from to score)
 
-(cl-defstruct fons-path relations score)
+(cl-defstruct fons-path hops score)
 
 ;;;; Functions
 
-(defun fons-add-relation (from to score topic table)
-  (let ((relation (make-fons-relation :from from :to to :score score)))
-    (push relation (map-elt (map-elt table
-                                     (fons-relation-from relation))
+(defun fons-add-hop (from to score topic table)
+  (let ((hop (make-fons-hop :from from :to to :score score)))
+    (push hop (map-elt (map-elt table
+                                     (fons-hop-from hop))
                             topic))))
 
-(defun fons-relations (_from)
-  "Return relations from user FROM."
+(defun fons-hops (_from)
+  "Return hops from user FROM."
   (error "Not yet implemented (bound in tests)"))
 
 (cl-defun fons-paths (from topic &key (max-hops 3))
-  "Return paths from FROM up to MAX-HOPS in RELATIONS about TOPIC."
+  "Return paths from FROM up to MAX-HOPS in HOPS about TOPIC."
   (cl-labels ((extend-path (a b)
                 "Return a copy of path A extended by B and rescored."
                 (setf a (copy-sequence a))
-                (setf (fons-path-relations b) (append (fons-path-relations a)
-                                                      (fons-path-relations b)))
+                (setf (fons-path-hops b) (append (fons-path-hops a)
+                                                 (fons-path-hops b)))
                 (setf (fons-path-score b) (fons-score b))
                 b))
-    (let* ((relations (map-elt (fons-relations from) topic))
-           (paths (cl-loop for relation in relations
+    (let* ((hops (map-elt (fons-hops from) topic))
+           (paths (cl-loop for hop in hops
                            collect (make-fons-path
-                                    :score (fons-relation-score relation)
-                                    :relations (list relation)))))
+                                    :score (fons-hop-score hop)
+                                    :hops (list hop)))))
       ;; NOTE: At this point, `paths' only has one-hop paths.
       (unless (zerop (cl-decf max-hops))
         ;; Add hops up to the limit.
         (dolist (path paths)
-          (let* ((last-relation (car (last (fons-path-relations path))))
-                 (last-to (fons-relation-to last-relation))
+          (let* ((last-hop (car (last (fons-path-hops path))))
+                 (last-to (fons-hop-to last-hop))
                  (new-paths (fons-paths last-to topic :max-hops 1)))
             (dolist (new-path new-paths)
-              (let ((duplicate-path (extend-path path new-path)))
+              (let ((extended-path (extend-path path new-path)))
                 ;; FIXME: Hardcoded threshold.
-                (push duplicate-path paths)
-                (unless (< (fons-path-score duplicate-path) 0.5)
-                  (let* ((duplicate-last-relation
-                          (car (last (fons-path-relations duplicate-path))))
-                         (duplicate-last-to (fons-relation-to duplicate-last-relation))
+                (push extended-path paths)
+                (unless (< (fons-path-score extended-path) 0.5)
+                  (let* ((extended-last-hop
+                          (car (last (fons-path-hops extended-path))))
+                         (extended-last-to (fons-hop-to extended-last-hop))
                          (extended-paths
                           (mapcar (lambda (path)
-                                    (extend-path duplicate-path path))
-                                  (fons-paths duplicate-last-to topic
+                                    (extend-path extended-path path))
+                                  (fons-paths extended-last-to topic
                                               :max-hops max-hops))))
                     (cl-callf2 append extended-paths paths))))))))
       paths)))
 
 (defun fons-score (path)
-  (cl-reduce #'* (fons-path-relations path) :key #'fons-relation-score))
+  (cl-reduce #'* (fons-path-hops path) :key #'fons-hop-score))
 
 ;; (cl-defun fons-filter-to (to paths)
 ;;   "Return PATHS that end at TO."
 ;;   (cl-remove-if-not
 ;;    (lambda (path)
-;;      (equal to (fons-relation-to (car (last (fons-path-relations path))))))
+;;      (equal to (fons-hop-to (car (last (fons-path-hops path))))))
 ;;    paths))
 
 ;; (fons-filter-to "eve" paths)
