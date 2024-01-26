@@ -15,6 +15,11 @@
 
 (cl-defstruct fons-path hops score)
 
+;;;; Variables
+
+(defvar fons-score-threshold 0.5
+  "Paths that score below this are omitted.")
+
 ;;;; Functions
 
 (defun fons-add-hop (from to score topic table)
@@ -27,7 +32,8 @@
   "Return hops from user FROM."
   (error "Not yet implemented (bound in tests)"))
 
-(cl-defun fons-paths (from topic &key (max-hops 3))
+(cl-defun fons-paths
+    (from topic &key (max-hops 3) (threshold fons-score-threshold))
   "Return paths from FROM up to MAX-HOPS in HOPS about TOPIC."
   (cl-labels ((extend-path (a b)
                 "Return a copy of path A extended by B and rescored."
@@ -47,20 +53,21 @@
         (dolist (path paths)
           (let* ((last-hop (car (last (fons-path-hops path))))
                  (last-to (fons-hop-to last-hop))
-                 (new-paths (fons-paths last-to topic :max-hops 1)))
+                 (new-paths (fons-paths
+                             last-to topic :max-hops 1 :threshold threshold)))
             (dolist (new-path new-paths)
               (let ((extended-path (extend-path path new-path)))
-                ;; FIXME: Hardcoded threshold.
                 (push extended-path paths)
-                (unless (< (fons-path-score extended-path) 0.5)
+                (unless (< (fons-path-score extended-path) threshold)
                   (let* ((extended-last-hop
                           (car (last (fons-path-hops extended-path))))
                          (extended-last-to (fons-hop-to extended-last-hop))
                          (extended-paths
                           (mapcar (lambda (path)
                                     (extend-path extended-path path))
-                                  (fons-paths extended-last-to topic
-                                              :max-hops max-hops))))
+                                  (fons-paths
+                                   extended-last-to topic
+                                   :max-hops max-hops :threshold threshold))))
                     (cl-callf2 append extended-paths paths))))))))
       paths)))
 
