@@ -1,14 +1,24 @@
 ;;; hyperdrive-fons.el ---      -*- lexical-binding: t; -*-
 
+
+;;; Code:
+
+;;;; Requirements
+
 (require 'cl-lib)
 (require 'map)
 
 ;; TODO: Naming is hard.  (This struct doesn't really describe the relationship
 ;; between two people; it's one-directional.)
+
+;;;; Types
+
 (cl-defstruct fons-relation
   from to score)
 
 (cl-defstruct fons-path relations score)
+
+;;;; Functions
 
 (defun fons-add-relation (from to score topic table)
   (let ((relation (make-fons-relation :from from :to to :score score)))
@@ -68,6 +78,8 @@
 ;;   ;; TODO: Consider using a weighted mean based on path length.
 ;;   (cl-loop for path in paths
 ;;            maximizing (fons-path-score path)))
+
+;;;; Footer
 
 (provide 'hyperdrive-fons)
 
