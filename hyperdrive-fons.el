@@ -43,13 +43,28 @@
       (dolist (path paths)
         (let* ((last-relation (car (last (fons-path-relations path))))
                (last-to (fons-relation-to last-relation))
-               (new-paths (fons-paths last-to topic :max-hops max-hops)))
+               (new-paths (fons-paths last-to topic :max-hops 1)))
           (dolist (new-path new-paths)
             (let ((duplicate-path (copy-sequence path)))
               (cl-callf append (fons-path-relations duplicate-path)
                 (fons-path-relations new-path))
               (setf (fons-path-score duplicate-path) (fons-score duplicate-path))
-              (push duplicate-path paths))))))
+              ;; FIXME: Hardcoded threshold.
+              (push duplicate-path paths)
+              (unless (< (fons-path-score duplicate-path) 0.5)
+                (let* ((duplicate-last-relation
+                        (car (last (fons-path-relations duplicate-path))))
+                       (duplicate-last-to (fons-relation-to duplicate-last-relation))
+                       (extended-paths
+                        (mapcar (lambda (path)
+                                  (setf (fons-path-relations path)
+                                        (append (fons-path-relations duplicate-path)
+                                                (fons-path-relations path) )
+                                        (fons-path-score path) (fons-score path))
+                                  path)
+                                (fons-paths duplicate-last-to topic
+                                            :max-hops max-hops))))
+                  (cl-callf2 append extended-paths paths))))))))
     paths))
 
 (defun fons-score (path)
