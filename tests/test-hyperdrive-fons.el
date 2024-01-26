@@ -85,6 +85,12 @@
         (should (seq-contains-p fons-hops-called-with '("frank")))
         (should-not (seq-contains-p fons-hops-called-with '("georgie")))))))
 
+;; TODO: Add test that aggregates paths into a score (where paths A>B>D and
+;; A>C>D are each below the threshold but, together, A...D is above
+;; it). (Consider expressing the A...D relation as a "relation" struct or
+;; something like that, which may contain multiple independent paths between A
+;; and D.)
+
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")
