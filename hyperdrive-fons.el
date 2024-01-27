@@ -74,6 +74,11 @@
 (defun fons-score (path)
   (cl-reduce #'* (fons-path-hops path) :key #'fons-hop-score))
 
+
+(defun fons-path-to-p (to path)
+  "Return non-nil if PATH is to TO."
+  (equal to (fons-hop-to (car (last (fons-path-hops path))))))
+
 ;; (cl-defun fons-filter-to (to paths)
 ;;   "Return PATHS that end at TO."
 ;;   (cl-remove-if-not

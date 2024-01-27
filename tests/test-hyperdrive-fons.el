@@ -99,3 +99,22 @@
 ;;   ("hf/"  . "hyperdrive-fons-")
 ;;   ("h/"   . "hyperdrive-"))
 ;; End:
+
+(ert-deftest fons-path-to-p ()
+  "Returns non-nil if PATH ends in TO."
+  (should (fons-path-to-p "bob"
+                          (make-fons-path
+                           :hops (list (make-fons-hop
+                                        :from "alice" :to "bob")))))
+  (should (fons-path-to-p "eve"
+                          (make-fons-path
+                           :hops (list (make-fons-hop
+                                        :from "alice" :to "carole")
+                                       (make-fons-hop
+                                        :from "carole" :to "eve")))))
+  (should-not (fons-path-to-p "carole"
+                              (make-fons-path
+                               :hops (list (make-fons-hop
+                                            :from "alice" :to "carole")
+                                           (make-fons-hop
+                                            :from "carole" :to "eve"))))))
