@@ -91,14 +91,22 @@
 ;; something like that, which may contain multiple independent paths between A
 ;; and D.)
 
-;; Local Variables:
-;; read-symbol-shorthands: (
-;;   ("he//" . "hyperdrive-entry--")
-;;   ("he/"  . "hyperdrive-entry-")
-;;   ("h//"  . "hyperdrive--")
-;;   ("hf/"  . "hyperdrive-fons-")
-;;   ("h/"   . "hyperdrive-"))
-;; End:
+(ert-deftest fons-aggregate-paths ()
+  "Multiple paths between A and D are aggregated into a relation with a certain score."
+  (fons-test ()
+    (let* ((tofu-paths-from-alice-3-hops (fons-paths "alice" "tofu"))
+           (paths-to-eve (cl-remove-if-not
+                          (lambda (path)
+                            (fons-path-to-p "eve" path))
+                          tofu-paths-from-alice-3-hops))
+           (relation-to-eve (make-fons-relation
+                             :from "alice" :to "eve" :paths paths-to-eve)))
+      (should (fons-relation-p relation-to-eve))
+      (should (equal "alice" (fons-relation-from relation-to-eve)))
+      (should (equal "eve" (fons-relation-to relation-to-eve)))
+      (should (numberp (fons-score-relation relation-to-eve)))
+      ;; Filter paths below score?
+      (should (length= 0 (fons-relation-paths relation-to-eve))))))
 
 (ert-deftest fons-path-to-p ()
   "Returns non-nil if PATH ends in TO."
@@ -118,3 +126,12 @@
                                             :from "alice" :to "carole")
                                            (make-fons-hop
                                             :from "carole" :to "eve"))))))
+
+  ;; Local Variables:
+  ;; read-symbol-shorthands: (
+  ;;   ("he//" . "hyperdrive-entry--")
+  ;;   ("he/"  . "hyperdrive-entry-")
+  ;;   ("h//"  . "hyperdrive--")
+  ;;   ("hf/"  . "hyperdrive-fons-")
+  ;;   ("h/"   . "hyperdrive-"))
+  ;; End:

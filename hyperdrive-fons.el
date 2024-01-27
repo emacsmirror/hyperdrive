@@ -15,6 +15,9 @@
 
 (cl-defstruct fons-path hops score)
 
+(cl-defstruct fons-relation
+  from to paths score)
+
 ;;;; Variables
 
 (defvar fons-score-threshold 0.5
@@ -74,10 +77,56 @@
 (defun fons-score (path)
   (cl-reduce #'* (fons-path-hops path) :key #'fons-hop-score))
 
+;; (defun fons-path-from-p (from path)
+;;   "Return non-nil if PATH is from FROM.")
 
 (defun fons-path-to-p (to path)
   "Return non-nil if PATH is to TO."
   (equal to (fons-hop-to (car (last (fons-path-hops path))))))
+
+;; (cl-defun fons-relation (to paths &key (score-fn #'fons-score-patsh))
+;;   "Return relation aggregating PATHS to TO.
+;; PATHS should be a list of paths from a single source to TO."
+;;   ;; TODO: Consider asserting that all PATHS are from the same source.
+;;   (let* ((relation (make-fons-relation :from from :to to)))
+;;     (setf (fons-relation-score relation)
+;;           ;; compute score from paths
+;;           )
+;;     relation))
+
+;; (defun fons-score-relation (relation)
+;;   "Return RELATION's score having aggregated its paths."
+;;   ;; TODO: Consider using a mean weighted by the inverse of path length.
+
+;;   ;; 1. Find maximum path length.
+
+;;   ;; 2. For any path with length >1, multiply its score by the inverse of path's
+;;   ;; length / max path length.
+;;   (let ((max-path-length (cl-loop for path in (fons-relation-paths relation)
+;;                                   maximizing (length (fons-path-hops path)))))
+;;     (/ (cl-reduce #'+ (fons-relation-paths relation)
+;;                   :key (lambda (path)
+;;                          (* (fons-path-score path)
+;;                             (- 1 (/ (length (fons-path-hops path))
+;;                                     max-path-length)))))
+;;        (length (fons-relation-paths relation)))))
+
+(defun fons-score-relation (relation)
+  "Return RELATION's score having aggregated its paths."
+  ;; TODO: Consider using a mean weighted by the inverse of path length.
+
+  ;; 1. Find maximum path length.
+
+  ;; 2. For any path with length >1, multiply its score by the inverse of path's
+  ;; length / max path length.
+  (let ((max-path-length (cl-loop for path in (fons-relation-paths relation)
+                                  maximizing (length (fons-path-hops path)))))
+    (/ (cl-reduce #'+ (fons-relation-paths relation)
+                  :key (lambda (path)
+                         (* (fons-path-score path)
+                            (/ (length (fons-path-hops path))
+                               max-path-length))))
+       (length (fons-relation-paths relation)))))
 
 ;; (cl-defun fons-filter-to (to paths)
 ;;   "Return PATHS that end at TO."
