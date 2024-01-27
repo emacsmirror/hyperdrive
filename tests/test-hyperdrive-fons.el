@@ -142,11 +142,37 @@
                                            (make-fons-hop
                                             :from "carole" :to "eve"))))))
 
-  ;; Local Variables:
-  ;; read-symbol-shorthands: (
-  ;;   ("he//" . "hyperdrive-entry--")
-  ;;   ("he/"  . "hyperdrive-entry-")
-  ;;   ("h//"  . "hyperdrive--")
-  ;;   ("hf/"  . "hyperdrive-fons-")
-  ;;   ("h/"   . "hyperdrive-"))
-  ;; End:
+(ert-deftest fons-path-circular-p ()
+  "Returns non-nil if PATH ends in TO."
+  (should (fons-path-circular-p
+           (make-fons-path
+            :hops (list (make-fons-hop
+                         :from "alice" :to "bob")
+                        (make-fons-hop
+                         :from "bob" :to "alice")))))
+  (should (fons-path-circular-p
+           (make-fons-path
+            :hops (list (make-fons-hop
+                         :from "alice" :to "bob")
+                        (make-fons-hop
+                         :from "bob" :to "carole")
+                        (make-fons-hop
+                         :from "carole" :to "bob")))))
+  (should-not (fons-path-circular-p
+               ;; Ignore circular paths before the last hop.
+               (make-fons-path
+                :hops (list (make-fons-hop
+                             :from "alice" :to "bob")
+                            (make-fons-hop
+                             :from "bob" :to "alice")
+                            (make-fons-hop
+                             :from "alice" :to "carole"))))))
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("hf/"  . "hyperdrive-fons-")
+;;   ("h/"   . "hyperdrive-"))
+;; End:

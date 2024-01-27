@@ -93,6 +93,14 @@
   "Return non-nil if PATH is to TO."
   (equal to (fons-hop-to (car (last (fons-path-hops path))))))
 
+(defun fons-path-circular-p (path)
+  "Return non-nil if the last hop in PATH circles back to any earlier hop."
+  ;; We only need to check PATH's last hop if this check runs at each iteration.
+  (let ((last-hop-to (fons-hop-to (car (last (fons-path-hops path))))))
+    (cl-some (lambda (hop)
+               (equal last-hop-to (fons-hop-from hop)))
+             (fons-path-hops path))))
+
 ;; (cl-defun fons-relation (to paths &key (score-fn #'fons-score-patsh))
 ;;   "Return relation aggregating PATHS to TO.
 ;; PATHS should be a list of paths from a single source to TO."
