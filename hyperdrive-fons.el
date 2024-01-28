@@ -75,7 +75,16 @@
       paths)))
 
 (defun fons-score (path)
-  (cl-reduce #'* (fons-path-hops path) :key #'fons-hop-score))
+  "Return PATH's score."
+  (let ((hop-number 0))
+    (cl-reduce
+     (lambda (acc hop)
+       (* acc
+          (expt (fons-hop-score hop)
+                ;; TODO: Consider using an option to soften the decay by length.
+                (cl-incf hop-number))))
+     (fons-path-hops path)
+     :initial-value 1)))
 
 ;; (defun fons-path-from-p (from path)
 ;;   "Return non-nil if PATH is from FROM.")
@@ -94,63 +103,10 @@
 ;;           )
 ;;     relation))
 
-;; (defun fons-score-relation (relation)
-;;   "Return RELATION's score having aggregated its paths."
-;;   ;; TODO: Consider using a mean weighted by the inverse of path length.
-
-;;   ;; 1. Find maximum path length.
-
-;;   ;; 2. For any path with length >1, multiply its score by the inverse of path's
-;;   ;; length / max path length.
-;;   (let ((max-path-length (cl-loop for path in (fons-relation-paths relation)
-;;                                   maximizing (length (fons-path-hops path)))))
-;;     (/ (cl-reduce #'+ (fons-relation-paths relation)
-;;                   :key (lambda (path)
-;;                          (* (fons-path-score path)
-;;                             (- 1 (/ (length (fons-path-hops path))
-;;                                     max-path-length)))))
-;;        (length (fons-relation-paths relation)))))
-
 (defun fons-score-relation (relation)
   "Return RELATION's score having aggregated its paths."
-  ;; TODO: Consider using a mean weighted by the inverse of path length.
-
-  ;; 1. Find maximum path length.
-
-  ;; 2. For any path with length >1, multiply its score by the inverse of path's
-  ;; length / max path length.
-  (let ((max-path-length (cl-loop for path in (fons-relation-paths relation)
-                                  maximizing (length (fons-path-hops path)))))
-    (/ (cl-reduce #'+ (fons-relation-paths relation)
-                  :key (lambda (path)
-                         (* (fons-path-score path)
-                            (/ (length (fons-path-hops path))
-                               max-path-length))))
-       (length (fons-relation-paths relation)))))
-
-;; (cl-defun fons-filter-to (to paths)
-;;   "Return PATHS that end at TO."
-;;   (cl-remove-if-not
-;;    (lambda (path)
-;;      (equal to (fons-hop-to (car (last (fons-path-hops path))))))
-;;    paths))
-
-;; (fons-filter-to "eve" paths)
-
-;; (defcustom fons-aggregate-fn #'fons-aggregate-score-default
-;;   "Path aggregation function."
-;;   :type 'function
-;;   :group 'hyperdrive)
-
-;; (defun fons-aggregate-score (paths)
-;;   "Return aggregate score of PATHS."
-;;   (funcall fons-aggregate-fn paths))
-
-;; (defun fons-aggregate-score-default (paths)
-;;   "Return the aggregate score for PATHS."
-;;   ;; TODO: Consider using a weighted mean based on path length.
-;;   (cl-loop for path in paths
-;;            maximizing (fons-path-score path)))
+  (cl-reduce #'+ (fons-relation-paths relation)
+             :key #'fons-path-score))
 
 ;;;; Footer
 

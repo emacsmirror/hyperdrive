@@ -85,28 +85,43 @@
         (should (seq-contains-p fons-hops-called-with '("frank")))
         (should-not (seq-contains-p fons-hops-called-with '("georgie")))))))
 
-;; TODO: Add test that aggregates paths into a score (where paths A>B>D and
-;; A>C>D are each below the threshold but, together, A...D is above
-;; it). (Consider expressing the A...D relation as a "relation" struct or
-;; something like that, which may contain multiple independent paths between A
-;; and D.)
-
 (ert-deftest fons-aggregate-paths ()
-  "Multiple paths between A and D are aggregated into a relation with a certain score."
+  "Not a test; used to experiment."
+  (skip-unless nil)
   (fons-test ()
-    (let* ((tofu-paths-from-alice-3-hops (fons-paths "alice" "tofu"))
-           (paths-to-eve (cl-remove-if-not
-                          (lambda (path)
-                            (fons-path-to-p "eve" path))
-                          tofu-paths-from-alice-3-hops))
-           (relation-to-eve (make-fons-relation
-                             :from "alice" :to "eve" :paths paths-to-eve)))
-      (should (fons-relation-p relation-to-eve))
-      (should (equal "alice" (fons-relation-from relation-to-eve)))
-      (should (equal "eve" (fons-relation-to relation-to-eve)))
-      (should (numberp (fons-score-relation relation-to-eve)))
-      ;; Filter paths below score?
-      (should (length= 0 (fons-relation-paths relation-to-eve))))))
+    (let* ((froms (delete-dups
+                   (mapcar (lambda (it)
+                             (fons-hop-from (cadar it)))
+                           (map-values test-hyperdrive-fons-hops))))
+           (paths-by-from (mapcar (lambda (from)
+                                    (cons from (fons-paths from "tofu")))
+                                  froms))
+           (relations-by-from
+            (mapcar
+             (lambda (map)
+               (let* ((from (car map))
+                      (paths (cdr map))
+                      (tos (delete-dups
+                            (mapcar
+                             (lambda (path)
+                               (fons-hop-to (car (last (fons-path-hops path)))))
+                             paths)))
+                      (relations
+                       (mapcar
+                        (lambda (to)
+                          (let ((relation (make-fons-relation
+                                           :from from :to to
+                                           :paths (cl-remove-if-not
+                                                   (lambda (path)
+                                                     (fons-path-to-p to path))
+                                                   paths))))
+                            (setf (fons-relation-score relation)
+                                  (fons-score-relation relation))
+                            relation))
+                        tos)))
+                 relations))
+             paths-by-from)))
+      (should-not relations-by-from))))
 
 (ert-deftest fons-path-to-p ()
   "Returns non-nil if PATH ends in TO."
