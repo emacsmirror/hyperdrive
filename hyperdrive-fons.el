@@ -23,6 +23,16 @@
 (defvar fons-score-threshold 0.5
   "Paths that score below this are omitted.")
 
+(defgroup fons nil
+  "FIXME: Docstring."
+  :group 'applications)
+
+(defcustom fons-path-score-fn #'fons-path-score-default
+  "Path scoring function.
+Takes one argument, a `fons-path' and returns a number from 0 to
+1."
+  :type 'function)
+
 ;;;; Functions
 
 (defun fons-add-hop (from to score topic table)
@@ -43,7 +53,7 @@
                 (setf a (copy-sequence a))
                 (setf (fons-path-hops b) (append (fons-path-hops a)
                                                  (fons-path-hops b)))
-                (setf (fons-path-score b) (fons-score b))
+                (setf (fons-path-score b) (funcall fons-path-score-fn b))
                 b))
     (let* ((hops (map-elt (fons-hops from) topic))
            (paths (cl-loop for hop in hops
@@ -74,7 +84,7 @@
                     (cl-callf2 append extended-paths paths))))))))
       paths)))
 
-(defun fons-score (path)
+(defun fons-path-score-default (path)
   "Return PATH's score."
   (let ((hop-number 0))
     (cl-reduce
