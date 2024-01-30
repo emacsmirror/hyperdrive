@@ -33,6 +33,10 @@ Takes one argument, a `fons-path' and returns a number from 0 to
 1."
   :type 'function)
 
+(defcustom fons-path-score-decay-coefficient 1
+  "FIXME:"
+  :type 'number)
+
 ;;;; Functions
 
 (defun fons-add-hop (from to score topic table)
@@ -83,9 +87,6 @@ Takes one argument, a `fons-path' and returns a number from 0 to
                                    :max-hops max-hops :threshold threshold))))
                     (cl-callf2 append extended-paths paths))))))))
       paths)))
-
-(defcustom fons-path-score-decay-coefficient 1
-  "FIXME:")
 
 (defun fons-path-score-default (path)
   "Return PATH's score."
