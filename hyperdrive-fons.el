@@ -84,15 +84,17 @@ Takes one argument, a `fons-path' and returns a number from 0 to
                     (cl-callf2 append extended-paths paths))))))))
       paths)))
 
+(defcustom fons-path-score-decay-coefficient 1
+  "FIXME:")
+
 (defun fons-path-score-default (path)
   "Return PATH's score."
-  (let ((hop-number 0))
+  (let ((hop-number -1))
     (cl-reduce
      (lambda (acc hop)
        (* acc
-          (expt (fons-hop-score hop)
-                ;; TODO: Consider using an option to soften the decay by length.
-                (cl-incf hop-number))))
+          (fons-hop-score hop)
+          (expt fons-path-score-decay-coefficient (cl-incf hop-number))))
      (fons-path-hops path)
      :initial-value 1)))
 
