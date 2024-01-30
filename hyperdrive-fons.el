@@ -37,6 +37,10 @@ Takes one argument, a `fons-path' and returns a number from 0 to
   "FIXME:"
   :type 'number)
 
+(defcustom fons-relation-score-fn #'fons-relation-score-default
+  "FIXME: Docstring."
+  :type 'function)
+
 ;;;; Functions
 
 (defun fons-add-hop (from to score topic table)
@@ -124,7 +128,7 @@ Takes one argument, a `fons-path' and returns a number from 0 to
 ;;           )
 ;;     relation))
 
-(defun fons-score-relation (relation)
+(defun fons-relation-score-default (relation)
   "Return RELATION's score having aggregated its paths."
   (cl-reduce #'+ (fons-relation-paths relation)
              :key #'fons-path-score))

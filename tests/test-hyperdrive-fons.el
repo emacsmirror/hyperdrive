@@ -85,7 +85,7 @@
         (should (seq-contains-p fons-hops-called-with '("frank")))
         (should-not (seq-contains-p fons-hops-called-with '("georgie")))))))
 
-(ert-deftest fons-aggregate-paths ()
+(ert-deftest fons-relations ()
   "Not a test; used to experiment."
   (skip-unless nil)
   (fons-test ()
@@ -116,7 +116,7 @@
                                                      (fons-path-to-p to path))
                                                    paths))))
                             (setf (fons-relation-score relation)
-                                  (fons-score-relation relation))
+                                  (funcall fons-relation-score-fn relation))
                             relation))
                         tos)))
                  relations))
