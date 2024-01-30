@@ -36,7 +36,6 @@
     (let* ((paths (fons-paths "alice" "tofu" :max-hops 3)))
       (should
        (seq-set-equal-p
-        paths
         (list (make-fons-path
                :score 0.25
                :hops (list (make-fons-hop
@@ -64,7 +63,8 @@
                            (make-fons-hop
                             :from "carole" :to "david" :score 0.8)
                            (make-fons-hop
-                            :from "david" :to "eve" :score 0.8)))))))))
+                            :from "david" :to "eve" :score 0.8))))
+        paths)))))
 
 (ert-deftest fons-filter-short-circuits ()
   "Hops of sources with scores below the threshold are skipped."
