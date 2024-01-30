@@ -9,25 +9,23 @@
 
 (defvar test-hyperdrive-fons-hops (make-hash-table :test 'equal))
 
-(eval-and-compile
-  (defvar test-hyperdrive-fons-default-hops-fn
-    (lambda ()
-      (fons-add-hop "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-hops)
-      (fons-add-hop "alice" "carole" 0.8 "tofu" test-hyperdrive-fons-hops)
-      (fons-add-hop "carole" "david" 0.8 "tofu" test-hyperdrive-fons-hops)
-      (fons-add-hop "carole" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-      (fons-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops))))
+(defvar test-hyperdrive-fons-default-hops-fn
+  (lambda ()
+    (fons-add-hop "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-hops)
+    (fons-add-hop "alice" "carole" 0.8 "tofu" test-hyperdrive-fons-hops)
+    (fons-add-hop "carole" "david" 0.8 "tofu" test-hyperdrive-fons-hops)
+    (fons-add-hop "carole" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
+    (fons-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)))
 
 (cl-defmacro fons-test ((&optional hops-fn) &rest body)
   (declare (indent defun) (debug (&optional form def-form)))
   `(progn
      (clrhash test-hyperdrive-fons-hops)
-     (funcall ,(if hops-fn
-                   hops-fn
-                 test-hyperdrive-fons-default-hops-fn))
+     (funcall (or ,hops-fn
+                  test-hyperdrive-fons-default-hops-fn))
      (cl-letf (((symbol-function 'fons-hops)
                 (lambda (peer-name)
-                  (cdar (map-filter (lambda (from data)
+                  (cdar (map-filter (lambda (from _data)
                                       (equal from peer-name))
                                     test-hyperdrive-fons-hops)))))
        ,@body)))
