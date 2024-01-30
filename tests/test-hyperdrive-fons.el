@@ -1,3 +1,5 @@
+;;; test-hyperdrive-fons.el ---      -*- lexical-binding: t; -*-
+
 (require 'ert)
 
 (require 'map)
