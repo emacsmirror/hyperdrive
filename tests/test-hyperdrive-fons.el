@@ -18,7 +18,7 @@
     (fons-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)))
 
 (cl-defmacro fons-test ((&optional hops-fn) &rest body)
-  (declare (indent defun) (debug (&optional form def-form)))
+  (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
   `(progn
      (clrhash test-hyperdrive-fons-hops)
      (funcall (or ,hops-fn
