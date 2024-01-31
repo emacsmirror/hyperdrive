@@ -56,7 +56,7 @@ options."
            (const :description "Similar to fdp." "sfdp"))))
 
 (cl-defun hyperdrive-fons-view
-    (relation &key (layout hyperdrive-fons-view-layout))
+    (paths &key from (layout hyperdrive-fons-view-layout))
   "View RELATION."
   (cl-labels ((window-dimensions-in (&optional (window (selected-window)))
                 ;; Return WINDOW (width-in height-in) in inches.
@@ -76,9 +76,9 @@ options."
               (mm-in (mm) (* mm 0.04)))
     (pcase-let* ((`(,width-in ,height-in ,width-res ,height-res)
                   (window-dimensions-in))
-                 (graph (flatten-list (hyperdrive-fons-view--relation-graph relation)))
+                 (graph (flatten-list (hyperdrive-fons-view--paths-graph paths)))
                  (graphviz (hyperdrive-fons-view--format-graph
-                            graph :root-name (fons-relation-from relation)
+                            graph :root-name from
                             :layout layout :width-in width-in :height-in height-in
                             ;; Average the two resolutions.
                             :dpi (/ (+ width-res height-res) 2)))
@@ -88,6 +88,18 @@ options."
         (erase-buffer)
         (insert-image svg-image)
         (pop-to-buffer (current-buffer))))))
+
+(defun hyperdrive-fons-view--paths-graph (paths)
+  "Return graph for PATHS.
+Graph is a list of strings which form the graphviz data."
+  (let ((nodes (make-hash-table :test #'equal)))
+    (cl-labels ((format-path (path)
+                  (mapcar #'format-hop (fons-path-hops path)))
+                (format-hop (hop)
+                  ;; TODO: Hop score.
+                  (format "%s -> %s;\n"
+                          (fons-hop-from hop) (fons-hop-to hop))))
+      (mapcar #'format-path paths))))
 
 (defun hyperdrive-fons-view--relation-graph (relation)
   "Return graph for RELATION.
@@ -148,7 +160,8 @@ Graph is a list of strings which form the graphviz data."
         ;;                                    (--map (format "%s=\"%s\"" (car it) (cdr it))
         ;;                                           (node-properties (cdr value)))))))
         ;;          nodes)
-        (insert (format "root=\"%s\"" root-name))
+        (when root-name
+          (insert (format "root=\"%s\"" root-name)))
         (insert "}"))
       ;; (debug-warn (buffer-string))
       (buffer-string)))
