@@ -92,6 +92,20 @@ Takes one argument, a `fons-path' and returns a number from 0 to
                     (cl-callf2 append extended-paths paths))))))))
       paths)))
 
+(defun fons-relation (to paths)
+  "Return relation to TO among PATHS.
+PATHS should be from a single source."
+  (let* ((from (fons-hop-from (car (fons-path-hops (car paths)))))
+         (paths-to (cl-remove-if-not
+                    (lambda (path)
+                      (fons-path-to-p to path))
+                    paths))
+         (relation (make-fons-relation :from from :to to
+                                       :paths paths-to)))
+    (setf (fons-relation-score relation)
+          (funcall fons-relation-score-fn relation))
+    relation))
+
 (defun fons-path-score-default (path)
   "Return PATH's score."
   (let ((hop-number -1))
@@ -129,9 +143,11 @@ Takes one argument, a `fons-path' and returns a number from 0 to
 ;;     relation))
 
 (defun fons-relation-score-default (relation)
-  "Return RELATION's score having aggregated its paths."
-  (cl-reduce #'+ (fons-relation-paths relation)
-             :key #'fons-path-score))
+  "Return RELATION's score having aggregated its paths.
+The score does not exceed 1."
+  (min 1
+       (cl-reduce #'+ (fons-relation-paths relation)
+                  :key #'fons-path-score)))
 
 ;;;; Footer
 

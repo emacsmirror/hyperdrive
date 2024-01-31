@@ -168,6 +168,15 @@
                             (make-fons-hop
                              :from "alice" :to "carole"))))))
 
+(ert-deftest fons-path-alice-to-eve-relation-score ()
+  "Relation score."
+  (fons-test ()
+    (let* ((from "alice") (to "eve")
+           (paths-about (fons-paths from "tofu"))
+           (relation (fons-relation to paths-about)))
+      (should (= 2 (length (fons-relation-paths relation))))
+      (should (= 0.9120000000000001 (fons-relation-score relation))))))
+
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")
