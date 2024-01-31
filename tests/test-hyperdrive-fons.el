@@ -185,3 +185,5 @@
 ;;   ("hf/"  . "hyperdrive-fons-")
 ;;   ("h/"   . "hyperdrive-"))
 ;; End:
+
+;;; test-hyperdrive-fons.el ends here
