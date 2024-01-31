@@ -66,6 +66,9 @@
                             :from "david" :to "eve" :score 0.8))))
         paths)))))
 
+;; TODO: Test that uses the relation score in fons-paths (i.e. for
+;; short-circuiting computations).
+
 (ert-deftest fons-filter-short-circuits ()
   "Hops of sources with scores below the threshold are skipped."
   ;; NEXT: Write this test to ensure that the paths from alice to georgie and to
