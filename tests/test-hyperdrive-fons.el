@@ -186,7 +186,7 @@
     (let* ((from "alice") (to "eve")
            (paths-about (fons-paths from "tofu"))
            (relation (fons-relation to paths-about)))
-      (hyperdrive-fons-view relation))))
+      (hyperdrive-fons-view relation :layout "dot"))))
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (
