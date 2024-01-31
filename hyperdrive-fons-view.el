@@ -31,6 +31,8 @@
 (require 'cl-lib)
 (require 'map)
 
+(require 'fons)
+
 (defcustom hyperdrive-fons-view-overlap "voronoi"
   "How to handle overlapping.  See Graphviz documentation.
 It seems unclear which is the best default, because each option
@@ -55,6 +57,17 @@ options."
            (const :description "Top-down, linear layout.  Not very efficient in terms of screen space."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
+
+(defmacro hyperdrive-fons-view--graphviz (type &rest body)
+  "Run Graphviz for TYPE on current buffer, then run BODY in it.
+Current buffer should contain a Graphviz graph.  Graphviz is
+called and replaces the buffer content with the rendered output."
+  (declare (indent defun) (debug (stringp body)))
+  `(if (zerop (call-process-region (point-min) (point-max) "dot" 'delete t nil
+                                   (concat "-T" ,type)))
+       (progn
+         ,@body)
+     (error "Oops: %s" (buffer-string))))
 
 (cl-defun hyperdrive-fons-view
     (hops &key from (layout hyperdrive-fons-view-layout))
@@ -154,8 +167,9 @@ Graph is a list of strings which form the graphviz data."
                 (cl-loop for (key value) on pairs by #'cddr
                          do (insert (format "%s=\"%s\"" key value) "\n")))
               (format-val-list (&rest pairs)
-                (s-wrap (s-join "," (cl-loop for (key value) on pairs by #'cddr
-                                             collect (format "%s=\"%s\"" key value)))
+                (s-wrap (string-join (cl-loop for (key value) on pairs by #'cddr
+                                              collect (format "%s=\"%s\"" key value))
+                                     ",")
                         "[" "]"))
               (format-node-label (key value)
                 (insert (format "%s [label=%s];\n" (fons-hop-key) value))))
@@ -179,7 +193,7 @@ Graph is a list of strings which form the graphviz data."
                      "ratio" "fill"
                      "nodesep" "0"
                      "mindist" "0")
-        (mapc #'insert (-flatten graph))
+        (mapc #'insert (flatten-list graph))
         ;; (maphash #'format-node-label nodes)
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
@@ -215,17 +229,6 @@ commands can find the buffer."
         ;; (setf (image-property image :source-buffer) source-buffer)
         image))))
 
-(defmacro hyperdrive-fons-view--graphviz (type &rest body)
-  "Run Graphviz for TYPE on current buffer, then run BODY in it.
-Current buffer should contain a Graphviz graph.  Graphviz is
-called and replaces the buffer content with the rendered output."
-  (declare (indent defun) (debug (stringp body)))
-  `(if (zerop (call-process-region (point-min) (point-max) "dot" 'delete t nil
-                                   (concat "-T" ,type)))
-       (progn
-         ,@body)
-     (error "Oops: %s" (buffer-string))))
-
 (defvar hyperdrive-fons-view-prism-minimum-contrast 6
   "Attempt to enforce this minimum contrast ratio for user faces.
 This should be a reasonable number from, e.g. 0-7 or so."
@@ -233,13 +236,15 @@ This should be a reasonable number from, e.g. 0-7 or so."
   ;; to 7, but 6 already significantly dilutes the colors in some cases.
   )
 
-(cl-defun hyperdrive-fons-view--prism-color (string &key (contrast-with (face-background 'default nil 'default)))
+(cl-defun hyperdrive-fons-view--prism-color
+    (string &key (contrast-with (face-background 'default nil 'default)))
   ;; Copied from ement.el.
   "Return a computed color for STRING.
 The color is adjusted to have sufficient contrast with the color
 CONTRAST-WITH (by default, the default face's background).  The
 computed color is useful for user messages, generated room
 avatars, etc."
+  (require 'color)
   ;; TODO: Use this instead of `ement-room--user-color'.  (Same algorithm ,just takes a
   ;; string as argument.)
   ;; TODO: Try using HSV somehow so we could avoid having so many strings return a
