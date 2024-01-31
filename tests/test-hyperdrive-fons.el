@@ -180,6 +180,14 @@
       (should (= 2 (length (fons-relation-paths relation))))
       (should (= 0.9120000000000001 (fons-relation-score relation))))))
 
+(ert-deftest fons-path-view ()
+  ""
+  (fons-test ()
+    (let* ((from "alice") (to "eve")
+           (paths-about (fons-paths from "tofu"))
+           (relation (fons-relation to paths-about)))
+      (hyperdrive-fons-view relation))))
+
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")
