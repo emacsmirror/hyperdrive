@@ -29,6 +29,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'map)
 
 (defcustom hyperdrive-fons-view-overlap "voronoi"
   "How to handle overlapping.  See Graphviz documentation.
@@ -56,7 +57,7 @@ options."
            (const :description "Similar to fdp." "sfdp"))))
 
 (cl-defun hyperdrive-fons-view
-    (paths &key from (layout hyperdrive-fons-view-layout))
+    (hops &key from (layout hyperdrive-fons-view-layout))
   "View RELATION."
   (cl-labels ((window-dimensions-in (&optional (window (selected-window)))
                 ;; Return WINDOW (width-in height-in) in inches.
@@ -76,7 +77,7 @@ options."
               (mm-in (mm) (* mm 0.04)))
     (pcase-let* ((`(,width-in ,height-in ,width-res ,height-res)
                   (window-dimensions-in))
-                 (`(,graph ,nodes) (hyperdrive-fons-view--paths-graph paths))
+                 (`(,graph ,nodes) (hyperdrive-fons-view--hops-graph hops))
                  (graph (flatten-list graph))
                  (graphviz (hyperdrive-fons-view--format-graph
                             graph :root-name from :nodes nodes
@@ -89,6 +90,17 @@ options."
         (erase-buffer)
         (insert-image svg-image)
         (pop-to-buffer (current-buffer))))))
+
+(defun hyperdrive-fons-view--hops-graph (hops)
+  "Return (graph nodes) for HOPS.
+Graph is a list of strings which form the graphviz data."
+  (let ((nodes (make-hash-table :test #'equal)))
+    (cl-labels ((format-hop (hop)
+                  (setf (gethash hop nodes) (fons-hop-score hop))
+                  (format "%s -> %s [label=%s];\n"
+                          (fons-hop-from hop) (fons-hop-to hop)
+                          (fons-hop-score hop))))
+      (list (mapcar #'format-hop hops) nodes))))
 
 (defun hyperdrive-fons-view--paths-graph (paths)
   "Return (graph nodes) for PATHS.

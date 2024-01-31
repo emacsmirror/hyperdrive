@@ -216,15 +216,11 @@
                 (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-    (let* ((froms (delete-dups
-                   (mapcar (lambda (it)
-                             (fons-hop-from (cadar it)))
-                           (map-values test-hyperdrive-fons-hops))))
-           (paths-by-from (delete-dups
-                           (mapcar (lambda (from)
-                                     (cons from (fons-paths from "tofu")))
-                                   froms))))
-      (hyperdrive-fons-view (fons-paths "alice" "tofu") :layout "dot"))))
+    (hyperdrive-fons-view (delete-dups
+                           (flatten-list
+                            (mapcar #'fons-path-hops
+                                    (fons-paths "alice" "tofu"))))
+                          :layout "dot")))
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (
