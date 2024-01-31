@@ -31,7 +31,7 @@
 (require 'cl-lib)
 (require 'map)
 
-(require 'fons)
+(require 'hyperdrive-fons)
 
 (defcustom hyperdrive-fons-view-overlap "voronoi"
   "How to handle overlapping.  See Graphviz documentation.
