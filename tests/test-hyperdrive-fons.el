@@ -225,11 +225,17 @@
 (ert-deftest fons-path-view** ()
   ""
   (fons-test ((lambda ()
-                (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "alice" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "bob" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "carole" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "doug" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)))
+                (funcall test-hyperdrive-fons-default-hops-fn)
+                (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops))
+              ;; (lambda ()
+              ;;   (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+              ;;   (fons-add-hop "alice" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
+              ;;   (fons-add-hop "bob" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+              ;;   (fons-add-hop "carole" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+              ;;   (fons-add-hop "doug" "eve" 0.5 "tofu" test-hyperdrive-fons-hops))
+              )
     (let* ((paths-from-alice (fons-paths "alice" "tofu" :threshold 0))
            (hops (delete-dups (flatten-list (mapcar #'fons-path-hops paths-from-alice))))
            ;; (froms (mapcar (lambda (path)
@@ -240,8 +246,11 @@
                   (mapcar #'fons-path-tos paths-from-alice))))
            (relations (mapcar (lambda (to)
                                 (fons-relation to paths-from-alice))
-                              tos)))
-      (hyperdrive-fons-view hops :layout "dot" :relations relations ;; :debug t
+                              tos))
+           )
+      (hyperdrive-fons-view hops :layout "dot" :relations relations
+                            
+                            ;; :debug t
                             ))))
 
 ;; Local Variables:

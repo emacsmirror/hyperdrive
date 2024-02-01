@@ -96,12 +96,19 @@ called and replaces the buffer content with the rendered output."
     (pcase-let* ((`(,width-in ,height-in ,width-res ,height-res)
                   (window-dimensions-in))
                  (`(,hops-graph ,hops-nodes) (hyperdrive-fons-view--hops-graph hops))
-                 (relations-graph
+                 (`(,relations-graph ,relations-nodes)
                   (when relations
-                    (flatten-list
-                     (mapcar #'hyperdrive-fons-view--relation-graph relations))))
-                 (graph (flatten-list (append hops-graph relations-graph)))
-                 (nodes hops-nodes)
+                    (cl-loop
+                     with relations-nodes = (make-hash-table)
+                     for (graph nodes)
+                     in (mapcar #'hyperdrive-fons-view--relation-graph relations)
+                     collect graph into relations-graph
+                     and do (setf relations-nodes
+                                  (map-merge 'hash-table relations-nodes nodes))
+                     finally return (list relations-graph relations-nodes))))
+                 (graph (flatten-list (append hops-graph ;; relations-graph
+                                              )))
+                 (nodes (map-merge 'hash-table hops-nodes relations-nodes))
                  (graphviz-string (hyperdrive-fons-view--format-graph
                                    graph :root-name from :nodes nodes
                                    :layout layout :width-in width-in :height-in height-in
@@ -139,7 +146,7 @@ Graph is a list of strings which form the graphviz-string data."
                               (format-hop path color))
                             (fons-path-hops path))))
                 (format-hop (hop color)
-                  (setf (gethash hop hops-nodes) (fons-hop-score hop))
+                  (setf (gethash (fons-hop-to hop) hops-nodes) (fons-hop-score hop))
                   (format "%s -> %s [label=%s color=\"%s\" penwidth=2];\n"
                           (fons-hop-from hop) (fons-hop-to hop)
                           (fons-hop-score hop)
@@ -159,6 +166,7 @@ Graph is a list of strings which form the graphviz-string data."
                 ;;   (cl-pushnew (fons-hop-from hop) hops-nodes :test #'equal)
                 ;;   (cl-pushnew (fons-hop-to hop) hops-nodes :test #'equal))
                 (format-whole-relation (relation)
+                  (add-node-score relation)
                   (let* ((from (fons-hop-from
                                 (car (fons-path-hops
                                       (car (fons-relation-paths relation))))))
@@ -169,6 +177,9 @@ Graph is a list of strings which form the graphviz-string data."
                             from to
                             (fons-relation-score relation)
                             (hyperdrive-fons-view--prism-color (concat from to)))))
+                (add-node-score (relation)
+                  (setf (gethash (fons-relation-to relation) nodes)
+                        (fons-relation-score relation)))
                 ;; (format-relation (relation)
                 ;;   (mapcar #'format-path (fons-relation-paths relation)))
                 ;; (format-path (path)
@@ -180,7 +191,7 @@ Graph is a list of strings which form the graphviz-string data."
                 ;;           (hyperdrive-fons-view--prism-color
                 ;;            (concat (fons-hop-from hop) (fons-hop-to hop)))))
                 )
-      (format-whole-relation relation))))
+      (list (format-whole-relation relation) nodes))))
 
 (cl-defun hyperdrive-fons-view--format-graph
     (hops-graph &key nodes root-name width-in height-in layout dpi)
@@ -193,9 +204,14 @@ Graph is a list of strings which form the graphviz-string data."
                                               collect (format "%s=\"%s\"" key value))
                                      ",")
                         "[" "]"))
-              ;; (format-node-label (key value)
-              ;;   (insert (format "%s [label=%s];\n" (fons-hop-key) value)))
-              )
+              (format-node-label (key value)
+                (let ((name (cl-typecase key
+                              (string key)
+                              (fons-hop (fons-hop-to key))))
+                      (value (format "%.2f" value)))
+                  (insert (format "%s [label=\"%s (%s)\"];\n" name name value)))))
+    ;; (setf width-in (/ width-in 1.5)
+    ;;       height-in (/ height-in 1.5))
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")
@@ -217,7 +233,7 @@ Graph is a list of strings which form the graphviz-string data."
                      "nodesep" "0"
                      "mindist" "0")
         (mapc #'insert (flatten-list hops-graph))
-        ;; (maphash #'format-node-label hops-nodes)
+        (maphash #'format-node-label nodes)
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
         (insert "}"))
