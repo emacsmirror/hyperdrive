@@ -96,11 +96,12 @@ called and replaces the buffer content with the rendered output."
     (pcase-let* ((`(,width-in ,height-in ,width-res ,height-res)
                   (window-dimensions-in))
                  (`(,hops-graph ,hops-nodes) (hyperdrive-fons-view--hops-graph hops))
-                 (`(,relations-graph ,relations-nodes)
+                 (relations-graph
                   (when relations
-                    (mapcar #'hyperdrive-fons-view--relation-graph relations)))
+                    (flatten-list
+                     (mapcar #'hyperdrive-fons-view--relation-graph relations))))
                  (graph (flatten-list (append hops-graph relations-graph)))
-                 (nodes (map-merge 'hash-table hops-nodes relations-nodes))
+                 (nodes hops-nodes)
                  (graphviz-string (hyperdrive-fons-view--format-graph
                                    graph :root-name from :nodes nodes
                                    :layout layout :width-in width-in :height-in height-in
@@ -148,7 +149,7 @@ Graph is a list of strings which form the graphviz-string data."
 (defun hyperdrive-fons-view--relation-graph (relation)
   "Return hops-graph for RELATION.
 Graph is a list of strings which form the graphviz-string data."
-  (let ((hops-nodes (make-hash-table :test #'equal)))
+  (let ((nodes (make-hash-table :test #'equal)))
     (cl-labels (;; (map-relation (relation)
                 ;;   (mapc #'map-path (fons-relation-paths relation)))
                 ;; (map-path (path)

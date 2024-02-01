@@ -20,7 +20,7 @@
 
 ;;;; Variables
 
-(defvar fons-score-threshold 0.5
+(defvar fons-path-score-threshold 0.5
   "Paths that score below this are omitted.")
 
 (defgroup fons nil
@@ -54,7 +54,7 @@ Takes one argument, a `fons-path' and returns a number from 0 to
   (error "Not yet implemented (bound in tests)"))
 
 (cl-defun fons-paths
-    (from topic &key (max-hops 3) (threshold fons-score-threshold))
+    (from topic &key (max-hops 3) (threshold fons-path-score-threshold))
   "Return paths from FROM up to MAX-HOPS in HOPS about TOPIC."
   (cl-labels ((extend-path (a b)
                 "Return a copy of path A extended by B and rescored."
@@ -92,6 +92,12 @@ Takes one argument, a `fons-path' and returns a number from 0 to
                     (cl-callf2 append extended-paths paths))))))))
       paths)))
 
+(defun fons-path-tos (path)
+  "Return all destinations in PATH."
+  (mapcar (lambda (hop)
+            (fons-hop-to hop))
+          (fons-path-hops path)))
+
 (defun fons-relation (to paths)
   "Return relation to TO among PATHS.
 PATHS should be from a single source."
@@ -117,8 +123,9 @@ PATHS should be from a single source."
      (fons-path-hops path)
      :initial-value 1)))
 
-;; (defun fons-path-from-p (from path)
-;;   "Return non-nil if PATH is from FROM.")
+(defun fons-path-from-p (from path)
+  "Return non-nil if PATH is from FROM."
+  (equal from (fons-hop-from (car (fons-path-hops path)))))
 
 (defun fons-path-to-p (to path)
   "Return non-nil if PATH is to TO."

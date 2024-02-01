@@ -31,9 +31,9 @@
        ,@body)))
 
 (ert-deftest fons-paths-alice-tofu-3-hops ()
-  "Return alice's paths for \"tofu\" up to 3 hops away."
+  "Return alice's paths-from-alice for \"tofu\" up to 3 hops away."
   (fons-test ()
-    (let* ((paths (fons-paths "alice" "tofu" :max-hops 3)))
+    (let* ((paths-from-alice (fons-paths "alice" "tofu" :max-hops 3)))
       (should
        (seq-set-equal-p
         (list (make-fons-path
@@ -64,14 +64,14 @@
                             :from "carole" :to "david" :score 0.8)
                            (make-fons-hop
                             :from "david" :to "eve" :score 0.8))))
-        paths)))))
+        paths-from-alice)))))
 
 ;; TODO: Test that uses the relation score in fons-paths (i.e. for
 ;; short-circuiting computations).
 
 (ert-deftest fons-filter-short-circuits ()
   "Hops of sources with scores below the threshold are skipped."
-  ;; NEXT: Write this test to ensure that the paths from alice to georgie and to
+  ;; NEXT: Write this test to ensure that the paths-from-alice from alice to georgie and to
   ;; hobart are filtered out.
   (fons-test ((lambda ()
                 (funcall test-hyperdrive-fons-default-hops-fn)
@@ -103,12 +103,12 @@
             (mapcar
              (lambda (map)
                (let* ((from (car map))
-                      (paths (cdr map))
+                      (paths-from-alice (cdr map))
                       (tos (delete-dups
                             (mapcar
                              (lambda (path)
                                (fons-hop-to (car (last (fons-path-hops path)))))
-                             paths)))
+                             paths-from-alice)))
                       (relations
                        (mapcar
                         (lambda (to)
@@ -117,7 +117,7 @@
                                            :paths (cl-remove-if-not
                                                    (lambda (path)
                                                      (fons-path-to-p to path))
-                                                   paths))))
+                                                   paths-from-alice))))
                             (setf (fons-relation-score relation)
                                   (funcall fons-relation-score-fn relation))
                             relation))
@@ -162,7 +162,7 @@
                         (make-fons-hop
                          :from "carole" :to "bob")))))
   (should-not (fons-path-circular-p
-               ;; Ignore circular paths before the last hop.
+               ;; Ignore circular paths-from-alice before the last hop.
                (make-fons-path
                 :hops (list (make-fons-hop
                              :from "alice" :to "bob")
@@ -221,6 +221,28 @@
                             (mapcar #'fons-path-hops
                                     (fons-paths "alice" "tofu"))))
                           :layout "dot")))
+
+(ert-deftest fons-path-view** ()
+  ""
+  (fons-test ((lambda ()
+                (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "alice" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "bob" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "carole" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "doug" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)))
+    (let* ((paths-from-alice (fons-paths "alice" "tofu" :threshold 0))
+           (hops (delete-dups (flatten-list (mapcar #'fons-path-hops paths-from-alice))))
+           ;; (froms (mapcar (lambda (path)
+           ;;                  (fons-hop-from (car (fons-path-hops path))))
+           ;;                paths-from-alice))
+           (tos (delete-dups
+                 (flatten-list
+                  (mapcar #'fons-path-tos paths-from-alice))))
+           (relations (mapcar (lambda (to)
+                                (fons-relation to paths-from-alice))
+                              tos)))
+      (hyperdrive-fons-view hops :layout "dot" :relations relations ;; :debug t
+                            ))))
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (
