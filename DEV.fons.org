@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID:       e8a9e175-884a-4b4d-bea0-2c524a4f9c9a
+:END:
+#+TITLE: Development notes about the ~fons~ library
+
+* Types
+
+/Types of data represented by the library./
+
+** Hop
+:PROPERTIES:
+:ID:       d2cf6a99-44ce-4dc2-9ba3-3193555ae435
+:END:
+
++ Attributes ::
+  - From :: 
+  - To :: 
+  - Score :: A number from 0-1.
+    * [ ] Meaning :: Any value greater than 0 represents a positive relationship.
+
+** Path
+:PROPERTIES:
+:ID:       16fa8d27-5cd7-440b-969b-21fc88020a03
+:END:
+
++ Attributes ::
+  - Hops ::
+  - Score :: Same meaning as in [[id:d2cf6a99-44ce-4dc2-9ba3-3193555ae435][Hop]].
+    * The score of a path decays as its length increases.
+    * Computed by [[id:8a65ecf2-7025-4e03-a1db-cf0997f5ddba][fons-path-score-fn]].
+
+** Relation
+
++ Attributes ::
+  - From ::
+  - To ::
+  - Paths :: A list of [[id:16fa8d27-5cd7-440b-969b-21fc88020a03][Paths]].
+  - Score :: Same meaning as in [[id:d2cf6a99-44ce-4dc2-9ba3-3193555ae435][Hop]].
+    * If multiple paths exist, the number should be higher than the highest path score.
+    * Computed by [[id:496b1d1e-85f4-493c-bb95-4303435e6f76][fons-relation-score-fn]].
+
+*** Examples
+
+**** A
+
++ Story :: Alice views a document containing a link to Carole's document.
+
+  - [ ] What annotation do we show for the link? ::
+    + 
+
++ Hops :: 
+
+  | From  | To     | Score |
+  |-------+--------+-------|
+  | Alice | Bob    |     1 |
+  | Alice | Carole |     1 |
+  | Bob   | Carole |     1 |
+
++ Relations ::
+
+  | From  | To     | Score |
+  |-------+--------+-------|
+  | Alice | Carole |     1 |
+
+**** B (hop/path scores as percentages, relation scores as numbers >1)
+
++ Story :: Alice views a document containing a link to Carole's document and a link to Doug's document.
+
+  - [ ] What annotation do we show for the links? :: The relation score.
+
+    * Note that each link only has a single relation: one to Carole and one to Doug; but the relation to Carole has two paths, while the one to Doug has only one.
+
+    * This hypothetical example preserves the distinction between the types of units in the scores, the hop/path scores and the relation scores.  Internally they would still be represented as numbers greater than 0, but the hop scores would be represented to the user as percentages, to help the user think about them differently.
+
++ Hops :: 
+
+  | From  | To     | Score |
+  |-------+--------+-------|
+  | Alice | Bob    |  100% |
+  | Alice | Carole |  100% |
+  | Bob   | Carole |  100% |
+  | Bob   | Doug   |  100% |
+
++ Relations ::
+
+  | From  | To     | Score |
+  |-------+--------+-------|
+  | Alice | Carole |  1.75 |
+  | Alice | Doug   |  0.75 |
+
+**** C (American academic-style grading)
+
++ Story :: Alice views a document containing a link to Carole's document and a link to Doug's document.
+
+  - Note that each link only has a single relation: one to Carole and one to Doug; but the relation to Carole has two paths, while the one to Doug has only one.
+
+  - [ ] What annotation do we show for the links? ::
+
+    * Bob :: A
+    * Carole :: A+
+    * Doug :: C
+
++ Hops :: 
+
+  | From  | To     | Score |
+  |-------+--------+-------|
+  | Alice | Bob    |  100% |
+  | Alice | Carole |  100% |
+  | Bob   | Carole |  100% |
+  | Bob   | Doug   |  100% |
+
++ Relations ::
+
+  | From  | To     | Score |
+  |-------+--------+-------|
+  | Alice | Bob    |     1 |
+  | Alice | Carole |  1.75 |
+  | Alice | Doug   |  0.75 |
+
+* Functions
+
+** fons-path-score-fn (PATH)
+:PROPERTIES:
+:ID:       8a65ecf2-7025-4e03-a1db-cf0997f5ddba
+:END:
+
+
+
+** fons-score-relation-fn (RELATION)
+:PROPERTIES:
+:ID:       496b1d1e-85f4-493c-bb95-4303435e6f76
+:END:
+
+What should it return?  What data does it need for its computation?
+
+- Should return :: A number from 0-1.
+
+- Needs to know ::
+
+  + Paths between FROM and TO.
+
+  + 
+
+** fons-hop-score

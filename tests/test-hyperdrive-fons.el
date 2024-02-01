@@ -253,6 +253,33 @@
                             ;; :debug t
                             ))))
 
+(ert-deftest fons-relation-score-threshold ()
+  ""
+  (fons-test (
+              (lambda ()
+                (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "alice" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "bob" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "carole" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+                )
+              )
+    (let* ((paths-from-alice (fons-paths "alice" "tofu" :threshold 0))
+           (hops (delete-dups (flatten-list (mapcar #'fons-path-hops paths-from-alice))))
+           ;; (froms (mapcar (lambda (path)
+           ;;                  (fons-hop-from (car (fons-path-hops path))))
+           ;;                paths-from-alice))
+           (tos (delete-dups
+                 (flatten-list
+                  (mapcar #'fons-path-tos paths-from-alice))))
+           (relations (mapcar (lambda (to)
+                                (fons-relation to paths-from-alice))
+                              tos))
+           )
+      (hyperdrive-fons-view hops :layout "dot" :relations relations
+                            
+                            ;; :debug t
+                            ))))
+
 ;; Local Variables:
 ;; read-symbol-shorthands: (
 ;;   ("he//" . "hyperdrive-entry--")
