@@ -70,55 +70,66 @@ called and replaces the buffer content with the rendered output."
      (error "Oops: %s" (buffer-string))))
 
 (cl-defun hyperdrive-fons-view
-    (hops &key from (layout hyperdrive-fons-view-layout))
-  "View RELATION."
-  (cl-labels ((window-dimensions-in (&optional (window (selected-window)))
-                ;; Return WINDOW (width-in height-in) in inches.
-                (with-selected-window window
-                  ;; TODO: Ensure we get the monitor the frame is on.
-                  (pcase-let* (((map ('geometry `(,_ ,_ ,monitor-width-px ,monitor-height-px))
-                                     ('mm-size `(,monitor-width-mm ,monitor-height-mm)))
-                                (car (display-monitor-attributes-list)))
-                               (monitor-width-in (mm-in monitor-width-mm))
-                               (monitor-height-in (mm-in monitor-height-mm))
-                               (monitor-width-res (/ monitor-width-px monitor-width-in))
-                               (monitor-height-res (/ monitor-height-px monitor-height-in))
-                               (window-width-in (/  (window-text-width nil t) monitor-width-res))
-                               (window-height-in (/ (window-text-height nil t) monitor-height-res)))
-                    (list window-width-in window-height-in
-                          monitor-width-res monitor-height-res))))
-              (mm-in (mm) (* mm 0.04)))
+    (hops &key from relations debug
+          (layout hyperdrive-fons-view-layout))
+  "View HOPS."
+  (cl-labels
+      ((window-dimensions-in (&optional (window (selected-window)))
+         ;; Return WINDOW (width-in height-in) in inches.
+         (with-selected-window window
+           ;; TODO: Ensure we get the monitor the frame is on.
+           (pcase-let* (((map ('geometry
+                               `(,_ ,_ ,monitor-width-px ,monitor-height-px))
+                              ('mm-size `(,monitor-width-mm ,monitor-height-mm)))
+                         (car (display-monitor-attributes-list)))
+                        (monitor-width-in (mm-in monitor-width-mm))
+                        (monitor-height-in (mm-in monitor-height-mm))
+                        (monitor-width-res (/ monitor-width-px monitor-width-in))
+                        (monitor-height-res (/ monitor-height-px monitor-height-in))
+                        (window-width-in
+                         (/  (window-text-width nil t) monitor-width-res))
+                        (window-height-in
+                         (/ (window-text-height nil t) monitor-height-res)))
+             (list window-width-in window-height-in
+                   monitor-width-res monitor-height-res))))
+       (mm-in (mm) (* mm 0.04)))
     (pcase-let* ((`(,width-in ,height-in ,width-res ,height-res)
                   (window-dimensions-in))
-                 (`(,graph ,nodes) (hyperdrive-fons-view--hops-graph hops))
-                 (graph (flatten-list graph))
-                 (graphviz (hyperdrive-fons-view--format-graph
-                            graph :root-name from :nodes nodes
-                            :layout layout :width-in width-in :height-in height-in
-                            ;; Average the two resolutions.
-                            :dpi (/ (+ width-res height-res) 2)))
-                 (svg-image (hyperdrive-fons-view--svg graphviz))
+                 (`(,hops-graph ,hops-nodes) (hyperdrive-fons-view--hops-graph hops))
+                 (`(,relations-graph ,relations-nodes)
+                  (when relations
+                    (mapcar #'hyperdrive-fons-view--relation-graph relations)))
+                 (graph (flatten-list (append hops-graph relations-graph)))
+                 (nodes (map-merge 'hash-table hops-nodes relations-nodes))
+                 (graphviz-string (hyperdrive-fons-view--format-graph
+                                   graph :root-name from :nodes nodes
+                                   :layout layout :width-in width-in :height-in height-in
+                                   ;; Average the two resolutions.
+                                   :dpi (/ (+ width-res height-res) 2)))
+                 (svg-image (hyperdrive-fons-view--svg graphviz-string))
                  (inhibit-read-only t))
       (with-current-buffer (get-buffer-create "*hyperdrive-fons-view*")
         (erase-buffer)
-        (insert-image svg-image)
+        (if debug
+            (insert graphviz-string)
+          (insert-image svg-image))
         (pop-to-buffer (current-buffer))))))
 
 (defun hyperdrive-fons-view--hops-graph (hops)
-  "Return (graph nodes) for HOPS.
-Graph is a list of strings which form the graphviz data."
-  (let ((nodes (make-hash-table :test #'equal)))
+  "Return (hops-graph hops-nodes) for HOPS.
+Graph is a list of strings which form the graphviz-string data."
+  (let ((hops-nodes (make-hash-table :test #'equal)))
     (cl-labels ((format-hop (hop)
-                  (setf (gethash hop nodes) (fons-hop-score hop))
+                  (setf (gethash hop hops-nodes) (fons-hop-score hop))
                   (format "%s -> %s [label=%s];\n"
                           (fons-hop-from hop) (fons-hop-to hop)
                           (fons-hop-score hop))))
-      (list (mapcar #'format-hop hops) nodes))))
+      (list (mapcar #'format-hop hops) hops-nodes))))
 
 (defun hyperdrive-fons-view--paths-graph (paths)
-  "Return (graph nodes) for PATHS.
-Graph is a list of strings which form the graphviz data."
-  (let ((nodes (make-hash-table :test #'equal)))
+  "Return (hops-graph hops-nodes) for PATHS.
+Graph is a list of strings which form the graphviz-string data."
+  (let ((hops-nodes (make-hash-table :test #'equal)))
     (cl-labels ((format-path (path)
                   (let ((color (hyperdrive-fons-view--prism-color
                                 (concat (fons-hop-from (car (fons-path-hops path)))
@@ -127,42 +138,52 @@ Graph is a list of strings which form the graphviz data."
                               (format-hop path color))
                             (fons-path-hops path))))
                 (format-hop (hop color)
-                  (setf (gethash hop nodes) (fons-hop-score hop))
+                  (setf (gethash hop hops-nodes) (fons-hop-score hop))
                   (format "%s -> %s [label=%s color=\"%s\" penwidth=2];\n"
                           (fons-hop-from hop) (fons-hop-to hop)
                           (fons-hop-score hop)
                           color)))
-      (list (mapcar #'format-path paths) nodes))))
+      (list (mapcar #'format-path paths) hops-nodes))))
 
-;; (defun hyperdrive-fons-view--relation-graph (relation)
-;;   "Return graph for RELATION.
-;; Graph is a list of strings which form the graphviz data."
-;;   (let ((nodes (make-hash-table :test #'equal)))
-;;     (cl-labels (;; (map-relation (relation)
-;;                 ;;   (mapc #'map-path (fons-relation-paths relation)))
-;;                 ;; (map-path (path)
-;;                 ;;   (mapc #'map-hop (fons-path-hops path)))
-;;                 ;; (map-hop (hop)
-;;                 ;;   (cl-pushnew hop hops :test #'equal)
-;;                 ;;   (cl-pushnew (fons-hop-from hop) nodes :test #'equal)
-;;                 ;;   (cl-pushnew (fons-hop-to hop) nodes :test #'equal))
-
-;;                 (format-relation (relation)
-;;                   (mapcar #'format-path (fons-relation-paths relation)))
-;;                 (format-path (path)
-;;                   (mapcar #'format-hop (fons-path-hops path)))
-;;                 (format-hop (hop)
-;;                   (format "%s -> %s [label=%s color=\"#%s\"];\n"
-;;                           (fons-hop-from hop) (fons-hop-to hop)
-;;                           (fons-hop-score hop)
-;;                           (hyperdrive-fons-view--prism-color
-;;                            (concat (fons-hop-from hop) (fons-hop-to hop) ))))
-;;                 )
-;;       (format-relation relation))))
+(defun hyperdrive-fons-view--relation-graph (relation)
+  "Return hops-graph for RELATION.
+Graph is a list of strings which form the graphviz-string data."
+  (let ((hops-nodes (make-hash-table :test #'equal)))
+    (cl-labels (;; (map-relation (relation)
+                ;;   (mapc #'map-path (fons-relation-paths relation)))
+                ;; (map-path (path)
+                ;;   (mapc #'map-hop (fons-path-hops path)))
+                ;; (map-hop (hop)
+                ;;   (cl-pushnew hop hops :test #'equal)
+                ;;   (cl-pushnew (fons-hop-from hop) hops-nodes :test #'equal)
+                ;;   (cl-pushnew (fons-hop-to hop) hops-nodes :test #'equal))
+                (format-whole-relation (relation)
+                  (let* ((from (fons-hop-from
+                                (car (fons-path-hops
+                                      (car (fons-relation-paths relation))))))
+                         (to (fons-hop-to
+                              (car (last (fons-path-hops
+                                          (car (fons-relation-paths relation))))))))
+                    (format "%s -> %s [label=%s color=\"%s\" style=\"dotted\"];\n"
+                            from to
+                            (fons-relation-score relation)
+                            (hyperdrive-fons-view--prism-color (concat from to)))))
+                ;; (format-relation (relation)
+                ;;   (mapcar #'format-path (fons-relation-paths relation)))
+                ;; (format-path (path)
+                ;;   (mapcar #'format-hop (fons-path-hops path)))
+                ;; (format-hop (hop)
+                ;;   (format "%s -> %s [label=%s color=\"%s\" style=\"dotted\"];\n"
+                ;;           (fons-hop-from hop) (fons-hop-to hop)
+                ;;           (fons-hop-score hop)
+                ;;           (hyperdrive-fons-view--prism-color
+                ;;            (concat (fons-hop-from hop) (fons-hop-to hop)))))
+                )
+      (format-whole-relation relation))))
 
 (cl-defun hyperdrive-fons-view--format-graph
-    (graph &key nodes root-name width-in height-in layout dpi)
-  "Return a graphviz string for GRAPH."
+    (hops-graph &key nodes root-name width-in height-in layout dpi)
+  "Return a graphviz-string string for GRAPH."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
                          do (insert (format "%s=\"%s\"" key value) "\n")))
@@ -171,8 +192,9 @@ Graph is a list of strings which form the graphviz data."
                                               collect (format "%s=\"%s\"" key value))
                                      ",")
                         "[" "]"))
-              (format-node-label (key value)
-                (insert (format "%s [label=%s];\n" (fons-hop-key) value))))
+              ;; (format-node-label (key value)
+              ;;   (insert (format "%s [label=%s];\n" (fons-hop-key) value)))
+              )
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")
@@ -193,29 +215,29 @@ Graph is a list of strings which form the graphviz data."
                      "ratio" "fill"
                      "nodesep" "0"
                      "mindist" "0")
-        (mapc #'insert (flatten-list graph))
-        ;; (maphash #'format-node-label nodes)
+        (mapc #'insert (flatten-list hops-graph))
+        ;; (maphash #'format-node-label hops-nodes)
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
         (insert "}"))
       ;; (debug-warn (buffer-string))
       (buffer-string))))
 
-(cl-defun hyperdrive-fons-view--svg (graph)
+(cl-defun hyperdrive-fons-view--svg (hops-graph)
   "Return SVG image for Graphviz GRAPH.
 MAP is an Emacs-ready image map to apply to the image's
-properties.  SOURCE-BUFFER is the Org buffer the graph displays,
+properties.  SOURCE-BUFFER is the Org buffer the hops-graph displays,
 which is applied as a property to the image so map-clicking
 commands can find the buffer."
   (with-temp-buffer
-    (insert graph)
+    (insert hops-graph)
     (hyperdrive-fons-view--graphviz "svg"
       ;; (debug-warn (buffer-string))
       (save-excursion
 	;; HACK: Remove "pt" units from SVG width and height.  See
 	;; <https://gitlab.com/graphviz/graphviz/-/issues/867>.
 	;; Although it doesn't seem to fix the problem, so some
-	;; combinations of window and graph sizes still render parts (or
+	;; combinations of window and hops-graph sizes still render parts (or
 	;; most) of the SVG off-screen.  *sigh*
 	;; (goto-char (point-min))
 	;; (when (re-search-forward (rx "<svg width=\"" (group (1+ (not (any "\"")))) "\" "
