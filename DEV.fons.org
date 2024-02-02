@@ -117,7 +117,47 @@
   | Alice | Carole |  1.75 |
   | Alice | Doug   |  0.75 |
 
-* Functions
+**** D  Tie-breaker
+
+With this approach, no relation score is generated.  To compare
+relations, first sort by the 1-hop (direct) scores.  Wherever there
+is a tie, sort by the 2-hop (indirect) scores, and so on...
+
++ Story :: Alice wants to view some search results, with content
+  sorted by highest-scoring author.
+
++ Hops ::
+
+  | From  | To     | Score |
+  |-------+--------+-------|
+  | Alice | Bob    |     1 |
+  | Alice | Carole |     1 |
+  | Bob   | Carole |     1 |
+  | Bob   | Doug   |     1 |
+
++ Paths ::
+
+  | Hops                   | Score                           |
+  |------------------------+---------------------------------|
+  | Alice -> Bob           | 1                               |
+  | Alice -> Carole        | 1                               |
+  | Alice -> Bob -> Carole | 0.75 (depends on path score fn) |
+  | Alice -> Bob -> Doug   | 0.75 (depends on path score fn) |
+
++ Relations (sorted from highest to lowest) ::
+
+  | From  | To     | Score                     |
+  |-------+--------+---------------------------|
+  | Alice | Carole | 1 (1 hop) + 0.75 (2 hops) |
+  | Alice | Bob    | 1 (1 hop)                 |
+  | Alice | Doug   | 0 (1 hop) + 0.75 (2 hops)  |
+
+**** E Divide user's energy among all peers (Appleseed)
+
+We could implement the Appleseed algo in Elisp:
+
+- [[https://link.springer.com/article/10.1007/s10796-005-4807-3][Original paper]]
+- [[https://github.com/cblgh/appleseed-metric][Javascript implementation]]
 
 ** fons-path-score-fn (PATH)
 :PROPERTIES:
