@@ -19,5 +19,4 @@ tasks:
       # <https://github.com/purcell/package-lint/issues/227> is
       # solved.
       cd hyperdrive.el
-      ./makem/makem.sh -vvv --sandbox=.sandbox lint-compile lint-declare lint-regexps tests
-
+      ./makem/makem.sh -vvv --sandbox=.sandbox lint-compile lint-regexps tests

@@ -19,5 +19,5 @@ tasks:
       # <https://github.com/purcell/package-lint/issues/227> is
       # solved.
       cd hyperdrive.el
-      ./makem/makem.sh -vvv --sandbox=.sandbox lint-compile lint-declare lint-regexps tests
-
+      # TODO: Re-enable lint-declare once bug#67523 and bug#67390 are resolved
+      ./makem/makem.sh -vvv --sandbox=.sandbox lint-compile lint-regexps tests
