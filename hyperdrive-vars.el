@@ -86,10 +86,7 @@ Passed to `format-time-string', which see."
   '(display-buffer-same-window)
   "Display buffer action for hyperdrive directories.
 Passed to `display-buffer', which see."
-  ;; TODO: Perhaps use `display-buffer--action-custom-type'?
-  :type '(choice (const :tag "Same window" (display-buffer-same-window))
-                 (const :tag "Pop up window" (display-buffer-pop-up-window))
-                 (sexp :tag "Other")))
+  :type display-buffer--action-custom-type)
 
 (defcustom h/directory-sort '(name . :ascending)
   "Column by which directory entries are sorted.
@@ -114,9 +111,7 @@ one of the directory listing columns (\\+`name', \\+`size', or
   '(display-buffer-same-window)
   "Display buffer action for hyperdrive history buffers.
 Passed to `display-buffer', which see."
-  :type '(choice (const :tag "Same window" (display-buffer-same-window))
-                 (const :tag "Pop up window" (display-buffer-pop-up-window))
-                 (sexp :tag "Other")))
+  :type display-buffer--action-custom-type)
 
 (defcustom h/stream-player-command "mpv --force-window=immediate %s"
   "Command used to play streamable URLs externally.
