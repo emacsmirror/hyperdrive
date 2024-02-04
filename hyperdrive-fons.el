@@ -153,9 +153,8 @@ PATHS should be from a single source."
 (defun fons-relation-score-default (relation)
   "Return RELATION's score having aggregated its paths.
 The score does not exceed 1."
-  (min 1
-       (cl-reduce #'+ (fons-relation-paths relation)
-                  :key #'fons-path-score)))
+  (cl-reduce #'max (fons-relation-paths relation)
+             :key #'fons-path-score))
 
 ;;;; Footer
 
