@@ -313,7 +313,7 @@ avatars, etc."
                            ;; by returning color as a fallback.
                            finally return (or new-color color)))))
     (let* ((id string)
-           (id-hash (float (+ (abs (sxhash id)) ement-room-prism-color-adjustment)))
+           (id-hash (float (abs (sxhash id))))
            ;; TODO: Wrap-around the value to get the color I want.
            (ratio (/ id-hash (float most-positive-fixnum)))
            (color-num (round (* (* 255 255 255) ratio)))
