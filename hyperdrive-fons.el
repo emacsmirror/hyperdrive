@@ -114,12 +114,13 @@ PATHS should be from a single source."
 
 (defun fons-path-score-default (path)
   "Return PATH's score."
-  (let ((hop-number -1))
+  (let ((decay-power 0))
     (cl-reduce
      (lambda (acc hop)
        (* acc
           (fons-hop-score hop)
-          (expt fons-path-score-decay-coefficient (cl-incf hop-number))))
+          (prog1 (expt fons-path-score-decay-coefficient decay-power)
+            (cl-incf decay-power))))
      (fons-path-hops path)
      :initial-value 1)))
 
