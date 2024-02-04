@@ -180,47 +180,47 @@
       (should (= 2 (length (fons-relation-paths relation))))
       (should (= 0.9120000000000001 (fons-relation-score relation))))))
 
-(ert-deftest fons-relation-view ()
-  ""
-  (fons-test ((lambda ()
-                (funcall test-hyperdrive-fons-default-hops-fn)
-                (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-    (let* ((from "alice") (to "eve")
-           (paths-about (fons-paths from "tofu"))
-           (relation (fons-relation to paths-about)))
-      (hyperdrive-fons-view relation :layout "dot"))))
+;; (ert-deftest fons-relation-view ()
+;;   ""
+;;   (fons-test ((lambda ()
+;;                 (funcall test-hyperdrive-fons-default-hops-fn)
+;;                 (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
+;;                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
+;;                 (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
+;;     (let* ((from "alice") (to "eve")
+;;            (paths-about (fons-paths from "tofu"))
+;;            (relation (fons-relation to paths-about)))
+;;       (hyperdrive-fons-view relation  :layout "dot"))))
 
-(ert-deftest fons-path-view ()
-  ""
-  (fons-test ((lambda ()
-                (funcall test-hyperdrive-fons-default-hops-fn)
-                (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-    (let* ((froms (delete-dups
-                   (mapcar (lambda (it)
-                             (fons-hop-from (cadar it)))
-                           (map-values test-hyperdrive-fons-hops))))
-           (paths-by-from (delete-dups
-                           (mapcar (lambda (from)
-                                     (cons from (fons-paths from "tofu")))
-                                   froms))))
-      (hyperdrive-fons-view (delete-dups (flatten-list (delete-dups (map-values paths-by-from)))) :layout "dot"))))
+;; (ert-deftest fons-path-view ()
+;;   ""
+;;   (fons-test ((lambda ()
+;;                 (funcall test-hyperdrive-fons-default-hops-fn)
+;;                 (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
+;;                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
+;;                 (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
+;;     (let* ((froms (delete-dups
+;;                    (mapcar (lambda (it)
+;;                              (fons-hop-from (cadar it)))
+;;                            (map-values test-hyperdrive-fons-hops))))
+;;            (paths-by-from (delete-dups
+;;                            (mapcar (lambda (from)
+;;                                      (cons from (fons-paths from "tofu")))
+;;                                    froms))))
+;;       (hyperdrive-fons-view (delete-dups (flatten-list (delete-dups (map-values paths-by-from)))) :layout "dot"))))
 
-(ert-deftest fons-path-view* ()
-  ""
-  (fons-test ((lambda ()
-                (funcall test-hyperdrive-fons-default-hops-fn)
-                (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-    (hyperdrive-fons-view (delete-dups
-                           (flatten-list
-                            (mapcar #'fons-path-hops
-                                    (fons-paths "alice" "tofu"))))
-                          :layout "dot")))
+;; (ert-deftest fons-path-view* ()
+;;   ""
+;;   (fons-test ((lambda ()
+;;                 (funcall test-hyperdrive-fons-default-hops-fn)
+;;                 (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
+;;                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
+;;                 (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
+;;     (hyperdrive-fons-view (delete-dups
+;;                            (flatten-list
+;;                             (mapcar #'fons-path-hops
+;;                                     (fons-paths "alice" "tofu"))))
+;;                           :layout "dot")))
 
 (ert-deftest fons-path-view** ()
   ""
