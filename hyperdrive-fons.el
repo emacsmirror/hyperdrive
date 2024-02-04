@@ -13,6 +13,8 @@
 (cl-defstruct fons-hop
   from to score)
 
+;; TODO: Consider adding a `:to' slot to avoid
+;; (fons-hop-to (car (last (fons-path-hops path))))
 (cl-defstruct fons-path hops score)
 
 (cl-defstruct fons-relation
@@ -80,6 +82,11 @@ Takes one argument, a `fons-path' and returns a number from 0 to
               (let ((extended-path (extend-path path new-path)))
                 (push extended-path paths)
                 (unless (< (fons-path-score extended-path) threshold)
+                ;; TODO: Recurse into sources whose relation score ends up
+                ;; higher than each individual path score.
+                ;;
+                ;; `fons-relation-score-default' never returns a value above the
+                ;; highest path score, so using the path score is fine for now.
                   (let* ((extended-last-hop
                           (car (last (fons-path-hops extended-path))))
                          (extended-last-to (fons-hop-to extended-last-hop))
