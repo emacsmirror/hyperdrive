@@ -6,6 +6,7 @@
 (require 'seq)
 
 (require 'hyperdrive-fons)
+(require 'hyperdrive-fons-view)
 
 (defvar test-hyperdrive-fons-hops (make-hash-table :test 'equal))
 
