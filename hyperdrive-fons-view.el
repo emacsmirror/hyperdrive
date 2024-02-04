@@ -33,6 +33,10 @@
 
 (require 'hyperdrive-fons)
 
+(defgroup hyperdrive-fons-view nil
+  "Visualize fons relations."
+  :group 'fons)
+
 (defcustom hyperdrive-fons-view-overlap "voronoi"
   "How to handle overlapping.  See Graphviz documentation.
 It seems unclear which is the best default, because each option
