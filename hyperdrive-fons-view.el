@@ -28,10 +28,14 @@
 
 ;;; Code:
 
+;;;; Requirements
+
 (require 'cl-lib)
 (require 'map)
 
 (require 'hyperdrive-fons)
+
+;;;; Customization
 
 (defgroup hyperdrive-fons-view nil
   "Visualize fons relations."
@@ -62,6 +66,8 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
+;;;; Macros
+
 (defmacro hyperdrive-fons-view--graphviz (type &rest body)
   "Run Graphviz for TYPE on current buffer, then run BODY in it.
 Current buffer should contain a Graphviz graph.  Graphviz is
@@ -72,6 +78,8 @@ called and replaces the buffer content with the rendered output."
        (progn
          ,@body)
      (error "Oops: %s" (buffer-string))))
+
+;;;; Functions
 
 (cl-defun hyperdrive-fons-view
     (relations from &key debug (layout hyperdrive-fons-view-layout))
