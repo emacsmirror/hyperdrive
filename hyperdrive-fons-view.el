@@ -66,6 +66,14 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
+(defcustom hyperdrive-fons-view-source-color "green"
+  "Source edge and node color.
+May be any string listed here:
+<https://graphviz.org/doc/info/colors.html>."
+  ;; Don't use :type 'color.  Emacs colors don't necessarily match graphviz
+  ;; colors, and they may contain spaces, preventing the graph from rendering.
+  :type 'string)
+
 ;;;; Macros
 
 (defmacro hyperdrive-fons-view--graphviz (type &rest body)
@@ -212,11 +220,11 @@ RELATIONS may be list of `fons-relation' structs."
 ;;                 )
 ;;       (list (format-whole-relation relation) nodes))))
 
-(defun hyperdrive-fons-view--format-hop (hop)
+(defun hyperdrive-fons-view--format-hop (hop color)
   "Return graphviz-string for HOP."
-  (format "%s -> %s [label=%s penwidth=2];\n"
+  (format "%s -> %s [label=%s color=\"%s\" penwidth=2];\n"
           (fons-hop-from hop) (fons-hop-to hop)
-          (fons-hop-score hop)))
+          (fons-hop-score hop) color))
 
 (cl-defun hyperdrive-fons-view--format-graph
     (hops &key nodes root-name width-in height-in layout dpi)
@@ -257,7 +265,10 @@ RELATIONS may be list of `fons-relation' structs."
                      "ratio" "fill"
                      "nodesep" "0"
                      "mindist" "0")
-        (mapc #'insert (mapcar #'hyperdrive-fons-view--format-hop hops))
+        (mapc #'insert (mapcar (lambda (hop)
+                                 (hyperdrive-fons-view--format-hop
+                                  hop hyperdrive-fons-view-source-color))
+                               hops))
         (maphash #'format-node-label nodes)
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
