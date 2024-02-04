@@ -204,7 +204,6 @@ RELATIONS may be list of `fons-relation' structs."
 ;;                 )
 ;;       (list (format-whole-relation relation) nodes))))
 
-
 (defun hyperdrive-fons-view--format-hop (hop)
   "Return graphviz-string for HOP."
   (format "%s -> %s [label=%s penwidth=2];\n"
