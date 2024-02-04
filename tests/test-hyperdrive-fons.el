@@ -236,7 +236,7 @@
               ;;   (fons-add-hop "carole" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
               ;;   (fons-add-hop "doug" "eve" 0.5 "tofu" test-hyperdrive-fons-hops))
               )
-    (let* ((paths-from-alice (fons-paths "alice" "tofu" :threshold 0))
+    (let* ((paths-from-alice (fons-paths "alice" "tofu"))
            (hops (delete-dups (flatten-list (mapcar #'fons-path-hops paths-from-alice))))
            ;; (froms (mapcar (lambda (path)
            ;;                  (fons-hop-from (car (fons-path-hops path))))
