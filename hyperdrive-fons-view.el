@@ -138,24 +138,24 @@ Graph is a list of strings which form the graphviz-string data."
                           (fons-hop-score hop))))
       (list (mapcar #'format-hop hops) hops-nodes))))
 
-(defun hyperdrive-fons-view--paths-graph (paths)
-  "Return (hops-graph hops-nodes) for PATHS.
-Graph is a list of strings which form the graphviz-string data."
-  (let ((hops-nodes (make-hash-table :test #'equal)))
-    (cl-labels ((format-path (path)
-                  (let ((color (hyperdrive-fons-view--prism-color
-                                (concat (fons-hop-from (car (fons-path-hops path)))
-                                        (fons-hop-to (car (last (fons-path-hops path)))) ))))
-                    (mapcar (lambda (path)
-                              (format-hop path color))
-                            (fons-path-hops path))))
-                (format-hop (hop color)
-                  (setf (gethash (fons-hop-to hop) hops-nodes) (fons-hop-score hop))
-                  (format "%s -> %s [label=%s color=\"%s\" penwidth=2];\n"
-                          (fons-hop-from hop) (fons-hop-to hop)
-                          (fons-hop-score hop)
-                          color)))
-      (list (mapcar #'format-path paths) hops-nodes))))
+;; (defun hyperdrive-fons-view--paths-graph (paths)
+;;   "Return (hops-graph hops-nodes) for PATHS.
+;; Graph is a list of strings which form the graphviz-string data."
+;;   (let ((hops-nodes (make-hash-table :test #'equal)))
+;;     (cl-labels ((format-path (path)
+;;                   (let ((color (hyperdrive-fons-view--prism-color
+;;                                 (concat (fons-hop-from (car (fons-path-hops path)))
+;;                                         (fons-hop-to (car (last (fons-path-hops path)))) ))))
+;;                     (mapcar (lambda (path)
+;;                               (format-hop path color))
+;;                             (fons-path-hops path))))
+;;                 (format-hop (hop color)
+;;                   (setf (gethash (fons-hop-to hop) hops-nodes) (fons-hop-score hop))
+;;                   (format "%s -> %s [label=%s color=\"%s\" penwidth=2];\n"
+;;                           (fons-hop-from hop) (fons-hop-to hop)
+;;                           (fons-hop-score hop)
+;;                           color)))
+;;       (list (mapcar #'format-path paths) hops-nodes))))
 
 (defun hyperdrive-fons-view--relation-graph (relation)
   "Return hops-graph for RELATION.
