@@ -74,9 +74,8 @@ called and replaces the buffer content with the rendered output."
      (error "Oops: %s" (buffer-string))))
 
 (cl-defun hyperdrive-fons-view
-    (hops &key from relations debug
-          (layout hyperdrive-fons-view-layout))
-  "View HOPS."
+    (relations from &key debug (layout hyperdrive-fons-view-layout))
+  "View RELATIONS from FROM."
   (cl-labels
       ((window-dimensions-in (&optional (window (selected-window)))
          ;; Return WINDOW (width-in height-in) in inches.
@@ -99,22 +98,10 @@ called and replaces the buffer content with the rendered output."
        (mm-in (mm) (* mm 0.04)))
     (pcase-let* ((`(,width-in ,height-in ,width-res ,height-res)
                   (window-dimensions-in))
-                 (`(,hops-graph ,hops-nodes) (hyperdrive-fons-view--hops-graph hops))
-                 (`(,relations-graph ,relations-nodes)
-                  (when relations
-                    (cl-loop
-                     with relations-nodes = (make-hash-table)
-                     for (graph nodes)
-                     in (mapcar #'hyperdrive-fons-view--relation-graph relations)
-                     collect graph into relations-graph
-                     and do (setf relations-nodes
-                                  (map-merge 'hash-table relations-nodes nodes))
-                     finally return (list relations-graph relations-nodes))))
-                 (graph (flatten-list (append hops-graph ;; relations-graph
-                                              )))
-                 (nodes (map-merge 'hash-table hops-nodes relations-nodes))
+                 (`(,hops ,nodes)
+                  (hyperdrive-fons-view--relations-graph relations))
                  (graphviz-string (hyperdrive-fons-view--format-graph
-                                   graph :root-name from :nodes nodes
+                                   hops :root-name from :nodes nodes
                                    :layout layout :width-in width-in :height-in height-in
                                    ;; Average the two resolutions.
                                    :dpi (/ (+ width-res height-res) 2)))
@@ -157,6 +144,26 @@ Graph is a list of strings which form the graphviz-string data."
 ;;                           color)))
 ;;       (list (mapcar #'format-path paths) hops-nodes))))
 
+(defun hyperdrive-fons-view--relations-graph (relations)
+  "Return (hops nodes) for RELATIONS.
+RELATIONS may be list of `fons-relation' structs."
+  (let ((nodes (make-hash-table :test #'equal))
+        hops)
+    (cl-labels ((map-relation (relation)
+                  (mapc #'map-path (fons-relation-paths relation))
+                  (setf (gethash (fons-relation-to relation) nodes)
+                        (fons-relation-score relation)))
+                (map-path (path)
+                  (mapc #'map-hop (fons-path-hops path)))
+                (map-hop (hop)
+                  ;; TODO: Benchmark alternative methods to collect hops:
+                  ;; 1. push, then delete-dups
+                  ;; 2. (unless (cl-find hop hops) (push hop hops))
+                  ;; 3. ???
+                  (cl-pushnew hop hops :test #'equal)))
+      (mapc #'map-relation relations)
+      (list hops nodes))))
+
 (defun hyperdrive-fons-view--relation-graph (relation)
   "Return hops-graph for RELATION.
 Graph is a list of strings which form the graphviz-string data."
@@ -197,9 +204,16 @@ Graph is a list of strings which form the graphviz-string data."
                 )
       (list (format-whole-relation relation) nodes))))
 
+
+(defun hyperdrive-fons-view--format-hop (hop)
+  "Return graphviz-string for HOP."
+  (format "%s -> %s [label=%s penwidth=2];\n"
+          (fons-hop-from hop) (fons-hop-to hop)
+          (fons-hop-score hop)))
+
 (cl-defun hyperdrive-fons-view--format-graph
-    (hops-graph &key nodes root-name width-in height-in layout dpi)
-  "Return a graphviz-string string for GRAPH."
+    (hops &key nodes root-name width-in height-in layout dpi)
+  "Return a graphviz-string string for HOPS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
                          do (insert (format "%s=\"%s\"" key value) "\n")))
@@ -236,7 +250,7 @@ Graph is a list of strings which form the graphviz-string data."
                      "ratio" "fill"
                      "nodesep" "0"
                      "mindist" "0")
-        (mapc #'insert (flatten-list hops-graph))
+        (mapc #'insert (mapcar #'hyperdrive-fons-view--format-hop hops))
         (maphash #'format-node-label nodes)
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
