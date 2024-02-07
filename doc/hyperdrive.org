@@ -1252,7 +1252,7 @@ world of p2p as well as the development of ~hyper-gateway~.
 [[https://www.sanityinc.com/][Steve Purcell]] and [[https://github.com/akirak][Akira Komamura]] for suggestions to improve our CI
 build manifests.
 
-[[https://eshelyaron.com/][Eshel Yaron]] for the suggestion to add on ~hyperdrive-menu-bar-mode~.
+[[https://eshelyaron.com/][Eshel Yaron]] for the suggestion to add ~hyperdrive-menu-bar-mode~.
 
 * Indices
 

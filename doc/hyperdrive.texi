@@ -1648,7 +1648,7 @@ world of p2p as well as the development of @code{hyper-gateway}.
 @uref{https://www.sanityinc.com/, Steve Purcell} and @uref{https://github.com/akirak, Akira Komamura} for suggestions to improve our CI
 build manifests.
 
-@uref{https://eshelyaron.com/, Eshel Yaron} for the suggestion to add on @code{hyperdrive-menu-bar-mode}.
+@uref{https://eshelyaron.com/, Eshel Yaron} for the suggestion to add @code{hyperdrive-menu-bar-mode}.
 
 @node Indices
 @chapter Indices
