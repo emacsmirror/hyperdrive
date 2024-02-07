@@ -1239,11 +1239,13 @@ questions can be submitted to the [[https://lists.sr.ht/~ushin/ushin][ushin publ
 
 * Acknowledgments
 
-[[https://github.com/alphapapa/][Adam Porter]] for rewriting
-~hyperdrive.el~ and for his work on ~plz.el~.
+[[https://github.com/alphapapa/][Adam Porter]] for rewriting ~hyperdrive.el~ and for his work on ~plz.el~.
 
 [[https://mauve.moe/][Mauve Signweaver]] for their guidance into the
 world of p2p as well as the development of ~hyper-gateway~.
+
+[[https://emacsair.me/][Jonas Bernoulli]] for improving ~hyperdrive-mirror~ and for his work on
+~transient.el~.
 
 [[https://protesilaos.com][Protesilaos Stavrou]] for design input and user-testing ~hyperdrive.el~.
 

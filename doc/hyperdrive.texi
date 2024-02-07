@@ -1635,11 +1635,13 @@ questions can be submitted to the @uref{https://lists.sr.ht/~ushin/ushin, ushin 
 @node Acknowledgments
 @chapter Acknowledgments
 
-@uref{https://github.com/alphapapa/, Adam Porter} for rewriting
-@code{hyperdrive.el} and for his work on @code{plz.el}.
+@uref{https://github.com/alphapapa/, Adam Porter} for rewriting @code{hyperdrive.el} and for his work on @code{plz.el}.
 
 @uref{https://mauve.moe/, Mauve Signweaver} for their guidance into the
 world of p2p as well as the development of @code{hyper-gateway}.
+
+@uref{https://emacsair.me/, Jonas Bernoulli} for improving @code{hyperdrive-mirror} and for his work on
+@code{transient.el}.
 
 @uref{https://protesilaos.com, Protesilaos Stavrou} for design input and user-testing @code{hyperdrive.el}.
 
