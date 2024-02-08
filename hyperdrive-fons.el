@@ -56,7 +56,8 @@ Takes one argument, a `fons-path' and returns a number from 0 to
   (error "Not yet implemented (bound in tests)"))
 
 (cl-defun fons-paths
-    (from topic &key (max-hops 3) (threshold fons-path-score-threshold))
+    (from topic &key (max-hops 3) (threshold fons-path-score-threshold)
+          (relations (make-hash-table :test 'equal)))
   "Return paths from FROM up to MAX-HOPS in HOPS about TOPIC."
   (cl-labels ((extend-path (a b)
                 "Return a copy of path A extended by B and rescored."
@@ -82,11 +83,11 @@ Takes one argument, a `fons-path' and returns a number from 0 to
               (let ((extended-path (extend-path path new-path)))
                 (push extended-path paths)
                 (unless (< (fons-path-score extended-path) threshold)
-                ;; TODO: Recurse into sources whose relation score ends up
-                ;; higher than each individual path score.
-                ;;
-                ;; `fons-relation-score-default' never returns a value above the
-                ;; highest path score, so using the path score is fine for now.
+                  ;; TODO: Recurse into sources whose relation score ends up
+                  ;; higher than each individual path score.
+                  ;;
+                  ;; `fons-relation-score-default' never returns a value above the
+                  ;; highest path score, so using the path score is fine for now.
                   (let* ((extended-last-hop
                           (car (last (fons-path-hops extended-path))))
                          (extended-last-to (fons-hop-to extended-last-hop))
@@ -98,6 +99,69 @@ Takes one argument, a `fons-path' and returns a number from 0 to
                                    :max-hops max-hops :threshold threshold))))
                     (cl-callf2 append extended-paths paths))))))))
       paths)))
+
+(cl-defun fons-relations
+    (from topic &key (max-hops 3) (threshold fons-path-score-threshold))
+  "Return a list of `fons-relation' structs from FROM about TOPIC.
+Recurses up to MAX-HOPS times, returning only relations whose
+scores are above THRESHOLD."
+  (let ((relations (make-hash-table :test 'equal))
+        extended converged-p)
+    (cl-labels
+        ((extend-relation-p (relation)
+           (and (>= (fons-relation-score relation) threshold)
+                (cl-some (lambda (path)
+                           (length< (fons-path-hops path) max-hops))
+                         (fons-relation-paths relation))
+                (length< (fons-relation-paths relation) max-hops)))
+         (extend-relation (from)
+           "Add relations starting from FROM."
+           (let ((hops (map-elt (fons-hops from) topic)))
+             (mapc #'add-relation hops))
+           ())
+         (add-relation (hop)
+           "Add relations ending in HOP."
+           (pcase-let* (((cl-struct fons-hop (from hop-from) (to hop-to)) hop)
+                        (from-relation (gethash hop-from relations))
+                        (to-relation (gethash hop-to relations))
+                        (hops-to-from (and
+                                       ;; `from-relation' should only be nil
+                                       ;; when HOP's from is the root
+                                       from-relation
+                                       (fons-path-hops
+                                        (fons-relation-paths from-relation))))
+                        (path-to-to
+                         (make-fons-path
+                          :hops (append (fons-copy-tree hops-to-from t)
+                                        (list (fons-copy-tree hop t))))))
+             (setf (fons-path-score path-to-to)
+                   (funcall fons-path-score-fn path-to-to))
+             (unless to-relation
+               ;; TO is not yet in the hash table
+               (setf to-relation
+                     (make-fons-relation :from from :to hop-to :paths nil))
+               (setf (gethash hop-to relations) to-relation))
+             ;; TODO: We need to stop iterating over the hash table once no new
+             ;; sources are added to the hash table.
+             ;; TODO: Consider whether we should use `push' here, or maybe
+             ;; `cl-pushnew' or maybe a conditional?
+             (push path-to-to (fons-relation-paths to-relation))
+             (setf (fons-relation-score to-relation)
+                   (funcall fons-relation-score-fn to-relation)))))
+      ;; Put all one-hop relations into hash table
+      (extend-relation from)
+      (while (not converged-p)
+        (setf converged t)
+        (maphash (lambda (_key relation)
+                   (when (extend-relation-p relation)
+                     (extend-relation relation)
+                     (setf converged nil)))
+                 relations))
+      relations)))
+
+;; top level hash table of relation structs,
+;; iterate over (fons-hops from), adding relations to the table
+;; when (and (> relation-score threshold) (length< (fons-relation-paths relation) max-hops)) iterate
 
 (defun fons-path-tos (path)
   "Return all destinations in PATH."
@@ -162,6 +226,31 @@ PATHS should be from a single source."
 The score does not exceed 1."
   (cl-reduce #'max (fons-relation-paths relation)
              :key #'fons-path-score))
+
+(defun fons-copy-tree (tree &optional vecp)
+  "Copy TREE like `copy-tree', but with VECP, works for records too."
+  ;; TODO: Now that the new copy-tree behavior has been merged into Emacs,
+  ;; remove this function once compat.el supports the new behavior.
+  (if (consp tree)
+      (let (result)
+	(while (consp tree)
+	  (let ((newcar (car tree)))
+	    (if (or (consp (car tree))
+                    (and vecp (or (vectorp (car tree))
+                                  (recordp (car tree)))))
+		(setf newcar (fons-copy-tree (car tree) vecp)))
+	    (push newcar result))
+	  (setf tree (cdr tree)))
+	(nconc (nreverse result)
+               (if (and vecp (or (vectorp tree) (recordp tree)))
+                   (fons-copy-tree tree vecp)
+                 tree)))
+    (if (and vecp (or (vectorp tree) (recordp tree)))
+	(let ((i (length (setf tree (copy-sequence tree)))))
+	  (while (>= (setf i (1- i)) 0)
+	    (aset tree i (fons-copy-tree (aref tree i) vecp)))
+	  tree)
+      tree)))
 
 ;;;; Footer
 

@@ -31,6 +31,9 @@
                                     test-hyperdrive-fons-hops)))))
        ,@body)))
 
+(type-of (cdar (fons-test ()
+                 (fons-hops "alice"))))
+
 (ert-deftest fons-paths-alice-tofu-3-hops ()
   "Return alice's paths-from-alice for \"tofu\" up to 3 hops away."
   (fons-test ()
@@ -230,17 +233,18 @@
                 (funcall test-hyperdrive-fons-default-hops-fn)
                 (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-    (let* ((paths-from-alice (fons-paths "alice" "tofu"))
-           (tos (delete-dups
-                 (flatten-list
-                  (mapcar #'fons-path-tos paths-from-alice))))
-           (relations (mapcar (lambda (to)
-                                (fons-relation to paths-from-alice))
-                              tos)))
-      (hyperdrive-fons-view relations "alice" :layout "dot"
-                            ;; :debug t
-                            ))))
+                (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "eve" "david" 0.8 "tofu" test-hyperdrive-fons-hops)))
+             (let* ((paths-from-alice (fons-paths "alice" "tofu"))
+                    (tos (delete-dups
+                          (flatten-list
+                           (mapcar #'fons-path-tos paths-from-alice))))
+                    (relations (mapcar (lambda (to)
+                                         (fons-relation to paths-from-alice))
+                                       tos)))
+               (hyperdrive-fons-view relations "alice" :layout "dot"
+                                     ;; :debug t
+                                     ))))
 
 (ert-deftest fons-relation-score-threshold ()
   ""
@@ -252,21 +256,40 @@
                 (fons-add-hop "carole" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
                 )
               )
-    (let* ((paths-from-alice (fons-paths "alice" "tofu" :threshold 0))
-           ;; (froms (mapcar (lambda (path)
-           ;;                  (fons-hop-from (car (fons-path-hops path))))
-           ;;                paths-from-alice))
-           (tos (delete-dups
-                 (flatten-list
-                  (mapcar #'fons-path-tos paths-from-alice))))
-           (relations (mapcar (lambda (to)
-                                (fons-relation to paths-from-alice))
-                              tos))
-           )
-      (hyperdrive-fons-view relations "alice" :layout "dot"
-                            
-                            ;; :debug t
-                            ))))
+             (let* ((paths-from-alice (fons-paths "alice" "tofu" :threshold 0))
+                    ;; (froms (mapcar (lambda (path)
+                    ;;                  (fons-hop-from (car (fons-path-hops path))))
+                    ;;                paths-from-alice))
+                    (tos (delete-dups
+                          (flatten-list
+                           (mapcar #'fons-path-tos paths-from-alice))))
+                    (relations (mapcar (lambda (to)
+                                         (fons-relation to paths-from-alice))
+                                       tos))
+                    )
+               (hyperdrive-fons-view relations "alice" :layout "dot"
+
+                                     ;; :debug t
+                                     ))))
+
+(ert-deftest fons-relations* ()
+  ""
+  (fons-test (
+              (lambda ()
+                (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "bob" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "carole" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "carole" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+                )
+              )
+    (let* ((relations (fons-relations "alice" "tofu" ;; :threshold 0
+                                      )))
+      relations
+      ;; (hyperdrive-fons-view relations "alice" :layout "dot"
+
+      ;;                       ;; :debug t
+      ;;                       )
+      )))
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (
