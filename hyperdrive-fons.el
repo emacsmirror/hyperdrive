@@ -106,7 +106,7 @@ Takes one argument, a `fons-path' and returns a number from 0 to
 Recurses up to MAX-HOPS times, returning only relations whose
 scores are above THRESHOLD."
   (let ((relations (make-hash-table :test 'equal))
-        extended converged-p)
+        skipped-paths converged-p)
     (cl-labels
         ((extend-relation-p (relation)
            (and (>= (fons-relation-score relation) threshold)
@@ -115,39 +115,59 @@ scores are above THRESHOLD."
                          (fons-relation-paths relation))
                 (length< (fons-relation-paths relation) max-hops)))
          (extend-relation (from)
-           "Add relations starting from FROM."
+           "Get the hops from FROM then call \\+`add-relation' on each hop."
            (let ((hops (map-elt (fons-hops from) topic)))
-             (mapc #'add-relation hops))
-           ())
+             (mapc #'add-relation hops)))
+         (rescore-relation (to)
+           "Rescore relation to TO based on its paths."
+           (setf (fons-relation-score (gethash to relations))
+                 (funcall fons-relation-score-fn (gethash to relations))))
+         (ensure-relation (to)
+           "Add a relation to TO with no paths if none exists."
+           (unless (gethash to relations)
+             (setf (gethash to relations)
+                   (make-fons-relation :from from :to to))))
          (add-relation (hop)
-           "Add relations ending in HOP."
+           "Add relations ending in HOP.
+First, ensure that a relation exists for HOP's TO.  Then, iterate
+over the paths leading to HOP's FROM and for each one, if the
+path length is within max-hops, copy it, append HOP and add the
+path to the relation's path slot."
            (pcase-let* (((cl-struct fons-hop (from hop-from) (to hop-to)) hop)
                         (from-relation (gethash hop-from relations))
-                        (to-relation (gethash hop-to relations))
-                        (hops-to-from (and
-                                       ;; `from-relation' should only be nil
-                                       ;; when HOP's from is the root
-                                       from-relation
-                                       (fons-path-hops
-                                        (fons-relation-paths from-relation))))
-                        (path-to-to
-                         (make-fons-path
-                          :hops (append (fons-copy-tree hops-to-from t)
-                                        (list (fons-copy-tree hop t))))))
+                        (paths-to-from
+                         (and from-relation ; nil when HOP's from is the root
+                              (fons-relation-paths from-relation))))
+             (dolist (path paths-to-from)
+               (let ((hops-to-from (fons-path-hops path))
+                     (path-to-to
+                      (make-fons-path
+                       :hops (append (fons-copy-tree hops-to-from t)
+                                     (list (fons-copy-tree hop t))))))
+                 ))
+             ;; Track the skipped peers, and on each iteration check
+             ;; extend-relation-p against only those.  If none pass, terminate.
+
+             ;; Each time we come across a relation that's not in `relations',
+             ;; extend-paths that lead to HOP-FROM and insert the new relation.
+
+             ;; Each time we come across a relation that's already in
+             ;; `relations', extend-paths that lead to HOP-FROM, append them to
+             ;; HOP-TO's relation, then recursively iterate over the return
+             ;; value of (fons-hops HOP-TO), extending and merging paths.
+
+             ;; At the very end, prune paths and relations that are too long.
+
+
+             ;; TODO: Instead of iterating over all of the relations multiple
+             ;; times, perhaps keep a list of the nodes which have been skipped
+             ;; because they are below the threshold, then at the end rescore
+             ;; them and potentially go through them.  This could loop.
              (setf (fons-path-score path-to-to)
                    (funcall fons-path-score-fn path-to-to))
-             (unless to-relation
-               ;; TO is not yet in the hash table
-               (setf to-relation
-                     (make-fons-relation :from from :to hop-to :paths nil))
-               (setf (gethash hop-to relations) to-relation))
-             ;; TODO: We need to stop iterating over the hash table once no new
-             ;; sources are added to the hash table.
-             ;; TODO: Consider whether we should use `push' here, or maybe
-             ;; `cl-pushnew' or maybe a conditional?
-             (push path-to-to (fons-relation-paths to-relation))
-             (setf (fons-relation-score to-relation)
-                   (funcall fons-relation-score-fn to-relation)))))
+             (ensure-relation hop-to)
+             (push path-to-to (fons-relation-paths (gethash hop-to relations)))
+             (rescore-relation hop-to))))
       ;; Put all one-hop relations into hash table
       (extend-relation from)
       (while (not converged-p)
@@ -158,10 +178,6 @@ scores are above THRESHOLD."
                      (setf converged nil)))
                  relations))
       relations)))
-
-;; top level hash table of relation structs,
-;; iterate over (fons-hops from), adding relations to the table
-;; when (and (> relation-score threshold) (length< (fons-relation-paths relation) max-hops)) iterate
 
 (defun fons-path-tos (path)
   "Return all destinations in PATH."
