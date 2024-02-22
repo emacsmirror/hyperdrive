@@ -229,6 +229,11 @@ scores are above THRESHOLD."
                     (setf (gethash to relations)
                           (make-fons-relation :from from :to to)))))
       (extend-relation from)
+      (maphash (lambda (to relation)
+                 ;; Remove relations which are below THRESHOLD.
+                 (when (< (fons-relation-score relation) threshold)
+                   (remhash to relations)))
+               relations)
       relations)))
 
 (defun fons-path-tos (path)
