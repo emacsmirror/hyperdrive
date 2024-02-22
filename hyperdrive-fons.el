@@ -112,8 +112,7 @@ scores are above THRESHOLD."
            (and (>= (fons-relation-score relation) threshold)
                 (cl-some (lambda (path)
                            (length< (fons-path-hops path) max-hops))
-                         (fons-relation-paths relation))
-                (length< (fons-relation-paths relation) max-hops)))
+                         (fons-relation-paths relation))))
          (extend-relation (from)
            "Get the hops from FROM then call \\+`add-relation' on each hop."
            (let ((hops (map-elt (fons-hops from) topic)))
@@ -139,11 +138,11 @@ path to the relation's path slot."
                          (and from-relation ; nil when HOP's from is the root
                               (fons-relation-paths from-relation))))
              (dolist (path paths-to-from)
-               (let ((hops-to-from (fons-path-hops path))
-                     (path-to-to
-                      (make-fons-path
-                       :hops (append (fons-copy-tree hops-to-from t)
-                                     (list (fons-copy-tree hop t))))))
+               (let* ((hops-to-from (fons-path-hops path))
+                      (path-to-to
+                       (make-fons-path
+                        :hops (append (fons-copy-tree hops-to-from t)
+                                      (list (fons-copy-tree hop t))))))
                  ))
              ;; Track the skipped peers, and on each iteration check
              ;; extend-relation-p against only those.  If none pass, terminate.
