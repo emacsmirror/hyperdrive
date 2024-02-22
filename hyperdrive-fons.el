@@ -178,6 +178,59 @@ path to the relation's path slot."
                  relations))
       relations)))
 
+(cl-defun fons-relations*
+    (from topic &key (max-hops 3) (threshold fons-path-score-threshold))
+  "Return a list of `fons-relation' structs from FROM about TOPIC.
+Recurses up to MAX-HOPS times, returning only relations whose
+scores are above THRESHOLD."
+  (let ((relations (make-hash-table :test 'equal)))
+    ;; TODO: Consider passing around relation structs instead of ids
+    (cl-labels ((extend-relation (from &optional paths)
+                  (pcase-dolist ((cl-struct fons-hop to score)
+                                 (map-elt (fons-hops from) topic))
+                    (let* ((hop (make-fons-hop :from from :to to :score score))
+                           (extended-paths (extend-paths paths hop)))
+                      (add-relation to extended-paths)
+                      (when (extend-relation-p to)
+                        (extend-relation to extended-paths)))))
+                (add-relation (to paths)
+                  (ensure-relation to)
+                  (let ((relation (gethash to relations)))
+                    (setf (fons-relation-paths relation)
+                          ;; TODO: Consider using `cons' to prepend paths and then use `reverse'.
+                          ;; TODO: Order of `append' args? Efficiency? Effect on graph view?
+                          (append (fons-relation-paths relation) paths))
+                    (setf (fons-relation-score relation)
+                          (funcall fons-relation-score-fn relation))))
+                (extend-paths (paths hop)
+                  "Return an extended, scored copy of PATHS by HOP."
+                  (let ((extended-paths
+                         (if paths
+                             (let ((paths-copy (fons-copy-tree paths t)))
+                               (dolist (path paths-copy)
+                                 (setf (fons-path-hops path)
+                                       (append (fons-path-hops path)
+                                               (list (fons-copy-tree hop t)))))
+                               paths-copy)
+                           (list (make-fons-path :hops (list hop))))))
+                    (dolist (path extended-paths)
+                      (setf (fons-path-score path)
+                            (funcall fons-path-score-fn path)))
+                    extended-paths))
+                (extend-relation-p (to)
+                  (let ((relation (gethash to relations)))
+                    (and (>= (fons-relation-score relation) threshold)
+                         (cl-some (lambda (path)
+                                    (length< (fons-path-hops path) max-hops))
+                                  (fons-relation-paths relation)))))
+                (ensure-relation (to)
+                  "Add a relation to TO if none exists."
+                  (unless (gethash to relations)
+                    (setf (gethash to relations)
+                          (make-fons-relation :from from :to to)))))
+      (extend-relation from)
+      relations)))
+
 (defun fons-path-tos (path)
   "Return all destinations in PATH."
   (mapcar (lambda (hop)
