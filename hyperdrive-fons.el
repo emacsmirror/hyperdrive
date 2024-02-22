@@ -237,10 +237,19 @@ PATHS should be from a single source."
 ;;     relation))
 
 (defun fons-relation-score-default (relation)
-  "Return RELATION's score having aggregated its paths.
-The score does not exceed 1."
-  (cl-reduce #'max (fons-relation-paths relation)
-             :key #'fons-path-score))
+  "Return RELATION's score based on the scores of its paths.
+If RELATION contains a single-hop path, return that path's score.
+Otherwise, return the highest path score among all paths.
+The returned score does not exceed 1."
+  (let* ((paths (fons-relation-paths relation))
+         ;; TODO: Instead of `cl-find' then `cl-reduce', just iterate once.
+         (direct-path (cl-find (lambda (path)
+                                 (length= 1 (fons-path-hops path)))
+                               paths)))
+    (if direct-path
+        (fons-path-score direct-path)
+      (cl-reduce #'max (fons-relation-paths relation)
+                 :key #'fons-path-score))))
 
 (defun fons-copy-tree (tree &optional vecp)
   "Copy TREE like `copy-tree', but with VECP, works for records too."
