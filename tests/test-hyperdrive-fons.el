@@ -291,13 +291,12 @@
                 (fons-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
                 )
               )
-    (let* ((relations (fons-relations "alice" "tofu" ;; :threshold 0
-                                      )))
+    (let* ((relations (fons-relations* "alice" "tofu" :threshold 0)))
       relations
-      ;; (hyperdrive-fons-view relations "alice" :layout "dot"
+      (hyperdrive-fons-view relations "alice" :layout "dot"
 
-      ;;                       ;; :debug t
-      ;;                       )
+                            ;; :debug t
+                            )
       )))
 
 ;; Local Variables:

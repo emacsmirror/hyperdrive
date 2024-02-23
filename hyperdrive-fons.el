@@ -180,19 +180,18 @@ path to the relation's path slot."
 
 (cl-defun fons-relations*
     (from topic &key (max-hops 3) (threshold fons-path-score-threshold))
-  "Return a list of `fons-relation' structs from FROM about TOPIC.
+  "Return a table of `fons-relation' structs from FROM about TOPIC.
 Recurses up to MAX-HOPS times, returning only relations whose
 scores are above THRESHOLD."
   (let ((relations (make-hash-table :test 'equal)))
     ;; TODO: Consider passing around relation structs instead of ids
-    (cl-labels ((extend-relation (from &optional paths)
-                  (pcase-dolist ((cl-struct fons-hop to score)
+    (cl-labels ((add-relations-from (from &optional paths)
+                  (pcase-dolist ((and hop (cl-struct fons-hop to score))
                                  (map-elt (fons-hops from) topic))
-                    (let* ((hop (make-fons-hop :from from :to to :score score))
-                           (extended-paths (extend-paths paths hop)))
+                    (let ((extended-paths (extend-paths paths hop)))
                       (add-relation to extended-paths)
                       (when (extend-relation-p to)
-                        (extend-relation to extended-paths)))))
+                        (add-relations-from to extended-paths)))))
                 (add-relation (to paths)
                   (ensure-relation to)
                   (let ((relation (gethash to relations)))
@@ -228,7 +227,7 @@ scores are above THRESHOLD."
                   (unless (gethash to relations)
                     (setf (gethash to relations)
                           (make-fons-relation :from from :to to)))))
-      (extend-relation from)
+      (add-relations-from from)
       (maphash (lambda (to relation)
                  ;; Remove relations which are below THRESHOLD.
                  (when (< (fons-relation-score relation) threshold)
