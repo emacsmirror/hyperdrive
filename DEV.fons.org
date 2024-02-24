@@ -43,79 +43,79 @@
 
 **** A
 
-+ Story :: Alice views a document containing a link to Carole's document.
++ Story :: Alice views a document containing a link to Carol's document.
 
   - [ ] What annotation do we show for the link? ::
     + 
 
 + Hops :: 
 
-  | From  | To     | Score |
-  |-------+--------+-------|
-  | Alice | Bob    |     1 |
-  | Alice | Carole |     1 |
-  | Bob   | Carole |     1 |
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |     1 |
+  | Alice | Carol |     1 |
+  | Bob   | Carol |     1 |
 
 + Relations ::
 
-  | From  | To     | Score |
-  |-------+--------+-------|
-  | Alice | Carole |     1 |
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Carol |     1 |
 
 **** B (hop/path scores as percentages, relation scores as numbers >1)
 
-+ Story :: Alice views a document containing a link to Carole's document and a link to Doug's document.
++ Story :: Alice views a document containing a link to Carol's document and a link to Doug's document.
 
   - [ ] What annotation do we show for the links? :: The relation score.
 
-    * Note that each link only has a single relation: one to Carole and one to Doug; but the relation to Carole has two paths, while the one to Doug has only one.
+    * Note that each link only has a single relation: one to Carol and one to Doug; but the relation to Carol has two paths, while the one to Doug has only one.
 
     * This hypothetical example preserves the distinction between the types of units in the scores, the hop/path scores and the relation scores.  Internally they would still be represented as numbers greater than 0, but the hop scores would be represented to the user as percentages, to help the user think about them differently.
 
 + Hops :: 
 
-  | From  | To     | Score |
-  |-------+--------+-------|
-  | Alice | Bob    |  100% |
-  | Alice | Carole |  100% |
-  | Bob   | Carole |  100% |
-  | Bob   | Doug   |  100% |
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |  100% |
+  | Alice | Carol |  100% |
+  | Bob   | Carol |  100% |
+  | Bob   | Doug  |  100% |
 
 + Relations ::
 
-  | From  | To     | Score |
-  |-------+--------+-------|
-  | Alice | Carole |  1.75 |
-  | Alice | Doug   |  0.75 |
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Carol |  1.75 |
+  | Alice | Doug  |  0.75 |
 
 **** C (American academic-style grading)
 
-+ Story :: Alice views a document containing a link to Carole's document and a link to Doug's document.
++ Story :: Alice views a document containing a link to Carol's document and a link to Doug's document.
 
-  - Note that each link only has a single relation: one to Carole and one to Doug; but the relation to Carole has two paths, while the one to Doug has only one.
+  - Note that each link only has a single relation: one to Carol and one to Doug; but the relation to Carol has two paths, while the one to Doug has only one.
 
   - [ ] What annotation do we show for the links? ::
 
     * Bob :: A
-    * Carole :: A+
+    * Carol :: A+
     * Doug :: C
 
 + Hops :: 
 
-  | From  | To     | Score |
-  |-------+--------+-------|
-  | Alice | Bob    |  100% |
-  | Alice | Carole |  100% |
-  | Bob   | Carole |  100% |
-  | Bob   | Doug   |  100% |
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |  100% |
+  | Alice | Carol |  100% |
+  | Bob   | Carol |  100% |
+  | Bob   | Doug  |  100% |
 
 + Relations ::
 
-  | From  | To     | Score |
-  |-------+--------+-------|
-  | Alice | Bob    |     1 |
-  | Alice | Carole |  1.75 |
-  | Alice | Doug   |  0.75 |
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |     1 |
+  | Alice | Carol |  1.75 |
+  | Alice | Doug  |  0.75 |
 
 **** D  Tie-breaker
 
@@ -128,29 +128,29 @@ is a tie, sort by the 2-hop (indirect) scores, and so on...
 
 + Hops ::
 
-  | From  | To     | Score |
-  |-------+--------+-------|
-  | Alice | Bob    |     1 |
-  | Alice | Carole |     1 |
-  | Bob   | Carole |     1 |
-  | Bob   | Doug   |     1 |
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |     1 |
+  | Alice | Carol |     1 |
+  | Bob   | Carol |     1 |
+  | Bob   | Doug  |     1 |
 
 + Paths ::
 
-  | Hops                   | Score                           |
-  |------------------------+---------------------------------|
-  | Alice -> Bob           | 1                               |
-  | Alice -> Carole        | 1                               |
-  | Alice -> Bob -> Carole | 0.75 (depends on path score fn) |
-  | Alice -> Bob -> Doug   | 0.75 (depends on path score fn) |
+  | Hops                  | Score                           |
+  |-----------------------+---------------------------------|
+  | Alice -> Bob          | 1                               |
+  | Alice -> Carol        | 1                               |
+  | Alice -> Bob -> Carol | 0.75 (depends on path score fn) |
+  | Alice -> Bob -> Doug  | 0.75 (depends on path score fn) |
 
 + Relations (sorted from highest to lowest) ::
 
-  | From  | To     | Score                     |
-  |-------+--------+---------------------------|
-  | Alice | Carole | 1 (1 hop) + 0.75 (2 hops) |
-  | Alice | Bob    | 1 (1 hop)                 |
-  | Alice | Doug   | 0 (1 hop) + 0.75 (2 hops)  |
+  | From  | To    | Score                     |
+  |-------+-------+---------------------------|
+  | Alice | Carol | 1 (1 hop) + 0.75 (2 hops) |
+  | Alice | Bob   | 1 (1 hop)                 |
+  | Alice | Doug  | 0 (1 hop) + 0.75 (2 hops) |
 
 **** E Divide user's energy among all peers (Appleseed)
 

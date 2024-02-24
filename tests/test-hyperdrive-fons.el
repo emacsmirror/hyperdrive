@@ -13,9 +13,9 @@
 (defvar test-hyperdrive-fons-default-hops-fn
   (lambda ()
     (fons-add-hop "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-hops)
-    (fons-add-hop "alice" "carole" 0.8 "tofu" test-hyperdrive-fons-hops)
-    (fons-add-hop "carole" "david" 0.8 "tofu" test-hyperdrive-fons-hops)
-    (fons-add-hop "carole" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
+    (fons-add-hop "alice" "carol" 0.8 "tofu" test-hyperdrive-fons-hops)
+    (fons-add-hop "carol" "david" 0.8 "tofu" test-hyperdrive-fons-hops)
+    (fons-add-hop "carol" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
     (fons-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)))
 
 (cl-defmacro fons-test ((&optional hops-fn) &rest body)
@@ -47,25 +47,25 @@
               (make-fons-path
                :score 0.8
                :hops (list (make-fons-hop
-                            :from "alice" :to "carole" :score 0.8)))
+                            :from "alice" :to "carol" :score 0.8)))
               (make-fons-path
                :score 0.6400000000000001
                :hops (list (make-fons-hop
-                            :from "alice" :to "carole" :score 0.8)
+                            :from "alice" :to "carol" :score 0.8)
                            (make-fons-hop
-                            :from "carole" :to "david" :score 0.8)))
+                            :from "carol" :to "david" :score 0.8)))
               (make-fons-path
                :score 0.4
                :hops (list (make-fons-hop
-                            :from "alice" :to "carole" :score 0.8)
+                            :from "alice" :to "carol" :score 0.8)
                            (make-fons-hop
-                            :from "carole" :to "eve" :score 0.5)))
+                            :from "carol" :to "eve" :score 0.5)))
               (make-fons-path
                :score 0.5120000000000001
                :hops (list (make-fons-hop
-                            :from "alice" :to "carole" :score 0.8)
+                            :from "alice" :to "carol" :score 0.8)
                            (make-fons-hop
-                            :from "carole" :to "david" :score 0.8)
+                            :from "carol" :to "david" :score 0.8)
                            (make-fons-hop
                             :from "david" :to "eve" :score 0.8))))
         paths-from-alice)))))
@@ -139,15 +139,15 @@
   (should (fons-path-to-p "eve"
                           (make-fons-path
                            :hops (list (make-fons-hop
-                                        :from "alice" :to "carole")
+                                        :from "alice" :to "carol")
                                        (make-fons-hop
-                                        :from "carole" :to "eve")))))
-  (should-not (fons-path-to-p "carole"
+                                        :from "carol" :to "eve")))))
+  (should-not (fons-path-to-p "carol"
                               (make-fons-path
                                :hops (list (make-fons-hop
-                                            :from "alice" :to "carole")
+                                            :from "alice" :to "carol")
                                            (make-fons-hop
-                                            :from "carole" :to "eve"))))))
+                                            :from "carol" :to "eve"))))))
 
 (ert-deftest fons-path-circular-p ()
   "Returns non-nil if PATH ends in TO."
@@ -162,9 +162,9 @@
             :hops (list (make-fons-hop
                          :from "alice" :to "bob")
                         (make-fons-hop
-                         :from "bob" :to "carole")
+                         :from "bob" :to "carol")
                         (make-fons-hop
-                         :from "carole" :to "bob")))))
+                         :from "carol" :to "bob")))))
   (should-not (fons-path-circular-p
                ;; Ignore circular paths-from-alice before the last hop.
                (make-fons-path
@@ -173,7 +173,7 @@
                             (make-fons-hop
                              :from "bob" :to "alice")
                             (make-fons-hop
-                             :from "alice" :to "carole"))))))
+                             :from "alice" :to "carol"))))))
 
 (ert-deftest fons-path-alice-to-eve-relation-score ()
   "Relation score."
@@ -252,14 +252,14 @@
               (lambda ()
                 (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "alice" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "eve" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "bob" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "carole" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "eve" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "carol" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
                 ;; (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                ;; (fons-add-hop "alice" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
-                ;; (fons-add-hop "bob" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
-                ;; (fons-add-hop "carole" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+                ;; (fons-add-hop "alice" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
+                ;; (fons-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
+                ;; (fons-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
                 )
               )
     (let* ((paths-from-alice (fons-paths "alice" "tofu" :threshold 0))
@@ -285,9 +285,9 @@
               (lambda ()
                 (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "alice" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "eve" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "bob" "carole" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "carole" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "eve" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "carol" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
                 )
               )
