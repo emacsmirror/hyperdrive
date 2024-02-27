@@ -184,26 +184,25 @@ path to the relation's path slot."
 Recurses up to MAX-HOPS times, returning only relations whose
 scores are above THRESHOLD."
   (let ((relations (make-hash-table :test 'equal)))
-    ;; TODO: Consider passing around relation structs instead of ids
     (cl-labels ((add-relations-from (from &optional paths)
-                  (pcase-dolist ((and hop (cl-struct fons-hop to score))
-                                 (map-elt (fons-hops from) topic))
-                    (when-let ((paths-to-hop (if paths
-                                                 (extend-paths paths hop)
-                                               ;; On the 1st hop, paths will be nil.
-                                               (hop-paths hop))))
-                      (add-relation-to to paths-to-hop)
-                      (when (extend-relation-p to)
-                        (add-relations-from to paths-to-hop)))))
-                (add-relation-to (to paths)
-                  (ensure-relation to)
-                  (let ((relation (gethash to relations)))
-                    (setf (fons-relation-paths relation)
-                          ;; TODO: Consider using `cons' to prepend paths and then use `reverse'.
-                          ;; TODO: Order of `append' args? Efficiency? Effect on graph view?
-                          (append (fons-relation-paths relation) paths))
-                    (setf (fons-relation-score relation)
-                          (funcall fons-relation-score-fn relation))))
+                  (dolist (to-hop (map-elt (fons-hops from) topic))
+                    (let ((to-relation (ensure-relation (fons-hop-to to-hop))))
+                      (when-let ((paths-to-hop (if paths
+                                                   (extend-paths paths to-hop)
+                                                 ;; On the 1st hop, paths is nil.
+                                                 (hop-paths to-hop))))
+                        (update-relation to-relation paths-to-hop)
+                        (when (and (above-threshold-p to-relation)
+                                   (within-max-hops-p to-relation))
+                          (add-relations-from (fons-relation-to to-relation)
+                                              paths-to-hop))))))
+                (update-relation (relation paths)
+                  (setf (fons-relation-paths relation)
+                        ;; TODO: Consider using `cons' to prepend paths and then use `reverse'.
+                        ;; TODO: Order of `append' args?  Efficiency?  Effect on graph view?
+                        (append (fons-relation-paths relation) paths))
+                  (setf (fons-relation-score relation)
+                        (funcall fons-relation-score-fn relation)))
                 (extend-paths (paths hop)
                   "Return an extended, scored copy of PATHS by HOP.
 Circular paths are not included in the list of return value."
@@ -231,21 +230,21 @@ Circular paths are not included in the list of return value."
                   (dolist (path paths)
                     (setf (fons-path-score path)
                           (funcall fons-path-score-fn path))))
-                (extend-relation-p (to)
-                  (let ((relation (gethash to relations)))
-                    (and (>= (fons-relation-score relation) threshold)
-                         (cl-some (lambda (path)
-                                    (length< (fons-path-hops path) max-hops))
-                                  (fons-relation-paths relation)))))
+                (above-threshold-p (relation)
+                  (>= (fons-relation-score relation) threshold))
+                (within-max-hops-p (relation)
+                  (cl-some (lambda (path)
+                             (length< (fons-path-hops path) max-hops))
+                           (fons-relation-paths relation)))
                 (ensure-relation (to)
-                  "Add a relation to TO if none exists."
+                  "Add a relation to TO if none exists.  Returns relation."
                   (unless (gethash to relations)
                     (setf (gethash to relations)
-                          (make-fons-relation :from from :to to)))))
+                          (make-fons-relation :from from :to to)))
+                  (gethash to relations)))
       (add-relations-from from)
       (maphash (lambda (to relation)
-                 ;; Remove relations which are below THRESHOLD.
-                 (when (< (fons-relation-score relation) threshold)
+                 (unless (above-threshold-p relation)
                    (remhash to relations)))
                relations)
       relations)))
