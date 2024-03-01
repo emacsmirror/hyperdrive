@@ -184,18 +184,20 @@ path to the relation's path slot."
 Recurses up to MAX-HOPS times, returning only relations whose
 scores are above THRESHOLD."
   (let ((relations (make-hash-table :test 'equal)))
-    (cl-labels ((add-relations-from (from &optional paths)
-                  (dolist (to-hop (map-elt (fons-hops from) topic))
-                    (let ((to-relation (ensure-relation (fons-hop-to to-hop))))
-                      (when-let ((paths-to-hop (if paths
-                                                   (extend-paths paths to-hop)
-                                                 ;; On the 1st hop, paths is nil.
-                                                 (hop-paths to-hop))))
-                        (update-relation to-relation paths-to-hop)
+    (cl-labels ((add-relations-from (from &optional paths-to-from)
+                  (dolist (hop (map-elt (fons-hops from) topic))
+                    (let ((to-relation (ensure-relation (fons-hop-to hop))))
+                      (when-let ((paths-to-to
+                                  (if paths-to-from
+                                      (extend-paths paths-to-from hop)
+                                    ;; On the 1st hop, paths is nil.
+                                    (list (make-fons-path :hops (list hop))))))
+                        (score-paths paths-to-to)
+                        (update-relation to-relation paths-to-to)
                         (when (and (above-threshold-p to-relation)
                                    (within-max-hops-p to-relation))
                           (add-relations-from (fons-relation-to to-relation)
-                                              paths-to-hop))))))
+                                              paths-to-to))))))
                 (update-relation (relation paths)
                   (setf (fons-relation-paths relation)
                         ;; TODO: Consider using `cons' to prepend paths and then use `reverse'.
@@ -204,29 +206,20 @@ scores are above THRESHOLD."
                   (setf (fons-relation-score relation)
                         (funcall fons-relation-score-fn relation)))
                 (extend-paths (paths hop)
-                  "Return an extended, scored copy of PATHS by HOP.
-Circular paths are not included in the list of return value."
-                  (let (paths-to-hop)
-                    (dolist (path paths)
-                      (unless (circular-p path hop)
-                        (let ((extended-path (fons-copy-tree path t)))
-                          (setf (fons-path-hops extended-path)
-                                (append (fons-path-hops extended-path)
-                                        (list hop)))
-                          (push extended-path paths-to-hop))))
-                    (rescore-paths paths-to-hop)
-                    paths-to-hop))
+                  "Return list of PATHS extended by HOP without circular hops."
+                  (remq nil
+                        (mapcar
+                         (lambda (path)
+                           (unless (circular-p path hop)
+                             (make-fons-path
+                              :hops (append (fons-path-hops path) (list hop)))))
+                         paths)))
                 (circular-p (path last-hop)
                   "Return non-nil when HOP circles back to any hop in PATH."
                   (cl-some (lambda (hop)
                              (equal (fons-hop-to last-hop) (fons-hop-from hop)))
                            (fons-path-hops path)))
-                (hop-paths (hop)
-                  "Return a list containing a single path with a single HOP."
-                  (let ((paths (list (make-fons-path :hops (list hop)))))
-                    (rescore-paths paths)
-                    paths))
-                (rescore-paths (paths)
+                (score-paths (paths)
                   (dolist (path paths)
                     (setf (fons-path-score path)
                           (funcall fons-path-score-fn path))))
