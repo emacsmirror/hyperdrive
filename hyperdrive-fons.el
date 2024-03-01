@@ -238,10 +238,9 @@ Circular paths are not included in the list of return value."
                            (fons-relation-paths relation)))
                 (ensure-relation (to)
                   "Add a relation to TO if none exists.  Returns relation."
-                  (unless (gethash to relations)
-                    (setf (gethash to relations)
-                          (make-fons-relation :from from :to to)))
-                  (gethash to relations)))
+                  (or (gethash to relations)
+                      (setf (gethash to relations)
+                            (make-fons-relation :from from :to to)))))
       (add-relations-from from)
       (maphash (lambda (to relation)
                  (unless (above-threshold-p relation)
