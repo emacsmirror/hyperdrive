@@ -179,25 +179,27 @@ path to the relation's path slot."
       relations)))
 
 (cl-defun fons-relations*
-    (from topic &key (max-hops 3) (threshold fons-path-score-threshold))
+    (from topic &key blocked (max-hops 3) (threshold fons-path-score-threshold))
   "Return a table of `fons-relation' structs from FROM about TOPIC.
 Recurses up to MAX-HOPS times, returning only relations whose
-scores are above THRESHOLD."
+scores are above THRESHOLD which are not in BLOCKED."
   (let ((relations (make-hash-table :test 'equal)))
     (cl-labels ((add-relations-from (from &optional paths-to-from)
                   (dolist (hop (map-elt (fons-hops from) topic))
-                    (let ((to-relation (ensure-relation (fons-hop-to hop))))
-                      (when-let ((paths-to-to
-                                  (if paths-to-from
-                                      (extend-paths paths-to-from hop)
-                                    ;; On the 1st hop, paths is nil.
-                                    (list (make-fons-path :hops (list hop))))))
-                        (score-paths paths-to-to)
-                        (update-relation to-relation paths-to-to)
-                        (when (and (above-threshold-p to-relation)
-                                   (within-max-hops-p to-relation))
-                          (add-relations-from (fons-relation-to to-relation)
-                                              paths-to-to))))))
+                    (when-let ((to-relation
+                                (and (not (member (fons-hop-to hop) blocked))
+                                     (ensure-relation (fons-hop-to hop))))
+                               (paths-to-to
+                                (if paths-to-from
+                                    (extend-paths paths-to-from hop)
+                                  ;; On the 1st hop, paths is nil.
+                                  (list (make-fons-path :hops (list hop))))))
+                      (score-paths paths-to-to)
+                      (update-relation to-relation paths-to-to)
+                      (when (and (above-threshold-p to-relation)
+                                 (within-max-hops-p to-relation))
+                        (add-relations-from (fons-relation-to to-relation)
+                                            paths-to-to)))))
                 (update-relation (relation paths)
                   (setf (fons-relation-paths relation)
                         ;; TODO: Consider using `cons' to prepend paths and then use `reverse'.
