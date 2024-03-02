@@ -92,44 +92,6 @@
         (should (seq-contains-p fons-hops-called-with '("frank")))
         (should-not (seq-contains-p fons-hops-called-with '("georgie")))))))
 
-(ert-deftest fons-relations ()
-  "Not a test; used to experiment."
-  (skip-unless nil)
-  (fons-test ()
-    (let* ((froms (delete-dups
-                   (mapcar (lambda (it)
-                             (fons-hop-from (cadar it)))
-                           (map-values test-hyperdrive-fons-hops))))
-           (paths-by-from (mapcar (lambda (from)
-                                    (cons from (fons-paths from "tofu")))
-                                  froms))
-           (relations-by-from
-            (mapcar
-             (lambda (map)
-               (let* ((from (car map))
-                      (paths-from-alice (cdr map))
-                      (tos (delete-dups
-                            (mapcar
-                             (lambda (path)
-                               (fons-hop-to (car (last (fons-path-hops path)))))
-                             paths-from-alice)))
-                      (relations
-                       (mapcar
-                        (lambda (to)
-                          (let ((relation (make-fons-relation
-                                           :from from :to to
-                                           :paths (cl-remove-if-not
-                                                   (lambda (path)
-                                                     (fons-path-to-p to path))
-                                                   paths-from-alice))))
-                            (setf (fons-relation-score relation)
-                                  (funcall fons-relation-score-fn relation))
-                            relation))
-                        tos)))
-                 relations))
-             paths-by-from)))
-      (should-not relations-by-from))))
-
 (ert-deftest fons-path-to-p ()
   "Returns non-nil if PATH ends in TO."
   (should (fons-path-to-p "bob"
