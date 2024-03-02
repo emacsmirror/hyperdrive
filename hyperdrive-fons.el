@@ -113,7 +113,8 @@ scores are above THRESHOLD which are not in BLOCKED."
     (cl-labels ((add-relations-from (from &optional paths-to-from)
                   (dolist (hop (map-elt (fons-hops from) topic))
                     (when-let ((to-relation
-                                (and (not (member (fons-hop-to hop) blocked))
+                                (and (not (equal root (fons-hop-to hop)))
+                                     (not (member (fons-hop-to hop) blocked))
                                      (ensure-relation (fons-hop-to hop))))
                                (paths-to-to
                                 (if paths-to-from
