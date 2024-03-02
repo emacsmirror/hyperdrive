@@ -105,6 +105,10 @@ Takes one argument, a `fons-path' and returns a number from 0 to
   "Return a table of `fons-relation' structs from FROM about TOPIC.
 Recurses up to MAX-HOPS times, returning only relations whose
 scores are above THRESHOLD which are not in BLOCKED."
+  (unless (and (integerp max-hops) (cl-plusp max-hops))
+    (error "MAX-HOPS must be an positive integer"))
+  (when (member from blocked)
+    (error "BLOCKED must not contain FROM"))
   (let ((relations (make-hash-table :test 'equal)))
     (cl-labels ((add-relations-from (from &optional paths-to-from)
                   (dolist (hop (map-elt (fons-hops from) topic))
