@@ -101,14 +101,14 @@ Takes one argument, a `fons-path' and returns a number from 0 to
       paths)))
 
 (cl-defun fons-relations
-    (from topic &key blocked (max-hops 3) (threshold fons-path-score-threshold))
-  "Return a table of `fons-relation' structs from FROM about TOPIC.
+    (root topic &key blocked (max-hops 3) (threshold fons-path-score-threshold))
+  "Return a table of `fons-relation' structs from ROOT about TOPIC.
 Recurses up to MAX-HOPS times, returning only relations whose
 scores are above THRESHOLD which are not in BLOCKED."
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS must be an positive integer"))
-  (when (member from blocked)
-    (error "BLOCKED must not contain FROM"))
+  (when (member root blocked)
+    (error "BLOCKED must not contain ROOT"))
   (let ((relations (make-hash-table :test 'equal)))
     (cl-labels ((add-relations-from (from &optional paths-to-from)
                   (dolist (hop (map-elt (fons-hops from) topic))
@@ -161,8 +161,8 @@ scores are above THRESHOLD which are not in BLOCKED."
                   "Add a relation to TO if none exists.  Returns relation."
                   (or (gethash to relations)
                       (setf (gethash to relations)
-                            (make-fons-relation :from from :to to)))))
-      (add-relations-from from)
+                            (make-fons-relation :from root :to to)))))
+      (add-relations-from root)
       (maphash (lambda (to relation)
                  (unless (above-threshold-p relation)
                    (remhash to relations)))
