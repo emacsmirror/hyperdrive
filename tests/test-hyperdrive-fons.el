@@ -156,7 +156,77 @@
       (should (= 0.5120000000000001
                  (fons-relation-score (gethash "eve" relations))))
       (should (= 0.8
-                 (fons-relation-score (gethash "carol" relations)))))))
+                 (fons-relation-score (gethash "carol" relations)))))
+    (let ((relations (fons-relations "alice" "tofu" :threshold 0)))
+      (should (= 4 (hash-table-count relations)))
+      (should (= 0.25
+                 (fons-relation-score (gethash "bob" relations))))
+      (should (= 0.6400000000000001
+                 (fons-relation-score (gethash "david" relations))))
+      (should (= 0.5120000000000001
+                 (fons-relation-score (gethash "eve" relations))))
+      (should (= 0.8
+                 (fons-relation-score (gethash "carol" relations)))))
+    (let ((relations (fons-relations "alice" "tofu" :threshold 0.6)))
+      (should (= 2 (hash-table-count relations)))
+      (should (= 0.6400000000000001
+                 (fons-relation-score (gethash "david" relations))))
+      (should (= 0.8
+                 (fons-relation-score (gethash "carol" relations)))))
+    (let ((relations (fons-relations "alice" "tofu" :max-hops 2)))
+      (should (= 2 (hash-table-count relations)))
+      (should (= 0.6400000000000001
+                 (fons-relation-score (gethash "david" relations))))
+      (should (= 0.8
+                 (fons-relation-score (gethash "carol" relations)))))
+    (let ((relations (fons-relations "alice" "tofu" :max-hops 1)))
+      (should (= 1 (hash-table-count relations)))
+      (should (= 0.8
+                 (fons-relation-score (gethash "carol" relations)))))
+    (let ((relations (fons-relations "alice" "tofu" :blocked '("carol"))))
+      (should (= 0 (hash-table-count relations))))
+    (let ((relations (fons-relations "alice" "tofu" :blocked '("david"))))
+      (should (= 1 (hash-table-count relations)))
+      (should-not (gethash "david" relations))
+      ;; A -> C -> E has path score 0.4 (below default 0.5 threshold)
+      (should-not (gethash "eve" relations)))
+    (let ((relations
+           (fons-relations "alice" "tofu" :blocked '("david") :threshold 0.4)))
+      (should (= 2 (hash-table-count relations)))
+      (should-not (gethash "david" relations)))
+    (let ((relations (fons-relations "alice" "tofu" :blocked '("eve"))))
+      (should (= 2 (hash-table-count relations)))
+      (should-not (gethash "eve" relations)))))
+
+(ert-deftest fons-relations-shorter-path-lower-score ()
+  "Reducing max-hops decreases relation score if shorter path has lower score."
+  (fons-test ((lambda ()
+                (fons-add-hop "alice" "bob" 0.9 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "bob" "carol" 0.9 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "carol" "david" 0.9 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "alice" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)
+                (fons-add-hop "eve" "david" 0.8 "tofu" test-hyperdrive-fons-hops)))
+    (let ((relations (fons-relations "alice" "tofu" :max-hops 3)))
+      ;; Relation to david includes A -> B -> C -> D and also A -> E -> D.
+      (should (= 0.7290000000000001
+                 (fons-relation-score (gethash "david" relations)))))
+    (let ((relations (fons-relations "alice" "tofu" :max-hops 2)))
+      ;; With MAX-HOPS 2, relation to david now only includes A -> E -> D.
+      (should (= 0.6400000000000001
+                 (fons-relation-score (gethash "david" relations)))))))
+
+(ert-deftest fons-relations-many-hops ()
+  "Relations from Alice with max-hops set to 1."
+  (fons-test ((lambda ()
+                (dotimes (from 10)
+                  (dotimes (to 10)
+                    (unless (= from to)
+                      (fons-add-hop from to 0.5 "tofu" test-hyperdrive-fons-hops))))))
+    (let ((relations (fons-relations 0 "tofu" :max-hops 1)))
+      (should (= 9 (hash-table-count relations))))
+    (let ((relations (fons-relations 0 "tofu" :max-hops 2)))
+      ;; FIXME: Yay!  A bug!
+      (should (= 9 (hash-table-count relations))))))
 
 ;; (ert-deftest fons-relation-view ()
 ;;   ""
