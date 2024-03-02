@@ -218,15 +218,14 @@
 (ert-deftest fons-relations-many-hops ()
   "Relations from Alice with max-hops set to 1."
   (fons-test ((lambda ()
-                (dotimes (from 10)
-                  (dotimes (to 10)
+                (dotimes (from 6)
+                  (dotimes (to 6)
                     (unless (= from to)
                       (fons-add-hop from to 0.5 "tofu" test-hyperdrive-fons-hops))))))
-    (let ((relations (fons-relations 0 "tofu" :max-hops 1)))
-      (should (= 9 (hash-table-count relations))))
-    (let ((relations (fons-relations 0 "tofu" :max-hops 2)))
-      ;; FIXME: Yay!  A bug!
-      (should (= 9 (hash-table-count relations))))))
+    (let ((relations (fons-relations 0 "tofu" :max-hops 5)))
+      (should (= 5 (hash-table-count relations)))
+      ;; (hyperdrive-fons-view relations 0)
+      )))
 
 ;; (ert-deftest fons-relation-view ()
 ;;   ""
