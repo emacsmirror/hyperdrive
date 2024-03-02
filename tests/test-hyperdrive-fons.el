@@ -253,25 +253,21 @@
 
   )
 
-(ert-deftest fons-relations* ()
-  ""
-  (fons-test (
-              (lambda ()
+(ert-deftest fons-relations-view ()
+  "Not a test.  Opens fons-view buffer."
+  (skip-unless nil)
+  (fons-test ((lambda ()
                 (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "alice" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "eve" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "carol" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
-                )
-              )
-    (let* ((relations (fons-relations* "alice" "tofu" :threshold 0)))
-      relations
+                ))
+    (let* ((relations (fons-relations "alice" "tofu" :threshold 0)))
       (hyperdrive-fons-view relations "alice" :layout "dot"
-
                             ;; :debug t
-                            )
-      )))
+                            ))))
 
 ;; Local Variables:
 ;; read-symbol-shorthands: (
