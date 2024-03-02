@@ -118,7 +118,7 @@ scores are above THRESHOLD which are not in BLOCKED."
                                (paths-to-to
                                 (if paths-to-from
                                     (extend-paths paths-to-from hop)
-                                  ;; On the 1st hop, paths is nil.
+                                  ;; On the 1st hop, paths-to-from is nil.
                                   (list (make-fons-path :hops (list hop))))))
                       (score-paths paths-to-to)
                       (update-relation to-relation paths-to-to)
