@@ -146,6 +146,18 @@
       (should (= 2 (length (fons-relation-paths relation))))
       (should (= 0.9120000000000001 (fons-relation-score relation))))))
 
+(ert-deftest fons-relations ()
+  "Relations from Alice."
+  (fons-test ()
+    (let ((relations (fons-relations "alice" "tofu")))
+      (should (= 3 (hash-table-count relations)))
+      (should (= 0.6400000000000001
+                 (fons-relation-score (gethash "david" relations))))
+      (should (= 0.5120000000000001
+                 (fons-relation-score (gethash "eve" relations))))
+      (should (= 0.8
+                 (fons-relation-score (gethash "carol" relations)))))))
+
 ;; (ert-deftest fons-relation-view ()
 ;;   ""
 ;;   (fons-test ((lambda ()
