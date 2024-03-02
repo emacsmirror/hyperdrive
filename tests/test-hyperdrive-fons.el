@@ -278,16 +278,16 @@
                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)
                 (fons-add-hop "eve" "david" 0.8 "tofu" test-hyperdrive-fons-hops)))
-             (let* ((paths-from-alice (fons-paths "alice" "tofu"))
-                    (tos (delete-dups
-                          (flatten-list
-                           (mapcar #'fons-path-tos paths-from-alice))))
-                    (relations (mapcar (lambda (to)
-                                         (fons-relation to paths-from-alice))
-                                       tos)))
-               (hyperdrive-fons-view relations "alice" :layout "dot"
-                                     ;; :debug t
-                                     ))))
+    (let* ((paths-from-alice (fons-paths "alice" "tofu"))
+           (tos (delete-dups
+                 (flatten-list
+                  (mapcar #'fons-path-tos paths-from-alice))))
+           (relations (mapcar (lambda (to)
+                                (fons-relation to paths-from-alice))
+                              tos)))
+      (hyperdrive-fons-view relations "alice" :layout "dot"
+                            ;; :debug t
+                            ))))
 
 (ert-deftest fons-relation-score-threshold ()
   ""
