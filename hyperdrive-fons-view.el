@@ -267,7 +267,10 @@ RELATIONS may be list of `fons-relation' structs."
                         "[" "]"))
               (format-relation-label (to relation)
                 (let ((score (format "%.2f" (fons-relation-score relation))))
-                  (insert (format "%s [label=\"%s (%s)\"];\n" to to score)))))
+                  (insert
+                   (format
+                    "%s [label=\"%s (%s)\", href=\"%s\", shape=\"ellipse\", color=\"%s\"];\n"
+                    to to score to hyperdrive-fons-view-source-color)))))
     ;; (setf width-in (/ width-in 1.5)
     ;;       height-in (/ height-in 1.5))
     (with-temp-buffer
