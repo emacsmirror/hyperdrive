@@ -121,7 +121,9 @@ called and replaces the buffer content with the rendered output."
                                    :layout layout :width-in width-in :height-in height-in
                                    ;; Average the two resolutions.
                                    :dpi (/ (+ width-res height-res) 2)))
-                 (svg-image (hyperdrive-fons-view--svg graphviz-string))
+                 (image-map (hyperdrive-fons-view--graph-map graphviz-string))
+                 (svg-image (hyperdrive-fons-view--svg graphviz-string
+                                                       :map image-map))
                  (inhibit-read-only t))
       (with-current-buffer (get-buffer-create "*hyperdrive-fons-view*")
         (erase-buffer)
@@ -140,6 +142,35 @@ Graph is a list of strings which form the graphviz-string data."
                           (fons-hop-from hop) (fons-hop-to hop)
                           (fons-hop-score hop))))
       (list (mapcar #'format-hop hops) hops-nodes))))
+
+(defun hyperdrive-fons-view--graph-map (graph)
+  "Return image map for Graphviz GRAPH."
+  ;; TODO: Remove dash.el and s.el dependencies
+  (with-temp-buffer
+    (insert graph)
+    (hyperdrive-fons-view--graphviz "cmapx"
+      ;; (debug-warn (buffer-string))
+      (cl-labels ((convert-map
+		    (map) (-let (((_map _props . areas) map))
+			    (mapcar #'convert-area areas)))
+                  (convert-area
+		    (area) (-let (((_area (&alist 'shape 'title 'href 'coords)) area))
+			     (list (pcase-exhaustive shape
+				     ("circle" (cons 'circle (convert-circle coords)))
+				     ("poly" (cons 'poly (convert-poly coords)))
+				     ("rect" (cons 'rect (convert-rect coords))))
+				   href (list :help-echo title))))
+                  (convert-circle
+		    (coords) (-let (((x y r) (->> coords (s-split ",") (-map #'string-to-number))))
+			       (cons (cons x y) r)))
+                  (convert-poly
+		    (coords) (->> coords (s-split ",") (-map #'string-to-number) (apply #'vector)))
+                  (convert-rect
+		    (coords) (-let (((x0 y0 x1 y1)
+				     (->> coords (s-split ",") (-map #'string-to-number))))
+			       (cons (cons x0 y0) (cons x1 y1)))))
+        (let* ((cmapx (libxml-parse-xml-region (point-min) (point-max))))
+          (convert-map cmapx))))))
 
 ;; (defun hyperdrive-fons-view--paths-graph (paths)
 ;;   "Return (hops-graph hops-nodes) for PATHS.
@@ -270,7 +301,7 @@ RELATIONS may be list of `fons-relation' structs."
       ;; (debug-warn (buffer-string))
       (buffer-string))))
 
-(cl-defun hyperdrive-fons-view--svg (hops-graph)
+(cl-defun hyperdrive-fons-view--svg (hops-graph &key map)
   "Return SVG image for Graphviz GRAPH.
 MAP is an Emacs-ready image map to apply to the image's
 properties.  SOURCE-BUFFER is the Org buffer the hops-graph displays,
@@ -294,7 +325,7 @@ commands can find the buffer."
 	;;   (replace-match (substring (match-string 2) nil -2) t t nil 2))
         )
       (let* ((image (apply #'create-image (buffer-string) 'svg t nil)))
-        ;; (setf (image-property image :map) map)
+        (setf (image-property image :map) map)
         ;; (setf (image-property image :source-buffer) source-buffer)
         image))))
 
