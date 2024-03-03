@@ -172,25 +172,6 @@ Graph is a list of strings which form the graphviz-string data."
         (let* ((cmapx (libxml-parse-xml-region (point-min) (point-max))))
           (convert-map cmapx))))))
 
-;; (defun hyperdrive-fons-view--paths-graph (paths)
-;;   "Return (hops-graph hops-nodes) for PATHS.
-;; Graph is a list of strings which form the graphviz-string data."
-;;   (let ((hops-nodes (make-hash-table :test #'equal)))
-;;     (cl-labels ((format-path (path)
-;;                   (let ((color (hyperdrive-fons-view--prism-color
-;;                                 (concat (fons-hop-from (car (fons-path-hops path)))
-;;                                         (fons-hop-to (car (last (fons-path-hops path)))) ))))
-;;                     (mapcar (lambda (path)
-;;                               (format-hop path color))
-;;                             (fons-path-hops path))))
-;;                 (format-hop (hop color)
-;;                   (setf (gethash (fons-hop-to hop) hops-nodes) (fons-hop-score hop))
-;;                   (format "%s -> %s [label=%s color=\"%s\" penwidth=2];\n"
-;;                           (fons-hop-from hop) (fons-hop-to hop)
-;;                           (fons-hop-score hop)
-;;                           color)))
-;;       (list (mapcar #'format-path paths) hops-nodes))))
-
 (defun hyperdrive-fons-view--relations-graph (relations)
   "Return hops for RELATIONS.
 RELATIONS may be list of `fons-relation' structs."
@@ -207,46 +188,6 @@ RELATIONS may be list of `fons-relation' structs."
                   (cl-pushnew hop hops :test #'equal)))
       (maphash #'map-relation relations)
       hops)))
-
-;; (defun hyperdrive-fons-view--relation-graph (relation)
-;;   "Return hops-graph for RELATION.
-;; Graph is a list of strings which form the graphviz-string data."
-;;   (let ((nodes (make-hash-table :test #'equal)))
-;;     (cl-labels (;; (map-relation (relation)
-;;                 ;;   (mapc #'map-path (fons-relation-paths relation)))
-;;                 ;; (map-path (path)
-;;                 ;;   (mapc #'map-hop (fons-path-hops path)))
-;;                 ;; (map-hop (hop)
-;;                 ;;   (cl-pushnew hop hops :test #'equal)
-;;                 ;;   (cl-pushnew (fons-hop-from hop) hops-nodes :test #'equal)
-;;                 ;;   (cl-pushnew (fons-hop-to hop) hops-nodes :test #'equal))
-;;                 (format-whole-relation (relation)
-;;                   (add-node-score relation)
-;;                   (let* ((from (fons-hop-from
-;;                                 (car (fons-path-hops
-;;                                       (car (fons-relation-paths relation))))))
-;;                          (to (fons-hop-to
-;;                               (car (last (fons-path-hops
-;;                                           (car (fons-relation-paths relation))))))))
-;;                     (format "%s -> %s [label=%s color=\"%s\" style=\"dotted\"];\n"
-;;                             from to
-;;                             (fons-relation-score relation)
-;;                             (hyperdrive-fons-view--prism-color (concat from to)))))
-;;                 (add-node-score (relation)
-;;                   (setf (gethash (fons-relation-to relation) nodes)
-;;                         (fons-relation-score relation)))
-;;                 ;; (format-relation (relation)
-;;                 ;;   (mapcar #'format-path (fons-relation-paths relation)))
-;;                 ;; (format-path (path)
-;;                 ;;   (mapcar #'format-hop (fons-path-hops path)))
-;;                 ;; (format-hop (hop)
-;;                 ;;   (format "%s -> %s [label=%s color=\"%s\" style=\"dotted\"];\n"
-;;                 ;;           (fons-hop-from hop) (fons-hop-to hop)
-;;                 ;;           (fons-hop-score hop)
-;;                 ;;           (hyperdrive-fons-view--prism-color
-;;                 ;;            (concat (fons-hop-from hop) (fons-hop-to hop)))))
-;;                 )
-;;       (list (format-whole-relation relation) nodes))))
 
 (defun hyperdrive-fons-view--format-hop (hop color)
   "Return graphviz-string for HOP."
