@@ -283,11 +283,11 @@ RELATIONS may be list of `fons-relation' structs."
 	        ";\n")
         (insert-vals "layout" layout
                      "bgcolor" (face-attribute 'default :background)
-                     "size" (format "%.1d,%.1d" width-in height-in)
+                     ;; "size" (format "%.1d,%.1d" width-in height-in)
                      ;; NOTE: The dpi setting is important, because
                      ;; without it, sometimes cmap areas don't align
                      ;; with the rendered elements.
-                     "dpi" (format "%s" dpi)
+                     ;; "dpi" (format "%s" dpi)
 		     "overlap" hyperdrive-fons-view-overlap
                      "margin" "0"
                      "ratio" "fill"
