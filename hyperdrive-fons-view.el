@@ -344,5 +344,7 @@ avatars, etc."
                                                    "white" "black")))))))
       (apply #'color-rgb-to-hex (append color-rgb (list 2))))))
 
+;; TODO: Bookmark support
+
 (provide 'hyperdrive-fons-view)
 ;;; hyperdrive-fons-view.el ends here
