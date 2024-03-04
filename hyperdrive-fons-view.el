@@ -122,14 +122,18 @@ called and replaces the buffer content with the rendered output."
                                    ;; Average the two resolutions.
                                    :dpi (/ (+ width-res height-res) 2)))
                  (image-map (hyperdrive-fons-view--graph-map graphviz-string))
-                 (svg-image (hyperdrive-fons-view--svg graphviz-string
-                                                       :map image-map))
+                 (svg-string (hyperdrive-fons-view--svg graphviz-string))
+                 (svg-image (create-image svg-string 'svg t :map image-map))
                  (inhibit-read-only t))
       (with-current-buffer (get-buffer-create "*hyperdrive-fons-view*")
         (erase-buffer)
         (if debug
             (insert graphviz-string)
-          (insert-image svg-image))
+          ;; Image must contain svg-string in order for
+          ;; `image-toggle-display-image', subroutine for
+          ;; `image-transform-set-scale', etc., to work.
+          (insert-image svg-image svg-string)
+          (image-mode))
         (pop-to-buffer (current-buffer))))))
 
 (defun hyperdrive-fons-view--hops-graph (hops)
@@ -245,33 +249,12 @@ RELATIONS may be list of `fons-relation' structs."
       ;; (debug-warn (buffer-string))
       (buffer-string))))
 
-(cl-defun hyperdrive-fons-view--svg (hops-graph &key map)
-  "Return SVG image for Graphviz GRAPH.
-MAP is an Emacs-ready image map to apply to the image's
-properties.  SOURCE-BUFFER is the Org buffer the hops-graph displays,
-which is applied as a property to the image so map-clicking
-commands can find the buffer."
+(cl-defun hyperdrive-fons-view--svg (hops-graph)
+  "Return SVG string for Graphviz GRAPH."
   (with-temp-buffer
     (insert hops-graph)
     (hyperdrive-fons-view--graphviz "svg"
-      ;; (debug-warn (buffer-string))
-      (save-excursion
-	;; HACK: Remove "pt" units from SVG width and height.  See
-	;; <https://gitlab.com/graphviz/graphviz/-/issues/867>.
-	;; Although it doesn't seem to fix the problem, so some
-	;; combinations of window and hops-graph sizes still render parts (or
-	;; most) of the SVG off-screen.  *sigh*
-	;; (goto-char (point-min))
-	;; (when (re-search-forward (rx "<svg width=\"" (group (1+ (not (any "\"")))) "\" "
-	;; 			     "height=\"" (group (1+ (not (any "\"")))) "\"")
-	;; 			 nil t)
-	;;   (replace-match (substring (match-string 1) nil -2) t t nil 1)
-	;;   (replace-match (substring (match-string 2) nil -2) t t nil 2))
-        )
-      (let* ((image (apply #'create-image (buffer-string) 'svg t nil)))
-        (setf (image-property image :map) map)
-        ;; (setf (image-property image :source-buffer) source-buffer)
-        image))))
+      (buffer-string))))
 
 (defvar hyperdrive-fons-view-prism-minimum-contrast 6
   "Attempt to enforce this minimum contrast ratio for user faces.
