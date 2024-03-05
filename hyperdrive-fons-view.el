@@ -127,13 +127,15 @@ called and replaces the buffer content with the rendered output."
   "Unscaled map argument suitable for `create-image'.")
 (put 'hyperdrive-fons-view--unscaled-map 'permanent-local t)
 
-(defun hyperdrive-fons-view--render-graphviz (graphviz &optional buffer)
-  "Render GRAPHVIZ string in BUFFER."
+(defun hyperdrive-fons-view--render-graphviz (graphviz &optional buffer scale)
+  "Render GRAPHVIZ string in BUFFER scaled by SCALE."
   (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
     (let* ((image-map (setq-local hyperdrive-fons-view--unscaled-map
                                   (hyperdrive-fons-view--graph-map graphviz)))
            (svg-string (hyperdrive-fons-view--svg graphviz))
-           (svg-image (create-image svg-string 'svg t :map image-map))
+           (svg-image (create-image svg-string 'svg t
+                                    :scale scale
+                                    :map image-map))
            (inhibit-read-only t))
       (add-hook 'image-mode-before-display-functions
                 #'hyperdrive-fons-view--restore-image-map nil t)
