@@ -123,17 +123,50 @@ called and replaces the buffer content with the rendered output."
                                    :dpi (/ (+ width-res height-res) 2))))
       (hyperdrive-fons-view--render-graphviz graphviz-string))))
 
+(defvar-local hyperdrive-fons-view--unscaled-map nil
+  "Unscaled map argument suitable for `create-image'.")
+(put 'hyperdrive-fons-view--unscaled-map 'permanent-local t)
+
 (defun hyperdrive-fons-view--render-graphviz (graphviz &optional buffer)
   "Render GRAPHVIZ string in BUFFER."
   (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
-    (let* ((image-map (hyperdrive-fons-view--graph-map graphviz))
+    (let* ((image-map (setq-local hyperdrive-fons-view--unscaled-map
+                                  (hyperdrive-fons-view--graph-map graphviz)))
            (svg-string (hyperdrive-fons-view--svg graphviz))
            (svg-image (create-image svg-string 'svg t :map image-map))
            (inhibit-read-only t))
+      (add-hook 'image-mode-before-display-functions
+                #'hyperdrive-fons-view--restore-image-map nil t)
       (erase-buffer)
       (insert-image svg-image svg-string)
       (image-mode)
       (pop-to-buffer (current-buffer)))))
+
+(defun hyperdrive-fons-view--restore-image-map (image)
+  "Store `hyperdrive-fons-view--unscaled-map' in IMAGE's :map property."
+  (when-let ((map hyperdrive-fons-view--unscaled-map))
+    (when (not (= 1 image-transform-scale))
+      (setf map (hyperdrive-fons-view--scaled-map map image-transform-scale)))
+    (setf (image-property image :map) map)))
+(put 'hyperdrive-fons-view--restore-image-map 'permanent-local-hook t)
+
+(defun hyperdrive-fons-view--scaled-map (map scale)
+  "Return a copy of MAP scaled according to SCALE."
+  (let ((map (fons-copy-tree map t)))
+    (pcase-dolist (`(,area ,_id ,_plist) map)
+      (pcase-exhaustive area
+        (`(rect .  ,coords)
+         ;; TODO
+         nil)
+        (`(circle .  ,coords)
+         ;; TODO
+         nil)
+        (`(poly .  ,coords)
+         ;; FIXME: This code copies the tree and then again creates an
+         ;; unnecessary list with cl-map.  Use `aset' on each item in the vector?  Or don't use copy-tree and instead copy the map's items one at a time.
+         (setf (cdr area)
+               (cl-map 'vector (lambda (coord) (round (* coord scale))) coords)))))
+    map))
 
 (defun hyperdrive-fons-view--hops-graph (hops)
   "Return (hops-graph hops-nodes) for HOPS.
