@@ -163,7 +163,7 @@ Graph is a list of strings which form the graphviz-string data."
 				     ("circle" (cons 'circle (convert-circle coords)))
 				     ("poly" (cons 'poly (convert-poly coords)))
 				     ("rect" (cons 'rect (convert-rect coords))))
-				   href (list :help-echo title))))
+				   href (list 'help-echo title))))
                   (convert-circle
 		    (coords) (-let (((x y r) (->> coords (s-split ",") (-map #'string-to-number))))
 			       (cons (cons x y) r)))
