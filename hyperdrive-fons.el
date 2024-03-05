@@ -105,8 +105,6 @@ Takes one argument, a `fons-path' and returns a number from 0 to
   "Return a table of `fons-relation' structs from ROOT about TOPIC.
 Recurses up to MAX-HOPS times, returning only relations whose
 scores are above THRESHOLD which are not in BLOCKED."
-  ;; We only make relations from the root node because we only care about the
-  ;; score of relations relative to the root.
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS must be an positive integer"))
   (when (member root blocked)
@@ -161,7 +159,7 @@ scores are above THRESHOLD which are not in BLOCKED."
                              (length< (fons-path-hops path) max-hops))
                            (fons-relation-paths relation)))
                 (ensure-relation (to)
-                  "Add a relation to TO if none exists.  Returns relation."
+                  "Add relation from ROOT to TO if none exists, then return it."
                   (or (gethash to relations)
                       (setf (gethash to relations)
                             (make-fons-relation :from root :to to)))))
