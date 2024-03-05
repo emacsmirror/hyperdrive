@@ -120,21 +120,20 @@ called and replaces the buffer content with the rendered output."
                                    hops relations :root-name from
                                    :layout layout :width-in width-in :height-in height-in
                                    ;; Average the two resolutions.
-                                   :dpi (/ (+ width-res height-res) 2)))
-                 (image-map (hyperdrive-fons-view--graph-map graphviz-string))
-                 (svg-string (hyperdrive-fons-view--svg graphviz-string))
-                 (svg-image (create-image svg-string 'svg t :map image-map))
-                 (inhibit-read-only t))
-      (with-current-buffer (get-buffer-create "*hyperdrive-fons-view*")
-        (erase-buffer)
-        (if debug
-            (insert graphviz-string)
-          ;; Image must contain svg-string in order for
-          ;; `image-toggle-display-image', subroutine for
-          ;; `image-transform-set-scale', etc., to work.
-          (insert-image svg-image svg-string)
-          (image-mode))
-        (pop-to-buffer (current-buffer))))))
+                                   :dpi (/ (+ width-res height-res) 2))))
+      (hyperdrive-fons-view--render-graphviz graphviz-string))))
+
+(defun hyperdrive-fons-view--render-graphviz (graphviz &optional buffer)
+  "Render GRAPHVIZ string in BUFFER."
+  (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
+    (let* ((image-map (hyperdrive-fons-view--graph-map graphviz))
+           (svg-string (hyperdrive-fons-view--svg graphviz))
+           (svg-image (create-image svg-string 'svg t :map image-map))
+           (inhibit-read-only t))
+      (erase-buffer)
+      (insert-image svg-image svg-string)
+      (image-mode)
+      (pop-to-buffer (current-buffer)))))
 
 (defun hyperdrive-fons-view--hops-graph (hops)
   "Return (hops-graph hops-nodes) for HOPS.
