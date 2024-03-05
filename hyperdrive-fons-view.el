@@ -139,6 +139,13 @@ called and replaces the buffer content with the rendered output."
                 #'hyperdrive-fons-view--restore-image-map nil t)
       (erase-buffer)
       (insert-image svg-image svg-string)
+      ;; `image-mode-before-display-functions' hooks don't run when we call
+      ;; `image-mode' below because the image is already displayed in the buffer
+      ;; after `insert-image', so we call the hook manually.
+      (hyperdrive-fons-view--restore-image-map svg-image)
+      ;; TODO: Set `image-transform-resize' to nil in `fons-view-mode'.
+      ;; Prevents the image from being resized when its window is resized.
+      (setq-local image-transform-resize nil)
       (image-mode)
       (pop-to-buffer (current-buffer)))))
 
