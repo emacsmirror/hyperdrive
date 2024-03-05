@@ -105,6 +105,8 @@ Takes one argument, a `fons-path' and returns a number from 0 to
   "Return a table of `fons-relation' structs from ROOT about TOPIC.
 Recurses up to MAX-HOPS times, returning only relations whose
 scores are above THRESHOLD which are not in BLOCKED."
+  ;; We only make relations from the root node because we only care about the
+  ;; score of relations relative to the root.
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS must be an positive integer"))
   (when (member root blocked)
@@ -118,7 +120,9 @@ scores are above THRESHOLD which are not in BLOCKED."
                                      (ensure-relation (fons-hop-to hop))))
                                (paths-to-to
                                 (if paths-to-from
-                                    (extend-paths paths-to-from hop)
+                                    ;; `extended-paths' may return nil if the only
+                                    ;; paths to TO are circular.
+                                    (extended-paths paths-to-from hop)
                                   ;; On the 1st hop, paths-to-from is nil.
                                   (list (make-fons-path :hops (list hop))))))
                       (score-paths paths-to-to)
@@ -129,12 +133,10 @@ scores are above THRESHOLD which are not in BLOCKED."
                                             paths-to-to)))))
                 (update-relation (relation paths)
                   (setf (fons-relation-paths relation)
-                        ;; TODO: Consider using `cons' to prepend paths and then use `reverse'.
-                        ;; TODO: Order of `append' args?  Efficiency?  Effect on graph view?
-                        (append (fons-relation-paths relation) paths))
+                        (append paths (fons-relation-paths relation)))
                   (setf (fons-relation-score relation)
                         (funcall fons-relation-score-fn relation)))
-                (extend-paths (paths hop)
+                (extended-paths (paths hop)
                   "Return list of PATHS extended by HOP without circular hops."
                   (remq nil
                         (mapcar
