@@ -144,9 +144,13 @@ called and replaces the buffer content with the rendered output."
 
 (defun hyperdrive-fons-view--restore-image-map (image)
   "Store `hyperdrive-fons-view--unscaled-map' in IMAGE's :map property."
-  (when-let ((map hyperdrive-fons-view--unscaled-map))
-    (when (not (= 1 image-transform-scale))
-      (setf map (hyperdrive-fons-view--scaled-map map image-transform-scale)))
+  (when-let ((map hyperdrive-fons-view--unscaled-map)
+             (scale (* image-transform-scale
+                       ;; FIXME: The image :scale property does not reset to 1.0
+                       ;; until the second time it's rescaled, yielding the wrong overall scale.
+                       (map-elt (cdr (image-get-display-property)) :scale))))
+    (when (not (= 1 scale))
+      (setf map (hyperdrive-fons-view--scaled-map map scale)))
     (setf (image-property image :map) map)))
 (put 'hyperdrive-fons-view--restore-image-map 'permanent-local-hook t)
 
