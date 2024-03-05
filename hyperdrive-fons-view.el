@@ -138,21 +138,21 @@ called and replaces the buffer content with the rendered output."
                                     :map image-map))
            (inhibit-read-only t))
       (add-hook 'image-mode-before-display-functions
-                #'hyperdrive-fons-view--restore-image-map nil t)
+                #'hyperdrive-fons-view--add-image-map nil t)
       (erase-buffer)
       (insert-image svg-image svg-string)
       ;; `image-mode-before-display-functions' hooks don't run when we call
       ;; `image-mode' below because the image is already displayed in the buffer
       ;; after `insert-image', so we call the hook manually.
-      (hyperdrive-fons-view--restore-image-map svg-image)
+      (hyperdrive-fons-view--add-image-map svg-image)
       ;; TODO: Set `image-transform-resize' to nil in `fons-view-mode'.
       ;; Prevents the image from being resized when its window is resized.
       (setq-local image-transform-resize nil)
       (image-mode)
       (pop-to-buffer (current-buffer)))))
 
-(defun hyperdrive-fons-view--restore-image-map (image)
-  "Store `hyperdrive-fons-view--unscaled-map' in IMAGE's :map property."
+(defun hyperdrive-fons-view--add-image-map (image)
+  "Scale and add `hyperdrive-fons-view--unscaled-map' in IMAGE :map property."
   (when-let ((map hyperdrive-fons-view--unscaled-map)
              (scale (* image-transform-scale
                        ;; FIXME: The image :scale property does not reset to 1.0
@@ -161,7 +161,7 @@ called and replaces the buffer content with the rendered output."
     (when (not (= 1 scale))
       (setf map (hyperdrive-fons-view--scaled-map map scale)))
     (setf (image-property image :map) map)))
-(put 'hyperdrive-fons-view--restore-image-map 'permanent-local-hook t)
+(put 'hyperdrive-fons-view--add-image-map 'permanent-local-hook t)
 
 (defun hyperdrive-fons-view--scaled-map (map scale)
   "Return a copy of MAP scaled according to SCALE."
