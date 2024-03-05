@@ -154,7 +154,7 @@ called and replaces the buffer content with the rendered output."
 (defun hyperdrive-fons-view--add-image-map (image)
   "Scale and add `hyperdrive-fons-view--unscaled-map' in IMAGE :map property."
   (when-let ((map hyperdrive-fons-view--unscaled-map)
-             (scale (* image-transform-scale
+             (scale (* (or (bound-and-true-p image-transform-scale) 1)
                        ;; FIXME: The image :scale property does not reset to 1.0
                        ;; until the second time it's rescaled, yielding the wrong overall scale.
                        (map-elt (cdr (image-get-display-property)) :scale))))
