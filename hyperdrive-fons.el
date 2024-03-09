@@ -243,31 +243,6 @@ The returned score does not exceed 1."
       (cl-reduce #'max (fons-relation-paths relation)
                  :key #'fons-path-score))))
 
-(defun fons-copy-tree (tree &optional vecp)
-  "Copy TREE like `copy-tree', but with VECP, works for records too."
-  ;; TODO: Now that the new copy-tree behavior has been merged into Emacs,
-  ;; remove this function once compat.el supports the new behavior.
-  (if (consp tree)
-      (let (result)
-	(while (consp tree)
-	  (let ((newcar (car tree)))
-	    (if (or (consp (car tree))
-                    (and vecp (or (vectorp (car tree))
-                                  (recordp (car tree)))))
-		(setf newcar (fons-copy-tree (car tree) vecp)))
-	    (push newcar result))
-	  (setf tree (cdr tree)))
-	(nconc (nreverse result)
-               (if (and vecp (or (vectorp tree) (recordp tree)))
-                   (fons-copy-tree tree vecp)
-                 tree)))
-    (if (and vecp (or (vectorp tree) (recordp tree)))
-	(let ((i (length (setf tree (copy-sequence tree)))))
-	  (while (>= (setf i (1- i)) 0)
-	    (aset tree i (fons-copy-tree (aref tree i) vecp)))
-	  tree)
-      tree)))
-
 ;;;; Footer
 
 (provide 'hyperdrive-fons)
