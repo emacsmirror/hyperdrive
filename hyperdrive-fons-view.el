@@ -92,36 +92,12 @@ called and replaces the buffer content with the rendered output."
 (cl-defun hyperdrive-fons-view
     (relations from &key debug (layout hyperdrive-fons-view-layout))
   "View RELATIONS from FROM."
-  (cl-labels
-      ((window-dimensions-in (&optional (window (selected-window)))
-         ;; Return WINDOW (width-in height-in) in inches.
-         (with-selected-window window
-           ;; TODO: Ensure we get the monitor the frame is on.
-           (pcase-let* (((map ('geometry
-                               `(,_ ,_ ,monitor-width-px ,monitor-height-px))
-                              ('mm-size `(,monitor-width-mm ,monitor-height-mm)))
-                         (car (display-monitor-attributes-list)))
-                        (monitor-width-in (mm-in monitor-width-mm))
-                        (monitor-height-in (mm-in monitor-height-mm))
-                        (monitor-width-res (/ monitor-width-px monitor-width-in))
-                        (monitor-height-res (/ monitor-height-px monitor-height-in))
-                        (window-width-in
-                         (/  (window-text-width nil t) monitor-width-res))
-                        (window-height-in
-                         (/ (window-text-height nil t) monitor-height-res)))
-             (list window-width-in window-height-in
-                   monitor-width-res monitor-height-res))))
-       (mm-in (mm) (* mm 0.04)))
-    (pcase-let* ((`(,width-in ,height-in ,width-res ,height-res)
-                  (window-dimensions-in))
-                 (hops
-                  (hyperdrive-fons-view--relations-graph relations))
-                 (graphviz-string (hyperdrive-fons-view--format-graph
-                                   hops relations :root-name from
-                                   :layout layout :width-in width-in :height-in height-in
-                                   ;; Average the two resolutions.
-                                   :dpi (/ (+ width-res height-res) 2))))
-      (hyperdrive-fons-view--render-graphviz graphviz-string))))
+  (pcase-let* ((hops
+                (hyperdrive-fons-view--relations-graph relations))
+               (graphviz-string
+                (hyperdrive-fons-view--format-graph
+                 hops relations :root-name from :layout layout)))
+    (hyperdrive-fons-view--render-graphviz graphviz-string)))
 
 (defvar-local hyperdrive-fons-view--unscaled-map nil
   "Unscaled map argument suitable for `create-image'.")
@@ -238,8 +214,7 @@ RELATIONS may be list of `fons-relation' structs."
           (fons-hop-from hop) (fons-hop-to hop)
           (fons-hop-score hop) color))
 
-(cl-defun hyperdrive-fons-view--format-graph
-    (hops relations &key root-name width-in height-in layout dpi)
+(cl-defun hyperdrive-fons-view--format-graph (hops relations &key root-name layout)
   "Return a graphviz-string string for HOPS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
@@ -255,8 +230,6 @@ RELATIONS may be list of `fons-relation' structs."
                    (format
                     "%s [label=\"%s (%s)\", href=\"%s\", shape=\"ellipse\", color=\"%s\"];\n"
                     to to score to hyperdrive-fons-view-source-color)))))
-    ;; (setf width-in (/ width-in 1.5)
-    ;;       height-in (/ height-in 1.5))
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")
@@ -267,12 +240,7 @@ RELATIONS may be list of `fons-relation' structs."
 	        ";\n")
         (insert-vals "layout" layout
                      "bgcolor" (face-attribute 'default :background)
-                     ;; "size" (format "%.1d,%.1d" width-in height-in)
-                     ;; NOTE: The dpi setting is important, because
-                     ;; without it, sometimes cmap areas don't align
-                     ;; with the rendered elements.
-                     ;; "dpi" (format "%s" dpi)
-		     "overlap" hyperdrive-fons-view-overlap
+                     "overlap" hyperdrive-fons-view-overlap
                      "margin" "0"
                      "ratio" "fill"
                      "nodesep" "0"
