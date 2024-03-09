@@ -114,17 +114,6 @@ called and replaces the buffer content with the rendered output."
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
-(defun hyperdrive-fons-view--hops-graph (hops)
-  "Return (hops-graph hops-nodes) for HOPS.
-Graph is a list of strings which form the graphviz-string data."
-  (let ((hops-nodes (make-hash-table :test #'equal)))
-    (cl-labels ((format-hop (hop)
-                  (setf (gethash hop hops-nodes) (fons-hop-score hop))
-                  (format "%s -> %s [label=%s];\n"
-                          (fons-hop-from hop) (fons-hop-to hop)
-                          (fons-hop-score hop))))
-      (list (mapcar #'format-hop hops) hops-nodes))))
-
 (defun hyperdrive-fons-view--graph-map (graph)
   "Return image map for Graphviz GRAPH."
   ;; TODO: Remove dash.el and s.el dependencies
