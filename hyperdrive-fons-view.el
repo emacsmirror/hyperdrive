@@ -130,24 +130,13 @@ called and replaces the buffer content with the rendered output."
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
   "Render GRAPHVIZ string in BUFFER scaled by SCALE."
   (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
-    (let* ((image-map (setq-local hyperdrive-fons-view--unscaled-map
-                                  (hyperdrive-fons-view--graph-map graphviz)))
+    (let* ((image-map (hyperdrive-fons-view--graph-map graphviz))
            (svg-string (hyperdrive-fons-view--svg graphviz))
-           (svg-image (create-image svg-string 'svg t
-                                    :map image-map))
+           (svg-image (create-image svg-string 'svg t :map image-map))
            (inhibit-read-only t))
-      (add-hook 'image-mode-before-display-functions
-                #'hyperdrive-fons-view--add-image-map nil t)
       (erase-buffer)
-      (insert-image svg-image svg-string)
-      ;; `image-mode-before-display-functions' hooks don't run when we call
-      ;; `image-mode' below because the image is already displayed in the buffer
-      ;; after `insert-image', so we call the hook manually.
-      (hyperdrive-fons-view--add-image-map svg-image)
-      ;; TODO: Set `image-transform-resize' to nil in `fons-view-mode'.
-      ;; Prevents the image from being resized when its window is resized.
-      (setq-local image-transform-resize nil)
-      (image-mode)
+      (insert-image svg-image)
+      (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
 (defun hyperdrive-fons-view--add-image-map (image)
