@@ -13,8 +13,6 @@
 (cl-defstruct fons-hop
   from to score)
 
-;; TODO: Consider adding a `:to' slot to avoid
-;; (fons-hop-to (car (last (fons-path-hops path))))
 (cl-defstruct fons-path hops score)
 
 (cl-defstruct fons-relation
