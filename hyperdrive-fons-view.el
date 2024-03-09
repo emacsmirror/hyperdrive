@@ -143,18 +143,6 @@ called and replaces the buffer content with the rendered output."
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
-(defun hyperdrive-fons-view--add-image-map (image)
-  "Scale and add `hyperdrive-fons-view--unscaled-map' in IMAGE :map property."
-  (when-let ((map hyperdrive-fons-view--unscaled-map)
-             (scale (* (or (bound-and-true-p image-transform-scale) 1)
-                       ;; FIXME: The image :scale property does not reset to 1.0
-                       ;; until the second time it's rescaled, yielding the wrong overall scale.
-                       (map-elt (cdr (image-get-display-property)) :scale))))
-    (when (not (= 1 scale))
-      (setf map (hyperdrive-fons-view--scaled-map map scale)))
-    (setf (image-property image :map) map)))
-(put 'hyperdrive-fons-view--add-image-map 'permanent-local-hook t)
-
 (defun hyperdrive-fons-view--image-scale-map (map factor)
   "Copy of `image--scale-map', added in Emacs 30.  Accepts MAP, FACTOR."
   (unless (= 1 factor)
