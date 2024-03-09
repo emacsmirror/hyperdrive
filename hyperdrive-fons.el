@@ -218,16 +218,6 @@ PATHS should be from a single source."
                (equal last-hop-to (fons-hop-from hop)))
              (fons-path-hops path))))
 
-;; (cl-defun fons-relation (to paths &key (score-fn #'fons-score-patsh))
-;;   "Return relation aggregating PATHS to TO.
-;; PATHS should be a list of paths from a single source to TO."
-;;   ;; TODO: Consider asserting that all PATHS are from the same source.
-;;   (let* ((relation (make-fons-relation :from from :to to)))
-;;     (setf (fons-relation-score relation)
-;;           ;; compute score from paths
-;;           )
-;;     relation))
-
 (defun fons-relation-score-default (relation)
   "Return RELATION's score based on the scores of its paths.
 If RELATION contains a single-hop path, return that path's score.
