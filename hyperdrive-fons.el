@@ -131,20 +131,6 @@ scores are above THRESHOLD which are not in BLOCKED."
             (fons-hop-to hop))
           (fons-path-hops path)))
 
-(defun fons-relation (to paths)
-  "Return relation to TO among PATHS.
-PATHS should be from a single source."
-  (let* ((from (fons-hop-from (car (fons-path-hops (car paths)))))
-         (paths-to (cl-remove-if-not
-                    (lambda (path)
-                      (fons-path-to-p to path))
-                    paths))
-         (relation (make-fons-relation :from from :to to
-                                       :paths paths-to)))
-    (setf (fons-relation-score relation)
-          (funcall fons-relation-score-fn relation))
-    relation))
-
 (defun fons-path-score-default (path)
   "Return PATH's score."
   (let ((decay-power 0))
