@@ -56,32 +56,6 @@
                                            (make-fons-hop
                                             :from "carol" :to "eve"))))))
 
-(ert-deftest fons-path-circular-p ()
-  "Returns non-nil if PATH ends in TO."
-  (should (fons-path-circular-p
-           (make-fons-path
-            :hops (list (make-fons-hop
-                         :from "alice" :to "bob")
-                        (make-fons-hop
-                         :from "bob" :to "alice")))))
-  (should (fons-path-circular-p
-           (make-fons-path
-            :hops (list (make-fons-hop
-                         :from "alice" :to "bob")
-                        (make-fons-hop
-                         :from "bob" :to "carol")
-                        (make-fons-hop
-                         :from "carol" :to "bob")))))
-  (should-not (fons-path-circular-p
-               ;; Ignore circular paths-from-alice before the last hop.
-               (make-fons-path
-                :hops (list (make-fons-hop
-                             :from "alice" :to "bob")
-                            (make-fons-hop
-                             :from "bob" :to "alice")
-                            (make-fons-hop
-                             :from "alice" :to "carol"))))))
-
 (ert-deftest fons-relations ()
   "Relations from Alice."
   (fons-test ()

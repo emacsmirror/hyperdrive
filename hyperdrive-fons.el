@@ -145,14 +145,6 @@ scores are above THRESHOLD which are not in BLOCKED."
   "Return non-nil if PATH is to TO."
   (equal to (fons-hop-to (car (last (fons-path-hops path))))))
 
-(defun fons-path-circular-p (path)
-  "Return non-nil if the last hop in PATH circles back to any earlier hop."
-  ;; We only need to check PATH's last hop if this check runs at each iteration.
-  (let ((last-hop-to (fons-hop-to (car (last (fons-path-hops path))))))
-    (cl-some (lambda (hop)
-               (equal last-hop-to (fons-hop-from hop)))
-             (fons-path-hops path))))
-
 (defun fons-relation-score-default (relation)
   "Return RELATION's score based on the scores of its paths.
 If RELATION contains a single-hop path, return that path's score.
