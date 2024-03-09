@@ -107,45 +107,12 @@ called and replaces the buffer content with the rendered output."
            (image (create-image svg-string 'svg t :map image-map))
            (inhibit-read-only t))
       (when (> 30 emacs-major-version)
-        ;; In Emacs 30, :unscaled-map is automatically added (bug#69602)
         (setq image (nconc image
                            (list :unscaled-map (copy-tree image-map t)))))
       (erase-buffer)
       (insert-image image)
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
-
-(defun hyperdrive-fons-view--image-scale-map (map factor)
-  "Copy of `image--scale-map', added in Emacs 30.  Accepts MAP, FACTOR."
-  (unless (= 1 factor)
-    (pcase-dolist (`(,`(,type . ,coords) ,_id ,_plist) map)
-      (pcase-exhaustive type
-        ('rect
-         (setf (caar coords) (round (* (caar coords) factor)))
-         (setf (cdar coords) (round (* (cdar coords) factor)))
-         (setf (cadr coords) (round (* (cadr coords) factor)))
-         (setf (cddr coords) (round (* (cddr coords) factor))))
-        ('circle
-         (setf (caar coords) (round (* (caar coords) factor)))
-         (setf (cdar coords) (round (* (cdar coords) factor)))
-         (setf (cdr coords) (round (* (cdr coords) factor))))
-        ('poly
-         (dotimes (i (length coords))
-           (aset coords i
-                 (round (* (aref coords i) factor))))))))
-  map)
-
-(advice-add #'image--change-size :after #'image--change-size-scale-map)
-
-(defun image--change-size-scale-map (_factor &optional position)
-  "Scale :map property of image at point to fit its :scale.
-Intended to be used as :after advice for `image--change-size'."
-  (when-let* ((image (image--get-imagemagick-and-warn position))
-              (map (image-property image :map))
-              (unscaled-map (image-property image :unscaled-map))
-              (scale (image-property image :scale)))
-    (setf (image-property image :map)
-          (hyperdrive-fons-view--image-scale-map (copy-tree unscaled-map t) scale))))
 
 (defun hyperdrive-fons-view--hops-graph (hops)
   "Return (hops-graph hops-nodes) for HOPS.
@@ -346,6 +313,43 @@ avatars, etc."
                                                (if (color-dark-p (color-name-to-rgb contrast-with))
                                                    "white" "black")))))))
       (apply #'color-rgb-to-hex (append color-rgb (list 2))))))
+
+;;;;; Compatibility with pre-Emacs 30 image.el
+
+;; In Emacs 30, :unscaled-map is automatically added (bug#69602).  Before that,
+;; when images were rescaled, the image map stayed the same size.
+
+(defun hyperdrive-fons-view--image-scale-map (map factor)
+  "Copy of `image--scale-map', added in Emacs 30.  Accepts MAP, FACTOR."
+  (unless (= 1 factor)
+    (pcase-dolist (`(,`(,type . ,coords) ,_id ,_plist) map)
+      (pcase-exhaustive type
+        ('rect
+         (setf (caar coords) (round (* (caar coords) factor)))
+         (setf (cdar coords) (round (* (cdar coords) factor)))
+         (setf (cadr coords) (round (* (cadr coords) factor)))
+         (setf (cddr coords) (round (* (cddr coords) factor))))
+        ('circle
+         (setf (caar coords) (round (* (caar coords) factor)))
+         (setf (cdar coords) (round (* (cdar coords) factor)))
+         (setf (cdr coords) (round (* (cdr coords) factor))))
+        ('poly
+         (dotimes (i (length coords))
+           (aset coords i
+                 (round (* (aref coords i) factor))))))))
+  map)
+
+(advice-add #'image--change-size :after #'image--change-size-scale-map)
+
+(defun image--change-size-scale-map (_factor &optional position)
+  "Scale :map property of image at point to fit its :scale.
+Intended to be used as :after advice for `image--change-size'."
+  (when-let* ((image (image--get-imagemagick-and-warn position))
+              (map (image-property image :map))
+              (unscaled-map (image-property image :unscaled-map))
+              (scale (image-property image :scale)))
+    (setf (image-property image :map)
+          (hyperdrive-fons-view--image-scale-map (copy-tree unscaled-map t) scale))))
 
 ;; TODO: Bookmark support
 
