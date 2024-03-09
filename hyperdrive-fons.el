@@ -113,12 +113,6 @@ scores are above THRESHOLD which are not in BLOCKED."
                relations)
       relations)))
 
-(defun fons-path-tos (path)
-  "Return all destinations in PATH."
-  (mapcar (lambda (hop)
-            (fons-hop-to hop))
-          (fons-path-hops path)))
-
 (defun fons-path-score-default (path)
   "Return PATH's score."
   (let ((decay-power 0))
