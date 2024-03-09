@@ -10,13 +10,9 @@
 
 ;;;; Types
 
-(cl-defstruct fons-hop
-  from to score)
-
+(cl-defstruct fons-hop from to score)
 (cl-defstruct fons-path hops score)
-
-(cl-defstruct fons-relation
-  from to paths score)
+(cl-defstruct fons-relation from to paths score)
 
 ;;;; Variables
 
