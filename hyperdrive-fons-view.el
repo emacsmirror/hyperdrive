@@ -132,10 +132,10 @@ called and replaces the buffer content with the rendered output."
   (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
     (let* ((image-map (hyperdrive-fons-view--graph-map graphviz))
            (svg-string (hyperdrive-fons-view--svg graphviz))
-           (svg-image (create-image svg-string 'svg t :map image-map))
+           (image (create-image svg-string 'svg t :map image-map))
            (inhibit-read-only t))
       (erase-buffer)
-      (insert-image svg-image)
+      (insert-image image)
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
