@@ -37,25 +37,6 @@
                                     test-hyperdrive-fons-hops)))))
        ,@body)))
 
-(ert-deftest fons-path-to-p ()
-  "Returns non-nil if PATH ends in TO."
-  (should (fons-path-to-p "bob"
-                          (make-fons-path
-                           :hops (list (make-fons-hop
-                                        :from "alice" :to "bob")))))
-  (should (fons-path-to-p "eve"
-                          (make-fons-path
-                           :hops (list (make-fons-hop
-                                        :from "alice" :to "carol")
-                                       (make-fons-hop
-                                        :from "carol" :to "eve")))))
-  (should-not (fons-path-to-p "carol"
-                              (make-fons-path
-                               :hops (list (make-fons-hop
-                                            :from "alice" :to "carol")
-                                           (make-fons-hop
-                                            :from "carol" :to "eve"))))))
-
 (ert-deftest fons-relations ()
   "Relations from Alice."
   (fons-test ()

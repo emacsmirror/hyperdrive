@@ -141,10 +141,6 @@ scores are above THRESHOLD which are not in BLOCKED."
   "Return non-nil if PATH is from FROM."
   (equal from (fons-hop-from (car (fons-path-hops path)))))
 
-(defun fons-path-to-p (to path)
-  "Return non-nil if PATH is to TO."
-  (equal to (fons-hop-to (car (last (fons-path-hops path))))))
-
 (defun fons-relation-score-default (relation)
   "Return RELATION's score based on the scores of its paths.
 If RELATION contains a single-hop path, return that path's score.
