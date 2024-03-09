@@ -151,23 +151,25 @@ called and replaces the buffer content with the rendered output."
     (setf (image-property image :map) map)))
 (put 'hyperdrive-fons-view--add-image-map 'permanent-local-hook t)
 
-(defun hyperdrive-fons-view--scaled-map (map scale)
-  "Return a copy of MAP scaled according to SCALE."
-  (let ((map (fons-copy-tree map t)))
-    (pcase-dolist (`(,area ,_id ,_plist) map)
-      (pcase-exhaustive area
-        (`(rect .  ,coords)
-         ;; TODO
-         nil)
-        (`(circle .  ,coords)
-         ;; TODO
-         nil)
-        (`(poly .  ,coords)
-         ;; FIXME: This code copies the tree and then again creates an
-         ;; unnecessary list with cl-map.  Use `aset' on each item in the vector?  Or don't use copy-tree and instead copy the map's items one at a time.
-         (setf (cdr area)
-               (cl-map 'vector (lambda (coord) (round (* coord scale))) coords)))))
-    map))
+(defun hyperdrive-fons-view--image-scale-map (map factor)
+  "Copy of `image--scale-map', added in Emacs 30.  Accepts MAP, FACTOR."
+  (unless (= 1 factor)
+    (pcase-dolist (`(,`(,type . ,coords) ,_id ,_plist) map)
+      (pcase-exhaustive type
+        ('rect
+         (setf (caar coords) (round (* (caar coords) factor)))
+         (setf (cdar coords) (round (* (cdar coords) factor)))
+         (setf (cadr coords) (round (* (cadr coords) factor)))
+         (setf (cddr coords) (round (* (cddr coords) factor))))
+        ('circle
+         (setf (caar coords) (round (* (caar coords) factor)))
+         (setf (cdar coords) (round (* (cdar coords) factor)))
+         (setf (cdr coords) (round (* (cdr coords) factor))))
+        ('poly
+         (dotimes (i (length coords))
+           (aset coords i
+                 (round (* (aref coords i) factor))))))))
+  map)
 
 (defun hyperdrive-fons-view--hops-graph (hops)
   "Return (hops-graph hops-nodes) for HOPS.
