@@ -45,12 +45,6 @@ Takes one argument, a `fons-path' and returns a number from 0 to
 
 ;;;; Functions
 
-(defun fons-add-hop (from to score topic table)
-  (let ((hop (make-fons-hop :from from :to to :score score)))
-    (push hop (map-elt (map-elt table
-                                (fons-hop-from hop))
-                       topic))))
-
 (defun fons-hops (_from)
   "Return hops from user FROM."
   (error "Not yet implemented (bound in tests)"))

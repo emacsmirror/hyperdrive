@@ -10,6 +10,12 @@
 
 (defvar test-hyperdrive-fons-hops (make-hash-table :test 'equal))
 
+(defun fons-add-hop (from to score topic table)
+  (let ((hop (make-fons-hop :from from :to to :score score)))
+    (push hop (map-elt (map-elt table
+                                (fons-hop-from hop))
+                       topic))))
+
 (defvar test-hyperdrive-fons-default-hops-fn
   (lambda ()
     (fons-add-hop "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-hops)
