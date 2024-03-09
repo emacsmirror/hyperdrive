@@ -99,10 +99,6 @@ called and replaces the buffer content with the rendered output."
                  hops relations :root-name from :layout layout)))
     (hyperdrive-fons-view--render-graphviz graphviz-string)))
 
-(defvar-local hyperdrive-fons-view--unscaled-map nil
-  "Unscaled map argument suitable for `create-image'.")
-(put 'hyperdrive-fons-view--unscaled-map 'permanent-local t)
-
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
   "Render GRAPHVIZ string in BUFFER scaled by SCALE."
   (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
