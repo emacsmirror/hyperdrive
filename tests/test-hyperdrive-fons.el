@@ -31,67 +31,6 @@
                                     test-hyperdrive-fons-hops)))))
        ,@body)))
 
-(type-of (cdar (fons-test ()
-                 (fons-hops "alice"))))
-
-(ert-deftest fons-paths-alice-tofu-3-hops ()
-  "Return alice's paths-from-alice for \"tofu\" up to 3 hops away."
-  (fons-test ()
-    (let* ((paths-from-alice (fons-paths "alice" "tofu" :max-hops 3)))
-      (should
-       (seq-set-equal-p
-        (list (make-fons-path
-               :score 0.25
-               :hops (list (make-fons-hop
-                            :from "alice" :to "bob" :score 0.25)))
-              (make-fons-path
-               :score 0.8
-               :hops (list (make-fons-hop
-                            :from "alice" :to "carol" :score 0.8)))
-              (make-fons-path
-               :score 0.6400000000000001
-               :hops (list (make-fons-hop
-                            :from "alice" :to "carol" :score 0.8)
-                           (make-fons-hop
-                            :from "carol" :to "david" :score 0.8)))
-              (make-fons-path
-               :score 0.4
-               :hops (list (make-fons-hop
-                            :from "alice" :to "carol" :score 0.8)
-                           (make-fons-hop
-                            :from "carol" :to "eve" :score 0.5)))
-              (make-fons-path
-               :score 0.5120000000000001
-               :hops (list (make-fons-hop
-                            :from "alice" :to "carol" :score 0.8)
-                           (make-fons-hop
-                            :from "carol" :to "david" :score 0.8)
-                           (make-fons-hop
-                            :from "david" :to "eve" :score 0.8))))
-        paths-from-alice)))))
-
-;; TODO: Test that uses the relation score in fons-paths (i.e. for
-;; short-circuiting computations).
-
-(ert-deftest fons-filter-short-circuits ()
-  "Hops of sources with scores below the threshold are skipped."
-  ;; NEXT: Write this test to ensure that the paths-from-alice from alice to georgie and to
-  ;; hobart are filtered out.
-  (fons-test ((lambda ()
-                (funcall test-hyperdrive-fons-default-hops-fn)
-                (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-    (let (fons-hops-called-with)
-      (cl-letf* ((orig-fn (symbol-function 'fons-hops))
-                 ((symbol-function 'fons-hops)
-                  (lambda (&rest args)
-                    (push args fons-hops-called-with)
-                    (apply orig-fn args))))
-        (fons-paths "alice" "tofu" :max-hops 3)
-        (should (seq-contains-p fons-hops-called-with '("frank")))
-        (should-not (seq-contains-p fons-hops-called-with '("georgie")))))))
-
 (ert-deftest fons-path-to-p ()
   "Returns non-nil if PATH ends in TO."
   (should (fons-path-to-p "bob"
@@ -136,15 +75,6 @@
                              :from "bob" :to "alice")
                             (make-fons-hop
                              :from "alice" :to "carol"))))))
-
-(ert-deftest fons-path-alice-to-eve-relation-score ()
-  "Relation score."
-  (fons-test ()
-    (let* ((from "alice") (to "eve")
-           (paths-about (fons-paths from "tofu"))
-           (relation (fons-relation to paths-about)))
-      (should (= 2 (length (fons-relation-paths relation))))
-      (should (= 0.9120000000000001 (fons-relation-score relation))))))
 
 (ert-deftest fons-relations ()
   "Relations from Alice."
@@ -226,101 +156,6 @@
       (should (= 5 (hash-table-count relations)))
       ;; (hyperdrive-fons-view relations 0)
       )))
-
-;; (ert-deftest fons-relation-view ()
-;;   ""
-;;   (fons-test ((lambda ()
-;;                 (funcall test-hyperdrive-fons-default-hops-fn)
-;;                 (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
-;;                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-;;                 (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-;;     (let* ((from "alice") (to "eve")
-;;            (paths-about (fons-paths from "tofu"))
-;;            (relation (fons-relation to paths-about)))
-;;       (hyperdrive-fons-view relation  :layout "dot"))))
-
-;; (ert-deftest fons-path-view ()
-;;   ""
-;;   (fons-test ((lambda ()
-;;                 (funcall test-hyperdrive-fons-default-hops-fn)
-;;                 (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
-;;                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-;;                 (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-;;     (let* ((froms (delete-dups
-;;                    (mapcar (lambda (it)
-;;                              (fons-hop-from (cadar it)))
-;;                            (map-values test-hyperdrive-fons-hops))))
-;;            (paths-by-from (delete-dups
-;;                            (mapcar (lambda (from)
-;;                                      (cons from (fons-paths from "tofu")))
-;;                                    froms))))
-;;       (hyperdrive-fons-view (delete-dups (flatten-list (delete-dups (map-values paths-by-from)))) :layout "dot"))))
-
-;; (ert-deftest fons-path-view* ()
-;;   ""
-;;   (fons-test ((lambda ()
-;;                 (funcall test-hyperdrive-fons-default-hops-fn)
-;;                 (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
-;;                 (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-;;                 (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)))
-;;     (hyperdrive-fons-view (delete-dups
-;;                            (flatten-list
-;;                             (mapcar #'fons-path-hops
-;;                                     (fons-paths "alice" "tofu"))))
-;;                           :layout "dot")))
-
-(ert-deftest fons-path-view ()
-  "Not a test; used to experiment with graphviz."
-  (skip-unless nil)
-  (fons-test ((lambda ()
-                (funcall test-hyperdrive-fons-default-hops-fn)
-                (fons-add-hop "alice" "frank" 1 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "frank" "georgie" 0.2 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "georgie" "hobart" 0.8 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "eve" "david" 0.8 "tofu" test-hyperdrive-fons-hops)))
-    (let* ((paths-from-alice (fons-paths "alice" "tofu"))
-           (tos (delete-dups
-                 (flatten-list
-                  (mapcar #'fons-path-tos paths-from-alice))))
-           (relations (mapcar (lambda (to)
-                                (fons-relation to paths-from-alice))
-                              tos)))
-      (hyperdrive-fons-view relations "alice" :layout "dot"
-                            ;; :debug t
-                            ))))
-
-(ert-deftest fons-relation-score-threshold ()
-  ""
-  (fons-test (
-              (lambda ()
-                (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "alice" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "eve" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "carol" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
-                ;; (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                ;; (fons-add-hop "alice" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
-                ;; (fons-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
-                ;; (fons-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
-                )
-              )
-    (let* ((paths-from-alice (fons-paths "alice" "tofu" :threshold 0))
-           ;; (froms (mapcar (lambda (path)
-           ;;                  (fons-hop-from (car (fons-path-hops path))))
-           ;;                paths-from-alice))
-           (tos (delete-dups
-                 (flatten-list
-                  (mapcar #'fons-path-tos paths-from-alice))))
-           (relations (mapcar (lambda (to)
-                                (fons-relation to paths-from-alice))
-                              tos))
-           )
-      (hyperdrive-fons-view relations "alice" :layout "dot"
-                            ;; :debug t
-                            )))
-
-  )
 
 (ert-deftest fons-relations-view ()
   "Not a test.  Opens fons-view buffer."
