@@ -10,7 +10,7 @@
 
 (defvar test-hyperdrive-fons-hops (make-hash-table :test 'equal))
 
-(defun fons-add-hop (from to score topic table)
+(defun fons-test-add-hop (from to score topic table)
   (let ((hop (make-fons-hop :from from :to to :score score)))
     (push hop (map-elt (map-elt table
                                 (fons-hop-from hop))
@@ -18,11 +18,11 @@
 
 (defvar test-hyperdrive-fons-default-hops-fn
   (lambda ()
-    (fons-add-hop "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-hops)
-    (fons-add-hop "alice" "carol" 0.8 "tofu" test-hyperdrive-fons-hops)
-    (fons-add-hop "carol" "david" 0.8 "tofu" test-hyperdrive-fons-hops)
-    (fons-add-hop "carol" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-    (fons-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)))
+    (fons-test-add-hop "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-hops)
+    (fons-test-add-hop "alice" "carol" 0.8 "tofu" test-hyperdrive-fons-hops)
+    (fons-test-add-hop "carol" "david" 0.8 "tofu" test-hyperdrive-fons-hops)
+    (fons-test-add-hop "carol" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
+    (fons-test-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)))
 
 (cl-defmacro fons-test ((&optional hops-fn) &rest body)
   (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
@@ -137,11 +137,11 @@
 (ert-deftest fons-relations-shorter-path-lower-score ()
   "Reducing max-hops decreases relation score if shorter path has lower score."
   (fons-test ((lambda ()
-                (fons-add-hop "alice" "bob" 0.9 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "bob" "carol" 0.9 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "carol" "david" 0.9 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "alice" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "eve" "david" 0.8 "tofu" test-hyperdrive-fons-hops)))
+                (fons-test-add-hop "alice" "bob" 0.9 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "bob" "carol" 0.9 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "carol" "david" 0.9 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "alice" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "eve" "david" 0.8 "tofu" test-hyperdrive-fons-hops)))
     (let ((relations (fons-relations "alice" "tofu" :max-hops 3)))
       ;; Relation to david includes A -> B -> C -> D and also A -> E -> D.
       (should (= 0.7290000000000001
@@ -157,7 +157,7 @@
                 (dotimes (from 6)
                   (dotimes (to 6)
                     (unless (= from to)
-                      (fons-add-hop from to 0.5 "tofu" test-hyperdrive-fons-hops))))))
+                      (fons-test-add-hop from to 0.5 "tofu" test-hyperdrive-fons-hops))))))
     (let ((relations (fons-relations 0 "tofu" :max-hops 5)))
       (should (= 5 (hash-table-count relations)))
       ;; (hyperdrive-fons-view relations 0)
@@ -167,12 +167,12 @@
   "Not a test.  Opens fons-view buffer."
   (skip-unless nil)
   (fons-test ((lambda ()
-                (fons-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "alice" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "eve" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "carol" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "alice" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "eve" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "carol" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
                 ))
     (let* ((relations (fons-relations "alice" "tofu" :threshold 0)))
       (hyperdrive-fons-view relations "alice" :layout "dot"
