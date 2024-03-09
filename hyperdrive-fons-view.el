@@ -120,7 +120,6 @@ called and replaces the buffer content with the rendered output."
   (with-temp-buffer
     (insert graph)
     (hyperdrive-fons-view--graphviz "cmapx"
-      ;; (debug-warn (buffer-string))
       (cl-labels ((convert-map
 		    (map) (-let (((_map _props . areas) map))
 			    (mapcar #'convert-area areas)))
@@ -205,7 +204,6 @@ RELATIONS may be list of `fons-relation' structs."
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
         (insert "}"))
-      ;; (debug-warn (buffer-string))
       (buffer-string))))
 
 (cl-defun hyperdrive-fons-view--svg (hops-graph)
