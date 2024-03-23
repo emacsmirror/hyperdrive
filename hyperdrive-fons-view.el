@@ -28,6 +28,8 @@
 
 ;;; Code:
 
+;; TODO: Bookmark support
+
 ;;;; Requirements
 
 (require 'cl-lib)
@@ -478,8 +480,6 @@ Destructively modifies and returns MAP."
            (when (= 0 (% i 2))
              (aset coords i (- (car size) (aref coords i)))))))))
   map)
-
-;; TODO: Bookmark support
 
 (provide 'hyperdrive-fons-view)
 ;;; hyperdrive-fons-view.el ends here
