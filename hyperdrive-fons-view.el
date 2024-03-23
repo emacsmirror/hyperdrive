@@ -102,13 +102,13 @@ called and replaces the buffer content with the rendered output."
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
   "Render GRAPHVIZ string in BUFFER scaled by SCALE."
   (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
-    (let* ((image-map (hyperdrive-fons-view--graph-map graphviz))
+    (let* ((original-map (hyperdrive-fons-view--graph-map graphviz))
            (svg-string (hyperdrive-fons-view--svg graphviz))
-           (image (create-image svg-string 'svg t :map image-map))
-           (inhibit-read-only t))
+           (inhibit-read-only t)
+           (image (create-image svg-string 'svg t :original-map original-map)))
       (when (> 30 emacs-major-version)
-        (setq image (nconc image
-                           (list :unscaled-map (copy-tree image-map t)))))
+        ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
+        (setq image (nconc image (list :map (copy-tree original-map t)))))
       (erase-buffer)
       (insert-image image)
       (goto-char (point-min))
@@ -303,40 +303,181 @@ avatars, etc."
 
 ;;;;; Compatibility with pre-Emacs 30 image.el
 
-;; In Emacs 30, :unscaled-map is automatically added (bug#69602).  Before that,
-;; when images were rescaled, the image map stayed the same size.
+;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
+;; In Emacs 30, image maps are transformed along with the image (bug#69602).
 
-(defun hyperdrive-fons-view--image-scale-map (map factor)
-  "Copy of `image--scale-map', added in Emacs 30.  Accepts MAP, FACTOR."
-  (unless (= 1 factor)
+(when (> 30 emacs-major-version)
+  ;; Adding this global :after advice should not interfere with other packages
+  ;; since it has no effect on images that lack an :original-map property.
+  (advice-add #'image--change-size
+              :after #'hyperdrive-fons-view--recompute-image-map-at-point)
+  (advice-add #'image-rotate
+              :after #'hyperdrive-fons-view--recompute-image-map-at-point)
+  (advice-add #'image-flip-horizontally
+              :after #'hyperdrive-fons-view--recompute-image-map-at-point)
+  (advice-add #'image-flip-vertically
+              :after #'hyperdrive-fons-view--recompute-image-map-at-point))
+
+(defun hyperdrive-fons-view--recompute-image-map-at-point (&rest _args)
+  "Recompute :map for image at point.
+Intended as :after advice for commands which transform images."
+  (when-let* ((image (image--get-image))
+              (original-map (image-property image :original-map)))
+    (setf (image-property image :map)
+          (hyperdrive-fons-view-image--compute-map image))))
+
+(defun hyperdrive-fons-view-image--compute-map (image)
+  "Compute map for IMAGE suitable to be used as its :map property.
+Return a copy of :original-image transformed based on IMAGE's :scale,
+:rotation, and :flip.  When IMAGE's :original-map is nil, return nil.
+When :rotation is not a multiple of 90, return copy of :original-map."
+  (pcase-let* ((original-map (image-property image :original-map))
+               (map (copy-tree original-map t))
+               (scale (or (image-property image :scale) 1))
+               (rotation (or (image-property image :rotation) 0))
+               (flip (image-property image :flip))
+               ((and size `(,width . ,height)) (image-size image t)))
+    (when (and ; Handle only 90-degree rotations
+           (zerop (mod rotation 1))
+           (zerop (% (truncate rotation) 90)))
+      ;; SIZE fits MAP after transformations.  Scale MAP before
+      ;; flip and rotate operations, since both need MAP to fit SIZE.
+      (hyperdrive-fons-view-image--scale-map map scale)
+      ;; In rendered images, rotation is always applied before flip.
+      (hyperdrive-fons-view-image--rotate-map
+       map rotation (if (or (= 90 rotation) (= 270 rotation))
+                        ;; If rotated ±90°, swap width and height.
+                        (cons height width)
+                      size))
+      ;; After rotation, there's no need to swap width and height.
+      (hyperdrive-fons-view-image--flip-map map flip size))
+    map))
+
+;; `hyperdrive-fons-view-image--compute-original-map' will be necessary if we
+;; want to be able to transform images before they are first displayed.
+
+;; (defun hyperdrive-fons-view-image--compute-original-map (image)
+;;   "Return original map for IMAGE.
+;; If IMAGE lacks :map property, return nil.
+;; When :rotation is not a multiple of 90, return copy of :map."
+;;   (when (image-property image :map)
+;;     (let* ((original-map (copy-tree (image-property image :map) t))
+;;            (scale (or (image-property image :scale) 1))
+;;            (rotation (or (image-property image :rotation) 0))
+;;            (flip (image-property image :flip))
+;;            (size (image-size image t)))
+;;       (when (and ; Handle only 90-degree rotations
+;;              (zerop (mod rotation 1))
+;;              (zerop (% (truncate rotation) 90)))
+;;         ;; In rendered images, rotation is always applied before flip.
+;;         ;; To undo the transformation, flip before rotating.  SIZE fits
+;;         ;; ORIGINAL-MAP before transformations are applied.  Therefore,
+;;         ;; scale ORIGINAL-MAP after flip and rotate operations, since
+;;         ;; both need ORIGINAL-MAP to fit SIZE.
+;;         (hyperdrive-fons-view-image--flip-map map flip size)
+;;         (hyperdrive-fons-view-image--rotate-map map (- rotation) size)
+;;         (hyperdrive-fons-view-image--scale-map map (/ 1.0 scale)))
+;;       original-map)))
+
+(defun hyperdrive-fons-view-image--scale-map (map scale)
+  "Scale MAP according to SCALE.
+Destructively modifies and returns MAP."
+  (unless (= 1 scale)
     (pcase-dolist (`(,`(,type . ,coords) ,_id ,_plist) map)
       (pcase-exhaustive type
         ('rect
-         (setf (caar coords) (round (* (caar coords) factor)))
-         (setf (cdar coords) (round (* (cdar coords) factor)))
-         (setf (cadr coords) (round (* (cadr coords) factor)))
-         (setf (cddr coords) (round (* (cddr coords) factor))))
+         (setf (caar coords) (round (* (caar coords) scale)))
+         (setf (cdar coords) (round (* (cdar coords) scale)))
+         (setf (cadr coords) (round (* (cadr coords) scale)))
+         (setf (cddr coords) (round (* (cddr coords) scale))))
         ('circle
-         (setf (caar coords) (round (* (caar coords) factor)))
-         (setf (cdar coords) (round (* (cdar coords) factor)))
-         (setf (cdr coords) (round (* (cdr coords) factor))))
+         (setf (caar coords) (round (* (caar coords) scale)))
+         (setf (cdar coords) (round (* (cdar coords) scale)))
+         (setcdr coords (round (* (cdr coords) scale))))
         ('poly
          (dotimes (i (length coords))
            (aset coords i
-                 (round (* (aref coords i) factor))))))))
+                 (round (* (aref coords i) scale))))))))
   map)
 
-(advice-add #'image--change-size :after #'image--change-size-scale-map)
+(defun hyperdrive-fons-view-image--rotate-map (map rotation size)
+  "Rotate MAP according to ROTATION and SIZE.
+Destructively modifies and returns MAP."
+  (unless (zerop rotation)
+    (pcase-dolist (`(,`(,type . ,coords) ,_id ,_plist) map)
+      (pcase-exhaustive type
+        ('rect
+         (let ( x0 y0  ; New upper left corner
+                x1 y1) ; New bottom right corner
+           (pcase (truncate (mod rotation 360)) ; Set new corners to...
+             (90 ; ...old bottom left and upper right
+              (setq x0 (caar coords) y0 (cddr coords)
+                    x1 (cadr coords) y1 (cdar coords)))
+             (180 ; ...old bottom right and upper left
+              (setq x0 (cadr coords) y0 (cddr coords)
+                    x1 (caar coords) y1 (cdar coords)))
+             (270 ; ...old upper right and bottom left
+              (setq x0 (cadr coords) y0 (cdar coords)
+                    x1 (caar coords) y1 (cddr coords))))
+           (setcar coords (hyperdrive-fons-view-image--rotate-coord x0 y0 rotation size))
+           (setcdr coords (hyperdrive-fons-view-image--rotate-coord x1 y1 rotation size))))
+        ('circle
+         (setcar coords (hyperdrive-fons-view-image--rotate-coord
+                         (caar coords) (cdar coords) rotation size)))
+        ('poly
+         (dotimes (i (length coords))
+           (when (= 0 (% i 2))
+             (pcase-let ((`(,x . ,y)
+                          (hyperdrive-fons-view-image--rotate-coord
+                           (aref coords i) (aref coords (1+ i)) rotation size)))
+               (aset coords i x)
+               (aset coords (1+ i) y))))))))
+  map)
 
-(defun image--change-size-scale-map (_factor &optional position)
-  "Scale :map property of image at point to fit its :scale.
-Intended to be used as :after advice for `image--change-size'."
-  (when-let* ((image (image--get-imagemagick-and-warn position))
-              (map (image-property image :map))
-              (unscaled-map (image-property image :unscaled-map))
-              (scale (image-property image :scale)))
-    (setf (image-property image :map)
-          (hyperdrive-fons-view--image-scale-map (copy-tree unscaled-map t) scale))))
+(defun hyperdrive-fons-view-image--rotate-coord (x y angle size)
+  "Rotate coordinates X and Y by ANGLE in image of SIZE.
+ANGLE must be a multiple of 90.  Returns a cons cell of rounded
+coordinates (X1 Y1)."
+  (pcase-let* ((radian (* (/ angle 180.0) float-pi))
+               (`(,width . ,height) size)
+               ;; y is positive, but we are in the bottom-right quadrant
+               (y (- y))
+               ;; Rotate clockwise
+               (x1 (+ (* (sin radian) y) (* (cos radian) x)))
+               (y1 (- (* (cos radian) y) (* (sin radian) x)))
+               ;; Translate image back into bottom-right quadrant
+               (`(,x1 . ,y1)
+                (pcase (truncate (mod angle 360))
+                  (90 ; Translate right by height
+                   (cons (+ x1 height) y1))
+                  (180 ; Translate right by width and down by height
+                   (cons (+ x1 width) (- y1 height)))
+                  (270 ; Translate down by width
+                   (cons x1 (- y1 width)))))
+               ;; Invert y1 to make both x1 and y1 positive
+               (y1 (- y1)))
+    (cons (round x1) (round y1))))
+
+(defun hyperdrive-fons-view-image--flip-map (map flip size)
+  "Horizontally flip MAP according to FLIP and SIZE.
+Destructively modifies and returns MAP."
+  (when flip
+    (pcase-dolist (`(,`(,type . ,coords) ,_id ,_plist) map)
+      (pcase-exhaustive type
+        ('rect
+         (let ((x0 (- (car size) (cadr coords)))
+               (y0 (cdar coords))
+               (x1 (- (car size) (caar coords)))
+               (y1 (cddr coords)))
+           (setcar coords (cons x0 y0))
+           (setcdr coords (cons x1 y1))))
+        ('circle
+         (setf (caar coords) (- (car size) (caar coords))))
+        ('poly
+         (dotimes (i (length coords))
+           (when (= 0 (% i 2))
+             (aset coords i (- (car size) (aref coords i)))))))))
+  map)
 
 ;; TODO: Bookmark support
 
