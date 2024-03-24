@@ -97,7 +97,10 @@ called and replaces the buffer content with the rendered output."
     )
   "Major mode for viewing Hyperdrive Fons graphs."
   :group 'hyperdrive
-  :interactive nil)
+  :interactive nil
+  ;; `pixel-scroll-precision-mode' makes <wheel-up>/<wheel-down> not scroll.
+  (pixel-scroll-precision-mode -1)
+  (setq-local mouse-wheel-tilt-scroll t))
 
 (defvar-keymap hyperdrive-fons-view-mode-map
   :parent special-mode-map
