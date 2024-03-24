@@ -164,10 +164,10 @@ RELATIONS may be list of `fons-relation' structs."
                 (cl-loop for (key value) on pairs by #'cddr
                          do (insert (format "%s=\"%s\"" key value) "\n")))
               (format-val-list (&rest pairs)
-                (s-wrap (string-join (cl-loop for (key value) on pairs by #'cddr
-                                              collect (format "%s=\"%s\"" key value))
-                                     ",")
-                        "[" "]"))
+                (format "[%s]" (string-join
+                                (cl-loop for (key value) on pairs by #'cddr
+                                         collect (format "%s=\"%s\"" key value))
+                                ",")))
               (format-relation-label (to relation)
                 (let ((score (format "%.2f" (fons-relation-score relation))))
                   (insert
