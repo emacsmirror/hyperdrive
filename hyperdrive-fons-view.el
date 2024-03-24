@@ -92,7 +92,7 @@ called and replaces the buffer content with the rendered output."
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view
-    (relations from &key debug (layout hyperdrive-fons-view-layout))
+    (relations from &key (layout hyperdrive-fons-view-layout))
   "View RELATIONS from FROM."
   (pcase-let* ((hops
                 (hyperdrive-fons-view--relations-graph relations))
@@ -139,7 +139,7 @@ called and replaces the buffer content with the rendered output."
   "Return hops for RELATIONS.
 RELATIONS may be list of `fons-relation' structs."
   (let (hops)
-    (cl-labels ((map-relation (to relation)
+    (cl-labels ((map-relation (_to relation)
                   (mapc #'map-path (fons-relation-paths relation)))
                 (map-path (path)
                   (mapc #'map-hop (fons-path-hops path)))
