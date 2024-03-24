@@ -89,6 +89,31 @@ called and replaces the buffer content with the rendered output."
          ,@body)
      (error "Oops: %s" (buffer-string))))
 
+;;;; Mode
+
+(define-derived-mode hyperdrive-fons-view-mode special-mode
+  `("Hyperdrive-fons-view"
+    ;; TODO: Add more to lighter, e.g. menu to change params.
+    )
+  "Major mode for viewing Hyperdrive Fons graphs."
+  :group 'hyperdrive
+  :interactive nil)
+
+(defvar-keymap hyperdrive-fons-view-mode-map
+  :parent special-mode-map
+  :doc "Local keymap for `hyperdrive-fons-view-mode' buffers."
+  ;; It's easy to accidentally trigger drag events when clicking.
+  "<drag-mouse-1>" #'hyperdrive-fons-view-follow-link
+  "<mouse-1>" #'hyperdrive-fons-view-follow-link)
+
+;;;; Commands
+
+(defun hyperdrive-fons-view-follow-link (event)
+  "Follow link at EVENT's position."
+  (interactive "e")
+  (let ((id (cadadr event)))
+    (message "You clicked on %s!" id)))
+
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view
@@ -111,6 +136,7 @@ called and replaces the buffer content with the rendered output."
       (when (> 30 emacs-major-version)
         ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
         (setq image (nconc image (list :map (copy-tree original-map t)))))
+      (hyperdrive-fons-view-mode)
       (erase-buffer)
       (insert-image image)
       (goto-char (point-min))
