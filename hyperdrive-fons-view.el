@@ -101,6 +101,7 @@ called and replaces the buffer content with the rendered output."
   ;; `pixel-scroll-precision-mode' makes <wheel-up>/<wheel-down> not scroll.
   (pixel-scroll-precision-mode -1)
   (setq-local mouse-wheel-tilt-scroll t))
+;; FIXME: Prevent image from scrolling off the bottom of the screen.
 
 (defvar-keymap hyperdrive-fons-view-mode-map
   :parent special-mode-map
