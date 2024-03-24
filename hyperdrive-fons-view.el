@@ -118,31 +118,22 @@ called and replaces the buffer content with the rendered output."
 
 (defun hyperdrive-fons-view--graph-map (graph)
   "Return image map for Graphviz GRAPH."
-  ;; TODO: Remove dash.el and s.el dependencies
   (with-temp-buffer
     (insert graph)
     (hyperdrive-fons-view--graphviz "cmapx"
-      (cl-labels ((convert-map
-		    (map) (-let (((_map _props . areas) map))
-			    (mapcar #'convert-area areas)))
-                  (convert-area
-		    (area) (-let (((_area (&alist 'shape 'title 'href 'coords)) area))
-			     (list (pcase-exhaustive shape
-				     ("circle" (cons 'circle (convert-circle coords)))
-				     ("poly" (cons 'poly (convert-poly coords)))
-				     ("rect" (cons 'rect (convert-rect coords))))
-				   href (list 'help-echo title))))
-                  (convert-circle
-		    (coords) (-let (((x y r) (->> coords (s-split ",") (-map #'string-to-number))))
-			       (cons (cons x y) r)))
-                  (convert-poly
-		    (coords) (->> coords (s-split ",") (-map #'string-to-number) (apply #'vector)))
-                  (convert-rect
-		    (coords) (-let (((x0 y0 x1 y1)
-				     (->> coords (s-split ",") (-map #'string-to-number))))
-			       (cons (cons x0 y0) (cons x1 y1)))))
-        (let* ((cmapx (libxml-parse-xml-region (point-min) (point-max))))
-          (convert-map cmapx))))))
+      (mapcar (lambda (area)
+                (pcase-let* ((`(area ,(map shape href title coords)) area)
+                             (coords-list (mapcar #'string-to-number
+                                                  (split-string coords ","))))
+                  (list (pcase-exhaustive shape
+		          ("circle" (pcase-let ((`(,x ,y ,r) coords-list))
+                                      (cons 'circle (cons (cons x y) r))))
+		          ("poly" (cons 'poly (vconcat coords-list)))
+		          ("rect" (pcase-let ((`(,x0 ,y0 ,x1 ,y1) coords-list))
+                                    (cons 'rect
+                                          (cons (cons x0 y0) (cons x1 y1))))))
+		        href (list 'help-echo title))))
+              (cddr (libxml-parse-xml-region (point-min) (point-max)))))))
 
 (defun hyperdrive-fons-view--relations-graph (relations)
   "Return hops for RELATIONS.
