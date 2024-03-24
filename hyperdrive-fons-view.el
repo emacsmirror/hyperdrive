@@ -147,7 +147,7 @@ RELATIONS may be list of `fons-relation' structs."
                   ;; TODO: Benchmark alternative methods to collect hops:
                   ;; 1. push, then delete-dups
                   ;; 2. (unless (cl-find hop hops) (push hop hops))
-                  ;; 3. ???
+                  ;; 3. hash table instead of cl-pushnew on a list
                   (cl-pushnew hop hops :test #'equal)))
       (maphash #'map-relation relations)
       hops)))
