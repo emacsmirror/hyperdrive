@@ -23,6 +23,11 @@
     (fons-test-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)
     (fons-test-add-hop "eve" "mallory" 0.8 "tofu" test-hyperdrive-fons-hops)))
 
+(defvar test-hyperdrive-fons-default-blockers-fn
+  (lambda ()
+    (fons-test-add-hop "alice" "bob" 0.8 fons-blocker-topic test-hyperdrive-fons-hops)
+    (fons-test-add-hop "bob" "carol" 0.8 fons-blocker-topic test-hyperdrive-fons-hops)))
+
 (defvar test-hyperdrive-fons-blocked (make-hash-table :test 'equal)
   "Keyed by BLOCKER, value is a list of BLOCKED.")
 
@@ -31,12 +36,14 @@
     (puthash "bob" '("mallory" "darth") test-hyperdrive-fons-blocked)
     (puthash "carol" '("mallory") test-hyperdrive-fons-blocked)))
 
-(cl-defmacro fons-test ((&optional hops-fn blocked-fn) &rest body)
+(cl-defmacro fons-test ((&optional hops-fn blockers-fn blocked-fn) &rest body)
   (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
   `(progn
      (clrhash test-hyperdrive-fons-hops)
      (funcall (or ,hops-fn
                   test-hyperdrive-fons-default-hops-fn))
+     (funcall (or ,blockers-fn
+                  test-hyperdrive-fons-default-blockers-fn))
      (funcall (or ,blocked-fn
                   test-hyperdrive-fons-default-blocked-fn))
      (cl-letf (((symbol-function 'fons-hops)
@@ -46,6 +53,37 @@
                 (lambda (blocker)
                   (gethash blocker test-hyperdrive-fons-blocked))))
        ,@body)))
+
+(ert-deftest fons-blockers-blocked-sources ()
+  "Roundtrip test with stubs.
+1. Get BLOCKERS from ROOT.
+2. Get BLOCKED from BLOCKERS.
+3. Get SOURCES from ROOT while excluding BLOCKED."
+  (fons-test ()
+    (pcase-let* ((blockers (car (fons-relations "alice" fons-blocker-topic)))
+                 (blocked (fons-blocked blockers))
+                 (`(,sources . ,blocked-sources)
+                  (fons-relations
+                   "alice" "tofu" :blocked blocked :threshold 0.4)))
+      (should (= 2 (hash-table-count blockers)))
+      ;; Note that Bob is a BLOCKER but not a SOURCE since his BLOCKER score is
+      ;; above the threshold while his "tofu" score is not.
+      (should (gethash "bob" blockers))
+      (should (gethash "carol" blockers))
+
+      (should (= 2 (hash-table-count blocked)))
+      (should (gethash "mallory" blocked))
+      ;; Note that Darth is BLOCKED but not among BLOCKED-SOURCES since nobody
+      ;; added him as a SOURCE anyway.
+      (should (gethash "darth" blocked))
+
+      (should (= 3 (hash-table-count sources)))
+      (should (gethash "carol" sources))
+      (should (gethash "david" sources))
+      (should (gethash "eve" sources))
+
+      (should (= 1 (hash-table-count blocked-sources)))
+      (should (gethash "mallory" blocked-sources)))))
 
 (ert-deftest fons-relations ()
   "Relations from Alice."
