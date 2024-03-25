@@ -128,6 +128,25 @@ but they may be a list of BLOCKERs, as in `fons-blocked'."
                relations)
       (cons relations blocked-relations))))
 
+(defun fons-direct-blocks (_blocker)
+  "Return direct blocks by BLOCKER."
+  (error "Not yet implemented (bound in tests)"))
+
+(defun fons-blocked (blockers)
+  "Return BLOCKED hash table based on BLOCKERS.
+BLOCKERS may be a hash table, keyed by BLOCKER identifier.
+BLOCKERS hash values are unused, but may be a list of
+`fons-relation' structs, as in the car of the return value of
+`fons-relations'.
+
+BLOCKED hash table is keyed by BLOCKED identifier, and each hash
+value is a list of BLOCKER identifiers which blocked BLOCKED."
+  (let ((blocked (make-hash-table :test #'equal)))
+    (dolist (blocker (hash-table-keys blockers))
+      (dolist (direct-block (fons-direct-blocks blocker))
+        (cl-callf2 push blocker (gethash direct-block blocked))))
+    blocked))
+
 (defun fons-path-score-default (path)
   "Return PATH's score."
   (let ((decay-power 0))
