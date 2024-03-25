@@ -178,6 +178,23 @@ The returned score does not exceed 1."
       (cl-reduce #'max (fons-relation-paths relation)
                  :key #'fons-path-score))))
 
+(defun hyperdrive-fons-relations-hops (relations)
+  "Return hops for RELATIONS.
+RELATIONS may be a hash table of `fons-relation' structs."
+  (let (hops)
+    (cl-labels ((map-relation (_to relation)
+                  (mapc #'map-path (fons-relation-paths relation)))
+                (map-path (path)
+                  (mapc #'map-hop (fons-path-hops path)))
+                (map-hop (hop)
+                  ;; TODO: Benchmark alternative methods to collect hops:
+                  ;; 1. push, then delete-dups
+                  ;; 2. (unless (cl-find hop hops) (push hop hops))
+                  ;; 3. hash table instead of cl-pushnew on a list
+                  (cl-pushnew hop hops :test #'equal)))
+      (maphash #'map-relation relations)
+      hops)))
+
 ;;;; Footer
 
 (provide 'hyperdrive-fons)

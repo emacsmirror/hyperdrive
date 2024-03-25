@@ -123,8 +123,7 @@ called and replaces the buffer content with the rendered output."
 (cl-defun hyperdrive-fons-view
     (relations from &key (layout hyperdrive-fons-view-layout))
   "View RELATIONS from FROM."
-  (pcase-let* ((hops
-                (hyperdrive-fons-view--relations-graph relations))
+  (pcase-let* ((hops (hyperdrive-fons-relations-hops relations))
                (graphviz-string
                 (hyperdrive-fons-view--format-graph
                  hops relations :root-name from :layout layout)))
@@ -164,23 +163,6 @@ called and replaces the buffer content with the rendered output."
                                           (cons (cons x0 y0) (cons x1 y1))))))
 		        href (list 'help-echo title))))
               (cddr (libxml-parse-xml-region (point-min) (point-max)))))))
-
-(defun hyperdrive-fons-view--relations-graph (relations)
-  "Return hops for RELATIONS.
-RELATIONS may be list of `fons-relation' structs."
-  (let (hops)
-    (cl-labels ((map-relation (_to relation)
-                  (mapc #'map-path (fons-relation-paths relation)))
-                (map-path (path)
-                  (mapc #'map-hop (fons-path-hops path)))
-                (map-hop (hop)
-                  ;; TODO: Benchmark alternative methods to collect hops:
-                  ;; 1. push, then delete-dups
-                  ;; 2. (unless (cl-find hop hops) (push hop hops))
-                  ;; 3. hash table instead of cl-pushnew on a list
-                  (cl-pushnew hop hops :test #'equal)))
-      (maphash #'map-relation relations)
-      hops)))
 
 (defun hyperdrive-fons-view--format-hop (hop color)
   "Return graphviz-string for HOP."
