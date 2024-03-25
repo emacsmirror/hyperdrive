@@ -45,19 +45,24 @@ Takes one argument, a `fons-path' and returns a number from 0 to
 
 (cl-defun fons-relations
     (root topic &key blocked (max-hops 3) (threshold fons-path-score-threshold))
-  "Return a table of `fons-relation' structs from ROOT about TOPIC.
-Recurses up to MAX-HOPS times, returning only relations whose
-scores are above THRESHOLD which are not in BLOCKED."
+  "Return two hash tables (RELATIONS . BLOCKED-RELATIONS).
+
+Each table contains `fons-relation' structs from ROOT about
+TOPIC.  Recurses up to MAX-HOPS times, including only relations
+whose scores are above THRESHOLD.
+
+BLOCKED may be a list of TOs which should not be recursed into
+and whose relations will be returned as BLOCKED-RELATIONS."
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS must be an positive integer"))
   (when (member root blocked)
     (error "BLOCKED must not contain ROOT"))
-  (let ((relations (make-hash-table :test 'equal)))
+  (let ((relations (make-hash-table :test 'equal))
+        (blocked-relations (make-hash-table :test 'equal)))
     (cl-labels ((add-relations-from (from &optional paths-to-from)
                   (dolist (hop (map-elt (fons-hops from) topic))
                     (when-let ((to-relation
                                 (and (not (equal root (fons-hop-to hop)))
-                                     (not (member (fons-hop-to hop) blocked))
                                      (ensure-relation (fons-hop-to hop))))
                                (paths-to-to
                                 (if paths-to-from
@@ -69,7 +74,8 @@ scores are above THRESHOLD which are not in BLOCKED."
                       (score-paths paths-to-to)
                       (update-relation to-relation paths-to-to)
                       (when (and (above-threshold-p to-relation)
-                                 (within-max-hops-p to-relation))
+                                 (within-max-hops-p to-relation)
+                                 (not (member (fons-hop-to hop) blocked)))
                         (add-relations-from (fons-relation-to to-relation)
                                             paths-to-to)))))
                 (update-relation (relation paths)
@@ -111,7 +117,12 @@ scores are above THRESHOLD which are not in BLOCKED."
                  (unless (above-threshold-p relation)
                    (remhash to relations)))
                relations)
-      relations)))
+      (maphash (lambda (to relation)
+                 (when (member to blocked)
+                   (puthash to (gethash to relations) blocked-relations)
+                   (remhash to relations)))
+               relations)
+      (cons relations blocked-relations))))
 
 (defun fons-path-score-default (path)
   "Return PATH's score."
