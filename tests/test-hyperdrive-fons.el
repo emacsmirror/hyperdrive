@@ -23,15 +23,28 @@
     (fons-test-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)
     (fons-test-add-hop "eve" "mallory" 0.8 "tofu" test-hyperdrive-fons-hops)))
 
-(cl-defmacro fons-test ((&optional hops-fn) &rest body)
+(defvar test-hyperdrive-fons-blocked (make-hash-table :test 'equal)
+  "Keyed by BLOCKER, value is a list of BLOCKED.")
+
+(defvar test-hyperdrive-fons-default-blocked-fn
+  (lambda ()
+    (puthash "bob" '("mallory" "darth") test-hyperdrive-fons-blocked)
+    (puthash "carol" '("mallory") test-hyperdrive-fons-blocked)))
+
+(cl-defmacro fons-test ((&optional hops-fn blocked-fn) &rest body)
   (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
   `(progn
      (clrhash test-hyperdrive-fons-hops)
      (funcall (or ,hops-fn
                   test-hyperdrive-fons-default-hops-fn))
+     (funcall (or ,blocked-fn
+                  test-hyperdrive-fons-default-blocked-fn))
      (cl-letf (((symbol-function 'fons-hops)
                 (lambda (peer-name)
-                  (gethash peer-name test-hyperdrive-fons-hops))))
+                  (gethash peer-name test-hyperdrive-fons-hops)))
+               ((symbol-function 'fons-direct-blocks)
+                (lambda (blocker)
+                  (gethash blocker test-hyperdrive-fons-blocked))))
        ,@body)))
 
 (ert-deftest fons-relations ()
@@ -105,6 +118,14 @@
       (should-not (gethash "eve" relations))
       (should (= 1 (hash-table-count blocked-relations)))
       (should (gethash "eve" blocked-relations)))))
+
+(ert-deftest fons-blocked ()
+  "Blocked peers."
+  (fons-test ()
+    (let ((blockers (make-hash-table :test #'equal)))
+      (puthash "bob" 'blocker-relations-to-bob blockers)
+      (puthash "carol" 'blocker-relations-to-carol blockers)
+      (should (= 2 (hash-table-count (fons-blocked blockers)))))))
 
 (ert-deftest fons-relations-shorter-path-lower-score ()
   "Reducing max-hops decreases relation score if shorter path has lower score."
