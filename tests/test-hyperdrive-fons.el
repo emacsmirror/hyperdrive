@@ -20,7 +20,8 @@
     (fons-test-add-hop "alice" "carol" 0.8 "tofu" test-hyperdrive-fons-hops)
     (fons-test-add-hop "carol" "david" 0.8 "tofu" test-hyperdrive-fons-hops)
     (fons-test-add-hop "carol" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)))
+    (fons-test-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)
+    (fons-test-add-hop "eve" "mallory" 0.8 "tofu" test-hyperdrive-fons-hops)))
 
 (cl-defmacro fons-test ((&optional hops-fn) &rest body)
   (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
@@ -45,7 +46,7 @@
       (should (= 0.8
                  (fons-relation-score (gethash "carol" relations)))))
     (let ((relations (car (fons-relations "alice" "tofu" :threshold 0))))
-      (should (= 4 (hash-table-count relations)))
+      (should (= 5 (hash-table-count relations)))
       (should (= 0.25
                  (fons-relation-score (gethash "bob" relations))))
       (should (= 0.6400000000000001
