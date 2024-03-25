@@ -104,8 +104,8 @@ scores are above THRESHOLD which are not in BLOCKED."
                 (ensure-relation (to)
                   "Add relation from ROOT to TO if none exists, then return it."
                   (or (gethash to relations)
-                      (setf (gethash to relations)
-                            (make-fons-relation :from root :to to)))))
+                      (puthash to (make-fons-relation :from root :to to)
+                               relations))))
       (add-relations-from root)
       (maphash (lambda (to relation)
                  (unless (above-threshold-p relation)
