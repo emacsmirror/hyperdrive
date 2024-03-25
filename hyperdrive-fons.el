@@ -44,18 +44,21 @@ Takes one argument, a `fons-path' and returns a number from 0 to
   (error "Not yet implemented (bound in tests)"))
 
 (cl-defun fons-relations
-    (root topic &key blocked (max-hops 3) (threshold fons-path-score-threshold))
+    (root topic &key (blocked (make-hash-table))
+          (max-hops 3) (threshold fons-path-score-threshold))
   "Return two hash tables (RELATIONS . BLOCKED-RELATIONS).
 
 Each table contains `fons-relation' structs from ROOT about
 TOPIC.  Recurses up to MAX-HOPS times, including only relations
 whose scores are above THRESHOLD.
 
-BLOCKED may be a list of TOs which should not be recursed into
-and whose relations will be returned as BLOCKED-RELATIONS."
+BLOCKED may be a hash table keyed by TOs which should not be
+recursed into and whose relations will be returned as
+BLOCKED-RELATIONS.  The hash table values of BLOCKED are unused,
+but they may be a list of BLOCKERs, as in `fons-blocked'."
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS must be an positive integer"))
-  (when (member root blocked)
+  (when (member root (hash-table-keys blocked))
     (error "BLOCKED must not contain ROOT"))
   (let ((relations (make-hash-table :test 'equal))
         (blocked-relations (make-hash-table :test 'equal)))
@@ -75,7 +78,8 @@ and whose relations will be returned as BLOCKED-RELATIONS."
                       (update-relation to-relation paths-to-to)
                       (when (and (above-threshold-p to-relation)
                                  (within-max-hops-p to-relation)
-                                 (not (member (fons-hop-to hop) blocked)))
+                                 (not (member (fons-hop-to hop)
+                                              (hash-table-keys blocked))))
                         (add-relations-from (fons-relation-to to-relation)
                                             paths-to-to)))))
                 (update-relation (relation paths)
@@ -118,7 +122,7 @@ and whose relations will be returned as BLOCKED-RELATIONS."
                    (remhash to relations)))
                relations)
       (maphash (lambda (to relation)
-                 (when (member to blocked)
+                 (when (member to (hash-table-keys blocked))
                    (puthash to (gethash to relations) blocked-relations)
                    (remhash to relations)))
                relations)
