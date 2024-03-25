@@ -30,9 +30,7 @@
                   test-hyperdrive-fons-default-hops-fn))
      (cl-letf (((symbol-function 'fons-hops)
                 (lambda (peer-name)
-                  (cdar (map-filter (lambda (from _data)
-                                      (equal from peer-name))
-                                    test-hyperdrive-fons-hops)))))
+                  (gethash peer-name test-hyperdrive-fons-hops))))
        ,@body)))
 
 (ert-deftest fons-relations ()
