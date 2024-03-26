@@ -159,6 +159,34 @@ We could implement the Appleseed algo in Elisp:
 - [[https://link.springer.com/article/10.1007/s10796-005-4807-3][Original paper]]
 - [[https://github.com/cblgh/appleseed-metric][Javascript implementation]]
 
+** Serialization
+
++ Note: Under each topic, each key is optional.
+
++ However, note that it wouldn't make sense for a topic to have both ~source~ and ~blocked: true~ values.
+
+              #+begin_src js-json
+        // NOTE: Uppercase letters represent placeholder values.
+        {
+            "version": "0.1",
+            "peers": {
+                "PUBLIC_KEY1": {
+                    "topics": {
+                        "_default": {
+                            "source": 0.5,
+                            "blocker": 0.5,
+                            "blocked": false
+                        },
+                        "FOOSBALL": {
+                            "source": 0.5,
+                            "blocked": false,
+                        }
+                    }
+                }
+            }
+        }
+              #+end_src
+
 ** fons-path-score-fn (PATH)
 :PROPERTIES:
 :ID:       8a65ecf2-7025-4e03-a1db-cf0997f5ddba

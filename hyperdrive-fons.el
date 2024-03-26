@@ -12,7 +12,13 @@
 
 (cl-defstruct fons-hop from to score)
 (cl-defstruct fons-path hops score)
-(cl-defstruct fons-relation from to paths score)
+(cl-defstruct fons-relation from to paths
+              (source nil :documentation "Score as a source." :type number)
+              (blocker nil :documentation "Score as a blocker." :type number)
+              (blocked nil :documentation "Whether the peer is blocked."
+                       :type boolean)
+              (topic nil :documentation "What the relation pertains to."
+                     :type string))
 
 ;;;; Variables
 
