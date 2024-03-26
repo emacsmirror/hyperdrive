@@ -10,23 +10,23 @@
 
 (defvar test-hyperdrive-fons-hops (make-hash-table :test 'equal))
 
-(defun fons-test-add-hop (from to score topic table)
+(cl-defun fons-test-add-hop (from to score table &optional topic)
   (push (make-fons-hop :from from :to to :score score)
-        (map-elt (map-elt table from) topic)))
+        (map-elt (map-elt table from) (or topic fons-default-topic))))
 
 (defvar test-hyperdrive-fons-default-hops-fn
   (lambda ()
-    (fons-test-add-hop "alice" "bob" 0.25 "tofu" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "alice" "carol" 0.8 "tofu" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "carol" "david" 0.8 "tofu" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "carol" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "david" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "eve" "mallory" 0.8 "tofu" test-hyperdrive-fons-hops)))
+    (fons-test-add-hop "alice" "bob" 0.25 test-hyperdrive-fons-hops)
+    (fons-test-add-hop "alice" "carol" 0.8 test-hyperdrive-fons-hops)
+    (fons-test-add-hop "carol" "david" 0.8 test-hyperdrive-fons-hops)
+    (fons-test-add-hop "carol" "eve" 0.5 test-hyperdrive-fons-hops)
+    (fons-test-add-hop "david" "eve" 0.8 test-hyperdrive-fons-hops)
+    (fons-test-add-hop "eve" "mallory" 0.8 test-hyperdrive-fons-hops)))
 
 (defvar test-hyperdrive-fons-default-blockers-fn
   (lambda ()
-    (fons-test-add-hop "alice" "bob" 0.8 fons-blocker-topic test-hyperdrive-fons-hops)
-    (fons-test-add-hop "bob" "carol" 0.8 fons-blocker-topic test-hyperdrive-fons-hops)))
+    (fons-test-add-hop "alice" "bob" 0.8 test-hyperdrive-fons-hops fons-blocker-topic)
+    (fons-test-add-hop "bob" "carol" 0.8 test-hyperdrive-fons-hops fons-blocker-topic)))
 
 (defvar test-hyperdrive-fons-blocked (make-hash-table :test 'equal)
   "Keyed by BLOCKER, value is a list of BLOCKED.")
@@ -60,14 +60,14 @@
 2. Get BLOCKED from BLOCKERS.
 3. Get SOURCES from ROOT while excluding BLOCKED."
   (fons-test ()
-    (pcase-let* ((blockers (car (fons-relations "alice" fons-blocker-topic)))
+    (pcase-let* ((blockers (car
+                            (fons-relations "alice" :topic fons-blocker-topic)))
                  (blocked (fons-blocked blockers))
                  (`(,sources . ,blocked-sources)
-                  (fons-relations
-                   "alice" "tofu" :blocked blocked :threshold 0.4)))
+                  (fons-relations "alice" :blocked blocked :threshold 0.4)))
       (should (= 2 (hash-table-count blockers)))
       ;; Note that Bob is a BLOCKER but not a SOURCE since his BLOCKER score is
-      ;; above the threshold while his "tofu" score is not.
+      ;; above the threshold while his `fons-default-topic' score is not.
       (should (gethash "bob" blockers))
       (should (gethash "carol" blockers))
 
@@ -88,7 +88,7 @@
 (ert-deftest fons-relations ()
   "Relations from Alice."
   (fons-test ()
-    (let ((relations (car (fons-relations "alice" "tofu"))))
+    (let ((relations (car (fons-relations "alice"))))
       (should (= 3 (hash-table-count relations)))
       (should (= 0.6400000000000001
                  (fons-relation-score (gethash "david" relations))))
@@ -96,7 +96,7 @@
                  (fons-relation-score (gethash "eve" relations))))
       (should (= 0.8
                  (fons-relation-score (gethash "carol" relations)))))
-    (let ((relations (car (fons-relations "alice" "tofu" :threshold 0))))
+    (let ((relations (car (fons-relations "alice" :threshold 0))))
       (should (= 5 (hash-table-count relations)))
       (should (= 0.25
                  (fons-relation-score (gethash "bob" relations))))
@@ -106,33 +106,33 @@
                  (fons-relation-score (gethash "eve" relations))))
       (should (= 0.8
                  (fons-relation-score (gethash "carol" relations)))))
-    (let ((relations (car (fons-relations "alice" "tofu" :threshold 0.6))))
+    (let ((relations (car (fons-relations "alice" :threshold 0.6))))
       (should (= 2 (hash-table-count relations)))
       (should (= 0.6400000000000001
                  (fons-relation-score (gethash "david" relations))))
       (should (= 0.8
                  (fons-relation-score (gethash "carol" relations)))))
-    (let ((relations (car (fons-relations "alice" "tofu" :max-hops 2))))
+    (let ((relations (car (fons-relations "alice" :max-hops 2))))
       (should (= 2 (hash-table-count relations)))
       (should (= 0.6400000000000001
                  (fons-relation-score (gethash "david" relations))))
       (should (= 0.8
                  (fons-relation-score (gethash "carol" relations)))))
-    (let ((relations (car (fons-relations "alice" "tofu" :max-hops 1))))
+    (let ((relations (car (fons-relations "alice" :max-hops 1))))
       (should (= 1 (hash-table-count relations)))
       (should (= 0.8
                  (fons-relation-score (gethash "carol" relations)))))
     (pcase-let* ((blocked (make-hash-table :test 'equal))
                  (_ (puthash "carol" "foo" blocked))
                  (`(,relations . ,blocked-relations)
-                  (fons-relations "alice" "tofu" :blocked blocked)))
+                  (fons-relations "alice" :blocked blocked)))
       (should (= 0 (hash-table-count relations)))
       (should (= 1 (hash-table-count blocked-relations)))
       (should (gethash "carol" blocked-relations)))
     (pcase-let* ((blocked (make-hash-table :test 'equal))
                  (_ (puthash "david" "foo" blocked))
                  (`(,relations . ,blocked-relations)
-                  (fons-relations "alice" "tofu" :blocked blocked)))
+                  (fons-relations "alice" :blocked blocked)))
       (should (= 1 (hash-table-count relations)))
       ;; A -> C -> E has path score 0.4 (below default 0.5 threshold).
       (should-not (gethash "eve" relations))
@@ -142,8 +142,7 @@
     (pcase-let* ((blocked (make-hash-table :test 'equal))
                  (_ (puthash "david" "foo" blocked))
                  (`(,relations . ,blocked-relations)
-                  (fons-relations "alice" "tofu"
-                                  :blocked blocked :threshold 0.4)))
+                  (fons-relations "alice" :blocked blocked :threshold 0.4)))
       (should (= 2 (hash-table-count relations)))
       (should-not (gethash "david" relations))
       (should (= 1 (hash-table-count blocked-relations)))
@@ -151,7 +150,7 @@
     (pcase-let* ((blocked (make-hash-table :test 'equal))
                  (_ (puthash "eve" "foo" blocked))
                  (`(,relations . ,blocked-relations)
-                  (fons-relations "alice" "tofu" :blocked blocked)))
+                  (fons-relations "alice" :blocked blocked)))
       (should (= 2 (hash-table-count relations)))
       (should-not (gethash "eve" relations))
       (should (= 1 (hash-table-count blocked-relations)))
@@ -168,16 +167,16 @@
 (ert-deftest fons-relations-shorter-path-lower-score ()
   "Reducing max-hops decreases relation score if shorter path has lower score."
   (fons-test ((lambda ()
-                (fons-test-add-hop "alice" "bob" 0.9 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "bob" "carol" 0.9 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "carol" "david" 0.9 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "alice" "eve" 0.8 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "eve" "david" 0.8 "tofu" test-hyperdrive-fons-hops)))
-    (let ((relations (car (fons-relations "alice" "tofu" :max-hops 3))))
+                (fons-test-add-hop "alice" "bob" 0.9 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "bob" "carol" 0.9 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "carol" "david" 0.9 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "alice" "eve" 0.8 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "eve" "david" 0.8 test-hyperdrive-fons-hops)))
+    (let ((relations (car (fons-relations "alice" :max-hops 3))))
       ;; Relation to david includes A -> B -> C -> D and also A -> E -> D.
       (should (= 0.7290000000000001
                  (fons-relation-score (gethash "david" relations)))))
-    (let ((relations (car (fons-relations "alice" "tofu" :max-hops 2))))
+    (let ((relations (car (fons-relations "alice" :max-hops 2))))
       ;; With MAX-HOPS 2, relation to david now only includes A -> E -> D.
       (should (= 0.6400000000000001
                  (fons-relation-score (gethash "david" relations)))))))
@@ -188,8 +187,8 @@
                 (dotimes (from 6)
                   (dotimes (to 6)
                     (unless (= from to)
-                      (fons-test-add-hop from to 0.5 "tofu" test-hyperdrive-fons-hops))))))
-    (let ((relations (car (fons-relations 0 "tofu" :max-hops 5))))
+                      (fons-test-add-hop from to 0.5 test-hyperdrive-fons-hops))))))
+    (let ((relations (car (fons-relations 0 :max-hops 5))))
       (should (= 5 (hash-table-count relations)))
       ;; (hyperdrive-fons-view relations 0)
       )))
@@ -198,14 +197,14 @@
   "Not a test.  Opens fons-view buffer."
   (skip-unless nil)
   (fons-test ((lambda ()
-                (fons-test-add-hop "alice" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "alice" "eve" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "eve" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "bob" "carol" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "carol" "bob" 0.5 "tofu" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "carol" "doug" 0.5 "tofu" test-hyperdrive-fons-hops)
+                (fons-test-add-hop "alice" "bob" 0.5 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "alice" "eve" 0.5 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "eve" "carol" 0.5 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "bob" "carol" 0.5 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "carol" "bob" 0.5 test-hyperdrive-fons-hops)
+                (fons-test-add-hop "carol" "doug" 0.5 test-hyperdrive-fons-hops)
                 ))
-    (let* ((relations (car (fons-relations "alice" "tofu" :threshold 0))))
+    (let* ((relations (car (fons-relations "alice" :threshold 0))))
       (hyperdrive-fons-view relations "alice" :layout "dot"
                             ;; :debug t
                             ))))
