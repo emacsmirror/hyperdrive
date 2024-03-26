@@ -130,7 +130,7 @@ but they may be a list of BLOCKERs, as in `fons-blocked'."
                relations)
       (maphash (lambda (to relation)
                  (when (member to (hash-table-keys blocked))
-                   (puthash to (gethash to relations) blocked-relations)
+                   (puthash to relation blocked-relations)
                    (remhash to relations)))
                relations)
       (cons relations blocked-relations))))
