@@ -91,6 +91,13 @@ called and replaces the buffer content with the rendered output."
 
 ;;;; Mode
 
+(defvar-keymap hyperdrive-fons-view-mode-map
+  :parent special-mode-map
+  :doc "Local keymap for `hyperdrive-fons-view-mode' buffers."
+  ;; It's easy to accidentally trigger drag events when clicking.
+  "<drag-mouse-1>" #'hyperdrive-fons-view-follow-link
+  "<mouse-1>" #'hyperdrive-fons-view-follow-link)
+
 (define-derived-mode hyperdrive-fons-view-mode special-mode
   `("Hyperdrive-fons-view"
     ;; TODO: Add more to lighter, e.g. menu to change params.
@@ -102,13 +109,6 @@ called and replaces the buffer content with the rendered output."
   (pixel-scroll-precision-mode -1)
   (setq-local mouse-wheel-tilt-scroll t))
 ;; FIXME: Prevent image from scrolling off the bottom of the screen.
-
-(defvar-keymap hyperdrive-fons-view-mode-map
-  :parent special-mode-map
-  :doc "Local keymap for `hyperdrive-fons-view-mode' buffers."
-  ;; It's easy to accidentally trigger drag events when clicking.
-  "<drag-mouse-1>" #'hyperdrive-fons-view-follow-link
-  "<mouse-1>" #'hyperdrive-fons-view-follow-link)
 
 ;;;; Commands
 
