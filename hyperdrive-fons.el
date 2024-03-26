@@ -16,11 +16,10 @@
 
 ;;;; Variables
 
-;; TODO: In which package do conventions like this `defconst' belong?
-(defconst fons-blocker-topic "_blocker"
+(defvar fons-blocker-topic "_blocker"
   "Special topic name used for BLOCKER relations.")
 
-(defconst fons-default-topic "_default"
+(defvar fons-default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
 
 (defvar fons-path-score-threshold 0.5
