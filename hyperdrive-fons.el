@@ -22,9 +22,6 @@
 
 ;;;; Variables
 
-(defvar fons-blocker-topic "_blocker"
-  "Special topic name used for BLOCKER relations.")
-
 (defvar fons-default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
 
@@ -56,12 +53,13 @@ Takes one argument, a `fons-path' and returns a number from 0 to
   (error "Not yet implemented (bound in tests)"))
 
 (cl-defun fons-relations
-    (root &key hops-fn topic (blocked (make-hash-table))
+    (root &key hops-fn (topic fons-default-topic) (blocked (make-hash-table))
           (max-hops 3) (threshold fons-path-score-threshold))
   "Return two hash tables (RELATIONS . BLOCKED-RELATIONS).
 
 HOPS-FN is the function that accepts two arguments, FROM and
-TOPIC, and returns a list of `fons-hops' structs.
+TOPIC (defaulting to `fons-default-topic'), and returns a list of
+`fons-hops' structs.
 
 Each table contains `fons-relation' structs from ROOT about
 TOPIC.  Recurses up to MAX-HOPS times, including only relations
@@ -75,7 +73,6 @@ but they may be a list of BLOCKERs, as in `fons-blocked'."
     (error "MAX-HOPS must be an positive integer"))
   (when (member root (hash-table-keys blocked))
     (error "BLOCKED must not contain ROOT"))
-  (unless topic (setq topic fons-default-topic))
   (let ((relations (make-hash-table :test 'equal))
         (blocked-relations (make-hash-table :test 'equal)))
     (cl-labels ((add-relations-from (from &optional paths-to-from)
