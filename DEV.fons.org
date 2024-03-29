@@ -5,18 +5,18 @@
 
 * Design
 
-** Basic usage patterns / workflows
+** Purpose
 
-*** UI
+/What is Fons for?/
 
-+ Goal: Be able to specify multiple topics when gathering a list of source hyperdrives. ::
-+ Goal: Be able to render trust graphs for multiple topics in a single view. ::
++ Goal: Crowdsource /sources/ of information. :: On a P2P network, where there is no central index to tell users what is worth looking at, we must start with sources of our choosing (like "word of mouth").  The system does not come preconfigured with a list of sources and metadata about them.
+  - Note that we are not crowdsourcing /information/, but /sources/ of information.
 
 ** Scoring
 
-*************** TODO Document basic scoring purpose, etc.
-*************** END
+/What is scoring and how does it facilitate the purpose?/
 
+Scoring is intended to help surface and filter information shared by other users on the network.  It is not necessarily intended to deal with abusive content or spam; see blocking for that.
 
 *************** TODO Consider using the term ~interest~ instead of ~score~
 
@@ -24,8 +24,9 @@
 + Another possibility: ~boost~ (e.g. boost=0 means we are not detracting).
 *************** END
 
-
 ** Blocking
+
+/What is blocking and how does it facilitate the purpose?/
 
 + Blocking is generally intended as a last resort. :: It's not generally intended that a user block another user because of, e.g. having shared a single article that they didn't agree with.  Blocking is intended for extreme cases, abuse, spam, etc.
   - Generally, if a user isn't fond of what another user is sharing about a specific topic, the intended solution is to lower that user's score.
@@ -35,6 +36,17 @@
       + Distinction between fallback/default topic and universal block topic: How would these be applied?
         - This becomes much more complicated with second-order, downstream effects: if Alice trusts Bob as a blocker for "politics", and Bob trusts Carol as a blocker for the default topic, is Carol included as a blocker when Alice searches on "politics"?
   - Workaround: If a user really wants per-topic blocks (e.g. to block Bob on politics but not on music), the user can create a separate hyperdrive identity for each topic they want granular control of their blocks over.
+
+** Basic usage patterns / workflows
+
+/What specific tasks should Fons enable the user to perform?/
+
+*** UI
+
+/What does performing these tasks look like to the user?/
+
++ Goal: Be able to specify multiple topics when gathering a list of source hyperdrives. ::
++ Goal: Be able to render trust graphs for multiple topics in a single view. ::
 
 ** Topics
 
