@@ -53,6 +53,12 @@ Scoring is intended to help surface and filter information shared by other users
 + We're inspired by Alex Cobleigh's work on Trustnet.  In it, per-topic trust is included in the design, but as a layer on top of the fundamental trust system.
   - Following that, we design the ~relations~ struct to not be topic-specific.  We add topics as a layer on top.
 
+** References
+
++ [[https://git.sr.ht/~ushin/trust.el][~ushin/trust.el - Explore trust relationships as a graph - sourcehut git]] ::
+  - Especially, see the graph example, which we use to guide our implementation.
++ [[https://media.libreplanet.org/u/libreplanet/m/emacs-for-p2p-deliberation/][Emacs for P2P Deliberation — GNU MediaGoblin]] :: Joseph Turner's talk at LibrePlanet 2023.
+
 * Types
 
 /Types of data represented by the library./
