@@ -3,6 +3,44 @@
 :END:
 #+TITLE: Development notes about the ~fons~ library
 
+* Design
+
+** Basic usage patterns / workflows
+
+*** UI
+
++ Goal: Be able to specify multiple topics when gathering a list of source hyperdrives. ::
++ Goal: Be able to render trust graphs for multiple topics in a single view. ::
+
+** Scoring
+
+*************** TODO Document basic scoring purpose, etc.
+*************** END
+
+
+*************** TODO Consider using the term ~interest~ instead of ~score~
+
++ It might communicate more specifically the intention behind this number (i.e. to not imply that a lower score means a lack of sincerity or a malicious intent; rather, just the local user's interest in what the other user is sharing on the network).
++ Another possibility: ~boost~ (e.g. boost=0 means we are not detracting).
+*************** END
+
+
+** Blocking
+
++ Blocking is generally intended as a last resort. :: It's not generally intended that a user block another user because of, e.g. having shared a single article that they didn't agree with.  Blocking is intended for extreme cases, abuse, spam, etc.
+  - Generally, if a user isn't fond of what another user is sharing about a specific topic, the intended solution is to lower that user's score.
++ Blocking is /not/ per-topic :: When a peer is blocked, it blocks that peer entirely from the user's perspective, regardless of topic.
+  - Rationale: It's simpler this way.  We began designing a per-topic blocking system, but the complexity didn't seem worth it.
+    * Complexity issues ::
+      + Distinction between fallback/default topic and universal block topic: How would these be applied?
+        - This becomes much more complicated with second-order, downstream effects: if Alice trusts Bob as a blocker for "politics", and Bob trusts Carol as a blocker for the default topic, is Carol included as a blocker when Alice searches on "politics"?
+  - Workaround: If a user really wants per-topic blocks (e.g. to block Bob on politics but not on music), the user can create a separate hyperdrive identity for each topic they want granular control of their blocks over.
+
+** Topics
+
++ We're inspired by Alex Cobleigh's work on Trustnet.  In it, per-topic trust is included in the design, but as a layer on top of the fundamental trust system.
+  - Following that, we design the ~relations~ struct to not be topic-specific.  We add topics as a layer on top.
+
 * Types
 
 /Types of data represented by the library./
@@ -165,6 +203,9 @@ We could implement the Appleseed algo in Elisp:
 
 + However, note that it wouldn't make sense for a topic to have both ~source~ and ~blocked: true~ values.
 
+*************** TODO Update JSON for non-per-topic blocks
+*************** END
+
               #+begin_src js-json
         // NOTE: Uppercase letters represent placeholder values.
         {
@@ -210,3 +251,4 @@ What should it return?  What data does it need for its computation?
   + 
 
 ** fons-hop-score
+
