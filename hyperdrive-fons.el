@@ -12,15 +12,14 @@
 
 (cl-defstruct fons-hop from to score)
 (cl-defstruct fons-path hops score)
-(cl-defstruct fons-relation from to paths
-              (source nil :documentation "Score as a source." :type number)
-              (blocker nil :documentation "Score as a blocker." :type number)
-              (blocked nil :documentation "Whether the peer is blocked."
-                       :type boolean)
-              (topic nil :documentation "What the relation pertains to."
-                     :type string))
+(cl-defstruct fons-relation from to paths score
+              (blocked-p nil :documentation "Whether the peer is blocked."
+                         :type boolean))
 
 ;;;; Variables
+
+(defvar fons-blocker-topic "_blocker"
+  "Special topic name used for BLOCKER relations.")
 
 (defvar fons-default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
@@ -55,7 +54,7 @@ Takes one argument, a `fons-path' and returns a number from 0 to
 (cl-defun fons-relations
     (root &key hops-fn (topic fons-default-topic) (blocked (make-hash-table))
           (max-hops 3) (threshold fons-path-score-threshold))
-  "Return two hash tables (RELATIONS . BLOCKED-RELATIONS).
+  "Return hash table of relations.
 
 HOPS-FN is the function that accepts two arguments, FROM and
 TOPIC (defaulting to `fons-default-topic'), and returns a list of
@@ -66,15 +65,14 @@ TOPIC.  Recurses up to MAX-HOPS times, including only relations
 whose scores are above THRESHOLD.
 
 BLOCKED may be a hash table keyed by TOs which should not be
-recursed into and whose relations will be returned as
-BLOCKED-RELATIONS.  The hash table values of BLOCKED are unused,
-but they may be a list of BLOCKERs, as in `fons-blocked'."
+recursed into and whose relations will be flagged as blocked.
+The hash table values of BLOCKED are unused, but they may be a
+list of BLOCKERs, as in `fons-blocked'."
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS must be an positive integer"))
-  (when (member root (hash-table-keys blocked))
+  (when (gethash root blocked)
     (error "BLOCKED must not contain ROOT"))
-  (let ((relations (make-hash-table :test 'equal))
-        (blocked-relations (make-hash-table :test 'equal)))
+  (let ((relations (make-hash-table :test 'equal)))
     (cl-labels ((add-relations-from (from &optional paths-to-from)
                   (dolist (hop (funcall hops-fn from topic))
                     (when-let ((to-relation
@@ -131,14 +129,11 @@ but they may be a list of BLOCKERs, as in `fons-blocked'."
       (add-relations-from root)
       (maphash (lambda (to relation)
                  (unless (above-threshold-p relation)
-                   (remhash to relations)))
-               relations)
-      (maphash (lambda (to relation)
+                   (remhash to relations))
                  (when (gethash to blocked)
-                   (puthash to relation blocked-relations)
-                   (remhash to relations)))
+                   (setf (fons-relation-blocked-p relation) t)))
                relations)
-      (cons relations blocked-relations))))
+      relations)))
 
 (defun fons-direct-blocks (_blocker)
   "Return direct blocks by BLOCKER."
