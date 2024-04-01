@@ -107,6 +107,9 @@ called and replaces the buffer content with the rendered output."
   :interactive nil
   ;; `pixel-scroll-precision-mode' makes <wheel-up>/<wheel-down> not scroll.
   (pixel-scroll-precision-mode -1)
+  ;; Required by `pixel-scroll-precision-mode' bug#66769 and bug#68196
+  ;; TODO: In order to use `pixel-scroll-precision-mode':
+  ;; (setq-local scroll-margin 0)
   (setq-local mouse-wheel-tilt-scroll t))
 ;; FIXME: Prevent image from scrolling off the bottom of the screen.
 
