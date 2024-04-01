@@ -110,6 +110,7 @@ called and replaces the buffer content with the rendered output."
   ;; Required by `pixel-scroll-precision-mode' bug#66769 and bug#68196
   ;; TODO: In order to use `pixel-scroll-precision-mode':
   ;; (setq-local scroll-margin 0)
+  ;; TODO: Prevent scrolling past right edge of image.  Similar issue: #68786
   (setq-local mouse-wheel-tilt-scroll t))
 ;; FIXME: Prevent image from scrolling off the bottom of the screen.
 
