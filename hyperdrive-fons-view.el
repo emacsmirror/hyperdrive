@@ -174,9 +174,10 @@ called and replaces the buffer content with the rendered output."
 
 (defun hyperdrive-fons-view--format-hop (hop color)
   "Return graphviz-string for HOP."
-  (format "%s -> %s [label=%s color=\"%s\" penwidth=2];\n"
+  (format "%s -> %s [color=\"%s\" penwidth=2];\n"
           (fons-hop-from hop) (fons-hop-to hop)
-          (fons-hop-score hop) color))
+          ;; (fons-hop-score hop)
+          color))
 
 (cl-defun hyperdrive-fons-view--format-graph (hops relations &key root-name layout)
   "Return a graphviz-string string for HOPS."
@@ -189,11 +190,10 @@ called and replaces the buffer content with the rendered output."
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
               (format-relation-label (to relation)
-                (let ((score (format "%.2f" (fons-relation-score relation))))
-                  (insert
-                   (format
-                    "%s [label=\"%s (%s)\", href=\"%s\", shape=\"ellipse\", color=\"%s\"];\n"
-                    to to score to hyperdrive-fons-view-source-color)))))
+                (insert
+                 (format
+                  "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\"];\n"
+                  to to to hyperdrive-fons-view-source-color))))
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")

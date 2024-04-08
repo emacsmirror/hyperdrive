@@ -61,8 +61,7 @@ TOPIC (defaulting to `fons-default-topic'), and returns a list of
 `fons-hops' structs.
 
 Each table contains `fons-relation' structs from ROOT about
-TOPIC.  Recurses up to MAX-HOPS times, including only relations
-whose scores are above THRESHOLD.
+TOPIC.  Recurses up to MAX-HOPS times.
 
 BLOCKED may be a hash table keyed by TOs which should not be
 recursed into and whose relations will be flagged as blocked.
@@ -85,18 +84,19 @@ list of BLOCKERs, as in `fons-blocked'."
                                     (extended-paths paths-to-from hop)
                                   ;; On the 1st hop, paths-to-from is nil.
                                   (list (make-fons-path :hops (list hop))))))
-                      (score-paths paths-to-to)
+                      ;; (score-paths paths-to-to)
                       (update-relation to-relation paths-to-to)
-                      (when (and (above-threshold-p to-relation)
-                                 (within-max-hops-p to-relation)
-                                 (not (gethash (fons-hop-to hop) blocked)))
+                      (when (and ;; (above-threshold-p to-relation)
+                             (within-max-hops-p to-relation)
+                             (not (gethash (fons-hop-to hop) blocked)))
                         (add-relations-from (fons-relation-to to-relation)
                                             paths-to-to)))))
                 (update-relation (relation paths)
                   (setf (fons-relation-paths relation)
                         (append paths (fons-relation-paths relation)))
-                  (setf (fons-relation-score relation)
-                        (funcall fons-relation-score-fn relation)))
+                  ;; (setf (fons-relation-score relation)
+                  ;;       (funcall fons-relation-score-fn relation))
+                  )
                 (extended-paths (paths hop)
                   "Return list of PATHS extended by HOP without circular hops."
                   (remq nil
@@ -111,12 +111,12 @@ list of BLOCKERs, as in `fons-blocked'."
                   (cl-some (lambda (hop)
                              (equal (fons-hop-to last-hop) (fons-hop-from hop)))
                            (fons-path-hops path)))
-                (score-paths (paths)
-                  (dolist (path paths)
-                    (setf (fons-path-score path)
-                          (funcall fons-path-score-fn path))))
-                (above-threshold-p (relation)
-                  (>= (fons-relation-score relation) threshold))
+                ;; (score-paths (paths)
+                ;;   (dolist (path paths)
+                ;;     (setf (fons-path-score path)
+                ;;           (funcall fons-path-score-fn path))))
+                ;; (above-threshold-p (relation)
+                ;;   (>= (fons-relation-score relation) threshold))
                 (within-max-hops-p (relation)
                   (cl-some (lambda (path)
                              (length< (fons-path-hops path) max-hops))
@@ -128,8 +128,8 @@ list of BLOCKERs, as in `fons-blocked'."
                                relations))))
       (add-relations-from root)
       (maphash (lambda (to relation)
-                 (unless (above-threshold-p relation)
-                   (remhash to relations))
+                 ;; (unless (above-threshold-p relation)
+                 ;;   (remhash to relations))
                  (when (gethash to blocked)
                    (setf (fons-relation-blocked-p relation) t)))
                relations)
