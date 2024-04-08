@@ -111,6 +111,10 @@ called and replaces the buffer content with the rendered output."
   ;; TODO: In order to use `pixel-scroll-precision-mode':
   ;; (setq-local scroll-margin 0)
   ;; TODO: Prevent scrolling past right edge of image.  Similar issue: #68786
+
+  ;; TODO: For images jumping when switching windows, see bug#70038:
+  ;; <https://yhetil.org/emacs-bugs/871q7qckd7.fsf@uam.es/T/#u> and
+  ;; https://github.com/vedang/pdf-tools/pull/224
   (setq-local mouse-wheel-tilt-scroll t))
 ;; FIXME: Prevent image from scrolling off the bottom of the screen.
 
