@@ -10,9 +10,9 @@
 
 ;;;; Types
 
-(cl-defstruct fons-hop from to score)
-(cl-defstruct fons-path hops score)
-(cl-defstruct fons-relation from to paths score
+(cl-defstruct fons-hop from to)
+(cl-defstruct fons-path hops)
+(cl-defstruct fons-relation from to paths
               (blocked-p nil :documentation "Whether the peer is blocked."
                          :type boolean))
 
@@ -24,26 +24,9 @@
 (defvar fons-default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
 
-(defvar fons-path-score-threshold 0.5
-  "Paths that score below this are omitted.")
-
 (defgroup fons nil
   "FIXME: Docstring."
   :group 'applications)
-
-(defcustom fons-path-score-fn #'fons-path-score-default
-  "Path scoring function.
-Takes one argument, a `fons-path' and returns a number from 0 to
-1."
-  :type 'function)
-
-(defcustom fons-path-score-decay-coefficient 1
-  "FIXME:"
-  :type 'number)
-
-(defcustom fons-relation-score-fn #'fons-relation-score-default
-  "FIXME: Docstring."
-  :type 'function)
 
 ;;;; Functions
 
@@ -53,7 +36,7 @@ Takes one argument, a `fons-path' and returns a number from 0 to
 
 (cl-defun fons-relations
     (root &key hops-fn (topic fons-default-topic) (blocked (make-hash-table))
-          (max-hops 3) (threshold fons-path-score-threshold))
+          (max-hops 3))
   "Return hash table of relations.
 
 HOPS-FN is the function that accepts two arguments, FROM and
@@ -84,19 +67,14 @@ list of BLOCKERs, as in `fons-blocked'."
                                     (extended-paths paths-to-from hop)
                                   ;; On the 1st hop, paths-to-from is nil.
                                   (list (make-fons-path :hops (list hop))))))
-                      ;; (score-paths paths-to-to)
                       (update-relation to-relation paths-to-to)
-                      (when (and ;; (above-threshold-p to-relation)
-                             (within-max-hops-p to-relation)
-                             (not (gethash (fons-hop-to hop) blocked)))
+                      (when (and (within-max-hops-p to-relation)
+                                 (not (gethash (fons-hop-to hop) blocked)))
                         (add-relations-from (fons-relation-to to-relation)
                                             paths-to-to)))))
                 (update-relation (relation paths)
                   (setf (fons-relation-paths relation)
-                        (append paths (fons-relation-paths relation)))
-                  ;; (setf (fons-relation-score relation)
-                  ;;       (funcall fons-relation-score-fn relation))
-                  )
+                        (append paths (fons-relation-paths relation))))
                 (extended-paths (paths hop)
                   "Return list of PATHS extended by HOP without circular hops."
                   (remq nil
@@ -111,12 +89,6 @@ list of BLOCKERs, as in `fons-blocked'."
                   (cl-some (lambda (hop)
                              (equal (fons-hop-to last-hop) (fons-hop-from hop)))
                            (fons-path-hops path)))
-                ;; (score-paths (paths)
-                ;;   (dolist (path paths)
-                ;;     (setf (fons-path-score path)
-                ;;           (funcall fons-path-score-fn path))))
-                ;; (above-threshold-p (relation)
-                ;;   (>= (fons-relation-score relation) threshold))
                 (within-max-hops-p (relation)
                   (cl-some (lambda (path)
                              (length< (fons-path-hops path) max-hops))
@@ -128,8 +100,6 @@ list of BLOCKERs, as in `fons-blocked'."
                                relations))))
       (add-relations-from root)
       (maphash (lambda (to relation)
-                 ;; (unless (above-threshold-p relation)
-                 ;;   (remhash to relations))
                  (when (gethash to blocked)
                    (setf (fons-relation-blocked-p relation) t)))
                relations)
@@ -153,33 +123,6 @@ value is a list of BLOCKER identifiers which blocked BLOCKED."
       (dolist (direct-block (fons-direct-blocks blocker))
         (cl-callf2 push blocker (gethash direct-block blocked))))
     blocked))
-
-(defun fons-path-score-default (path)
-  "Return PATH's score."
-  (let ((decay-power 0))
-    (cl-reduce
-     (lambda (acc hop)
-       (* acc
-          (fons-hop-score hop)
-          (prog1 (expt fons-path-score-decay-coefficient decay-power)
-            (cl-incf decay-power))))
-     (fons-path-hops path)
-     :initial-value 1)))
-
-(defun fons-relation-score-default (relation)
-  "Return RELATION's score based on the scores of its paths.
-If RELATION contains a single-hop path, return that path's score.
-Otherwise, return the highest path score among all paths.
-The returned score does not exceed 1."
-  (let* ((paths (fons-relation-paths relation))
-         ;; TODO: Instead of `cl-find' then `cl-reduce', just iterate once.
-         (direct-path (cl-find (lambda (path)
-                                 (length= 1 (fons-path-hops path)))
-                               paths)))
-    (if direct-path
-        (fons-path-score direct-path)
-      (cl-reduce #'max (fons-relation-paths relation)
-                 :key #'fons-path-score))))
 
 (defun hyperdrive-fons-relations-hops (relations)
   "Return hops for RELATIONS.
