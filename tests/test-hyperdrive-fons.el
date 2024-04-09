@@ -8,44 +8,20 @@
 (require 'hyperdrive-fons)
 (require 'hyperdrive-fons-view)
 
-(defvar test-hyperdrive-fons-hops (make-hash-table :test 'equal))
+(defvar test-hyperdrive-fons-users
+  (list (make-fons-user :id "alice" :blockers '("bob")
+                        :sources '(("foo" . ("bob" "carol"))))
+        (make-fons-user :id "bob" :blocked '("mallory" "darth")
+                        :blockers '("carol"))
+        (make-fons-user :id "carol" :blocked '("mallory")
+                        :sources '(("foo" . ("david" "eve"))))
+        (make-fons-user :id "david" :sources '(("foo" . ("eve"))))
+        (make-fons-user :id "eve" :sources '(("foo" . ("mallory"))))
+        (make-fons-user :id "mallory")))
 
-(cl-defun fons-test-add-hop (from to table &optional topic)
-  (push (make-fons-hop :from from :to to)
-        (map-elt (map-elt table from) (or topic fons-default-topic))))
-
-(defvar test-hyperdrive-fons-default-hops-fn
-  (lambda ()
-    (fons-test-add-hop "alice" "bob" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "alice" "carol" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "carol" "david" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "carol" "eve" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "david" "eve" test-hyperdrive-fons-hops)
-    (fons-test-add-hop "eve" "mallory" test-hyperdrive-fons-hops)))
-
-(defvar test-hyperdrive-fons-default-blockers-fn
-  (lambda ()
-    (fons-test-add-hop "alice" "bob" test-hyperdrive-fons-hops fons-blocker-topic)
-    (fons-test-add-hop "bob" "carol" test-hyperdrive-fons-hops fons-blocker-topic)))
-
-(defvar test-hyperdrive-fons-blocked (make-hash-table :test 'equal)
-  "Keyed by BLOCKER, value is a list of BLOCKED.")
-
-(defvar test-hyperdrive-fons-default-blocked-fn
-  (lambda ()
-    (puthash "bob" '("mallory" "darth") test-hyperdrive-fons-blocked)
-    (puthash "carol" '("mallory") test-hyperdrive-fons-blocked)))
-
-(cl-defmacro fons-test ((&optional hops-fn blockers-fn blocked-fn) &rest body)
+(cl-defmacro fons-test (() &rest body)
   (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
   `(progn
-     (clrhash test-hyperdrive-fons-hops)
-     (funcall (or ,hops-fn
-                  test-hyperdrive-fons-default-hops-fn))
-     (funcall (or ,blockers-fn
-                  test-hyperdrive-fons-default-blockers-fn))
-     (funcall (or ,blocked-fn
-                  test-hyperdrive-fons-default-blocked-fn))
      (cl-letf* (
                 (test-fons-hops-fn
                  (lambda (peer-name topic)
@@ -53,9 +29,39 @@
                 ((symbol-function 'fons-direct-blocks)
                  (lambda (blocker)
                    (gethash blocker test-hyperdrive-fons-blocked))))
+       (let* (()))
        ,@body)))
 
 ;;;; Tests
+
+;; (ert-deftest fons-blockers-blocked-sources ()
+;;   "Roundtrip test with stubs.
+;; 1. Get BLOCKERS from ROOT.
+;; 2. Get BLOCKED from BLOCKERS.
+;; 3. Get SOURCES from ROOT while excluding BLOCKED."
+;;   (fons-test ()
+;;     (let* ((blockers (fons-relations "alice" :topic fons-blocker-topic
+;;                                      :hops-fn test-fons-hops-fn))
+;;            (blocked (fons-blocked blockers))
+;;            (sources (fons-relations "alice" :blocked blocked
+;;                                     :hops-fn test-fons-hops-fn)))
+;;       (should (= 2 (hash-table-count blockers)))
+;;       ;; Note that Bob is a BLOCKER but not a SOURCE since his BLOCKER score is
+;;       ;; above the threshold while his `fons-default-topic' score is not.
+;;       (should (gethash "bob" blockers))
+;;       (should (gethash "carol" blockers))
+
+;;       (should (= 2 (hash-table-count blocked)))
+;;       (should (gethash "mallory" blocked))
+;;       ;; Note that Darth is BLOCKED but not among BLOCKED-SOURCES since nobody
+;;       ;; added him as a SOURCE anyway.
+;;       (should (gethash "darth" blocked))
+
+;;       (should (= 4 (hash-table-count sources)))
+;;       (should-not (fons-relation-blocked-p (gethash "carol" sources)))
+;;       (should-not (fons-relation-blocked-p (gethash "david" sources)))
+;;       (should-not (fons-relation-blocked-p (gethash "eve" sources)))
+;;       (should (fons-relation-blocked-p (gethash "mallory" sources))))))
 
 (ert-deftest fons-blockers-blocked-sources ()
   "Roundtrip test with stubs.
@@ -63,11 +69,23 @@
 2. Get BLOCKED from BLOCKERS.
 3. Get SOURCES from ROOT while excluding BLOCKED."
   (fons-test ()
-    (let* ((blockers (fons-relations "alice" :topic fons-blocker-topic
-                                     :hops-fn test-fons-hops-fn))
-           (blocked (fons-blocked blockers))
-           (sources (fons-relations "alice" :blocked blocked
-                                    :hops-fn test-fons-hops-fn)))
+    (let* ((topic "foo")
+           (user (cl-find "alice" test-hyperdrive-fons-users :key #'id :test #'equal))
+           (blocker-relations
+            (fons-relations user
+                            (lambda (user)
+                              (mapcar (lambda (blocker)
+                                        (make-fons-hop :from user :to blocker))
+                                      (fons-user-blockers user)))))
+           ;; FIXME: ...
+           (blocked ...)
+           (sources-relations
+            (fons-relations user
+                            (lambda (user)
+                              (mapcar (lambda (source)
+                                        (make-fons-hop :from user :to source))
+                                      (map-elt (fons-user-sources user) topic)))))
+           )
       (should (= 2 (hash-table-count blockers)))
       ;; Note that Bob is a BLOCKER but not a SOURCE since his BLOCKER score is
       ;; above the threshold while his `fons-default-topic' score is not.

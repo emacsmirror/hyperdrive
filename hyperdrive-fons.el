@@ -10,6 +10,20 @@
 
 ;;;; Types
 
+;; NOTE: If we ever use these as arguments to interactive functions, we should
+;; ensure that they are not persisted in `command-history' by `savehist'; see
+;; similar workaround in Ement.el.
+
+(cl-defstruct fons-user
+  (id nil :documentation "Should uniquely identify the user."
+      :type string)
+  (blocked nil :type list
+           :documentation "List of user IDs that are blocked by this user.")
+  (blockers nil :type list
+            :documentation "List of user IDs that are blockers for this user.")
+  (sources nil :type list
+           :documentation "Map keyed by topic with each value being a list of user IDs."))
+
 (cl-defstruct fons-hop from to)
 (cl-defstruct fons-path hops)
 (cl-defstruct fons-relation from to paths
@@ -30,17 +44,6 @@
 
 ;;;; Functions
 
-(defun fons-hops (_from)
-  "Return hops from user FROM."
-  (error "Not yet implemented (bound in tests)"))
-
-(defun fons-sources
-    (root &key topic hops-fn (blocked (make-hash-table)) (max-hops 3))
-  "Return relations from ROOT about TOPIC.
-Excludes peers in BLOCKED.  Looks up to MAX-HOPS away from ROOT."
-  (let (())
-    (fons-relations root )))
-
 (cl-defun fons-relations
     (root &key hops-fn (blocked (make-hash-table)) (max-hops 3))
   "Return hash table of relations.
@@ -48,8 +51,8 @@ Excludes peers in BLOCKED.  Looks up to MAX-HOPS away from ROOT."
 HOPS-FN is the function that accepts the argument FROM and
 returns a list of `fons-hops' structs.
 
-Each table contains `fons-relation' structs from ROOT.  Recurses
-up to MAX-HOPS times.
+Each table contains `fons-relation' structs from ROOT (a
+`fons-user' struct).  Recurses up to MAX-HOPS times.
 
 BLOCKED may be a hash table keyed by TOs which should not be
 recursed into and whose relations will be flagged as blocked.
@@ -109,10 +112,6 @@ list of BLOCKERs, as in `fons-blocked'."
                    (setf (fons-relation-blocked-p relation) t)))
                relations)
       relations)))
-
-(defun fons-direct-blocks (_blocker)
-  "Return direct blocks by BLOCKER."
-  (error "Not yet implemented (bound in tests)"))
 
 (defun fons-blocked (blockers)
   "Return BLOCKED hash table based on BLOCKERS.

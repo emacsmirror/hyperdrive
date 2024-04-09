@@ -254,7 +254,7 @@ We could implement the Appleseed algo in Elisp:
                         "PUBLIC_KEY1",
                         "PUBLIC_KEY2"
                     ],
-                    "topics": {
+                    "sources": {
                         "_default": [
                             "PUBLIC_KEY1",
                             "PUBLIC_KEY2"
