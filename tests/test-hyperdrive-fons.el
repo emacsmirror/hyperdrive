@@ -46,12 +46,13 @@
                   test-hyperdrive-fons-default-blockers-fn))
      (funcall (or ,blocked-fn
                   test-hyperdrive-fons-default-blocked-fn))
-     (cl-letf ((test-fons-hops-fn
-                (lambda (peer-name topic)
-                  (map-elt (gethash peer-name test-hyperdrive-fons-hops) topic)))
-               ((symbol-function 'fons-direct-blocks)
-                (lambda (blocker)
-                  (gethash blocker test-hyperdrive-fons-blocked))))
+     (cl-letf* (
+                (test-fons-hops-fn
+                 (lambda (peer-name topic)
+                   (map-elt (gethash peer-name test-hyperdrive-fons-hops) topic)))
+                ((symbol-function 'fons-direct-blocks)
+                 (lambda (blocker)
+                   (gethash blocker test-hyperdrive-fons-blocked))))
        ,@body)))
 
 ;;;; Tests

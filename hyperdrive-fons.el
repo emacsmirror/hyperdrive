@@ -34,17 +34,22 @@
   "Return hops from user FROM."
   (error "Not yet implemented (bound in tests)"))
 
+(defun fons-sources
+    (root &key topic hops-fn (blocked (make-hash-table)) (max-hops 3))
+  "Return relations from ROOT about TOPIC.
+Excludes peers in BLOCKED.  Looks up to MAX-HOPS away from ROOT."
+  (let (())
+    (fons-relations root )))
+
 (cl-defun fons-relations
-    (root &key hops-fn (topic fons-default-topic) (blocked (make-hash-table))
-          (max-hops 3))
+    (root &key hops-fn (blocked (make-hash-table)) (max-hops 3))
   "Return hash table of relations.
 
-HOPS-FN is the function that accepts two arguments, FROM and
-TOPIC (defaulting to `fons-default-topic'), and returns a list of
-`fons-hops' structs.
+HOPS-FN is the function that accepts the argument FROM and
+returns a list of `fons-hops' structs.
 
-Each table contains `fons-relation' structs from ROOT about
-TOPIC.  Recurses up to MAX-HOPS times.
+Each table contains `fons-relation' structs from ROOT.  Recurses
+up to MAX-HOPS times.
 
 BLOCKED may be a hash table keyed by TOs which should not be
 recursed into and whose relations will be flagged as blocked.
@@ -56,7 +61,7 @@ list of BLOCKERs, as in `fons-blocked'."
     (error "BLOCKED must not contain ROOT"))
   (let ((relations (make-hash-table :test 'equal)))
     (cl-labels ((add-relations-from (from &optional paths-to-from)
-                  (dolist (hop (funcall hops-fn from topic))
+                  (dolist (hop (funcall hops-fn from))
                     (when-let ((to-relation
                                 (and (not (equal root (fons-hop-to hop)))
                                      (ensure-relation (fons-hop-to hop))))
