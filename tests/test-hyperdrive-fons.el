@@ -23,13 +23,20 @@
 (cl-defmacro fons-test ((&key (users test-hyperdrive-fons-users)) &rest body)
   (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
   `(progn
-     (cl-letf* ((test-fons-hops-fn
-                 (lambda (from)
+     (cl-letf* (;; (test-fons-blockers-fn
+                ;;  (lambda (topic from)
+                ;;    (mapcar (lambda (to)
+                ;;              (make-fons-hop :from from :to to))
+                ;;            (map-elt (fons-user-blocked
+                ;;                      (cl-find from ,users :key #'fons-user-id :test #'equal))
+                ;;                     topic))))
+                (test-fons-hops-fn
+                 (lambda (topic from)
                    (mapcar (lambda (to)
                              (make-fons-hop :from from :to to))
                            (map-elt (fons-user-sources
                                      (cl-find from ,users :key #'fons-user-id :test #'equal))
-                                    "foo"))))
+                                    topic))))
                 ((symbol-function 'fons-direct-blocks)
                  (lambda (blocker)
                    (gethash blocker test-hyperdrive-fons-blocked))))
@@ -75,13 +82,13 @@
     (let* ((topic "foo")
            (user (cl-find "alice" test-hyperdrive-fons-users :key #'id :test #'equal))
            (blocker-relations
-            (fons-relations user
+            (fons-relations user :hops-fn test-fons-hops-fn
                             (lambda (user)
                               (mapcar (lambda (blocker)
                                         (make-fons-hop :from user :to blocker))
                                       (fons-user-blockers user)))))
-           ;; FIXME: ...
-           (blocked ...)
+           ;; FIXME: blocked.
+           (blocked )
            (sources-relations
             (fons-relations user
                             (lambda (user)
@@ -192,15 +199,21 @@
   "Not a test.  Opens fons-view buffer."
   (skip-unless nil)
   (fons-test
-    (:users (list (make-fons-user :id "alice"
+    (:users (list (make-fons-user :id "alice" :blockers '("bob")
                                   :sources '(("foo" . ("bob" "eve"))))
                   (make-fons-user :id "bob"
-                                  :sources '(("foo" . ("carol"))))
+                                  :sources '(("foo" . ("carol")))
+                                  ;; TODO: Implement blockers/blocked.
+                                  :blocked '("mallory" "darth"))
                   (make-fons-user :id "carol"
-                                  :sources '(("foo" . ("bob" "doug"))))
+                                  :sources '(("foo" . ("bob" "doug" "mallory"))))
                   (make-fons-user :id "eve"
-                                  :sources '(("foo" . ("carol"))))))
-    (let* ((relations (fons-relations "alice" :hops-fn test-fons-hops-fn)))
+                                  :sources '(("foo" . ("carol"))))
+                  (make-fons-user :id "mallory")))
+    (let* ((blocked )
+           (relations (fons-relations "alice"
+                                      :hops-fn (apply-partially test-fons-hops-fn "foo")
+                                      )))
       (hyperdrive-fons-view relations "alice" :layout "dot"
                             ;; :debug t
                             ))))
