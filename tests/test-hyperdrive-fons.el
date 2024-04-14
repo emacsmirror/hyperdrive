@@ -9,27 +9,30 @@
 (require 'hyperdrive-fons-view)
 
 (defvar test-hyperdrive-fons-users
-  (list (make-fons-user :id "alice" :blockers '("bob")
-                        :sources '(("foo" . ("bob" "carol"))))
-        (make-fons-user :id "bob" :blocked '("mallory" "darth")
-                        :blockers '("carol"))
-        (make-fons-user :id "carol" :blocked '("mallory")
-                        :sources '(("foo" . ("david" "eve"))))
-        (make-fons-user :id "david" :sources '(("foo" . ("eve"))))
-        (make-fons-user :id "eve" :sources '(("foo" . ("mallory"))))
-        (make-fons-user :id "mallory")))
+  ;; NOTE: This variable's value is a form to be used in the macro.
+  '(list (make-fons-user :id "alice" :blockers '("bob")
+                         :sources '(("foo" . ("bob" "carol"))))
+         (make-fons-user :id "bob" :blocked '("mallory" "darth")
+                         :blockers '("carol"))
+         (make-fons-user :id "carol" :blocked '("mallory")
+                         :sources '(("foo" . ("david" "eve"))))
+         (make-fons-user :id "david" :sources '(("foo" . ("eve"))))
+         (make-fons-user :id "eve" :sources '(("foo" . ("mallory"))))
+         (make-fons-user :id "mallory")))
 
-(cl-defmacro fons-test (() &rest body)
+(cl-defmacro fons-test ((&key (users test-hyperdrive-fons-users)) &rest body)
   (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
   `(progn
-     (cl-letf* (
-                (test-fons-hops-fn
-                 (lambda (peer-name topic)
-                   (map-elt (gethash peer-name test-hyperdrive-fons-hops) topic)))
+     (cl-letf* ((test-fons-hops-fn
+                 (lambda (from)
+                   (mapcar (lambda (to)
+                             (make-fons-hop :from from :to to))
+                           (map-elt (fons-user-sources
+                                     (cl-find from ,users :key #'fons-user-id :test #'equal))
+                                    "foo"))))
                 ((symbol-function 'fons-direct-blocks)
                  (lambda (blocker)
                    (gethash blocker test-hyperdrive-fons-blocked))))
-       (let* (()))
        ,@body)))
 
 ;;;; Tests
@@ -188,14 +191,15 @@
 (ert-deftest fons-relations-view ()
   "Not a test.  Opens fons-view buffer."
   (skip-unless nil)
-  (fons-test ((lambda ()
-                (fons-test-add-hop "alice" "bob" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "alice" "eve" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "eve" "carol" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "bob" "carol" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "carol" "bob" test-hyperdrive-fons-hops)
-                (fons-test-add-hop "carol" "doug" test-hyperdrive-fons-hops)
-                ))
+  (fons-test
+    (:users (list (make-fons-user :id "alice"
+                                  :sources '(("foo" . ("bob" "eve"))))
+                  (make-fons-user :id "bob"
+                                  :sources '(("foo" . ("carol"))))
+                  (make-fons-user :id "carol"
+                                  :sources '(("foo" . ("bob" "doug"))))
+                  (make-fons-user :id "eve"
+                                  :sources '(("foo" . ("carol"))))))
     (let* ((relations (fons-relations "alice" :hops-fn test-fons-hops-fn)))
       (hyperdrive-fons-view relations "alice" :layout "dot"
                             ;; :debug t
