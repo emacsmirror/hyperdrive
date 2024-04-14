@@ -114,6 +114,18 @@ list of BLOCKERs, as in `fons-blocked'."
                relations)
       relations)))
 
+(cl-defun fons-blocked-from-p (&key from-id target-id users)
+  "Return non-nil if TARGET-ID is blocked from FROM-ID's
+perspective.  USERS is a list of `fons-user' structs."
+  (let ((from-user (cl-find from-id users :key #'fons-user-id :test #'equal)))
+    (or (member target-id (fons-user-blocked from-user))
+        (cl-loop for blocker in (fons-user-blockers )
+                 thereis (fons-blocked-from-p
+                          :from blocker :target target-id :users users))))
+  )
+
+
+
 (defun fons-blocked (blockers)
   "Return BLOCKED hash table based on BLOCKERS.
 BLOCKERS may be a hash table, keyed by BLOCKER identifier.
