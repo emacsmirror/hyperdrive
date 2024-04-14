@@ -32,9 +32,6 @@
 
 ;;;; Variables
 
-(defvar fons-blocker-topic "_blocker"
-  "Special topic name used for BLOCKER relations.")
-
 (defvar fons-default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
 
