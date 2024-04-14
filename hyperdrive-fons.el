@@ -64,6 +64,7 @@ list of BLOCKERs, as in `fons-blocked'."
     (error "BLOCKED must not contain ROOT"))
   (let ((relations (make-hash-table :test 'equal)))
     (cl-labels ((add-relations-from (from &optional paths-to-from)
+                  ;; TODO: Consider returning a list of TOs instead of hops.
                   (dolist (hop (funcall hops-fn from))
                     (when-let ((to-relation
                                 (and (not (equal root (fons-hop-to hop)))
