@@ -21,25 +21,26 @@
          (make-fons-user :id "mallory")))
 
 (cl-defmacro fons-test ((&key (users test-hyperdrive-fons-users)) &rest body)
+  "Within BODY, `users' is bound to the value of the USERS form."
   (declare (indent defun) (debug (([&optional lambda-expr]) def-body)))
-  `(progn
-     (cl-letf* (;; (test-fons-blockers-fn
-                ;;  (lambda (topic from)
-                ;;    (mapcar (lambda (to)
-                ;;              (make-fons-hop :from from :to to))
-                ;;            (map-elt (fons-user-blocked
-                ;;                      (cl-find from ,users :key #'fons-user-id :test #'equal))
-                ;;                     topic))))
-                (test-fons-hops-fn
-                 (lambda (topic from)
-                   (mapcar (lambda (to)
-                             (make-fons-hop :from from :to to))
-                           (map-elt (fons-user-sources
-                                     (cl-find from ,users :key #'fons-user-id :test #'equal))
-                                    topic))))
-                ((symbol-function 'fons-direct-blocks)
-                 (lambda (blocker)
-                   (gethash blocker test-hyperdrive-fons-blocked))))
+  `(let ((users ,users))
+     (cl-letf*
+         ((test-fons-blockers-fn
+           (lambda (from)
+             (mapcar (lambda (to)
+                       (make-fons-hop :from from :to to))
+                     (fons-user-blockers
+                      (cl-find from users :key #'fons-user-id :test #'equal)))))
+          (test-fons-hops-fn
+           (lambda (topic from)
+             (mapcar (lambda (to)
+                       (make-fons-hop :from from :to to))
+                     (map-elt (fons-user-sources
+                               (cl-find from users :key #'fons-user-id :test #'equal))
+                              topic))))
+          (test-fons-blocked-fn
+           (lambda (blocker)
+             (gethash blocker test-hyperdrive-fons-blocked))))
        ,@body)))
 
 ;;;; Tests
@@ -80,21 +81,17 @@
 3. Get SOURCES from ROOT while excluding BLOCKED."
   (fons-test ()
     (let* ((topic "foo")
-           (user (cl-find "alice" test-hyperdrive-fons-users :key #'id :test #'equal))
+           (root (cl-find "alice" users :key #'fons-user-id :test #'equal))
            (blocker-relations
-            (fons-relations user :hops-fn test-fons-hops-fn
-                            (lambda (user)
-                              (mapcar (lambda (blocker)
-                                        (make-fons-hop :from user :to blocker))
-                                      (fons-user-blockers user)))))
+            (fons-relations root :hops-fn test-fons-blockers-fn))
            ;; FIXME: blocked.
-           (blocked )
+           (blocked-relations )
            (sources-relations
-            (fons-relations user
-                            (lambda (user)
+            (fons-relations root
+                            (lambda (root)
                               (mapcar (lambda (source)
-                                        (make-fons-hop :from user :to source))
-                                      (map-elt (fons-user-sources user) topic)))))
+                                        (make-fons-hop :from root :to source))
+                                      (map-elt (fons-user-sources root) topic)))))
            )
       (should (= 2 (hash-table-count blockers)))
       ;; Note that Bob is a BLOCKER but not a SOURCE since his BLOCKER score is
