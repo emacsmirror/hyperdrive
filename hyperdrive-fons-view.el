@@ -189,7 +189,7 @@ called and replaces the buffer content with the rendered output."
                                 (cl-loop for (key value) on pairs by #'cddr
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
-              (format-relation-label (to relation)
+              (format-relation-label (to _relation)
                 (insert
                  (format
                   "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\"];\n"
