@@ -281,8 +281,10 @@ before making the entry struct."
                       (or (gethash host h/hyperdrives)
                           (h/create :public-key host)))))
        (etc (and target
-                 `((target . ,(substring (url-unhex-string target)
-                                         (length "::"))))))
+                 `((target . ,(if (h/org-filename-p path)
+                                  (substring (url-unhex-string target)
+                                             (length "::"))
+                                (url-unhex-string target))))))
        (version (pcase path
                   ((rx "/$/version/" (let v (1+ num)) (let p (0+ anything)))
                    (setf path p)
@@ -980,7 +982,8 @@ Path and target fragment are URI-encoded."
                (target-part (and with-target
                                  target
                                  (concat "#"
-                                         (url-hexify-string "::")
+                                         (when (h/org-filename-p path)
+                                           (url-hexify-string "::"))
                                          (url-hexify-string target))))
                (path (and with-path
                           ;; TODO: Consider removing this argument if it's not needed.
