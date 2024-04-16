@@ -1,6 +1,6 @@
 ;;; hyperdrive-describe.el --- Display information about a hyperdrive  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023  USHIN, Inc.
+;; Copyright (C) 2023, 2024  USHIN, Inc.
 
 ;; Author: Joseph Turner <joseph@ushin.org>
 

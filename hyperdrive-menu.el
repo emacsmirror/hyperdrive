@@ -1,6 +1,6 @@
 ;;; hyperdrive.el --- P2P filesystem  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023 USHIN, Inc.
+;; Copyright (C) 2023, 2024 USHIN, Inc.
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Author: Joseph Turner <joseph@ushin.org>
