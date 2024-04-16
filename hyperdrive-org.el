@@ -227,10 +227,6 @@ Respects `hyperdrive-org-link-full-url' and `org-link-file-path-type'."
     ;; after `hyperdrive' is loaded so that `hyperdrive-mode' will be defined.
     (cl-pushnew #'hyperdrive-org--open-at-point org-open-at-point-functions)))
 
-(defun h/org-filename-p (path)
-  "Return non-nil when PATH is an Org file."
-  (string-suffix-p ".org" path))
-
 ;;;; Footer
 
 (provide 'hyperdrive-org)

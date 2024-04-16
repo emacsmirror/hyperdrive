@@ -1702,6 +1702,10 @@ Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
       path
     (concat "./" path)))
 
+(defun h/org-filename-p (path)
+  "Return non-nil when PATH is an Org file."
+  (string-suffix-p ".org" path))
+
 (provide 'hyperdrive-lib)
 
 ;; Local Variables:
