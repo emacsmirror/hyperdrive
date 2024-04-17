@@ -107,6 +107,8 @@ called and replaces the buffer content with the rendered output."
   :interactive nil
   ;; `pixel-scroll-precision-mode' makes <wheel-up>/<wheel-down> not scroll.
   (pixel-scroll-precision-mode -1)
+  ;; TODO: Consider effect of `fast-but-imprecise-scrolling'.
+
   ;; Required by `pixel-scroll-precision-mode' bug#66769 and bug#68196
   ;; TODO: In order to use `pixel-scroll-precision-mode':
   ;; (setq-local scroll-margin 0)
