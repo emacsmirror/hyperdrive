@@ -568,6 +568,9 @@ echo area when the request for the file is made."
                           (not (he/version entry)))
                      ;; Entry is a writable file: create a new buffer
                      ;; that will be saved to its path.
+
+                     ;; FIXME: Don't rely on buffer name to find existing
+                     ;; buffers visiting the same entry.
                      (if-let ((buffer
                                (get-buffer
                                 (h//format-entry entry h/buffer-name-format))))
