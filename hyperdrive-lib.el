@@ -1544,9 +1544,7 @@ Affected by option `hyperdrive-reuse-buffers', which see."
                        entry h/buffer-name-format))
          (buffer
           (or (and (eq 'any-version h/reuse-buffers)
-                   (cl-loop for buffer in (buffer-list)
-                            when (h//buffer-visiting-entry-p buffer entry)
-                            return buffer))
+                   (h//find-buffer-visiting entry))
               (get-buffer-create buffer-name))))
     (with-current-buffer buffer
       (rename-buffer buffer-name)
@@ -1556,16 +1554,13 @@ Affected by option `hyperdrive-reuse-buffers', which see."
       (setq-local h/current-entry entry)
       (current-buffer))))
 
-(defun h//buffer-visiting-entry-p (buffer entry)
-  "Return non-nil when BUFFER is visiting ENTRY."
-  (and (buffer-local-value 'h/current-entry buffer)
-       (he/equal-p
-        entry (buffer-local-value 'h/current-entry buffer))))
-
-(defun h//buffer-for-entry (entry)
-  "Return a predicate to match buffer against ENTRY."
-  ;; TODO: This function is a workaround for bug#65797
-  (lambda (buffer) (h//buffer-visiting-entry-p buffer entry)))
+(defun h//find-buffer-visiting (entry)
+  "Return a buffer visiting ENTRY, or nil if none exist."
+  (match-buffers
+   (lambda (buffer)
+     (and-let* ((local-entry
+                 (buffer-local-value 'hyperdrive-current-entry buffer)))
+       (he/equal-p entry local-entry)))))
 
 (defun h//format-entry (entry &optional format formats)
   "Return ENTRY formatted according to FORMAT.

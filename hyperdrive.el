@@ -435,18 +435,16 @@ use, see `hyperdrive-write'."
     (unless (y-or-n-p
 	     (format "File %s exists; overwrite?" (h//format-entry entry)))
       (h/user-error "Canceled"))
-    (when-let ((buffers (match-buffers (h//buffer-for-entry entry))))
+    ;; TODO: In BUFFERS, when user attempts to modify the buffer,
+    ;; offer warning like "FILE has been modified in hyperdrive; are
+    ;; you sure you want to edit this buffer?"
+    ;; TODO: Replace `match-buffers' above with `cl-find-if' if we don't
+    ;; end up adding a buffer-local variable to each buffer to
+    ;; indicate that the file in the hyperdrive has been modified.
+    (when (h//find-buffer-visiting entry)
       (unless (y-or-n-p
 	       (format "A buffer is visiting %s; proceed?" (h//format-entry entry)))
-        (h/user-error "Aborted"))
-      ;; TODO: In BUFFERS, when user attempts to modify the buffer,
-      ;; offer warning like "FILE has been modified in hyperdrive; are
-      ;; you sure you want to edit this buffer?"
-      ;; TODO: Replace `match-buffers' above with `cl-find-if' if we don't
-      ;; end up adding a buffer-local variable to each buffer to
-      ;; indicate that the file in the hyperdrive has been modified.
-      (ignore buffers)
-      ))
+        (h/user-error "Aborted"))))
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
               (url (he/url entry))
               (buffer (current-buffer)))
