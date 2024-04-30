@@ -1556,11 +1556,12 @@ Affected by option `hyperdrive-reuse-buffers', which see."
 
 (defun h//find-buffer-visiting (entry)
   "Return a buffer visiting ENTRY, or nil if none exist."
-  (match-buffers
-   (lambda (buffer)
-     (and-let* ((local-entry
-                 (buffer-local-value 'hyperdrive-current-entry buffer)))
-       (he/equal-p entry local-entry)))))
+  ;; If `match-buffers' returns more than one buffer, we ignore the others.
+  (car (match-buffers
+        (lambda (buffer)
+          (and-let* ((local-entry
+                      (buffer-local-value 'hyperdrive-current-entry buffer)))
+            (he/equal-p entry local-entry))))))
 
 (defun h//format-entry (entry &optional format formats)
   "Return ENTRY formatted according to FORMAT.
