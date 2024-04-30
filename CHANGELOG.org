@@ -9,6 +9,8 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 ** Change
 
 - Improved defcustom types
+- Better error message when ~hyper-gateway~ is not installed.  Thanks to
+  ~magnum~ on XMPP for reporting.
 
 ** Internal
 
