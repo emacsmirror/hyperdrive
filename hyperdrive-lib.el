@@ -909,7 +909,7 @@ HYPERDRIVE's public metadata file."
        (metadata (condition-case err
                      (h/api 'get (he/url entry)
                        :as (lambda ()
-                             (condition-case err
+                             (condition-case nil
                                  (json-read)
                                (json-error
                                 (h/message "Error parsing JSON metadata file: %s"
