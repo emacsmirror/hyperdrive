@@ -69,36 +69,40 @@ This function is intended to diff files, not directories."
                  :limit h/queue-limit
                  :finally
                  (lambda ()
-                   (unless (or old-response new-response)
-                     (h/error "Files non-existent"))
-                   (let ((old-buffer (generate-new-buffer
-                                      (h//format-entry
-                                       old-entry h/buffer-name-format)))
-                         (new-buffer (generate-new-buffer
-                                      (h//format-entry
-                                       new-entry h/buffer-name-format)))
-                         ;; TODO: Improve diff buffer name.
-                         (diff-buffer (get-buffer-create "*hyperdrive-diff*")))
-                     (when old-response
-                       (with-current-buffer old-buffer
-                         (insert (plz-response-body old-response))))
-                     (when new-response
-                       (with-current-buffer new-buffer
-                         (insert (plz-response-body new-response))))
+                   (let (old-buffer new-buffer diff-buffer)
                      (unwind-protect
-                         (condition-case err
-                             (progn
-                               (diff-no-select old-buffer
-                                               new-buffer nil t diff-buffer)
-                               (with-current-buffer diff-buffer
-                                 (setf h/diff-entries (cons old-entry new-entry))
-                                 (h/diff-mode)
-                                 (when then
-                                   (funcall then))))
-                           (error (kill-buffer diff-buffer)
-                                  (signal (car err) (cdr err))))
-                       (kill-buffer old-buffer)
-                       (kill-buffer new-buffer)))))))
+                         (progn
+                           (unless (or old-response new-response)
+                             (h/error "Files non-existent"))
+                           (setf old-buffer (generate-new-buffer
+                                             (h//format-entry
+                                              old-entry h/buffer-name-format))
+                                 new-buffer (generate-new-buffer
+                                             (h//format-entry
+                                              new-entry h/buffer-name-format))
+                                 ;; TODO: Improve diff buffer name.
+                                 diff-buffer (get-buffer-create "*hyperdrive-diff*"))
+                           (when old-response
+                             (with-current-buffer old-buffer
+                               (insert (plz-response-body old-response))))
+                           (when new-response
+                             (with-current-buffer new-buffer
+                               (insert (plz-response-body new-response))))
+                           (condition-case err
+                               (progn
+                                 (diff-no-select old-buffer
+                                                 new-buffer nil t diff-buffer)
+                                 (with-current-buffer diff-buffer
+                                   (setf h/diff-entries (cons old-entry new-entry))
+                                   (h/diff-mode)
+                                   (when then
+                                     (funcall then))))
+                             (error (kill-buffer diff-buffer)
+                                    (signal (car err) (cdr err)))))
+                       (when (buffer-live-p old-buffer)
+                         (kill-buffer old-buffer))
+                       (when (buffer-live-p new-buffer)
+                         (kill-buffer new-buffer))))))))
     (h/api 'get (he/url old-entry)
       :queue queue :as 'response :else #'ignore
       :then (lambda (response)
