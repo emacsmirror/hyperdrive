@@ -1469,11 +1469,16 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
 `subprocess'."
   (when (h//gateway-running-p)
     (user-error "Gateway already running"))
-  (setf h/gateway-process
-        (make-process :name "hyper-gateway"
-                      :buffer " *hyperdrive-start*"
-                      :command (split-string-and-unquote h/gateway-command)
-                      :connection-type 'pipe))
+  (condition-case nil
+      (setf h/gateway-process
+            (make-process :name "hyper-gateway"
+                          :buffer " *hyperdrive-start*"
+                          :command (split-string-and-unquote h/gateway-command)
+                          :connection-type 'pipe))
+    (file-missing
+     (info "(hyperdrive) hyper-gateway")
+     (user-error
+      "hyper-gateway program not found; Please see installation instructions")))
   (sleep-for 0.5)
   (unless (process-live-p h/gateway-process)
     (if (h/status)
