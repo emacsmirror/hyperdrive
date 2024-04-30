@@ -911,8 +911,7 @@ HYPERDRIVE's public metadata file."
                                  (json-read)
                                (json-error
                                 (h/message "Error parsing JSON metadata file: %s"
-                                           (he/url entry)))
-                               (_ (signal (car err) (cdr err)))))
+                                           (he/url entry)))))
                        :noquery t)
                    (plz-error
                     (pcase (plz-response-status (plz-error-response (caddr err)))
