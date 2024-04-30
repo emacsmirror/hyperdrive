@@ -1,6 +1,6 @@
 ;;; hyperdrive-org.el --- Org-related functionality  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023  USHIN, Inc.
+;; Copyright (C) 2023, 2024  USHIN, Inc.
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 
@@ -129,8 +129,13 @@ the logic for handling links of \"file\" type."
   "Return a hyperdrive entry for the Org link at point."
   ;; This function is not in the code path for full URLs or links that
   ;; are only search options.
-  (let* ((context (org-element-lineage (org-element-context) '(link) t))
-         (element-type (org-element-type context))
+  (h/org--element-entry
+   (org-element-lineage (org-element-context) '(link) t)))
+
+(defun h/org--element-entry (context)
+  "Return the hyperdrive entry for the Org CONTEXT.
+If CONTEXT does not correspond to a hyperdrive entry, return nil."
+  (let* ((element-type (org-element-type context))
          (link-type (org-element-property :type context))
          (raw-link-type (org-element-property :raw-link context)))
     (and (eq element-type 'link)

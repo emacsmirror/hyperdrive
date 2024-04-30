@@ -12,9 +12,14 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Better error message when ~hyper-gateway~ is not installed.  Thanks to
   ~magnum~ on XMPP for reporting.
 
+** Fixed
+
+- Fixed link targets/fragments for non-Org documents, like HTML.
+
 ** Internal
 
 - Bumped package dependencies
+- Refactor to accommodate [[https://ushin.org/hyperdrive/hyperdrive-manual.html#hyperdrive-org-transclusion][hyperdrive-org-transclusion]]
 
 * 0.3 [2023-12-02 Sat]
 

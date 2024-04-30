@@ -449,8 +449,9 @@ at point by pressing ~w~ (see [[*Directory view]]).
 #+vindex: org-link-file-path-type
 
 If the current file is an org-mode file, ~org-store-link~ will store a
-link to the hyperdrive file, and if point is inside a heading, its
-~CUSTOM_ID~, ~ID~, or heading text will be appended to the stored URL.
+link to the hyperdrive file.  If point is inside a heading, a
+URL-encoded search option containing its ~CUSTOM_ID~, ~ID~, or heading
+text will be appended as the stored URL's link fragment.
 
 Relative links are supported; within ~hyper://PUBLIC-KEY/foo.org~, links
 to ~bar.org~, ~./bar.org~, and ~/bar.org~ will all point to
