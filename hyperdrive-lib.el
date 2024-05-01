@@ -298,10 +298,6 @@ before making the entry struct."
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
-(defun he/latest (entry)
-  "Return ENTRY at its hyperdrive's latest version, or nil."
-  (he/at nil entry))
-
 (defun h//entry-version-range-key (entry)
   "Return URI-encoded URL for ENTRY without protocol, version, target, or face.
 Intended to be used as hash table key in `hyperdrive-version-ranges'."
