@@ -218,6 +218,20 @@ What hyperdrive does:
 | Already exists        | write-buffer | Prompt to overwrite         |                   |
 | Already exists        | save-buffer  | Overwrite without prompting |                   |
 
+** hyperdrive-write-buffer matrix
+
+| h/reuse-buffers | current buf  | context             | expected result                                             | works? |
+|-----------------+--------------+---------------------+-------------------------------------------------------------+--------|
+| any-version     | latest entry |                     | Buf not renamed, only one buf at entry                      |        |
+| any-version     | prev entry   |                     | Buf renamed, only one buf at entry                          |        |
+| any-version     | other        | No buf at latest    | Buf renamed, only one buf at entry                          |        |
+| any-version     | other        | Other buf at latest | Other buf killed, buf renamed, only one buf at entry        |        |
+| same-version    | latest entry |                     | Buf not renamed, only one buf at latest entry               |        |
+| same-version    | prev entry   | No buf at latest    | Buf renamed, only one buf at _latest_ entry                   |        |
+| same-version    | prev entry   | Other buf at latest | Other buf killed, buf renamed, only one buf at _latest_ entry |        |
+| same-version    | other        | No buf at latest    | Buf renamed, only one buf at _latest_ entry                   |        |
+| same-version    | other        | Other buf at latest | Other buf killed, buf renamed, only one buf at _latest_ entry |        |
+
 * DONE Conference presentation
 :LOGBOOK:
 - State "DONE"       from "PROJECT"    [2023-04-04 Tue 13:33] \\
