@@ -15,6 +15,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 ** Fixed
 
 - Fixed link targets/fragments for non-Org documents, like HTML.
+- More reliably kill intermediate buffers when generating a diff.
 
 ** Internal
 
