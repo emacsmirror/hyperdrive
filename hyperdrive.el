@@ -431,23 +431,20 @@ use, see `hyperdrive-write'."
                                                       (he/path h/current-entry))
                                    :latest-version t)
                      current-prefix-arg))
-  (unless (or overwritep (not (he/at nil entry)))
-    (unless (y-or-n-p
-	     (format "File %s exists; overwrite?" (h//format-entry entry)))
-      (h/user-error "Canceled"))
-    ;; TODO: In BUFFERS, when user attempts to modify the buffer,
-    ;; offer warning like "FILE has been modified in hyperdrive; are
-    ;; you sure you want to edit this buffer?"
-    ;; TODO: Replace `match-buffers' above with `cl-find-if' if we don't
-    ;; end up adding a buffer-local variable to each buffer to
-    ;; indicate that the file in the hyperdrive has been modified.
-    (when (h//find-buffer-visiting entry)
-      (unless (y-or-n-p
-	       (format "A buffer is visiting %s; proceed?" (h//format-entry entry)))
-        (h/user-error "Aborted"))))
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
               (url (he/url entry))
-              (buffer (current-buffer)))
+              (buffer (current-buffer))
+              (existing-buffer (h//find-buffer-visiting
+                                entry (eq 'any-version h/reuse-buffers)))
+              (current-entry hyperdrive-current-entry))
+    (unless (or overwritep (not (he/at nil entry)))
+      (unless (y-or-n-p
+	       (format "File %s exists; overwrite?" (h//format-entry entry)))
+        (h/user-error "Canceled"))
+      (when (buffer-live-p existing-buffer)
+        (unless (y-or-n-p (format "A buffer is visiting %s; proceed?"
+                                  (h//format-entry entry)))
+          (h/user-error "Aborted"))))
     (h/write entry
       :body (without-restriction
               (buffer-substring-no-properties (point-min) (point-max)))
@@ -475,9 +472,12 @@ use, see `hyperdrive-write'."
                   (setf (he/type entry) "text/plain; charset=utf-8")
                   (setq-local h/current-entry entry)
                   (setf buffer-file-name nil)
-                  (rename-buffer
-                   (h//format-entry entry h/buffer-name-format)
-                   'unique)
+                  (unless (and current-entry (he/equal-p entry current-entry))
+                    ;; If the current buffer is not already visiting the latest
+                    ;; version of ENTRY, kill that buffer and rename this one.
+                    (when (buffer-live-p existing-buffer)
+                      (kill-buffer existing-buffer))
+                    (rename-buffer (h//generate-new-buffer-name entry)))
                   (set-buffer-modified-p nil)
                   ;; Update the visited file modtime so undo commands
                   ;; correctly set the buffer-modified flag.  We just
