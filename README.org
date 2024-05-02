@@ -1,25 +1,27 @@
-#+title: hyperdrive.el - P2P filesystem in Emacs
+#+options: num:nil toc:nil author:nil html-postamble:nil
+
+* hyperdrive.el - P2P filesystem in Emacs
 
 [[https://docs.holepunch.to/building-blocks/hyperdrive][Hyperdrive]] is a P2P, real-time, local-first, versioned filesystem
 designed for easy peer-to-peer file sharing.  ~hyperdrive.el~ is an
 independent project built by [[https://ushin.org][USHIN]] which provides an Emacs interface
 for managing hyperdrives.
 
-* Installation
+** Installation
 
 See [[https://ushin.org/hyperdrive/hyperdrive-manual.html#Installation][the manual]] for installation instructions.
 
-* Manual
+** Manual
 
 For more information, please see the [[https://ushin.org/hyperdrive/hyperdrive-manual.html][manual]].  For recent changes, see
 the [[file:CHANGELOG.org][changelog]].
 
-* Bugs and Patches
+** Bugs and Patches
 
 Bugs can be submitted to the [[https://todo.sr.ht/~ushin/ushin][ushin issue tracker]]. Patches, comments or
 questions can be submitted to the [[https://lists.sr.ht/~ushin/ushin][ushin public inbox]].
 
-* Chat Room
+** Chat Room
 
 You're welcome to join our public XMPP chat room!
 
