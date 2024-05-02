@@ -11,7 +11,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - When visiting an old version of a hyperdrive file, press ~n~ and ~p~ to
   traverse the version history.  Press ~q~ to kill the current buffer.
 
-** Change
+** Changed
 
 - Improved defcustom types
 - Better error message when ~hyper-gateway~ is not installed.  Thanks to
