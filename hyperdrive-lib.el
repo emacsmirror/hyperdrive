@@ -1317,6 +1317,7 @@ If then, then call THEN with no arguments.  Default handler."
                   ('markdown-mode
                    ;; TODO: Handle markdown link
                    )))
+              (h/blob-mode (if version +1 -1))
               (when then
                 (funcall then)))))))
 

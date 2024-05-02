@@ -530,6 +530,16 @@ it to `hyperdrive-open'."
   "j"   #'h/up
   "C-j" #'h/up)
 
+(define-minor-mode hyperdrive-blob-mode
+  "Minor mode for visiting previous versions of hyperdrive files."
+  :global nil
+  :interactive nil
+  :group 'hyperdrive
+  :lighter " hyperdrive-blob"
+  :keymap '(("n" . h/open-next-version)
+            ("p" . h/open-previous-version)
+            ("q" . kill-current-buffer)))
+
 (defun h/open-previous-version (entry)
   "Open previous version of ENTRY."
   (interactive (list h/current-entry) h/mode)
