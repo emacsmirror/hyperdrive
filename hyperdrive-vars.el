@@ -136,15 +136,6 @@ through a shell)."
   "Render HTML hyperdrive files with EWW."
   :type 'boolean)
 
-(defcustom h/reuse-buffers 'any-version
-  "How to reuse buffers when showing entries.
-When \\+`any-version', try to reuse an existing buffer showing the
-same entry at any version.  When \\+`same-version', try to reuse
-an existing buffer at the same version, or make a new buffer."
-  :type '(choice
-          (const :tag "Use an existing buffer at any version" any-version)
-          (const :tag "Use an existing buffer at the same version" same-version)))
-
 ;;;;;; Entry formatting
 
 (defgroup hyperdrive-entry-format nil

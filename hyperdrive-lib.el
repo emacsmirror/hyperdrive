@@ -567,11 +567,7 @@ echo area when the request for the file is made."
                      ;; Entry is a writable file: create a new buffer
                      ;; that will be saved to its path.
 
-                     ;; FIXME: Don't rely on buffer name to find existing
-                     ;; buffers visiting the same entry.
-                     (if-let ((buffer
-                               (get-buffer
-                                (h//format-entry entry h/buffer-name-format))))
+                     (if-let ((buffer (h//find-buffer-visiting entry)))
                          ;; Buffer already exists: likely the user deleted the
                          ;; entry without killing the buffer.  Switch to the
                          ;; buffer and alert the user that the entry no longer
@@ -1534,31 +1530,44 @@ corresponding to URL if possible.
 
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
-both point to the same content.
-
-Affected by option `hyperdrive-reuse-buffers', which see."
-  (let* ((buffer-name (h//format-entry
-                       entry h/buffer-name-format))
+both point to the same content."
+  (let* ((existing-buffer (h//find-buffer-visiting entry))
          (buffer
-          (or (and (eq 'any-version h/reuse-buffers)
-                   (h//find-buffer-visiting entry))
-              (get-buffer-create buffer-name))))
+          (if (not existing-buffer)
+              ;; No existing buffer visiting entry: make new buffer.
+              (get-buffer-create (h//generate-new-buffer-name entry))
+            ;; Existing buffer visiting entry.
+            (unless (eq (he/version entry)
+                        (he/version
+                         (buffer-local-value 'hyperdrive-current-entry
+                                             existing-buffer)))
+              ;; Entry versions differ: rename buffer.
+              (with-current-buffer existing-buffer
+                (rename-buffer (h//generate-new-buffer-name entry))))
+            existing-buffer)))
     (with-current-buffer buffer
-      (rename-buffer buffer-name)
       ;; NOTE: We do not erase the buffer because, e.g. the directory
       ;; handler needs to record point before it erases the buffer.
       (h/mode)
       (setq-local h/current-entry entry)
       (current-buffer))))
 
-(defun h//find-buffer-visiting (entry)
-  "Return a buffer visiting ENTRY, or nil if none exist."
+(defun h//generate-new-buffer-name (entry)
+  "Return a new, unique name for a buffer visiting ENTRY."
+  ;; TODO: Use in calls to `h//get-buffer-create', et al.
+  (let ((buffer-name (h//format-entry entry h/buffer-name-format)))
+    (generate-new-buffer-name buffer-name)))
+
+(defun h//find-buffer-visiting (entry &optional any-version-p)
+  "Return a buffer visiting ENTRY, or nil if none exist.
+If ANY-VERSION-P, return the first buffer showing ENTRY at any
+version."
   ;; If `match-buffers' returns more than one buffer, we ignore the others.
   (car (match-buffers
         (lambda (buffer)
           (and-let* ((local-entry
                       (buffer-local-value 'hyperdrive-current-entry buffer)))
-            (he/equal-p entry local-entry))))))
+            (he/equal-p entry local-entry any-version-p))))))
 
 (defun h//format-entry (entry &optional format formats)
   "Return ENTRY formatted according to FORMAT.
@@ -1666,16 +1675,17 @@ When BUFFER is nil, act on current buffer."
       (delete-all-overlays)
       (set-text-properties (point-min) (point-max) nil))))
 
-(defun he/equal-p (a b)
+(defun he/equal-p (a b &optional any-version-p)
   "Return non-nil if hyperdrive entries A and B are equal.
-Compares only public key, version, and path."
+Compares only public key, version, and path.  If ANY-VERSION-P,
+treat A and B as the same entry regardless of version."
   (pcase-let (((cl-struct hyperdrive-entry (path a-path) (version a-version)
                           (hyperdrive (cl-struct hyperdrive (public-key a-key))))
                a)
               ((cl-struct hyperdrive-entry (path b-path) (version b-version)
                           (hyperdrive (cl-struct hyperdrive (public-key b-key))))
                b))
-    (and (eq a-version b-version)
+    (and (or any-version-p (eq a-version b-version))
          (equal a-path b-path)
          (equal a-key b-key))))
 
