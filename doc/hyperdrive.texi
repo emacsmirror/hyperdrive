@@ -733,6 +733,23 @@ number.  To open the file or directory at its hyperdrive's latest
 version, leave the version blank.
 @end deffn
 
+The following keybindings are available when visiting an old version
+of a hyperdrive file:
+
+@table @asis
+@item @kbd{n} (@code{hyperdrive-open-next-version})
+@itemx @kbd{p} (@code{hyperdrive-open-previous-version})
+@kindex n
+@kindex p
+@findex hyperdrive-open-next-version
+@findex hyperdrive-open-previous-version
+Traverse version history for the current file.
+
+@item @kbd{q} (@code{kill-current-buffer})
+@kindex q
+@findex kill-current-buffer
+@end table
+
 @menu
 * History buffer::
 @end menu

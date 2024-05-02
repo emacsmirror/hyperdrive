@@ -512,6 +512,17 @@ changes made to hyperdrive files (see [[*Versioning]]).
   number.  To open the file or directory at its hyperdrive's latest
   version, leave the version blank.
 
+The following keybindings are available when visiting an old version
+of a hyperdrive file:
+
+#+attr_texinfo: :compact t
+- Key: n (hyperdrive-open-next-version) ::
+- Key: p (hyperdrive-open-previous-version) ::
+
+  Traverse version history for the current file.
+
+- Key: q (kill-current-buffer) ::
+
 *** History buffer
 
 The history buffer displays the entire known history of a hyperdrive
