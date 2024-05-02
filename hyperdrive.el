@@ -434,14 +434,14 @@ use, see `hyperdrive-write'."
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
               (url (he/url entry))
               (buffer (current-buffer))
-              (existing-buffer (h//find-buffer-visiting
-                                entry (eq 'any-version h/reuse-buffers)))
+              (buffer-visiting-entry (h//find-buffer-visiting
+                                      entry (eq 'any-version h/reuse-buffers)))
               (current-entry hyperdrive-current-entry))
     (unless (or overwritep (not (he/at nil entry)))
       (unless (y-or-n-p
 	       (format "File %s exists; overwrite?" (h//format-entry entry)))
         (h/user-error "Canceled"))
-      (when (buffer-live-p existing-buffer)
+      (when (buffer-live-p buffer-visiting-entry)
         (unless (y-or-n-p (format "A buffer is visiting %s; proceed?"
                                   (h//format-entry entry)))
           (h/user-error "Aborted"))))
@@ -475,8 +475,8 @@ use, see `hyperdrive-write'."
                   (unless (and current-entry (he/equal-p entry current-entry))
                     ;; If the current buffer is not already visiting the latest
                     ;; version of ENTRY, kill that buffer and rename this one.
-                    (when (buffer-live-p existing-buffer)
-                      (kill-buffer existing-buffer))
+                    (when (buffer-live-p buffer-visiting-entry)
+                      (kill-buffer buffer-visiting-entry))
                     (rename-buffer (h//generate-new-buffer-name entry)))
                   (set-buffer-modified-p nil)
                   ;; Update the visited file modtime so undo commands
