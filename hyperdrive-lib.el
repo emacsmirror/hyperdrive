@@ -1530,11 +1530,8 @@ corresponding to URL if possible.
 
 In other words, this avoids the situation where a buffer called
 \"foo:/\" and another called \"hyper://<public key for foo>/\"
-both point to the same content.
-
-Affected by option `hyperdrive-reuse-buffers', which see."
-  (let* ((existing-buffer
-          (h//find-buffer-visiting entry (eq 'any-version h/reuse-buffers)))
+both point to the same content."
+  (let* ((existing-buffer (h//find-buffer-visiting entry))
          (buffer
           (if (not existing-buffer)
               ;; No existing buffer visiting entry: make new buffer.

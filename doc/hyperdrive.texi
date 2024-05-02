@@ -1475,14 +1475,6 @@ Default maximum number of requests when filling version history.
 Defaults to @code{100}.
 @end defopt
 
-@defopt hyperdrive-reuse-buffers
-How to reuse buffers when showing entries.  By default
-(@code{any-version}), opening a hyperdrive file or directory reuses a
-buffer that is already visiting it, regardless of version.  To have
-separate buffers for each version of a file/directory, use
-@code{same-version}.
-@end defopt
-
 @defopt hyperdrive-preferred-formats
 List of metadata types used to display hyperdrives.  Hyperdrives are
 displayed using the first available metadata type.  See @ref{Naming}
