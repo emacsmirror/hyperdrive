@@ -434,8 +434,7 @@ use, see `hyperdrive-write'."
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
               (url (he/url entry))
               (buffer (current-buffer))
-              (buffer-visiting-entry (h//find-buffer-visiting
-                                      entry (eq 'any-version h/reuse-buffers)))
+              (buffer-visiting-entry (h//find-buffer-visiting entry))
               (current-entry hyperdrive-current-entry))
     (unless (or overwritep (not (he/at nil entry)))
       (unless (y-or-n-p
@@ -472,9 +471,7 @@ use, see `hyperdrive-write'."
                   (setf (he/type entry) "text/plain; charset=utf-8")
                   (setq-local h/current-entry entry)
                   (setf buffer-file-name nil)
-                  (unless (and current-entry (he/equal-p entry current-entry))
-                    ;; If the current buffer is not already visiting the latest
-                    ;; version of ENTRY, kill that buffer and rename this one.
+                  (unless (eq buffer buffer-visiting-entry)
                     (when (buffer-live-p buffer-visiting-entry)
                       (kill-buffer buffer-visiting-entry))
                     (rename-buffer (h//generate-new-buffer-name entry)))
