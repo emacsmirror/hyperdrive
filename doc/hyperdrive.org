@@ -50,72 +50,14 @@ network ([[https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-g
 
 ** hyperdrive.el
 
-The recommended options for installing ~hyperdrive.el~ are: NonGNU ELPA
-and MELPA.
-
-*** NonGNU ELPA
-
 ~hyperdrive.el~ can be installed from [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]] with ~M-x
 package-refresh-contents~ then ~M-x package-install RET hyperdrive~.
 
 After installing with NonGNU ELPA, you can later upgrade to a newer
 version of ~hyperdrive.el~ by running ~M-x package-refresh-contents~ then
-~M-x package-upgrade RET hyperdrive~.  On Emacs 28, If ~package-upgrade~ is not
-available as a command, display the list of packages with ~M-x
+~M-x package-upgrade RET hyperdrive~.  On Emacs 28, If ~package-upgrade~
+is not available as a command, display the list of packages with ~M-x
 list-packages~, select ~hyperdrive~, and click the ~Install~ button.
-
-*** MELPA
-
-~hyperdrive.el~ is also available on [[https://melpa.org/#/hyperdrive][MELPA]].  First add the MELPA
-repository...
-
-#+begin_src emacs-lisp
-  (with-eval-after-load 'package
-    (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/")))
-#+end_src
-
-...then follow the [[*NonGNU ELPA][NonGNU ELPA]] installation instructions.
-
-
-# TODO: Uncomment package-vc instructions when Emacs 29.2 is out
-
-# *** package-vc
-
-# /package-vc only works on Emacs 29.2 or later./
-
-# 1. Ensure you have ~git~, ~makeinfo~ (part of the ~texinfo~ package), and
-#    Emacs 29.2 or newer.
-
-# 2. Add the following lines to your ~init.el~ startup file:
-
-# #+begin_src emacs-lisp
-#   (unless (package-installed-p 'hyperdrive)
-#     ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
-#     (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-#     (package-vc-install 'hyperdrive))
-# #+end_src
-
-# Alternatively, if you have already cloned the ~hyperdrive.el~ repository,
-# you can use the following snippet to install from that repository:
-
-# #+begin_src emacs-lisp
-#   (unless (package-installed-p 'hyperdrive)
-#     (require 'package-vc)
-#     ;; In Emacs 30, `ispell-buffer-session-localwords' will be marked as safe by default.
-#     (put 'ispell-buffer-session-localwords 'safe-local-variable #'list-of-strings-p)
-#     ;; Change the path below to the location of your local hyperdrive.el repository.
-#     (package-vc-install-from-checkout "~/.local/src/hyperdrive.el" "hyperdrive"))
-# #+end_src
-
-# In your ~init.el~, type ~M-x eval-buffer RET~.
-
-# If all goes well, ~hyperdrive.el~ commands like ~M-x hyperdrive-menu~ are
-# now available and the documentation for ~hyperdrive.el~ is installed
-# (see [[*Quick documentation access]]).
-
-# After installing with ~package-vc~, you can later upgrade to a newer
-# version of ~hyperdrive.el~ by running ~M-x package-vc-upgrade RET
-# hyperdrive RET~.
 
 * Example configuration
 

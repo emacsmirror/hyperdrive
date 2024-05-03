@@ -72,11 +72,6 @@ Installation
 * hyper-gateway::
 * hyperdrive.el: hyperdriveel. 
 
-hyperdrive.el
-
-* NonGNU ELPA::
-* MELPA::
-
 Usage
 
 * Menu bar support::
@@ -220,38 +215,14 @@ network (@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyp
 @node hyperdriveel
 @section hyperdrive.el
 
-The recommended options for installing @code{hyperdrive.el} are: NonGNU ELPA
-and MELPA@.
-
-@menu
-* NonGNU ELPA::
-* MELPA::
-@end menu
-
-@node NonGNU ELPA
-@subsection NonGNU ELPA
-
 @code{hyperdrive.el} can be installed from @uref{https://elpa.nongnu.org/nongnu/hyperdrive.html, NonGNU ELPA} with @code{M-x
 package-refresh-contents} then @code{M-x package-install RET hyperdrive}.
 
 After installing with NonGNU ELPA, you can later upgrade to a newer
 version of @code{hyperdrive.el} by running @code{M-x package-refresh-contents} then
-@code{M-x package-upgrade RET hyperdrive}.  On Emacs 28, If @code{package-upgrade} is not
-available as a command, display the list of packages with @code{M-x
+@code{M-x package-upgrade RET hyperdrive}.  On Emacs 28, If @code{package-upgrade}
+is not available as a command, display the list of packages with @code{M-x
 list-packages}, select @code{hyperdrive}, and click the @code{Install} button.
-
-@node MELPA
-@subsection MELPA
-
-@code{hyperdrive.el} is also available on @uref{https://melpa.org/#/hyperdrive, MELPA}.  First add the MELPA
-repository@dots{}
-
-@lisp
-(with-eval-after-load 'package
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/")))
-@end lisp
-
-@dots{}then follow the @ref{NonGNU ELPA} installation instructions.
 
 @node Example configuration
 @chapter Example configuration
