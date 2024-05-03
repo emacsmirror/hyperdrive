@@ -91,6 +91,7 @@ Usage
 * Upload files from your filesystem::
 * Purge a hyperdrive::
 * Non-interactive use::
+* Org-transclusion integration::
 * Miscellaneous features::
 
 Open a hyperdrive
@@ -276,6 +277,7 @@ On the network it still may be there.
 * Upload files from your filesystem::
 * Purge a hyperdrive::
 * Non-interactive use::
+* Org-transclusion integration::
 * Miscellaneous features::
 @end menu
 
@@ -1040,6 +1042,30 @@ only those files in @code{~/blog/} which are smaller than 5MB:
                       (file-attribute-size
                        (file-attributes file)))))
 @end lisp
+
+@node Org-transclusion integration
+@section Org-transclusion integration
+
+The @uref{https://git.sr.ht/~ushin/hyperdrive-org-transclusion, hyperdrive-org-transclusion} package adds support for transcluding
+hyperdrive files and parts of hyperdrive files with @uref{https://nobiot.github.io/org-transclusion/, org-transclusion}.
+
+To use this feature, please install @code{hyperdrive-org-transclusion} with
+@code{M-x package-install RET hyperdrive-org-transclusion} and then add the
+following snippet to your configuration:
+
+@lisp
+(add-to-list 'org-transclusion-extensions 'hyperdrive-org-transclusion)
+(with-eval-after-load 'org-transclusion
+  (require 'hyperdrive-org-transclusion))
+@end lisp
+
+You can then run @code{M-x org-transclusion-add} on the following link to
+transclude the Org heading with the property @code{CUSTOM_ID: emacs} inside
+the @code{/software.org} file inside the USHIN hyperdrive:
+
+@example
+#+transclude: [[hyper://aaj45d88g4eenu76rpmwzjiabsof1w8u6fufq6oogyhjk1ubygxy/software.org#%3A%3A%23emacs]]
+@end example
 
 @node Miscellaneous features
 @section Miscellaneous features
