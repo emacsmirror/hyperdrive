@@ -753,8 +753,8 @@ To use this feature, please install ~hyperdrive-org-transclusion~ with
 following snippet to your configuration:
 
 #+begin_src emacs-lisp
-  (add-to-list 'org-transclusion-extensions 'hyperdrive-org-transclusion)
   (with-eval-after-load 'org-transclusion
+    (add-to-list 'org-transclusion-extensions 'hyperdrive-org-transclusion)
     (require 'hyperdrive-org-transclusion))
 #+end_src
 
