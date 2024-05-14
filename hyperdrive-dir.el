@@ -38,86 +38,56 @@
   "Show DIRECTORY-ENTRY.
 If THEN, call it in the directory buffer with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) directory-entry)
-               (url (he/url directory-entry))
-               ((cl-struct plz-response headers body)
-                ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
-                (h/api 'get url :as 'response :noquery t))
-               (entry-names (json-read-from-string body))
-               (entries (mapcar (lambda (entry-name)
-                                  (he/create
-                                   :hyperdrive hyperdrive
-                                   :path (concat path entry-name)
-                                   :version version))
-                                entry-names))
-               (parent-entry (h/parent directory-entry))
-               (header (progn
-                         ;; Fill metadata first to get the current nickname.
-                         ;; TODO: Consider filling metadata earlier, outside
-                         ;; of this function (e.g. so it will be available if
-                         ;; the user loads a non-directory file directly).
-                         (h/fill-metadata hyperdrive)
-                         (h/dir-column-headers
-                          (h//format-entry directory-entry))))
-               (num-entries (length entries)) (num-filled 0)
-	       ;; (debug-start-time (current-time))
-               (metadata-queue) (ewoc) (prev-entry) (prev-point))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive path version) directory-entry)
+       (url (he/url directory-entry))
+       (header (progn
+                 ;; Fill metadata first to get the current nickname.
+                 ;; TODO: Consider filling metadata earlier, outside
+                 ;; of this function (e.g.  so it will be available if
+                 ;; the user loads a non-directory file directly).
+                 (h/fill-metadata hyperdrive)
+                 (h/dir-column-headers
+                  (h//format-entry directory-entry))))
+       (prev-entry) (prev-point))
+    (with-current-buffer (h//get-buffer-create directory-entry)
+      (h/dir-mode)
+      (with-silent-modifications
+        (unless h/ewoc
+          (setf h/ewoc (ewoc-create #'h/dir-pp)))
+        (setf prev-entry (h/dir--entry-at-point))
+        (setf prev-point (point))
+        (ewoc-filter h/ewoc #'ignore)
+        (ewoc-set-hf h/ewoc header "Loading...")))
     (cl-labels ((goto-entry (entry ewoc)
                   (when-let ((node (h/ewoc-find-node ewoc entry
                                      :predicate #'he/equal-p)))
-                    (goto-char (ewoc-location node))))
-                (update-footer (num-filled num-of)
-                  (when (zerop (mod num-filled 5))
-                    (ewoc-set-hf ewoc header
-                                 (propertize
-                                  (format "Loading (%s/%s)..." num-filled num-of)
-				  'face 'font-lock-comment-face)))))
-      (setf directory-entry (h//fill directory-entry headers))
-      (when parent-entry
-        (setf (alist-get 'display-name (he/etc parent-entry))  "../")
-        (push parent-entry entries))
-      (with-current-buffer (h//get-buffer-create directory-entry)
-        (h/dir-mode)
-        (with-silent-modifications
-          (setf ewoc (or h/ewoc ; Bind this for lambdas.
-                         (setf h/ewoc (ewoc-create #'h/dir-pp))))
-          (setf metadata-queue
-                (make-plz-queue
-		 ;; Experimentation seems to show that a
-		 ;; queue size of about 20 performs best.
-                 :limit h/queue-limit
-                 :finally (lambda ()
-                            (with-current-buffer (ewoc-buffer ewoc)
-                              (with-silent-modifications
-                                ;; `with-silent-modifications' increases performance,
-                                ;; but we still need `set-buffer-modified-p' below.
-                                (ewoc-set-hf ewoc header "")
-                                (setf entries (h/sort-entries entries))
-                                (dolist (entry entries)
-                                  (ewoc-enter-last ewoc entry))
-                                (or (when prev-entry
-                                      (goto-entry prev-entry ewoc))
-                                    (goto-char prev-point)))
-                              (set-buffer-modified-p nil))
-                            ;; TODO: Remove this and the commented out `debug-start-time'
-                            ;; binding when we're done experimenting.
-                            ;; (message "Elapsed: %s"
-                            ;;          (float-time (time-subtract
-                            ;;                       (current-time)
-                            ;;                       debug-start-time)))
-                            )))
-          (setf prev-entry (and-let* ((node (ewoc-locate h/ewoc)))
-                             (ewoc-data node)))
-          (setf prev-point (point))
-          (ewoc-filter h/ewoc #'ignore)
-          (update-footer num-filled num-entries)
-          (dolist (entry entries)
-            (h/fill entry :queue metadata-queue
-              :then (lambda (&rest _)
-                      (update-footer (cl-incf num-filled) num-entries))))
-          (plz-run metadata-queue)
-          (when then
-            (funcall then)))))))
+                    (goto-char (ewoc-location node)))))
+      (h/api 'get url :as 'response :noquery t
+        ;; Get "full" listing with metadata
+        :headers `(("Accept" . "application/json; metadata=full"))
+        :then (lambda (response)
+                (pcase-let* (((cl-struct plz-response headers body) response)
+                             (entries (h//fill-listing-entries
+                                       ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
+                                       (json-read-from-string body)
+                                       hyperdrive version))
+                             (parent-entry (h/parent directory-entry)))
+                  (setf directory-entry (h//fill directory-entry headers))
+                  (when parent-entry
+                    (setf (alist-get 'display-name (he/etc parent-entry)) "../")
+                    (push parent-entry entries))
+                  (with-current-buffer (h//get-buffer-create directory-entry)
+                    (with-silent-modifications
+                      (ewoc-set-hf h/ewoc header "")
+                      (setf entries (h/sort-entries entries))
+                      (dolist (entry entries)
+                        (ewoc-enter-last h/ewoc entry))
+                      (or (when prev-entry
+                            (goto-entry prev-entry h/ewoc))
+                          (goto-char prev-point)))
+                    (when then
+                      (funcall then)))))))))
 
 (defun h/dir-column-headers (prefix)
   "Return column headers as a string with PREFIX.

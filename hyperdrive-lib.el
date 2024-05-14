@@ -701,6 +701,28 @@ Returns filled ENTRY."
       (h/update-existent-version-range entry (string-to-number etag)))
     entry))
 
+(defun h//fill-listing-entries (listing hyperdrive version)
+  "Return entries list with metadata from LISTING.
+Accepts HYPERDRIVE and VERSION of parent entry as arguments.
+LISTING should be an alist based on the JSON retrieved in, e.g.,
+`hyperdrive-dir-handler'.  Fills existent version ranges for each
+entry as a side-effect."
+  (mapcar
+   (pcase-lambda ((map seq key value metadata))
+     (let* ((mtime (map-elt (map-elt value 'metadata) 'mtime))
+            (size (map-elt (map-elt value 'blob) 'byteLength))
+            (entry (he/create
+                    :hyperdrive hyperdrive :path key :version version)))
+       (when mtime ; mtime is milliseconds since epoch
+         (setf (he/mtime entry) (seconds-to-time (/ mtime 1000.0))))
+       (when size
+         (setf (he/size entry) size))
+       (when seq
+         ;; seq is the hyperdrive version *before* the entry was added/modified
+         (hyperdrive-update-existent-version-range entry (1+ seq)))
+       entry))
+   listing))
+
 (defun h/fill-latest-version (hyperdrive)
   "Synchronously fill the latest version slot in HYPERDRIVE.
 Returns the latest version number."
