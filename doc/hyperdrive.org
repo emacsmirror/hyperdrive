@@ -455,7 +455,7 @@ changes made to hyperdrive files (see [[*Versioning]]).
   version, leave the version blank.
 
 The following keybindings are available when visiting an old version
-of a hyperdrive file:
+of a hyperdrive file (~hyperdrive-blob-mode~):
 
 #+attr_texinfo: :compact t
 - Key: n (hyperdrive-open-next-version) ::

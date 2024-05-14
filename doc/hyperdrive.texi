@@ -707,7 +707,7 @@ version, leave the version blank.
 @end deffn
 
 The following keybindings are available when visiting an old version
-of a hyperdrive file:
+of a hyperdrive file (@code{hyperdrive-blob-mode}):
 
 @table @asis
 @item @kbd{n} (@code{hyperdrive-open-next-version})
