@@ -741,8 +741,8 @@ Returns the ranges cons cell for ENTRY."
                  ((map (:range-end old-range-end)) range)
                  ((cl-struct hyperdrive-entry hyperdrive version) entry)
                  (range-end (or version (h/latest-version hyperdrive))))
-      (unless (and old-range-end (> old-range-end range-end))
-        ;; If there already exists a longer existent range in
+      (unless (and old-range-end (>= old-range-end range-end))
+        ;; If there already exists a equally long or longer existent range in
         ;; `h/version-ranges', there's nothing to do.
         (setf (plist-get range :existsp) t)
         (setf (plist-get range :range-end) range-end)
