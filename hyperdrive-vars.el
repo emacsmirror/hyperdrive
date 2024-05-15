@@ -362,6 +362,13 @@ values are alists mapping version range starts to plists with
 
 ;;;;; Internals
 
+(defvar h/gateway-version-expected "3.7.0")
+
+(defvar h/gateway-version-correct-p nil
+  "Non-nil if the local gateway version has been verified correct in this session.
+May also be non-nil if the user has chosen to use whatever
+version is currently installed.")
+
 (defvar h/gateway-process nil
   "Hyper-gateway-ushin process.
 Only used when `hyperdrive-gateway-process-type' is `subprocess'.")
