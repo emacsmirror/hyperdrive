@@ -41,11 +41,11 @@
 ;; Once you've set up MELPA, run
 ;; M-x package-install RET hyperdrive RET
 
-;; hyperdrive.el relies on hyper-gateway for connecting to the P2P network:
-;; https://github.com/RangerMauve/hyper-gateway
+;; hyperdrive.el relies on hyper-gateway-ushin for connecting to the P2P network:
+;; https://git.sr.ht/~ushin/hyper-gateway-ushin
 
 ;; Installation instructions:
-;; https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway
+;; https://git.sr.ht/~ushin/hyper-gateway-ushin/#installation
 
 ;;; Code:
 
@@ -95,27 +95,27 @@
 
 ;;;###autoload
 (defun hyperdrive-start ()
-  "Start `hyper-gateway' if not already running.
+  "Start `hyper-gateway-ushin' if not already running.
 Customize behavior with `hyperdrive-gateway-process-type', which see."
   (interactive)
-  ;; TODO: Verify that the latest version is installed.  See: <https://github.com/RangerMauve/hyper-gateway/issues/9>.
+  ;; TODO: Verify that the expected version, e.g., 3.7.0, is installed.
   (h//gateway-start))
 
 ;;;###autoload
 (defun hyperdrive-stop ()
-  "Stop `hyper-gateway' if running.
+  "Stop `hyper-gateway-ushin' if running.
 Customize behavior with `hyperdrive-gateway-process-type', which see."
   (interactive)
   (h//gateway-stop))
 
 ;;;###autoload
-(defun hyperdrive-hyper-gateway-version ()
-  "Say version number of `hyper-gateway'.
+(defun hyperdrive-hyper-gateway-ushin-version ()
+  "Say version number of `hyper-gateway-ushin'.
 Gateway must be running."
   (interactive)
   (condition-case err
-      (let ((url (format "http://localhost:%d/" h/hyper-gateway-port)))
-        (h/message "hyper-gateway version %s"
+      (let ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port)))
+        (h/message "hyper-gateway-ushin version %s"
                    (alist-get 'version (plz 'get url :as #'json-read))))
     (plz-error (h/api-default-else nil (caddr err)))))
 
@@ -464,7 +464,7 @@ use, see `hyperdrive-write'."
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
                   ;; FIXME: For large buffers, `buffer-size' returns a different
-                  ;; value than hyper-gateway's Content-Length header.
+                  ;; value than hyper-gateway-ushin's Content-Length header.
                   (setf (he/size entry) (buffer-size))
                   ;; FIXME: Will entry type ever be anything besides text/plain?
                   ;;        /.well-known/host-meta.json ?
@@ -813,11 +813,11 @@ The return value of this function is the retrieval buffer."
      :label
      (format "Gateway (%s)" (if (h/status) "on" "off"))
      ["Start Gateway" h/start
-      :help "Start hyper-gateway"]
+      :help "Start hyper-gateway-ushin"]
      ["Stop Gateway" h/stop
-      :help "Stop hyper-gateway"]
-     ["Gateway version" h/hyper-gateway-version
-      :help "Say hyper-gateway version"])
+      :help "Stop hyper-gateway-ushin"]
+     ["Gateway version" h/hyper-gateway-ushin-version
+      :help "Say hyper-gateway-ushin version"])
     "---"
     ["Open URL" h/open-url
      :help "Load a hyperdrive URL"]

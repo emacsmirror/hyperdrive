@@ -153,7 +153,7 @@ See `hyperdrive-directory-sort' for the type of DIRECTION."
 Calls `hyperdrive--httpify-url' to convert HYPER-URL starting
 with `hyperdrive--hyper-prefix' to a URL starting with
 \"http://localhost:4973/hyper/\" (assuming that
-`hyper-gateway-port' is \"4973\").
+`hyperdrive-hyper-gateway-ushin-port' is \"4973\").
 
 REST is passed to `plz', which see.
 
@@ -172,7 +172,7 @@ make the request."
           (guard (string-suffix-p "/" url)))
      ;; By default, hypercore-fetch resolves directory URLs to the
      ;; index.html file inside that directory. See
-     ;; <https://github.com/RangerMauve/hypercore-fetch#fetchhypernameexamplenoresolve-method-get>
+     ;; <https://git.sr.ht/~ushin/hypercore-fetch-ushin/#codefetchhypernameexamplenoresolve-method-getcode>
      (setf url (concat url "?noResolve"))))
   (pcase-let* ((else (pcase (plist-get rest :then)
                        ((or `nil 'sync)
@@ -207,7 +207,8 @@ PLZ-ERR should be a `plz-error' struct."
      ;; Curl error 7 is "Failed to connect to host."
      (h/user-error "Gateway not running.  Use \\[hyperdrive-start] to start it"))
     ((app plz-error-response (cl-struct plz-response (status (or 403 405)) body))
-     ;; 403 Forbidden or 405 Method Not Allowed: Display message from hyper-gateway.
+     ;; 403 Forbidden or 405 Method Not Allowed: Display message from
+     ;; hyper-gateway-ushin.
      (h/error "%s" body))
     ((guard else)
      (funcall else plz-err))
@@ -216,16 +217,16 @@ PLZ-ERR should be a `plz-error' struct."
 
 ;;;###autoload
 (defun hyperdrive-status ()
-  "Return non-nil if `hyper-gateway' is running and accessible."
+  "Return non-nil if `hyper-gateway-ushin' is running and accessible."
   ;; FIXME: Ensure a very short timeout for this request.
   (condition-case nil
-      (plz 'get (format "http://localhost:%d/" h/hyper-gateway-port))
+      (plz 'get (format "http://localhost:%d/" h/hyper-gateway-ushin-port))
     (error nil)))
 
 (defun h//httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
   (format "http://localhost:%d/hyper/%s"
-          h/hyper-gateway-port
+          h/hyper-gateway-ushin-port
           (substring url (length h//hyper-prefix))))
 
 (cl-defun h//write (url &key body then else queue)
@@ -582,8 +583,9 @@ echo area when the request for the file is made."
                      ;; Hyperdrive entry is not writable: prompt for action.
                      (not-found-action))))
                   (500 ;; Generic error, likely a mistyped URL
-                   (h/message "Generic hyper-gateway status 500 error. %s %s"
-                              "Is this URL correct?" (he/url entry)))
+                   (h/message
+                    "Generic hyper-gateway-ushin status 500 error. %s %s"
+                    "Is this URL correct?" (he/url entry)))
                   (_ (h/message "Unable to load URL \"%s\": %S"
                                 (he/url entry) err))))))
     (when messagep
@@ -919,7 +921,7 @@ HYPERDRIVE's public metadata file."
 (cl-defun h/purge-no-prompt (hyperdrive &key then else)
   "Purge all data corresponding to HYPERDRIVE, then call THEN with response.
 
-- HYPERDRIVE file content and metadata managed by hyper-gateway
+- HYPERDRIVE file content and metadata managed by hyper-gateway-ushin
 - hash table entry for HYPERDRIVE in `hyperdrive-hyperdrives'
 - hash table entries for HYPERDRIVE in `hyperdrive-version-ranges'
 
@@ -1390,7 +1392,7 @@ This does not mean that the gateway is responsive, only that the
 process is running.  Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE
 is the symbol `systemd'."
   (zerop (call-process "systemctl" nil nil nil
-                       "--user" "is-active" "hyper-gateway.service")))
+                       "--user" "is-active" "hyper-gateway-ushin.service")))
 
 (cl-defmethod h//gateway-running-p (&context (h/gateway-process-type (eql 'subprocess)))
   "Return non-nil if the gateway process is running.
@@ -1419,8 +1421,9 @@ To customize the command run as a subprocess, see
              ;; `subprocess'.)
              (setf value
                    (if (ignore-errors
-                         (zerop (call-process "systemctl" nil nil nil
-                                              "--user" "is-enabled" "hyper-gateway.service")))
+                         (zerop (call-process
+                                 "systemctl" nil nil nil "--user" "is-enabled"
+                                 "hyper-gateway-ushin.service")))
                        'systemd
                      'subprocess)))
            (let ((runningp (h//gateway-running-p)))
@@ -1436,10 +1439,11 @@ To customize the command run as a subprocess, see
                  (const :tag "Autodetect" nil))
   :group 'hyperdrive)
 
-(defcustom h/gateway-command "hyper-gateway run --writable true --silent true"
+(defcustom h/gateway-command
+  "hyper-gateway-ushin run --writable true --silent true"
   ;; TODO: File Emacs bug report because the customization formatter handles the
   ;; "symbol `subprocess'" part differently than `describe-variable' does.
-  "Command used to run the hyper-gateway.
+  "Command used to run hyper-gateway-ushin.
 Only used when `hyperdrive-gateway-process-type' is the symbol `subprocess'."
   :type 'string
   :group 'hyperdrive)
@@ -1452,9 +1456,10 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
     (user-error "Gateway already running"))
   (let ((buffer (get-buffer-create " *hyperdrive-start*")))
     (unwind-protect
-        (unless (zerop (call-process "systemctl" nil (list buffer t) nil
-                                     "--user" "start" "hyper-gateway.service"))
-          (h/error "Unable to start hyper-gateway: %S"
+        (unless (zerop (call-process
+                        "systemctl" nil (list buffer t) nil
+                        "--user" "start" "hyper-gateway-ushin.service"))
+          (h/error "Unable to start hyper-gateway-ushin: %S"
                    (with-current-buffer buffer
                      (string-trim-right (buffer-string)))))
       (kill-buffer buffer))))
@@ -1467,14 +1472,14 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
     (user-error "Gateway already running"))
   (condition-case nil
       (setf h/gateway-process
-            (make-process :name "hyper-gateway"
+            (make-process :name "hyper-gateway-ushin"
                           :buffer " *hyperdrive-start*"
                           :command (split-string-and-unquote h/gateway-command)
                           :connection-type 'pipe))
     (file-missing
-     (info "(hyperdrive) hyper-gateway")
+     (info "(hyperdrive) hyper-gateway-ushin")
      (user-error
-      "hyper-gateway program not found; Please see installation instructions")))
+      "hyper-gateway-ushin not found; Please see installation instructions")))
   (sleep-for 0.5)
   (unless (process-live-p h/gateway-process)
     (if (h/status)
@@ -1491,8 +1496,8 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
   (let ((buffer (get-buffer-create " *hyperdrive-stop*")))
     (unwind-protect
         (unless (zerop (call-process "systemctl" nil (list buffer t) nil
-                                     "--user" "stop" "hyper-gateway.service"))
-          (h/error "Unable to stop hyper-gateway: %S"
+                                     "--user" "stop" "hyper-gateway-ushin.service"))
+          (h/error "Unable to stop hyper-gateway-ushin: %S"
                    (with-current-buffer buffer
                      (string-trim-right (buffer-string)))))
       (cl-loop for i below 40

@@ -14,7 +14,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 ** Changed
 
 - Improved defcustom types
-- Better error message when ~hyper-gateway~ is not installed.  Thanks to
+- Better error message when ~hyper-gateway-ushin~ is not installed.  Thanks to
   ~magnum~ on XMPP for reporting.
 - Removed ~hyperdrive-reuse-buffers~ user option to ensure consistent
   behavior when uniquifying buffer names.

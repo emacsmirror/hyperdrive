@@ -68,9 +68,9 @@ This manual is for @code{hyperdrive.el} version 0.4-pre.
 
 Installation
 
-* Emacs::
-* hyper-gateway::
-* hyperdrive.el: hyperdriveel. 
+* Install Emacs::
+* Install hyper-gateway-ushin::
+* Install hyperdrive.el: Install hyperdriveel. 
 
 Usage
 
@@ -126,7 +126,7 @@ Miscellaneous features
 Concepts
 
 * Hyperdrive::
-* Hyper-gateway::
+* hyper-gateway-ushin::
 * Naming::
 
 Hyperdrive
@@ -197,24 +197,24 @@ modify this GNU manual.''
 @chapter Installation
 
 @menu
-* Emacs::
-* hyper-gateway::
-* hyperdrive.el: hyperdriveel. 
+* Install Emacs::
+* Install hyper-gateway-ushin::
+* Install hyperdrive.el: Install hyperdriveel. 
 @end menu
 
-@node Emacs
-@section Emacs
+@node Install Emacs
+@section Install Emacs
 
 @code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, GNU Emacs} version 28.1 or later.
 
-@node hyper-gateway
-@section hyper-gateway
+@node Install hyper-gateway-ushin
+@section Install hyper-gateway-ushin
 
-@code{hyperdrive.el} relies on @uref{https://github.com/RangerMauve/hyper-gateway/, hyper-gateway} for talking to the hypercore
-network (@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-install-hyper-gateway, installation instructions}).
+@code{hyperdrive.el} relies on @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/, hyper-gateway-ushin} for talking to the
+hypercore network (@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#installation, installation instructions}).
 
-@node hyperdriveel
-@section hyperdrive.el
+@node Install hyperdriveel
+@section Install hyperdrive.el
 
 @code{hyperdrive.el} can be installed from @uref{https://elpa.nongnu.org/nongnu/hyperdrive.html, NonGNU ELPA} with @code{M-x
 package-refresh-contents} then @code{M-x package-install RET hyperdrive}.
@@ -326,40 +326,41 @@ documentation,,transient,}.  To learn about the commands available in
 @node Start/stop the gateway
 @section Start/stop the gateway
 
-To connect with peers, you'll need to start @code{hyper-gateway} (see
-@ref{Hyper-gateway}).  The current running status of the gateway can be
-seen in @code{hyperdrive-menu} (see @ref{Hyperdrive menu command}) and in the
+To connect with peers, you'll need to start @code{hyper-gateway-ushin} (see
+@ref{hyper-gateway-ushin}).  The current running status of the gateway can
+be seen in @code{hyperdrive-menu} (see @ref{Hyperdrive menu command}) and in the
 ``Hyperdrive'' menu bar (see @ref{Menu bar support}).
 
 @deffn Command hyperdrive-start
-Start @code{hyper-gateway}.
+Start @code{hyper-gateway-ushin}.
 @end deffn
 
 @deffn Command hyperdrive-stop
-Stop @code{hyper-gateway}.
+Stop @code{hyper-gateway-ushin}.
 @end deffn
 
 @defopt hyperdrive-gateway-process-type
-How to start and stop @code{hyper-gateway}.  By default, @code{hyperdrive.el} will
-autodetect the appropriate process type.  If you have configured
-@uref{https://github.com/RangerMauve/hyper-gateway#how-do-i-run-hyper-gateway-as-a-background-process-on-gnulinux--systemd, hyper-gateway to run as a systemd service}, then @code{hyperdrive.el} will
-automatically use @code{systemd} to manage the gateway.  Otherwise,
-@code{hyperdrive.el} will start @code{hyper-gateway} as an Emacs subprocess.
+How to start and stop @code{hyper-gateway-ushin}.  By default,
+@code{hyperdrive.el} will autodetect the appropriate process type.  If you
+have configured @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#how-do-i-run-hyper-gateway-ushin-as-a-background-process-on-gnulinux--systemd, hyper-gateway-ushin to run as a systemd service},
+then @code{hyperdrive.el} will automatically use @code{systemd} to manage the
+gateway.  Otherwise, @code{hyperdrive.el} will start @code{hyper-gateway-ushin}
+as an Emacs subprocess.
 @end defopt
 
 @defopt hyperdrive-gateway-command
-The command run to start @code{hyper-gateway} as an Emacs subprocess.  This
+The command run to start @code{hyper-gateway-ushin} as an Emacs subprocess.  This
 option only takes effect when @code{hyperdrive-gateway-process-type} is set
 to @code{subprocess}.
 @end defopt
 
-Alternatively, you can start hyper-gateway manually by running:
+Alternatively, you can start @code{hyper-gateway-ushin} manually by running:
 
 @example
-hyper-gateway run --writable true
+hyper-gateway-ushin run --writable true
 @end example
 
-For full installation instructions, see the @uref{https://github.com/RangerMauve/hyper-gateway#usage, hyper-gateway README}.
+For full usage instructions, see the @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#usage, hyper-gateway-ushin README}.
 
 @node Open a hyperdrive
 @section Open a hyperdrive
@@ -1114,7 +1115,7 @@ You can jump to a @code{hyper://} link with @code{M-x webjump} after adding it t
 
 @menu
 * Hyperdrive::
-* Hyper-gateway::
+* hyper-gateway-ushin::
 * Naming::
 @end menu
 
@@ -1244,7 +1245,7 @@ is specified in a hyper URL@.
 
 Because hyperdrives are sparsely replicated (see @ref{Sparse replication}),
 @code{hyperdrive.el} might not know the full version history of a file.  When
-the gateway (see @ref{Hyper-gateway}) loads a file from the network, it
+the gateway (see @ref{hyper-gateway-ushin}) loads a file from the network, it
 also loads some version metadata about that file.  Specifically, it
 loads the hyperdrive version number at which the file was modified.
 For example, if I load the most recent version of @code{/bar.org} from your
@@ -1280,13 +1281,14 @@ your hyperdrive was actually created at version 51 of your hyperdrive:
 @end multitable
 
 Running @code{hyperdrive-previous} while looking at @code{/bar.org} at version 51 or
-52 will send a request for @code{/bar.org} at version 50.  @code{hyper-gateway} will
-report that @code{/bar.org} does not exist at version 50, but it won't report
-whether @code{/bar.org} ever existed @emph{before} version 50.  For example,
-@code{/bar.org} might have been created at version 6, deleted at 14, then
-created again at version 51.  @code{hyperdrive.el} will keep sending requests
-to the network (up to @code{hyperdrive-fill-version-ranges-limit}) until the
-history view looks like:
+52 will send a request for @code{/bar.org} at version 50.
+@code{hyper-gateway-ushin} will report that @code{/bar.org} does not exist at
+version 50, but it won't report whether @code{/bar.org} ever existed @emph{before}
+version 50.  For example, @code{/bar.org} might have been created at version
+6, deleted at 14, then created again at version 51.  @code{hyperdrive.el}
+will keep sending requests to the network (up to
+@code{hyperdrive-fill-version-ranges-limit}) until the history view looks
+like:
 
 @multitable {aaaaaaaaaaaaa} {aaaaaa}
 @headitem Version range
@@ -1327,14 +1329,14 @@ contains, which can never prove that a directory doesn't exist.
 
 The secret master key is combined with a seed (see @ref{Seeds}) to generate
 a new public key for a hyperdrive when you run @code{hyperdrive-new}.  Your
-master key is generated automatically by @code{hyper-gateway}.
+master key is generated automatically by @code{hyper-gateway-ushin}.
 
-@node Hyper-gateway
-@section Hyper-gateway
+@node hyper-gateway-ushin
+@section hyper-gateway-ushin
 
-@cindex Hyper-gateway
+@cindex hyper-gateway-ushin
 
-@uref{https://github.com/RangerMauve/hyper-gateway/, Hyper-gateway} handles interactions with hyperdrive under the hood, and
+@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin, Hyper-gateway-ushin} handles interactions with hyperdrive under the hood, and
 it runs a local HTTP server which offers a Fetch API to access the
 Hyperdrive network. In @code{hyperdrive.el}, P2P interactions consist
 mostly of, e.g., @code{GET} requests to download files and @code{PUT} requests
@@ -1387,8 +1389,8 @@ Public keys are globally unique identifiers for hyperdrives.  They
 make up the first part of a @code{hyper://} URL@.  Public keys are
 52-character-long @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated from your master
 key (see @ref{Master key}) and a @ref{Seeds, , seed} string.  When you run @code{hyperdrive-new}
-and type a new seed, @code{hyper-gateway} automatically generates a new
-public key.
+and type a new seed, @code{hyper-gateway-ushin} automatically generates a
+new public key.
 
 @node Nicknames
 @subsection Nicknames
@@ -1446,8 +1448,8 @@ DNS domains are checked for suspicious characters (see
 You can adjust the following options in the customization interface by
 running @code{M-x customize-group RET hyperdrive RET}:
 
-@defopt hyperdrive-hyper-gateway-port
-@code{hyperdrive.el} will send HTTP requests to @code{hyper-gateway} on this port.
+@defopt hyperdrive-hyper-gateway-ushin-port
+@code{hyperdrive.el} will send HTTP requests to @code{hyper-gateway-ushin} on this port.
 Defaults to @code{4973}.
 @end defopt
 
@@ -1463,8 +1465,8 @@ which see.
 @end defopt
 
 @defopt hyperdrive-queue-limit
-Default number of request sent to @code{hyper-gateway} at a time in a
-queues.  Defaults to @code{20}.
+Default number of request sent to @code{hyper-gateway-ushin} at a time in
+a queue.  Defaults to @code{20}.
 @end defopt
 
 @defopt hyperdrive-fill-version-ranges-limit
@@ -1620,9 +1622,9 @@ If you run into issues, please first try resetting the values of
   (persist-save 'hyperdrive-version-ranges))
 @end lisp
 
-Please ensure that your version of @code{hyper-gateway} (@code{M-x
-hyperdrive-hyper-gateway-version}) is the latest version
-(@uref{https://github.com/RangerMauve/hyper-gateway/releases/, releases}).
+Please ensure that your version of @code{hyper-gateway-ushin} (@code{M-x
+hyperdrive-hyper-gateway-ushin-version}) is version `3.7.0`
+([downloads](@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.7.0})).
 
 @node Contributing/Getting help
 @chapter Contributing/Getting help

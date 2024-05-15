@@ -38,8 +38,8 @@
   :group 'external
   :prefix "hyperdrive-")
 
-(defcustom h/hyper-gateway-port 4973
-  "Port to use to send requests to the hyper-gateway server."
+(defcustom h/hyper-gateway-ushin-port 4973
+  "Port to use to send requests to the hyper-gateway-ushin server."
   :type 'natnum)
 
 (defcustom h/honor-auto-mode-alist t
@@ -350,7 +350,7 @@ values are alists mapping version range starts to plists with
 ;;;;; Internals
 
 (defvar h/gateway-process nil
-  "Hyper-gateway process.
+  "Hyper-gateway-ushin process.
 Only used when `hyperdrive-gateway-process-type' is `subprocess'.")
 
 (defvar-local h/current-entry nil

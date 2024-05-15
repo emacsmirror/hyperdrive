@@ -211,7 +211,7 @@
      :transient t)
     ("G S" "Stop" h/stop
      :transient t)
-    ("G v" "Version" h/hyper-gateway-version
+    ("G v" "Version" h/hyper-gateway-ushin-version
      :transient t)]
    ["Bookmark"
     ("b j" "Jump" h/bookmark-jump)
