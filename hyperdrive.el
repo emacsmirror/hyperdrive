@@ -114,10 +114,11 @@ Customize behavior with `hyperdrive-gateway-process-type', which see."
 Gateway must be running."
   (interactive)
   (condition-case err
-      (let ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port)))
-        ;; TODO: Make this also return the version.
-        (h/message "hyper-gateway-ushin version %s"
-                   (alist-get 'version (plz 'get url :as #'json-read))))
+      (let* ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port))
+             (version (alist-get 'version (plz 'get url :as #'json-read))))
+        (when (called-interactively-p 'any)
+          (h/message "hyper-gateway-ushin version %s" version))
+        version)
     (plz-error (h/api-default-else nil (caddr err)))))
 
 ;;;###autoload
