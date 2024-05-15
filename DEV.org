@@ -16,6 +16,14 @@ So, e.g. ~makem~'s ~lint-declare~ rule, which uses ~check-declare~, gives false 
 - State "TODO"       from              [2023-11-28 Tue 16:31]
 :END:
 
+* Gateway version automatic installation/upgrading
+
++ Design :: As simple as possible.
+  - We do /not/ attempt to automatically detect the latest gateway release on Sourcehut's Web page.
+  - We include with ~hyperdrive.el~ the known-latest version, with URL and hash.
+  - When we want to release a new version of the gateway, we will then release a new version of ~hyperdrive.el~ with the corresponding information.
+  - The client will, upon first use, check the installed version of the gateway and prompt the user to upgrade it if necessary.
+
 * PROJECT Petnames
 :PROPERTIES:
 :ID:       e5b0c0f1-7ebc-4e8c-9712-cd2cd4a055ce
