@@ -24,6 +24,24 @@ So, e.g. ~makem~'s ~lint-declare~ rule, which uses ~check-declare~, gives false 
   - When we want to release a new version of the gateway, we will then release a new version of ~hyperdrive.el~ with the corresponding information.
   - The client will, upon first use, check the installed version of the gateway and prompt the user to upgrade it if necessary.
 
+** Considerations
+
++ Gateway :: The status could be:
+  - [ ] Gateway may or may not be running
+  - [ ] Gateway may or may not have been downloaded at correct version
+  - [ ] Gateway may or may not have been downloaded at different version
+  - [ ] Gateway may be installed at location in PATH but not the one we expect
+
+*** Gateway
+
+| Location | Version | Running |
+...
+
+** Decisions
+
++ We don't want to delete or install ~hyper-gateway-ushin~ anywhere other than ~~/.local/lib/hyperdrive.el~. :: In case the user has installed a different version at a different location, we want to respect that.
++  :: 
+
 * PROJECT Petnames
 :PROPERTIES:
 :ID:       e5b0c0f1-7ebc-4e8c-9712-cd2cd4a055ce
