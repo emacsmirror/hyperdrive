@@ -167,6 +167,8 @@ make the request."
   ;;  could remove redundant calls to
   ;;  `h//fill-latest-version' everywhere else.
   (declare (indent defun))
+  (unless (h/ensure-gateway)
+    (h/error "Gateway not installed or incorrect version; request aborted"))
   (pcase method
     ((and (or 'get 'head)
           (guard (string-suffix-p "/" url)))
@@ -196,6 +198,28 @@ make the request."
       (plz-error
        ;; We pass only the `plz-error' struct to the ELSE* function.
        (funcall else* (caddr err))))))
+
+(defun h/ensure-gateway ()
+  "Return non-nil if gateway version correct; or offer install and return nil."
+  (declare-function hyperdrive-hyper-gateway-ushin-version "hyperdrive")
+  (defvar h/gateway-version-correct-p)
+  (defvar h/gateway-version-expected)
+  (or h/gateway-version-correct-p
+      ;; Version unknown: verify it.
+      (when (equal h/gateway-version-expected
+                   ;; FIXME: If gateway is installed at correct version but not
+                   ;; running, this would try to reinstall it.
+                   (ignore-errors
+                     (hyperdrive-hyper-gateway-ushin-version)))
+        (setf h/gateway-version-correct-p t))
+      (if (yes-or-no-p "Gateway not installed at expected version; download correct version (y) or proceed anyway (n)? ")
+          ;; Abort request, install version and set `h/gateway-version-correct-p'.
+          (progn
+            (declare-function h/install "hyperdrive")
+            (h/install 'force)
+            nil)
+        ;; Override and use existing version.
+        (setf h/gateway-version-correct-p t))))
 
 (defun h/api-default-else (else plz-err)
   "Handle common errors, overriding ELSE.
