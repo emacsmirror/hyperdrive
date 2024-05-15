@@ -38,6 +38,8 @@
   :group 'external
   :prefix "hyperdrive-")
 
+(defalias 'hyperdrive-hyper-gateway-port 'hyperdrive-hyper-gateway-ushin-port
+  "Renamed in hyperdrive.el v0.4.0 to reflect update to hyper-gateway-ushin.")
 (defcustom h/hyper-gateway-ushin-port 4973
   "Port to use to send requests to the hyper-gateway-ushin server."
   :type 'natnum)
