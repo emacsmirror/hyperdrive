@@ -1280,6 +1280,7 @@ Otherwise, return nil.  SLOT may be one of
 ;;;; Handlers
 
 (declare-function h/org--link-goto "hyperdrive-org")
+(declare-function h/blob-mode "hyperdrive")
 (cl-defun h/handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."

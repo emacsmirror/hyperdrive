@@ -434,8 +434,7 @@ use, see `hyperdrive-write'."
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
               (url (he/url entry))
               (buffer (current-buffer))
-              (buffer-visiting-entry (h//find-buffer-visiting entry))
-              (current-entry hyperdrive-current-entry))
+              (buffer-visiting-entry (h//find-buffer-visiting entry)))
     (unless (or overwritep (not (he/at nil entry)))
       (unless (y-or-n-p
 	       (format "File %s exists; overwrite?" (h//format-entry entry)))
@@ -527,6 +526,7 @@ it to `hyperdrive-open'."
   "j"   #'h/up
   "C-j" #'h/up)
 
+;;;###autoload
 (define-minor-mode hyperdrive-blob-mode
   "Minor mode for visiting previous versions of hyperdrive files."
   :global nil
