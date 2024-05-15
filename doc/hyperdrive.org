@@ -43,11 +43,6 @@ modify this GNU manual."
 
 ~hyperdrive.el~ requires [[https://www.gnu.org/software/emacs/][GNU Emacs]] version 28.1 or later.
 
-** Install hyper-gateway-ushin
-
-~hyperdrive.el~ relies on [[https://git.sr.ht/~ushin/hyper-gateway-ushin/][hyper-gateway-ushin]] for talking to the
-hypercore network ([[https://git.sr.ht/~ushin/hyper-gateway-ushin#installation][installation instructions]]).
-
 ** Install hyperdrive.el
 
 ~hyperdrive.el~ can be installed from [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]] with ~M-x
@@ -58,6 +53,16 @@ version of ~hyperdrive.el~ by running ~M-x package-refresh-contents~ then
 ~M-x package-upgrade RET hyperdrive~.  On Emacs 28, If ~package-upgrade~
 is not available as a command, display the list of packages with ~M-x
 list-packages~, select ~hyperdrive~, and click the ~Install~ button.
+
+** Install hyper-gateway-ushin
+
+~hyperdrive.el~ relies on [[https://git.sr.ht/~ushin/hyper-gateway-ushin/][hyper-gateway-ushin]] for talking to the
+hypercore network.
+
+After installing ~hyperdrive.el~ (see [[*Install hyperdrive.el][Install hyperdrive.el]]), run ~M-x
+hyperdrive-install~ to download and install ~hyper-gateway-ushin~.
+
+Alternatively, follow the [[https://git.sr.ht/~ushin/hyper-gateway-ushin#installation][manual installation instructions]].
 
 * Example configuration
 
@@ -90,6 +95,10 @@ When you upload a file, beware:
   But gone it may not be.
 On the network it still may be there.
 #+end_verse
+
+** Install hyper-gateway-ushin
+
+Please be sure to [[*Install hyper-gateway-ushin][install hyper-gateway-ushin]].
 
 ** Menu bar support
 #+findex: menu-bar-mode

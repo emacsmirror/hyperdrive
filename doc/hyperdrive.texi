@@ -69,11 +69,12 @@ This manual is for @code{hyperdrive.el} version 0.4-pre.
 Installation
 
 * Install Emacs::
-* Install hyper-gateway-ushin::
 * Install hyperdrive.el: Install hyperdriveel. 
+* Install hyper-gateway-ushin::
 
 Usage
 
+* Install hyper-gateway-ushin: Install hyper-gateway-ushin (1). 
 * Menu bar support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
@@ -198,20 +199,14 @@ modify this GNU manual.''
 
 @menu
 * Install Emacs::
-* Install hyper-gateway-ushin::
 * Install hyperdrive.el: Install hyperdriveel. 
+* Install hyper-gateway-ushin::
 @end menu
 
 @node Install Emacs
 @section Install Emacs
 
 @code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, GNU Emacs} version 28.1 or later.
-
-@node Install hyper-gateway-ushin
-@section Install hyper-gateway-ushin
-
-@code{hyperdrive.el} relies on @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/, hyper-gateway-ushin} for talking to the
-hypercore network (@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#installation, installation instructions}).
 
 @node Install hyperdriveel
 @section Install hyperdrive.el
@@ -224,6 +219,17 @@ version of @code{hyperdrive.el} by running @code{M-x package-refresh-contents} t
 @code{M-x package-upgrade RET hyperdrive}.  On Emacs 28, If @code{package-upgrade}
 is not available as a command, display the list of packages with @code{M-x
 list-packages}, select @code{hyperdrive}, and click the @code{Install} button.
+
+@node Install hyper-gateway-ushin
+@section Install hyper-gateway-ushin
+
+@code{hyperdrive.el} relies on @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/, hyper-gateway-ushin} for talking to the
+hypercore network.
+
+After installing @code{hyperdrive.el} (see @ref{Install hyperdriveel, , Install hyperdrive.el}), run @code{M-x
+hyperdrive-install} to download and install @code{hyper-gateway-ushin}.
+
+Alternatively, follow the @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#installation, manual installation instructions}.
 
 @node Example configuration
 @chapter Example configuration
@@ -260,6 +266,7 @@ On the network it still may be there.
 @end display
 
 @menu
+* Install hyper-gateway-ushin: Install hyper-gateway-ushin (1). 
 * Menu bar support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
@@ -280,6 +287,11 @@ On the network it still may be there.
 * Org-transclusion integration::
 * Miscellaneous features::
 @end menu
+
+@node Install hyper-gateway-ushin (1)
+@section Install hyper-gateway-ushin
+
+Please be sure to @ref{Install hyper-gateway-ushin (1), , install hyper-gateway-ushin}.
 
 @node Menu bar support
 @section Menu bar support
