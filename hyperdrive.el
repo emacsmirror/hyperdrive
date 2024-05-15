@@ -1276,39 +1276,61 @@ Intended for relative (i.e. non-full) URLs."
                 :sha256 "71a8f30b27f41e61e5c7ffedeff783698c30ac3562d81a364a42b92d9a148fe7"))
   "Alist mapping `system-type' to URLs where hyper-gateway-ushin can be downloaded.")
 
+;; TODO: Ensure this autoload still works with the closure.
 ;;;###autoload
-(defun h/install ()
-  "Install hyper-gateway-ushin.
-Sets `hyperdrive-gateway-process-type' to \\+`subprocess'."
-  (interactive)
-  (when (h//hyper-gateway-ushin-path)
-    (user-error "Program \"hyper-gateway-ushin\" already installed"))
-  (pcase-let* (((map :url :sha256) (alist-get system-type h/gateway-url-alist))
-               (local-file-name
-                (expand-file-name "hyper-gateway-ushin" h/gateway-directory))
-               ;; TODO: Uncomment when SourceHut adds Content-Length header.
-               ;; (file-size
-               ;;  (file-size-human-readable
-               ;;   (cl-parse-integer (alist-get 'content-length
-               ;;                                (plz-response-headers
-               ;;                                 (plz 'head url :as 'response))))))
-               (temp-file-name))
-    (unless (file-directory-p h/gateway-directory)
-      (mkdir h/gateway-directory t))
-    (h/message "Downloading hyper-gateway-ushin..."
-               ;; (format "Downloading hyper-gateway-ushin (%s)..." file-size)
-               )
-    (let ((inhibit-message t))
-      (setf temp-file-name (url-file-local-copy url)))
-    (unless (equal sha256 (with-temp-buffer
-                            (insert-file-contents-literally temp-file-name)
-                            (secure-hash 'sha256 (current-buffer))))
-      (h/error "Downloaded hyper-gateway-ushin file hash doesn't match"))
-    (rename-file temp-file-name local-file-name)
-    (chmod local-file-name #o755)
-    (funcall (get 'h/gateway-process-type 'custom-set)
-             'h/gateway-process-type 'subprocess)
-    (h/message "hyper-gateway-ushin installed.")))
+(let ((install-in-progress-p nil))
+  (defun h/install (&optional forcep)
+    "Install hyper-gateway-ushin.
+Sets `hyperdrive-gateway-process-type' to \\+`subprocess'.  If
+FORCEP, force downloading and installing of the expected gateway
+version."
+    (interactive)
+    (when install-in-progress-p
+      (user-error "hyper-gateway installation already in progress"))
+    (when (h//hyper-gateway-ushin-path)
+      (unless forcep
+        (unless (yes-or-no-p "Program \"hyper-gateway-ushin\" already installed.  Reinstall/upgrade? ")
+          (user-error "Not reinstalling/upgrading; aborted"))))
+    (setf install-in-progress-p t)
+    (unwind-protect
+        (pcase-let* (((map :url :sha256) (alist-get system-type h/gateway-url-alist))
+                     (local-file-name
+                      (expand-file-name "hyper-gateway-ushin" h/gateway-directory))
+                     ;; TODO: Uncomment when SourceHut adds Content-Length header.
+                     ;; (file-size
+                     ;;  (file-size-human-readable
+                     ;;   (cl-parse-integer (alist-get 'content-length
+                     ;;                                (plz-response-headers
+                     ;;                                 (plz 'head url :as 'response))))))
+                     (temp-file-name))
+          (unless (file-directory-p h/gateway-directory)
+            (mkdir h/gateway-directory t))
+          (h/message "Downloading hyper-gateway-ushin..."
+                     ;; (format "Downloading hyper-gateway-ushin (%s)..." file-size)
+                     )
+          (let ((inhibit-message t))
+            (setf temp-file-name (url-file-local-copy url)))
+          (unless (equal sha256 (with-temp-buffer
+                                  (insert-file-contents-literally temp-file-name)
+                                  (secure-hash 'sha256 (current-buffer))))
+            (h/error "Downloaded hyper-gateway-ushin file hash doesn't match"))
+          (when (file-exists-p local-file-name)
+            (message "Deleting old version: %s" local-file-name)
+            (delete-file local-file-name 'trash))
+          (rename-file temp-file-name local-file-name)
+          (chmod local-file-name #o755)
+          (funcall (get 'h/gateway-process-type 'custom-set)
+                   'h/gateway-process-type 'subprocess)
+          (if (h//gateway-running-p)
+              (progn
+                (when (yes-or-no-p "hyper-gateway-ushin installed.  Restart gateway?")
+                  (hyperdrive-stop)
+                  (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
+                    (cl-loop while (h//gateway-running-p)
+                             do (sleep-for 0.2)))
+                  (hyperdrive-start)))
+            (h/message "hyper-gateway-ushin installed.")))
+      (setf install-in-progress-p nil))))
 
 ;;;; Footer
 
