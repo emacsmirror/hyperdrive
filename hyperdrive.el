@@ -115,6 +115,7 @@ Gateway must be running."
   (interactive)
   (condition-case err
       (let ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port)))
+        ;; TODO: Make this also return the version.
         (h/message "hyper-gateway-ushin version %s"
                    (alist-get 'version (plz 'get url :as #'json-read))))
     (plz-error (h/api-default-else nil (caddr err)))))
