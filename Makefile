@@ -4,9 +4,12 @@
 EMACS := emacs
 EMACSQ := $(EMACS) -Q
 BATCH := $(EMACSQ) --batch \
-	  --eval '(setq vc-handled-backends nil org-startup-folded nil org-element-cache-persistent nil)' \
-      --eval '(setq gc-cons-threshold (* 50 1000 1000))'
-TEXI2HTML := makeinfo --html --number-sections --css-ref "https://www.gnu.org/software/emacs/manual.css"
+	  --eval '(setq vc-handled-backends nil)' \
+	  --eval '(setq org-startup-folded nil)' \
+	  --eval '(setq org-element-cache-persistent nil)' \
+	  --eval '(setq gc-cons-threshold (* 50 1000 1000))'
+TEXI2HTML := makeinfo --html --number-sections \
+	  --css-ref "https://www.gnu.org/software/emacs/manual.css"
 TEXI2PDF := texi2pdf
 TEXI2INFO := makeinfo
 
@@ -25,6 +28,6 @@ README.html: README.org
 
 doc/hyperdrive.texi: doc/hyperdrive.org
 	$(BATCH) --find-file $< --eval "(require 'ox-texinfo)" \
-                            --eval '(org-texinfo-export-to-texinfo)'
+	  --eval '(org-texinfo-export-to-texinfo)'
 
 doc: doc/hyperdrive.texi
