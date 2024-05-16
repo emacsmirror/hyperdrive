@@ -24,7 +24,7 @@ TEXI2INFO := makeinfo
 
 README.html: README.org
 	$(BATCH) --find-file $< --eval "(require 'ox-html)" \
-	  --eval '(org-html-export-to-html)'
+	  --eval '(org-html-export-to-html nil nil nil t)'
 
 doc/hyperdrive.texi: doc/hyperdrive.org
 	$(BATCH) --find-file $< --eval "(require 'ox-texinfo)" \
