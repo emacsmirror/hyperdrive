@@ -39,7 +39,7 @@
 If THEN, call it in the directory buffer with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   (pcase-let*
-      (((cl-struct hyperdrive-entry hyperdrive path version) directory-entry)
+      (((cl-struct hyperdrive-entry hyperdrive version) directory-entry)
        (url (he/url directory-entry))
        (header (progn
                  ;; Fill metadata first to get the current nickname.

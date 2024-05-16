@@ -708,7 +708,7 @@ LISTING should be an alist based on the JSON retrieved in, e.g.,
 `hyperdrive-dir-handler'.  Fills existent version ranges for each
 entry as a side-effect."
   (mapcar
-   (pcase-lambda ((map seq key value metadata))
+   (pcase-lambda ((map seq key value))
      (let* ((mtime (map-elt (map-elt value 'metadata) 'mtime))
             (size (map-elt (map-elt value 'blob) 'byteLength))
             (entry (he/create
