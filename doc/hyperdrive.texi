@@ -1623,8 +1623,8 @@ If you run into issues, please first try resetting the values of
 @end lisp
 
 Please ensure that your version of @code{hyper-gateway-ushin} (@code{M-x
-hyperdrive-hyper-gateway-ushin-version}) is version `3.7.1`
-([downloads](@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.7.1})).
+hyperdrive-hyper-gateway-ushin-version}) is version `3.7.2`
+([downloads](@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.7.2})).
 
 @node Contributing/Getting help
 @chapter Contributing/Getting help
