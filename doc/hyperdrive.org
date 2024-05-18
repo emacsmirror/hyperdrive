@@ -1195,8 +1195,11 @@ If you run into issues, please first try resetting the values of
 #+end_src
 
 Please ensure that your version of ~hyper-gateway-ushin~ (~M-x
-hyperdrive-hyper-gateway-ushin-version~) is version `3.7.2`
-([downloads](https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.7.2)).
+hyperdrive-hyper-gateway-ushin-version~) is version `3.8.0` ([download
+from
+Codeberg](https://codeberg.org/USHIN/hyper-gateway-ushin/releases/tag/v3.8.0)
+or [download from
+SourceHut](https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.8.0)).
 
 * Contributing/Getting help
 
