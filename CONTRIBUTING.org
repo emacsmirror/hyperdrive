@@ -70,6 +70,15 @@ These checklists should be followed when releasing new versions:
    11. [ ] Push ~master~ branch to remote.
    12. [ ] Push git tags.
 
+* Version number locations
+
+/A list of the places where version numbers are present and need to be updated./
+
+** hyper-gateway-ushin version numbers
+
++ [ ] [[file:hyperdrive.el::(defvar h/gateway-url-alist][h/gateway-url-alist v ariable]]
++ [ ] [[file:hyperdrive-vars.el::defvar h/gateway-version-expected "3.7.0"][h/gateway-version-expected variable]]
+
 * Git hooks
 
 Please consider using the following git hooks:
