@@ -1206,6 +1206,8 @@ If you run into issues, please first try resetting the values of
     (persist-save 'hyperdrive-version-ranges))
 #+end_src
 
+# TODO: Update the next paragraph to mention install/upgrade command and omit version numbers.
+
 Please ensure that your version of ~hyper-gateway-ushin~ (~M-x
 hyperdrive-hyper-gateway-ushin-version~) is version `3.8.0` ([download
 from
