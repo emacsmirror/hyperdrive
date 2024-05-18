@@ -1268,12 +1268,21 @@ Intended for relative (i.e. non-full) URLs."
 ;;;;; Installation
 
 (defvar h/gateway-url-alist
-  '((gnu/linux :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.7.0/hyper-gateway-linux"
-               :sha256 "eca52cfd2b8ce1a77fbe3c46fc78155b59cb2d705d4ae5f6867de027b4acc320")
-    (darwin :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.7.0/hyper-gateway-linux"
-            :sha256 "5387faa8960a7f7b0401dab9dc34868317c0b24050160cfba9bcdf5f49c0dd91")
-    (windows-nt :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.7.0/hyper-gateway-windows.exe"
-                :sha256 "71a8f30b27f41e61e5c7ffedeff783698c30ac3562d81a364a42b92d9a148fe7"))
+  '((gnu/linux
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.8.0/hyper-gateway-ushin-linux"
+       :sha256 "8ff669bd378e88a3c80d65861f4088071852afaedf7bba56c88c1a162ed9e4f3")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.8.0/hyper-gateway-linux-v3.8.0"
+       :sha256 ""))
+    (darwin
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.8.0/hyper-gateway-ushin-macos"
+       :sha256 "22f6131f48d740f429690f16baac19b20a2211250360a89580db95415398d03c")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.8.0/hyper-gateway-macos-v3.8.0"
+       :sha256 ""))
+    (windows-nt
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.8.0/hyper-gateway-ushin-windows.exe"
+       :sha256 "c347255d3fc5e6499fc10bea4d20e62798fb5968960dbbe26d507d11688326bb")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.8.0/hyper-gateway-windows-v3.8.0.exe"
+       :sha256 "")))
   "Alist mapping `system-type' to URLs where hyper-gateway-ushin can be downloaded.")
 
 ;; TODO: Ensure this autoload still works with the closure.
