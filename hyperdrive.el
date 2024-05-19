@@ -1285,61 +1285,72 @@ Intended for relative (i.e. non-full) URLs."
        :sha256 "")))
   "Alist mapping `system-type' to URLs where hyper-gateway-ushin can be downloaded.")
 
-;; TODO: Ensure this autoload still works with the closure.
+(defvar h/install-in-progress-p nil
+  "Non-nil while hyperdrive is installing or upgrading the gateway.")
+
 ;;;###autoload
-(let ((install-in-progress-p nil))
-  (defun h/install (&optional forcep)
-    "Install hyper-gateway-ushin.
+(defun h/install (&optional forcep)
+  "Install hyper-gateway-ushin.
 Sets `hyperdrive-gateway-process-type' to \\+`subprocess'.  If
 FORCEP, force downloading and installing of the expected gateway
 version."
-    (interactive)
-    (when install-in-progress-p
-      (user-error "hyper-gateway installation already in progress"))
+  (interactive (list current-prefix-arg))
+  (when h/install-in-progress-p
+    (user-error "hyper-gateway installation already in progress"))
+  (declare-function h//hyper-gateway-ushin-path "hyperdrive-lib")
+  (unless forcep
     (when (h//hyper-gateway-ushin-path)
-      (unless forcep
-        (unless (yes-or-no-p "Program \"hyper-gateway-ushin\" already installed.  Reinstall/upgrade? ")
-          (user-error "Not reinstalling/upgrading; aborted"))))
-    (setf install-in-progress-p t)
-    (unwind-protect
-        (pcase-let* (((map :url :sha256) (alist-get system-type h/gateway-url-alist))
-                     (local-file-name
-                      (expand-file-name "hyper-gateway-ushin" h/gateway-directory))
-                     ;; TODO: Uncomment when SourceHut adds Content-Length header.
-                     ;; (file-size
-                     ;;  (file-size-human-readable
-                     ;;   (cl-parse-integer (alist-get 'content-length
-                     ;;                                (plz-response-headers
-                     ;;                                 (plz 'head url :as 'response))))))
-                     (temp-file-name))
-          (unless (file-directory-p h/gateway-directory)
-            (mkdir h/gateway-directory t))
-          (h/message "Downloading hyper-gateway-ushin..."
-                     ;; (format "Downloading hyper-gateway-ushin (%s)..." file-size)
-                     )
-          (let ((inhibit-message t))
-            (setf temp-file-name (url-file-local-copy url)))
-          (unless (equal sha256 (with-temp-buffer
-                                  (insert-file-contents-literally temp-file-name)
-                                  (secure-hash 'sha256 (current-buffer))))
-            (h/error "Downloaded hyper-gateway-ushin file hash doesn't match"))
-          (when (file-exists-p local-file-name)
-            (message "Deleting old version: %s" local-file-name)
-            (delete-file local-file-name 'trash))
-          (rename-file temp-file-name local-file-name)
-          (chmod local-file-name #o755)
-          (funcall (get 'h/gateway-process-type 'custom-set)
-                   'h/gateway-process-type 'subprocess)
-          (if (h//gateway-running-p)
-              (progn
-                (when (yes-or-no-p "hyper-gateway-ushin installed.  Restart gateway?")
-                  (hyperdrive-stop)
-                  (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
-                    (cl-loop while (h//gateway-running-p)
-                             do (sleep-for 0.2)))
-                  (hyperdrive-start)))
-            (h/message "hyper-gateway-ushin installed.")))
-      (setf install-in-progress-p nil))))
+      (unless (yes-or-no-p "Reinstall/upgrade hyper-gateway-ushin? ")
+        (user-error "Not reinstalling/upgrading; aborted"))))
+  (setf h/install-in-progress-p t)
+  (let ((urls-and-hashes (alist-get system-type h/gateway-url-alist)))
+    (cl-labels
+        ((try ()
+           (if-let ((url-and-hash (pop urls-and-hashes)))
+               (pcase-let (((map :url :sha256) url-and-hash))
+                 (download url sha256))
+             (setf h/install-in-progress-p nil)
+             (h/error "Downloading failed; no more mirrors available")))
+         ;; TODO: Test.
+         (head-size (url)
+           (when-let ((response (ignore-errors (plz 'head url :as 'response))))
+             (cl-parse-integer
+              (alist-get 'content-length (plz-response-headers response)))))
+         (download (url sha256)
+           (plz 'get url :as 'file
+             :then (lambda (filename)
+                     (check filename sha256))
+             :else (lambda (plz-error)
+                     (h/message "Trying next source because downloading failed: %S"
+                                plz-error)
+                     (try)))
+           (h/message "Downloading gateway (%s)..."
+                      (or (file-size-human-readable (head-size url))
+                          "unknown size")))
+         (check (file-name sha256)
+           (if (with-temp-buffer
+                 (insert-file-contents-literally file-name)
+                 (equal sha256 (secure-hash 'sha256 (current-buffer))))
+               (then file-name)
+             (try)))
+         (then (file-name)
+           (defvar h/gateway-directory)
+           (let ((destination-name (expand-file-name "hyper-gateway-ushin" h/gateway-directory)))
+             (when (file-exists-p destination-name)
+               (move-file-to-trash destination-name))
+             (unless (file-directory-p h/gateway-directory)
+               (mkdir h/gateway-directory t))
+             (rename-file file-name destination-name)
+             (chmod destination-name #o755))
+           ;; NOTE: While `h/gateway-process-type' still exists, this is subtly
+           ;; broken, but we will remove that.
+           ;; FIXME: Remove `h/gateway-process-type' option.
+           (setf h/install-in-progress-p nil)
+           (if (h//gateway-running-p)
+               (when (yes-or-no-p "hyper-gateway-ushin installed.  Restart gateway?")
+                 (h/restart))
+             (h/message "hyper-gateway-ushin installed.  Try \\[hyperdrive-start]."))))
+      (try))))
 
 (defun h/restart ()
   "Restart the gateway."
@@ -1351,6 +1362,19 @@ version."
              do (sleep-for 0.2)))
   (hyperdrive-start)
   (h/message "Gateway restarted."))
+
+;; (defun h//gateway-appears-valid-p ()
+;;   "Return non-nil if a local installation of the gateway appears valid.
+;; That is, if an executable file exists at the expected location
+;; with an expected hash."
+;;   (when-let ((file-name (h//hyper-gateway-ushin-path)))
+;;     (let* ((file-hash (with-temp-buffer
+;;                          (insert-file-contents-literally file-name)
+;;                          (secure-hash 'sha256 (current-buffer))))
+;;            (urls-and-hashes (alist-get system-type h/gateway-url-alist)))
+;;       (cl-loop for pair in urls-and-hashes
+;;                for expected-hash = (plist-get pair :sha256)
+;;                thereis (equal expected-hash file-hash)))))
 
 ;;;; Footer
 
