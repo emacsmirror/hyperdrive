@@ -362,7 +362,7 @@ values are alists mapping version range starts to plists with
 
 ;;;;; Internals
 
-(defvar h/gateway-version-expected "3.7.0")
+(defvar h/gateway-version-expected "3.8.0")
 
 (defvar h/gateway-version-correct-p nil
   "Non-nil if the local gateway version has been verified correct in this session.
