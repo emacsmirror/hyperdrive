@@ -279,7 +279,13 @@
     :inapt-if-not (lambda () (h/writablep (h/menu--scope))))
    ( :info (lambda () (h//format (h/menu--scope) "Domain: %D" h/raw-formats))
      :if (lambda () (h/domains (h/menu--scope))))
-   (:info (lambda () (format "Latest version: %s" (h/latest-version (h/menu--scope)))))]
+   (:info (lambda () (format "Latest version: %s" (h/latest-version (h/menu--scope)))))
+   ( :info (lambda ()
+             (format "Disk usage: %s"
+                     (propertize (file-size-human-readable
+                                  (map-elt (h/etc (h/menu--scope)) 'disk-usage))
+                                 'face 'hyperdrive-size)))
+     :if (lambda () (map-elt (h/etc (h/menu--scope)) 'disk-usage)))]
   [["Open"
     ("f"   "Find file"    h/menu-open-file)
     ("v"   "View file"    h/menu-view-file)
