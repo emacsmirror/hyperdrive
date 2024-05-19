@@ -451,7 +451,8 @@ use, see `hyperdrive-write'."
                 (with-current-buffer buffer
                   (unless h/mode
                     (h//clean-buffer)
-                    (when h/honor-auto-mode-alist
+                    (when (member (hyperdrive-public-key hyperdrive)
+                                  h/safe-hyperdrives)
                       (let ((buffer-file-name (he/name entry)))
                         (set-auto-mode)))
                     (h/mode))

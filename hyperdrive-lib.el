@@ -1327,7 +1327,8 @@ If then, then call THEN with no arguments.  Default handler."
                         (or (not (h/writablep hyperdrive)) version))
                   (set-buffer-modified-p nil)
                   (set-visited-file-modtime (current-time))))
-              (when h/honor-auto-mode-alist
+              (when (member (hyperdrive-public-key hyperdrive)
+                            h/safe-hyperdrives)
                 (let ((buffer-file-name (he/name entry)))
                   (set-auto-mode)))
               (when target

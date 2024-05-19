@@ -296,10 +296,13 @@ default:
 
 The following customization options affect how files are displayed:
 
-- User Option: hyperdrive-honor-auto-mode-alist ::
+- User Option: hyperdrive-safe-hyperdrives ::
 
-  If non-~nil~, use file extension of hyperdrive file to set ~major-mode~.
-  Defaults to ~t~.
+  List of hyperdrive public keys to be considered safe.  When a
+  hyperdrive is considered safe, browsing files within it will cause a
+  major code to automatically load, running code that could
+  potentially cause harm on your system.  Please be careful when
+  adding a trusted public key to this list.
 
 - User Option: hyperdrive-render-html ::
 

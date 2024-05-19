@@ -6,6 +6,12 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 * 0.4-pre
 
+** Security
+
+- By default, don't automatically load major mode when browsing
+  hyperdrive files.  To enable this behavior for certain trusted
+  hyperdrives, see user option ~h/safe-hyperdrives~.
+
 ** Added
 
 - When visiting an old version of a hyperdrive file, press ~n~ and ~p~ to
