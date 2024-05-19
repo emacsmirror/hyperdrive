@@ -239,14 +239,6 @@ PLZ-ERR should be a `plz-error' struct."
     (_
      (signal 'plz-error (list "plz error" plz-err)))))
 
-;;;###autoload
-(defun hyperdrive-status ()
-  "Return non-nil if `hyper-gateway-ushin' is running and accessible."
-  ;; FIXME: Ensure a very short timeout for this request.
-  (condition-case nil
-      (plz 'get (format "http://localhost:%d/" h/hyper-gateway-ushin-port))
-    (error nil)))
-
 (defun h//httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
   (format "http://localhost:%d/hyper/%s"
@@ -1420,97 +1412,6 @@ Then calls THEN if given."
 
 ;;;; Gateway process
 
-;; NOTE: The below involves some slightly hacky workarounds due to using a
-;; setter for the `h/gateway-process-type' option.  The setter gets called
-;; unexpectedly early in the compilation and/or load process, which causes
-;; errors if the functions/methods and variables involved are not yet defined.
-;; So we define the variable first, giving it a nil value, and define a default
-;; for the running-p method (because the setter gets called before the option is
-;; given its default value), and then the variable is redefined as an option and
-;; given its default value.
-
-(defvar h/gateway-process-type nil)
-
-(cl-defmethod h//gateway-running-p ()
-  "Return non-nil if the gateway process is running.")
-
-(cl-defmethod h//gateway-running-p (&context (h/gateway-process-type (eql 'systemd)))
-  "Return non-nil if the gateway process is running.
-This does not mean that the gateway is responsive, only that the
-process is running.  Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE
-is the symbol `systemd'."
-  (zerop (call-process "systemctl" nil nil nil
-                       "--user" "is-active" "hyper-gateway-ushin.service")))
-
-(cl-defmethod h//gateway-running-p (&context (h/gateway-process-type (eql 'subprocess)))
-  "Return non-nil if the gateway process is running.
-This does not mean that the gateway is responsive, only that the
-process is running.  Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE
-is the symbol `subprocess'."
-  (process-live-p h/gateway-process))
-
-(defcustom h/gateway-process-type nil
-  "How to run the gateway process.
-Value may be one of
-
-- nil             :: Autodetect
-- \\+`systemd'    :: systemd user-level service
-- \\+`subprocess' :: Emacs subprocess
-
-To customize the command run as a subprocess, see
-`hyperdrive-gateway-command'."
-  ;; TODO: Can or should we use the :initialize function here?
-  :set (lambda (option value)
-         "Stop the gateway process before changing the type."
-         (let ((value-changing-p (not (equal h/gateway-process-type value))))
-           (unless value
-             ;; Try to autodetect whether the gateway is already installed as a
-             ;; systemd service.  (If systemd is not installed, it will default to
-             ;; `subprocess'.)
-             (setf value
-                   (if (ignore-errors
-                         (zerop (call-process
-                                 "systemctl" nil nil nil "--user" "is-enabled"
-                                 "hyper-gateway-ushin.service")))
-                       'systemd
-                     'subprocess)))
-           (let ((runningp (h//gateway-running-p)))
-             (when (and runningp value-changing-p)
-               (h//gateway-stop))
-             (set-default option value)
-             (when (and runningp value-changing-p)
-               (h//gateway-start)))))
-  :type '(choice (const :tag "systemd service" systemd)
-                 (const :tag "Emacs subprocess"
-                        :description "When Emacs exits, the gateway will be terminated."
-                        subprocess)
-                 (const :tag "Autodetect" nil))
-  :group 'hyperdrive)
-
-(defcustom h/gateway-command-args "run --writable true --silent true"
-  ;; TODO: File Emacs bug report because the customization formatter handles the
-  ;; "symbol `subprocess'" part differently than `describe-variable' does.
-  "Arguments passed to hyper-gateway-ushin.
-Only used when `hyperdrive-gateway-process-type' is the symbol `subprocess'."
-  :type 'string
-  :group 'hyperdrive)
-
-(cl-defmethod h//gateway-start (&context (h/gateway-process-type (eql 'systemd)))
-  "Start the gateway as a systemd service.
-Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
-`systemd'."
-  (when (h//gateway-running-p)
-    (user-error "Gateway already running"))
-  (let ((buffer (get-buffer-create " *hyperdrive-start*")))
-    (unwind-protect
-        (unless (zerop (call-process
-                        "systemctl" nil (list buffer t) nil
-                        "--user" "start" "hyper-gateway-ushin.service"))
-          (h/error "Unable to start hyper-gateway-ushin: %S"
-                   (with-current-buffer buffer
-                     (string-trim-right (buffer-string)))))
-      (kill-buffer buffer))))
-
 (defun h//hyper-gateway-ushin-path ()
   "Return path to hyper-gateway-ushin executable, or nil if not found."
   (cond ((file-exists-p
@@ -1518,19 +1419,22 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
          (expand-file-name "hyper-gateway-ushin" hyperdrive-gateway-directory))
         ((executable-find "hyper-gateway-ushin"))))
 
-(cl-defmethod h//gateway-start
-  (&context (h/gateway-process-type (eql 'subprocess)))
+(defun h//gateway-start-default ()
   "Start the gateway as an Emacs subprocess.
-Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
-`subprocess'."
-  (when (h//gateway-running-p)
-    (user-error "Gateway already running"))
+Default function; see variable `h/gateway-start-function'."
+  (cond ((and (h//gateway-ready-p)
+              (h//gateway-live-p))
+         (h/error "Gateway already running"))
+        ((h//gateway-ready-p)
+         (h/error "Gateway already running outside of Emacs"))
+        ((h//gateway-live-p)
+         (h/error "Gateway already starting")))
   (let ((hyper-gateway-ushin-path
          (or (h//hyper-gateway-ushin-path)
              (if (yes-or-no-p "hyper-gateway-ushin not installed; install? ")
                  (h/install)
                (h/error "Gateway not installed; aborted")))))
-    (when (defvar h/install-in-progress-p)
+    (when h/install-in-progress-p
       (h/error "Gateway installation in-progress"))
     (setf h/gateway-process
           (make-process
@@ -1539,47 +1443,70 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
            :command (cons hyper-gateway-ushin-path
                           (split-string-and-unquote h/gateway-command-args))
            :connection-type 'pipe))
-    (sleep-for 0.5)
-    (unless (process-live-p h/gateway-process)
-      (if (h/status)
-          (user-error "Gateway is already running outside of Emacs (see option `hyperdrive-gateway-process-type')")
-        (pop-to-buffer " *hyperdrive-start*")
-        (h/error "Gateway failed to start (see process buffer for errors)")))))
+    (h/message "Starting gateway...")
+    ;; TODO: Update hyperdrive-menu to indicate "gateway starting...".
+    (h//gateway-wait-for-ready)))
 
-(cl-defmethod h//gateway-stop (&context (h/gateway-process-type (eql 'systemd)))
-  "Stop the gateway service.
-Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
-`systemd'."
-  (unless (h//gateway-running-p)
-    (user-error "Gateway not running"))
-  (let ((buffer (get-buffer-create " *hyperdrive-stop*")))
-    (unwind-protect
-        (unless (zerop (call-process "systemctl" nil (list buffer t) nil
-                                     "--user" "stop" "hyper-gateway-ushin.service"))
-          (h/error "Unable to stop hyper-gateway-ushin: %S"
-                   (with-current-buffer buffer
-                     (string-trim-right (buffer-string)))))
-      (cl-loop for i below 40
-               do (sleep-for 0.1)
-               while (h//gateway-running-p))
-      (when (h//gateway-running-p)
-        (h/error "Gateway still running"))
-      (kill-buffer buffer))))
+(defun h//gateway-after-start-announce ()
+  "Announce that the gateway is ready."
+  ;; TODO: Update hyperdrive-menu to indicate "gateway ready".
+  (h/message "Gateway ready."))
 
-(cl-defmethod h//gateway-stop (&context (h/gateway-process-type (eql 'subprocess)))
-  "Stop the gateway subprocess.
-Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
-`subprocess'."
-  (unless (h//gateway-running-p)
-    (user-error "Gateway not running"))
+(defun h//gateway-stop-default ()
+  "Stop the gateway subprocess."
+  (unless (h//gateway-live-p)
+    ;; NOTE: We do not try to stop the process if we didn't start it ourselves.
+    (h/error "Gateway not running as subprocess"))
   (interrupt-process h/gateway-process)
-  (cl-loop for i below 40
-           do (sleep-for 0.1)
-           while (h//gateway-running-p))
-  (when (h//gateway-running-p)
-    (h/error "Gateway still running"))
+  (with-timeout (4 (h/error "Gateway still running"))
+    (cl-loop while (h//gateway-live-p)
+             do (sleep-for 0.2)))
+  ;; TODO: Consider killing the process buffer and setting the variable nil in
+  ;; the sentinel.
   (kill-buffer (process-buffer h/gateway-process))
   (setf h/gateway-process nil))
+
+(defun h//gateway-live-p ()
+  "Return non-nil if the gateway process is running.
+Calls function set in option `hyperdrive-gateway-live-predicate'.
+This does not mean that the gateway is responsive, only that the
+process is running.  See also function
+`hyperdrive--gateway-ready-p'."
+  (funcall h/gateway-live-predicate))
+
+(defun h//gateway-live-p-default ()
+  "Return non-nil if the gateway process is running.
+This does not mean that the gateway is responsive, only that the
+process is running.  See also function
+`hyperdrive--gateway-ready-p'."
+  (process-live-p h/gateway-process))
+
+(defun h//gateway-ready-p ()
+  "Return non-nil if the gateway is running and accessible.
+Times out after 2 seconds."
+  (ignore-errors
+    (plz 'get (format "http://localhost:%d/" h/hyper-gateway-ushin-port)
+      :connect-timeout 2 :timeout 2)))
+
+(defun h//gateway-wait-for-ready ()
+  "Run `hyperdrive-gateway-ready-hook' after gateway is ready.
+Or if gateway isn't ready within timeout, show an error."
+  (letrec
+      ((start-time (float-time))
+       (check
+        (lambda ()
+          (cond ((h//gateway-live-p)
+                 (run-hooks 'h/gateway-ready-hook))
+                ((h//gateway-ready-p)
+                 ;; Gateway is responsive, so must be running from outside Emacs.
+                 (run-hooks 'h/gateway-ready-hook)
+                 (h/message "Gateway is already running outside of Emacs"))
+                ((> 10 (time-subtract (float-time) start-time))
+                 ;; Gateway still not responsive: show error.
+                 (pop-to-buffer " *hyperdrive-start*")
+                 (h/error "Gateway failed to start (see process buffer for errors)"))
+                (t (run-at-time 0.1 nil check))))))
+    (funcall check)))
 
 ;;;; Misc.
 

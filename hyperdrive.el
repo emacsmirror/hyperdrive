@@ -96,17 +96,20 @@
 ;;;###autoload
 (defun hyperdrive-start ()
   "Start `hyper-gateway-ushin' if not already running.
-Customize behavior with `hyperdrive-gateway-process-type', which see."
+Calls function set in option `hyperdrive-gateway-start-function',
+which see."
   (interactive)
   ;; TODO: Verify that the expected version, e.g., 3.7.0, is installed.
-  (h//gateway-start))
+  (funcall h/gateway-start-function))
 
 ;;;###autoload
 (defun hyperdrive-stop ()
   "Stop `hyper-gateway-ushin' if running.
-Customize behavior with `hyperdrive-gateway-process-type', which see."
+Calls function set in option `hyperdrive-gateway-stop-function',
+which see."
   (interactive)
-  (h//gateway-stop))
+  (funcall h/gateway-stop-function)
+  (h/message "Gateway stopped."))
 
 ;;;###autoload
 (defun hyperdrive-hyper-gateway-ushin-version ()
@@ -816,7 +819,7 @@ The return value of this function is the retrieval buffer."
 (defvar h/menu-bar-menu
   '(("Gateway"
      :label
-     (format "Gateway (%s)" (if (h/status) "on" "off"))
+     (format "Gateway (%s)" (if (h//gateway-ready-p) "on" "off"))
      ["Start Gateway" h/start
       :help "Start hyper-gateway-ushin"]
      ["Stop Gateway" h/stop
@@ -1285,15 +1288,11 @@ Intended for relative (i.e. non-full) URLs."
        :sha256 "")))
   "Alist mapping `system-type' to URLs where hyper-gateway-ushin can be downloaded.")
 
-(defvar h/install-in-progress-p nil
-  "Non-nil while hyperdrive is installing or upgrading the gateway.")
-
 ;;;###autoload
 (defun h/install (&optional forcep)
   "Install hyper-gateway-ushin.
-Sets `hyperdrive-gateway-process-type' to \\+`subprocess'.  If
-FORCEP, force downloading and installing of the expected gateway
-version."
+If FORCEP, force downloading and installing of the expected
+gateway version."
   (interactive (list current-prefix-arg))
   (when h/install-in-progress-p
     (h/error "Installation of gateway already in progress"))
@@ -1335,22 +1334,26 @@ version."
                (then file-name)
              (try)))
          (then (file-name)
-           (defvar h/gateway-directory)
-           (let ((destination-name (expand-file-name "hyper-gateway-ushin" h/gateway-directory)))
+           (let ((destination-name
+                  (expand-file-name "hyper-gateway-ushin" h/gateway-directory)))
              (when (file-exists-p destination-name)
                (move-file-to-trash destination-name))
              (unless (file-directory-p h/gateway-directory)
                (mkdir h/gateway-directory t))
              (rename-file file-name destination-name)
              (chmod destination-name #o755))
-           ;; NOTE: While `h/gateway-process-type' still exists, this is subtly
-           ;; broken, but we will remove that.
-           ;; FIXME: Remove `h/gateway-process-type' option.
            (setf h/install-in-progress-p nil)
-           (if (h//gateway-running-p)
-               (when (yes-or-no-p "Installed hyper-gateway-ushin.  Restart gateway?")
-                 (h/restart))
-             (h/message "hyper-gateway-ushin installed.  Try \\[hyperdrive-start]."))))
+           (cond ((h//gateway-live-p)
+                  ;; Gateway running inside of Emacs: prompt to restart it.
+                  (when (yes-or-no-p "Installed hyper-gateway-ushin.  Restart gateway?")
+                    (h/restart)))
+                 ((h//gateway-ready-p)
+                  ;; Gateway appears to be running outside of Emacs: the user
+                  ;; must stop it manually before we can start it.
+                  (h/message "New gateway installed but an existing gateway process is running outside of Emacs; you must manually stop it before the new version can be started with \\[hyperdrive-start]"))
+                 (t
+                  ;; Gateway not running: prompt the user to start it.
+                  (h/message "hyper-gateway-ushin installed.  Try \\[hyperdrive-start].")))))
       (try))))
 
 (defun h/restart ()
@@ -1359,7 +1362,7 @@ version."
   (h/message "Restarting gateway...")
   (hyperdrive-stop)
   (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
-    (cl-loop while (h//gateway-running-p)
+    (cl-loop while (h//gateway-live-p)
              do (sleep-for 0.2)))
   (hyperdrive-start)
   (h/message "Gateway restarted."))

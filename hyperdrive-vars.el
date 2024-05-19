@@ -370,8 +370,10 @@ May also be non-nil if the user has chosen to use whatever
 version is currently installed.")
 
 (defvar h/gateway-process nil
-  "Hyper-gateway-ushin process.
-Only used when `hyperdrive-gateway-process-type' is `subprocess'.")
+  "Hyper-gateway-ushin process.")
+
+(defvar h/install-in-progress-p nil
+  "Non-nil while hyperdrive is installing or upgrading the gateway.")
 
 (defvar-local h/current-entry nil
   "Entry for current buffer.")
@@ -402,6 +404,37 @@ Keys are regexps matched against MIME types.")
            :descending string>
            :desc "Name"))
   "Fields for sorting hyperdrive directory buffer columns.")
+
+(declare-function h//gateway-start-default "hyperdrive-lib")
+(defcustom h/gateway-start-function #'h//gateway-start-default
+  "Function called to start the gateway.
+Should call `hyperdrive--gateway-wait-for-ready' after starting
+the gateway process."
+  :type 'function)
+
+(declare-function h//gateway-stop-default "hyperdrive-lib")
+(defcustom h/gateway-stop-function #'h//gateway-stop-default
+  "Function called to stop the gateway.
+This function should signal an error if it fails to stop the
+gateway process."
+  :type 'function)
+
+(declare-function h//gateway-live-p-default "hyperdrive-lib")
+(defcustom h/gateway-live-predicate #'h//gateway-live-p-default
+  "Predicate function which returns non-nil if the gateway process is live."
+  :type 'function)
+
+(defcustom h/gateway-ready-hook
+  '(h//gateway-after-start-announce)
+  "Hook called when gateway is ready after starting it.
+This hook is called by `hyperdrive--gateway-wait-for-ready' after
+`hyperdrive-start'."
+  :type 'hook)
+
+(defcustom h/gateway-command-args "run --writable true --silent true"
+  "Arguments passed to hyper-gateway-ushin."
+  :type 'string
+  :group 'hyperdrive)
 
 ;;;; Footer
 
