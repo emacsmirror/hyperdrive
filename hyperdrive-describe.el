@@ -54,7 +54,9 @@ Universal prefix argument \\[universal-argument] forces
     (with-silent-modifications
       (h/describe-mode)
       (setq-local h/describe-current-hyperdrive hyperdrive)
-      (pcase-let (((cl-struct hyperdrive metadata writablep) hyperdrive))
+      (pcase-let*
+          (((cl-struct hyperdrive metadata writablep etc) hyperdrive)
+           ((map disk-usage) etc))
         (erase-buffer)
         (insert
          (propertize "Hyperdrive: \n" 'face 'bold)
@@ -65,6 +67,11 @@ Universal prefix argument \\[universal-argument] forces
          (h//format hyperdrive "Domains: %D\n" h/raw-formats)
          (format "Latest version: %s\n" (h/latest-version hyperdrive))
          (format "Writable: %s\n" (if writablep "yes" "no"))
+         (format "Disk usage: %s\n"
+                 (propertize (if disk-usage
+                                 (file-size-human-readable disk-usage)
+                               "Unknown")
+                             'face 'hyperdrive-size))
          (format "Metadata: %s\n"
                  (if metadata
                      (with-temp-buffer
