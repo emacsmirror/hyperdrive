@@ -1296,7 +1296,7 @@ FORCEP, force downloading and installing of the expected gateway
 version."
   (interactive (list current-prefix-arg))
   (when h/install-in-progress-p
-    (user-error "hyper-gateway installation already in progress"))
+    (h/error "Installation of gateway already in progress"))
   (declare-function h//hyper-gateway-ushin-path "hyperdrive-lib")
   (unless forcep
     (when (h//hyper-gateway-ushin-path)
@@ -1347,7 +1347,7 @@ version."
            ;; FIXME: Remove `h/gateway-process-type' option.
            (setf h/install-in-progress-p nil)
            (if (h//gateway-running-p)
-               (when (yes-or-no-p "hyper-gateway-ushin installed.  Restart gateway?")
+               (when (yes-or-no-p "Installed hyper-gateway-ushin.  Restart gateway?")
                  (h/restart))
              (h/message "hyper-gateway-ushin installed.  Try \\[hyperdrive-start]."))))
       (try))))

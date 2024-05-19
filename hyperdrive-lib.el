@@ -1541,7 +1541,7 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
       (file-missing
        (info "(hyperdrive) hyper-gateway-ushin")
        (user-error
-        "hyper-gateway-ushin not found; Please see installation instructions")))
+        "Program hyper-gateway-ushin not found; Please see installation instructions")))
     (sleep-for 0.5)
     (unless (process-live-p h/gateway-process)
       (if (h/status)
