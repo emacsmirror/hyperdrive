@@ -1313,7 +1313,7 @@ version."
              (h/error "Downloading failed; no more mirrors available")))
          ;; TODO: Test.
          (head-size (url)
-           (when-let ((response (ignore-errors (plz 'head url :as 'response))))
+           (when-let ((response (plz 'head url :as 'response)))
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
@@ -1325,7 +1325,8 @@ version."
                                 plz-error)
                      (try)))
            (h/message "Downloading gateway (%s)..."
-                      (or (file-size-human-readable (head-size url))
+                      (or (ignore-errors
+                            (file-size-human-readable (head-size url)))
                           "unknown size")))
          (check (file-name sha256)
            (if (with-temp-buffer
