@@ -1341,6 +1341,17 @@ version."
             (h/message "hyper-gateway-ushin installed.")))
       (setf install-in-progress-p nil))))
 
+(defun h/restart ()
+  "Restart the gateway."
+  (interactive)
+  (h/message "Restarting gateway...")
+  (hyperdrive-stop)
+  (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
+    (cl-loop while (h//gateway-running-p)
+             do (sleep-for 0.2)))
+  (hyperdrive-start)
+  (h/message "Gateway restarted."))
+
 ;;;; Footer
 
 (provide 'hyperdrive)
