@@ -1527,21 +1527,18 @@ Used when HYPERDRIVE-GATEWAY-PROCESS-TYPE is the symbol
     (user-error "Gateway already running"))
   (let ((hyper-gateway-ushin-path
          (or (h//hyper-gateway-ushin-path)
-             (user-error (substitute-command-keys
-                          "Executable \"hyper-gateway-ushin\" not found.\
-  Try \\[hyperdrive-install]")))))
-    (condition-case nil
-        (setf h/gateway-process
-              (make-process
-               :name "hyper-gateway-ushin"
-               :buffer " *hyperdrive-start*"
-               :command (cons hyper-gateway-ushin-path
-                              (split-string-and-unquote h/gateway-command-args))
-               :connection-type 'pipe))
-      (file-missing
-       (info "(hyperdrive) hyper-gateway-ushin")
-       (user-error
-        "Program hyper-gateway-ushin not found; Please see installation instructions")))
+             (if (yes-or-no-p "hyper-gateway-ushin not installed; install? ")
+                 (h/install)
+               (h/error "Gateway not installed; aborted")))))
+    (when (defvar h/install-in-progress-p)
+      (h/error "Gateway installation in-progress"))
+    (setf h/gateway-process
+          (make-process
+           :name "hyper-gateway-ushin"
+           :buffer " *hyperdrive-start*"
+           :command (cons hyper-gateway-ushin-path
+                          (split-string-and-unquote h/gateway-command-args))
+           :connection-type 'pipe))
     (sleep-for 0.5)
     (unless (process-live-p h/gateway-process)
       (if (h/status)
