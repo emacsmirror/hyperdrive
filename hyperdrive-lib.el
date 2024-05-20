@@ -167,8 +167,12 @@ make the request."
   ;;  could remove redundant calls to
   ;;  `h//fill-latest-version' everywhere else.
   (declare (indent defun))
+  ;; `h/ensure-gateway' will signal an error if the gateway is not responsive.
   (unless (h/ensure-gateway)
-    (h/error "Gateway not installed or incorrect version; request aborted"))
+    ;; NOTE: `h/error' displays "hyperdrive error: Installing gateway" in the
+    ;; echo area, which might be misinterpreted as an indication that the
+    ;; installation failed.
+    (error "Installing gateway"))
   (pcase method
     ((and (or 'get 'head)
           (guard (string-suffix-p "/" url)))
