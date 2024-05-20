@@ -32,16 +32,32 @@ So, e.g. ~makem~'s ~lint-declare~ rule, which uses ~check-declare~, gives false 
   - [ ] Gateway may or may not have been downloaded at different version
   - [ ] Gateway may be installed at location in PATH but not the one we expect
 
-*** Gateway
-
-| Location | Version | Running |
-...
-
 ** Decisions
 
 + We don't want to delete or install ~hyper-gateway-ushin~ anywhere other than ~~/.local/lib/hyperdrive.el~. :: In case the user has installed a different version at a different location, we want to respect that.
 +  :: 
 
+** Testing gateway commands
+
+| Should test           | 👍 install | 👍 start | 👍 stop | gateway-in-expected-place | gateway-only-in-path | running-as-subprocess | running-outside-Emacs |
+|-----------------------+------------+----------+---------+---------------------------+----------------------+-----------------------+-----------------------|
+| no (impossible)       |            |          |         | yes                       | yes                  | yes                   | yes                   |
+| no (impossible)       |            |          |         | yes                       | no                   | yes                   | yes                   |
+| no (impossible)       |            |          |         | no                        | yes                  | yes                   | yes                   |
+| no (impossible)       |            |          |         | no                        | no                   | yes                   | yes                   |
+| no (unlikely)         |            |          |         | yes                       | no                   | no                    | yes                   |
+| no (unlikely)         |            |          |         | no                        | no                   | no                    | yes                   |
+| no (unlikely)         |            |          |         | no                        | no                   | yes                   | no                    |
+| no (won't check PATH) |            |          |         | yes                       | yes                  | no                    | yes                   |
+| no (won't check PATH) |            |          |         | yes                       | yes                  | yes                   | no                    |
+| no (won't check PATH) |            |          |         | yes                       | yes                  | no                    | no                    |
+|-----------------------+------------+----------+---------+---------------------------+----------------------+-----------------------+-----------------------|
+| yes                   | yes        | yes      | yes     | no                        | no                   | no                    | no                    |
+| yes                   | yes        | yes      | yes     | no                        | yes                  | no                    | no                    |
+| yes                   | yes        | yes      | yes     | no                        | yes                  | no                    | yes                   |
+| yes                   | yes        | yes      | yes     | no                        | yes                  | yes                   | no                    |
+| yes                   | yes        | yes      | yes     | yes                       | no                   | no                    | no                    |
+| yes                   | yes        | yes      | yes     | yes                       | no                   | yes                   | no                    |
 * PROJECT Petnames
 :PROPERTIES:
 :ID:       e5b0c0f1-7ebc-4e8c-9712-cd2cd4a055ce
