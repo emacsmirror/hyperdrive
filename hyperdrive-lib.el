@@ -202,6 +202,12 @@ make the request."
 (defun h/ensure-gateway ()
   "Return non-nil if gateway version correct; or offer install and return nil."
   (declare-function hyperdrive-hyper-gateway-ushin-version "hyperdrive")
+  ;; TODO: If possible, reset the value of `h/gateway-version-correct-p' when
+  ;; hyperdrive.el is upgraded, since a new version of hyperdrive.el may require
+  ;; a new version of hyper-gateway-ushin.  Alternatively, since upgrading
+  ;; hyperdrive.el should change the value of `h/gateway-version-expected',
+  ;; could we memoize this function and make it run again when the expected
+  ;; version changes?
   (defvar h/gateway-version-correct-p)
   (defvar h/gateway-version-expected)
   (or h/gateway-version-correct-p
