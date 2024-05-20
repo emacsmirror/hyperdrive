@@ -1359,11 +1359,11 @@ gateway version."
   (interactive)
   (h/message "Restarting gateway...")
   ;; TODO: Just start the gateway if it's already stopped?
-  (hyperdrive-stop)
+  (h/stop)
   (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
     (cl-loop while (h//gateway-live-p)
              do (sleep-for 0.2)))
-  (hyperdrive-start))
+  (h/start))
 
 ;; (defun h//gateway-appears-valid-p ()
 ;;   "Return non-nil if a local installation of the gateway appears valid.
