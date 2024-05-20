@@ -99,7 +99,7 @@
 Calls function set in option `hyperdrive-gateway-start-function',
 which see."
   (interactive)
-  ;; TODO: Verify that the expected version, e.g., 3.7.0, is installed.
+  ;; TODO: Verify that the expected version, e.g., 3.7.0, is installed.  Do this in an after-start hook?
   (funcall h/gateway-start-function))
 
 ;;;###autoload
