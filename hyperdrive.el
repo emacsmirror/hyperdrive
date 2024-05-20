@@ -1363,8 +1363,7 @@ gateway version."
   (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
     (cl-loop while (h//gateway-live-p)
              do (sleep-for 0.2)))
-  (hyperdrive-start)
-  (h/message "Gateway restarted."))
+  (hyperdrive-start))
 
 ;; (defun h//gateway-appears-valid-p ()
 ;;   "Return non-nil if a local installation of the gateway appears valid.
