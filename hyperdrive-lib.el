@@ -1504,16 +1504,16 @@ Times out after 2 seconds."
   "Run `hyperdrive-gateway-ready-hook' after gateway is ready.
 Or if gateway isn't ready within timeout, show an error."
   (letrec
-      ((start-time (float-time))
+      ((start-time (current-time))
        (check
         (lambda ()
-          (cond ((h//gateway-live-p)
+          (cond ((and (h//gateway-live-p) (h//gateway-ready-p))
                  (run-hooks 'h/gateway-ready-hook))
                 ((h//gateway-ready-p)
                  ;; Gateway is responsive, so must be running from outside Emacs.
                  (run-hooks 'h/gateway-ready-hook)
                  (h/message "Gateway is already running outside of Emacs"))
-                ((> 10 (time-subtract (float-time) start-time))
+                ((< 10 (float-time (time-subtract nil start-time)))
                  ;; Gateway still not responsive: show error.
                  (pop-to-buffer " *hyperdrive-start*")
                  (h/error "Gateway failed to start (see process buffer for errors)"))
