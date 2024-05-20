@@ -119,8 +119,6 @@ Gateway must be running."
   (condition-case err
       (let* ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port))
              (version (alist-get 'version (plz 'get url :as #'json-read))))
-        (when (equal version h/gateway-version-expected)
-          (setf h/gateway-version-correct-p t))
         (when (called-interactively-p 'any)
           (h/message "hyper-gateway-ushin version %s" version))
         version)
