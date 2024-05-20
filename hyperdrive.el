@@ -1358,6 +1358,7 @@ gateway version."
   "Restart the gateway."
   (interactive)
   (h/message "Restarting gateway...")
+  ;; TODO: Just start the gateway if it's already stopped?
   (hyperdrive-stop)
   (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
     (cl-loop while (h//gateway-live-p)
