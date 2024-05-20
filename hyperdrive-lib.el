@@ -1507,6 +1507,7 @@ Or if gateway isn't ready within timeout, show an error."
       ((start-time (current-time))
        (check
         (lambda ()
+          ;; FIXME: Double-check this behavior.  Is the timer running multiple times?
           (cond ((and (h//gateway-live-p) (h//gateway-ready-p))
                  (run-hooks 'h/gateway-ready-hook))
                 ((h//gateway-ready-p)
