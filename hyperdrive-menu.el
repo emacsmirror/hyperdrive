@@ -205,8 +205,11 @@
     :description
     (lambda ()
       (concat (propertize "Gateway: " 'face 'transient-heading)
-              (propertize (if (h//gateway-ready-p) "on" "off")
-                          'face 'transient-value)))
+              (propertize
+               (cond ((h//gateway-ready-p) "on")
+                     ((h//gateway-live-p) "starting")
+                     (t "off"))
+               'face 'transient-value)))
     ("G s" "Start" h/start
      :transient t)
     ("G S" "Stop" h/stop

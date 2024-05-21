@@ -1456,7 +1456,6 @@ Default function; see variable `h/gateway-start-function'."
                           (split-string-and-unquote h/gateway-command-args))
            :connection-type 'pipe))
     (h/message "Starting gateway...")
-    ;; TODO: Update hyperdrive-menu to indicate "gateway starting...".
     (h//gateway-wait-for-ready)))
 
 (defun h//gateway-after-start-announce ()
