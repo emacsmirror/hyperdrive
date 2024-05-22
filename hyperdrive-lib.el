@@ -1454,7 +1454,8 @@ Default function; see variable `h/gateway-start-function'."
   ;; TODO: Consider killing the process buffer and setting the variable nil in
   ;; the sentinel.
   (kill-buffer (process-buffer h/gateway-process))
-  (setf h/gateway-process nil))
+  (setf h/gateway-process nil)
+  (h/message "Gateway stopped."))
 
 (defun h//gateway-live-p ()
   "Return non-nil if the gateway process is running.

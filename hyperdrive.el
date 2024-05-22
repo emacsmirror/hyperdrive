@@ -124,8 +124,7 @@ which see."
 Calls function set in option `hyperdrive-gateway-stop-function',
 which see."
   (interactive)
-  (funcall h/gateway-stop-function)
-  (h/message "Gateway stopped."))
+  (funcall h/gateway-stop-function))
 
 ;;;###autoload
 (defun hyperdrive-hyper-gateway-ushin-version ()
