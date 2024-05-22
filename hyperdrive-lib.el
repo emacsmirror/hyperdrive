@@ -1434,8 +1434,7 @@ Default function; see variable `h/gateway-start-function'."
            :command (cons hyper-gateway-ushin-path
                           (split-string-and-unquote h/gateway-command-args))
            :connection-type 'pipe))
-    (h/message "Starting gateway...")
-    (h//gateway-wait-for-ready)))
+    (h/message "Starting gateway...")))
 
 (defun h//gateway-after-start-announce ()
   "Announce that the gateway is ready."
