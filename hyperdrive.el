@@ -112,17 +112,11 @@ which see."
   (funcall h/gateway-stop-function))
 
 ;;;###autoload
-(defun hyperdrive-hyper-gateway-ushin-version ()
-  "Say version number of `hyper-gateway-ushin'.
-Gateway must be running."
+(defun hyperdrive-gateway-version ()
+  "Say version number of gateway.
+Return version if gateway is running; otherwise signal an error."
   (interactive)
-  (condition-case err
-      (let* ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port))
-             (version (alist-get 'version (plz 'get url :as #'json-read))))
-        (when (called-interactively-p 'any)
-          (h/message "hyper-gateway-ushin version %s" version))
-        version)
-    (plz-error (h/api-default-else nil (caddr err)))))
+  (h/message "%s" (h//gateway-version)))
 
 ;;;###autoload
 (defun hyperdrive-new (seed)

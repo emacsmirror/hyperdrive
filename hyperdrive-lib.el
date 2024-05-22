@@ -202,13 +202,19 @@ make the request."
 Unconditionally sets `h/gateway-version-checked-p' to t.  The
 caller should ensure that the gateway is running before calling
 this function."
-  ;; TODO: Consider moving `hyperdrive-hyper-gateway-ushin-version' into this file.
-  (declare-function hyperdrive-hyper-gateway-ushin-version "hyperdrive")
   (unless (equal h/gateway-version-expected
                  ;; This will signal an error if the gateway is not responsive.
-                 (hyperdrive-hyper-gateway-ushin-version))
+                 (h//gateway-version))
     (display-warning 'hyperdrive "Gateway version not expected; consider installing the latest version with \\[hyperdrive-install]" :warning))
   (setf h/gateway-version-checked-p t))
+
+(defun h//gateway-version ()
+  "Return the version number of gateway.
+If it's not running, signal an error."
+  (condition-case err
+      (let ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port)))
+        (alist-get 'version (plz 'get url :as #'json-read)))
+    (plz-error (h/api-default-else nil (caddr err)))))
 
 (defun h/api-default-else (else plz-err)
   "Handle common errors, overriding ELSE.
