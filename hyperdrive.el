@@ -100,7 +100,23 @@ Calls function set in option `hyperdrive-gateway-start-function',
 which see."
   (interactive)
   ;; TODO: Verify that the expected version, e.g., 3.7.0, is installed.  Do this in an after-start hook?
-  (funcall h/gateway-start-function))
+  (cond ((and (h//gateway-ready-p)
+              (or h/gateway-version-correct-p
+                  (h//gateway-at-expected-version-p)))
+         ;; Gateway already running and at expected version: call
+         ;; `gateway-wait-for-ready', which will run the run the
+         ;; gateway-ready-hook, because we're not calling the gateway-start
+         ;; function.
+         (h//gateway-wait-for-ready))
+        ((h//gateway-ready-p)
+         ;; Running but wrong version: prompt to upgrade or accept.
+         (if (yes-or-no-p "Gateway not installed at expected version; download correct version (yes) or proceed anyway (no)? ")
+             (h/install 'force)
+           ;; Override and use existing version.
+           (setf h/gateway-version-correct-p t)))
+        (t
+         ;; Gateway not running: start it, then check its version.
+         (funcall h/gateway-start-function))))
 
 ;;;###autoload
 (defun hyperdrive-stop ()

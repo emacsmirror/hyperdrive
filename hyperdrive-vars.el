@@ -364,6 +364,11 @@ values are alists mapping version range starts to plists with
 
 (defvar h/gateway-version-expected "3.8.0")
 
+(defvar h/gateway-version-checked-p nil
+  "Non-nil if the gateway's version has been checked.
+If the version was unexpected,
+`hyperdrive--check-gateway-version' displayed a warning.")
+
 (defvar h/gateway-process nil
   "Hyper-gateway-ushin process.")
 
@@ -419,8 +424,9 @@ gateway process."
   "Predicate function which returns non-nil if the gateway process is live."
   :type 'function)
 
+;; TODO: Consider having a private hook as well as a public one.
 (defcustom h/gateway-ready-hook
-  '(h//gateway-after-start-announce)
+  '(h//check-gateway-version h//gateway-after-start-announce)
   "Hook called when gateway is ready after starting it.
 This hook is called by `hyperdrive--gateway-wait-for-ready' after
 `hyperdrive-start'."

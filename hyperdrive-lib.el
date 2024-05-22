@@ -168,11 +168,6 @@ make the request."
   ;;  `h//fill-latest-version' everywhere else.
   (declare (indent defun))
   ;; `h/ensure-gateway' will signal an error if the gateway is not responsive.
-  (unless (h/ensure-gateway)
-    ;; NOTE: `h/error' displays "hyperdrive error: Installing gateway" in the
-    ;; echo area, which might be misinterpreted as an indication that the
-    ;; installation failed.
-    (error "Installing gateway"))
   (pcase method
     ((and (or 'get 'head)
           (guard (string-suffix-p "/" url)))
@@ -203,35 +198,17 @@ make the request."
        ;; We pass only the `plz-error' struct to the ELSE* function.
        (funcall else* (caddr err))))))
 
-(let (gateway-version-correct-p)
-  (defun h/ensure-gateway ()
-    "Return non-nil if gateway is responsive at the correct version.
-Otherwise, offer install the gateway.  If the user chooses
-to (asynchronously) install the gateway, return nil.  If the user
-chooses to proceed without installing the gateway, return non-nil
-and remember the user's choice.  Signals an error if the gateway
-is not responsive."
-    (declare-function hyperdrive-hyper-gateway-ushin-version "hyperdrive")
-    ;; TODO: If possible, reset the value of `gateway-version-correct-p' when
-    ;; hyperdrive.el is upgraded, since a new version of hyperdrive.el may require
-    ;; a new version of hyper-gateway-ushin.  Alternatively, since upgrading
-    ;; hyperdrive.el should change the value of `h/gateway-version-expected',
-    ;; could we memoize this function and make it run again when the expected
-    ;; version changes?
-    (defvar h/gateway-version-expected)
-    (or gateway-version-correct-p
-        ;; Version unknown: verify it.
-        (when (equal h/gateway-version-expected
-                     ;; This will signal an error if the gateway is not responsive.
-                     (hyperdrive-hyper-gateway-ushin-version))
-          (setf gateway-version-correct-p t))
-        (if (yes-or-no-p "Gateway not installed at expected version; download correct version (yes) or proceed anyway (no)? ")
-            (progn
-              (declare-function h/install "hyperdrive")
-              (h/install 'force)
-              nil)
-          ;; Override and use existing version.
-          (setf gateway-version-correct-p t)))))
+(defun h//check-gateway-version ()
+  "Check and return whether gateway is at expected version.
+Sets `h/gateway-version-expected' if so.  The caller should
+ensure that the gateway is running before calling this function."
+  ;; TODO: Consider moving `hyperdrive-hyper-gateway-ushin-version' into this file.
+  (declare-function hyperdrive-hyper-gateway-ushin-version "hyperdrive")
+  (unless (equal h/gateway-version-expected
+                 ;; This will signal an error if the gateway is not responsive.
+                 (hyperdrive-hyper-gateway-ushin-version))
+    (display-warning 'hyperdrive "Gateway version not expected; consider installing the latest version with \\[hyperdrive-install]" :warning))
+  (setf h/gateway-version-checked-p t))
 
 (defun h/api-default-else (else plz-err)
   "Handle common errors, overriding ELSE.
