@@ -167,7 +167,6 @@ make the request."
   ;;  could remove redundant calls to
   ;;  `h//fill-latest-version' everywhere else.
   (declare (indent defun))
-  ;; `h/ensure-gateway' will signal an error if the gateway is not responsive.
   (pcase method
     ((and (or 'get 'head)
           (guard (string-suffix-p "/" url)))
