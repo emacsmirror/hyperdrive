@@ -198,9 +198,10 @@ make the request."
        (funcall else* (caddr err))))))
 
 (defun h//check-gateway-version ()
-  "Check and return whether gateway is at expected version.
-Sets `h/gateway-version-expected' if so.  The caller should
-ensure that the gateway is running before calling this function."
+  "Warn if gateway is at not at the expected version.
+Unconditionally sets `h/gateway-version-checked-p' to `t'.  The
+caller should ensure that the gateway is running before calling
+this function."
   ;; TODO: Consider moving `hyperdrive-hyper-gateway-ushin-version' into this file.
   (declare-function hyperdrive-hyper-gateway-ushin-version "hyperdrive")
   (unless (equal h/gateway-version-expected
