@@ -1421,7 +1421,9 @@ Default function; see variable `h/gateway-start-function'."
   (let ((hyper-gateway-ushin-path
          (or (h//hyper-gateway-ushin-path)
              (if (yes-or-no-p "hyper-gateway-ushin not installed; install? ")
-                 (h/install)
+                 (progn
+                   (declare-function h/install "hyperdrive")
+                   (h/install))
                (h/error "Gateway not installed; aborted")))))
     (when h/install-in-progress-p
       (h/error "Gateway installation in-progress"))
