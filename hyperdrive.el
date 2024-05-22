@@ -1341,7 +1341,7 @@ gateway version."
              (rename-file file-name destination-name)
              (chmod destination-name #o755))
            (setf h/install-in-progress-p nil)
-           (cond ((h//gateway-live-p)
+           (cond ((h/gateway-live-p)
                   ;; Gateway running inside of Emacs: prompt to restart it.
                   (when (yes-or-no-p "Installed hyper-gateway-ushin.  Restart gateway?")
                     (h/restart)))
@@ -1361,7 +1361,7 @@ gateway version."
   ;; TODO: Just start the gateway if it's already stopped?
   (h/stop)
   (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
-    (cl-loop while (h//gateway-live-p)
+    (cl-loop while (h/gateway-live-p)
              do (sleep-for 0.2)))
   (h/start))
 

@@ -419,8 +419,8 @@ This function should signal an error if it fails to stop the
 gateway process."
   :type 'function)
 
-(declare-function h//gateway-live-p-default "hyperdrive-lib")
-(defcustom h/gateway-live-predicate #'h//gateway-live-p-default
+(declare-function h/gateway-live-p-default "hyperdrive-lib")
+(defcustom h/gateway-live-predicate #'h/gateway-live-p-default
   "Predicate function which returns non-nil if the gateway process is live."
   :type 'function)
 

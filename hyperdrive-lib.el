@@ -1412,11 +1412,11 @@ Then calls THEN if given."
   "Start the gateway as an Emacs subprocess.
 Default function; see variable `h/gateway-start-function'."
   (cond ((and (h//gateway-ready-p)
-              (h//gateway-live-p))
+              (h/gateway-live-p))
          (h/error "Gateway already running"))
         ((h//gateway-ready-p)
          (h/error "Gateway already running outside of Emacs"))
-        ((h//gateway-live-p)
+        ((h/gateway-live-p)
          (h/error "Gateway already starting")))
   (let ((hyper-gateway-ushin-path
          (or (h//hyper-gateway-ushin-path)
@@ -1443,12 +1443,12 @@ Default function; see variable `h/gateway-start-function'."
 
 (defun h//gateway-stop-default ()
   "Stop the gateway subprocess."
-  (unless (h//gateway-live-p)
+  (unless (h/gateway-live-p)
     ;; NOTE: We do not try to stop the process if we didn't start it ourselves.
     (h/error "Gateway not running as subprocess"))
   (interrupt-process h/gateway-process)
   (with-timeout (4 (h/error "Gateway still running"))
-    (cl-loop while (h//gateway-live-p)
+    (cl-loop while (h/gateway-live-p)
              do (sleep-for 0.2)))
   ;; TODO: Consider killing the process buffer and setting the variable nil in
   ;; the sentinel.
@@ -1456,7 +1456,7 @@ Default function; see variable `h/gateway-start-function'."
   (setf h/gateway-process nil)
   (h/message "Gateway stopped."))
 
-(defun h//gateway-live-p ()
+(defun h/gateway-live-p ()
   "Return non-nil if the gateway process is running.
 Calls function set in option `hyperdrive-gateway-live-predicate'.
 This does not mean that the gateway is responsive, only that the
@@ -1464,7 +1464,7 @@ process is running.  See also function
 `hyperdrive--gateway-ready-p'."
   (funcall h/gateway-live-predicate))
 
-(defun h//gateway-live-p-default ()
+(defun h/gateway-live-p-default ()
   "Return non-nil if the gateway process is running.
 This does not mean that the gateway is responsive, only that the
 process is running.  See also function
@@ -1486,9 +1486,9 @@ Or if gateway isn't ready within timeout, show an error."
        (check
         (lambda ()
           ;; FIXME: Double-check this behavior.  Is the timer running multiple times?
-          (cond ((and (h//gateway-live-p) (h//gateway-ready-p))
+          (cond ((and (h/gateway-live-p) (h//gateway-ready-p))
                  ;; FIXME: If the gateway is already running outside of Emacs,
-                 ;; will `h//gateway-live-p' return non-nil if `check' runs
+                 ;; will `h/gateway-live-p' return non-nil if `check' runs
                  ;; before the subprocess dies with an error?
                  (run-hooks 'h/gateway-ready-hook))
                 ((h//gateway-ready-p)
