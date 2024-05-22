@@ -197,7 +197,7 @@ make the request."
        ;; We pass only the `plz-error' struct to the ELSE* function.
        (funcall else* (caddr err))))))
 
-(defun h//check-gateway-version ()
+(defun h/check-gateway-version ()
   "Warn if gateway is at not at the expected version.
 Unconditionally sets `h/gateway-version-checked-p' to t.  The
 caller should ensure that the gateway is running before calling
@@ -1444,7 +1444,7 @@ Default function; see variable `h/gateway-start-function'."
     ;; twice in close succession.
     (h/message "Starting gateway...")))
 
-(defun h//gateway-after-start-announce ()
+(defun h/gateway-after-start-announce ()
   "Announce that the gateway is ready."
   ;; TODO: Update hyperdrive-menu to indicate "gateway ready".
   (h/message "Gateway ready."))
