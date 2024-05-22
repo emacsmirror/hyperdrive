@@ -199,7 +199,7 @@ make the request."
 
 (defun h//check-gateway-version ()
   "Warn if gateway is at not at the expected version.
-Unconditionally sets `h/gateway-version-checked-p' to `t'.  The
+Unconditionally sets `h/gateway-version-checked-p' to t.  The
 caller should ensure that the gateway is running before calling
 this function."
   ;; TODO: Consider moving `hyperdrive-hyper-gateway-ushin-version' into this file.
