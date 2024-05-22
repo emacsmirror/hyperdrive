@@ -34,6 +34,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Fixed link targets/fragments for non-Org documents, like HTML.
 - More reliably kill intermediate buffers when generating a diff.
 - Avoid unnecessarily updating ~hyperdrive-version-ranges~.
+- Include the first file in a directory as an ~imenu~ candidate.
 
 ** Internal
 
