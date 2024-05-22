@@ -122,10 +122,10 @@ PREDICATE is called with the full node."
   ;; Intended to be like `ewoc-collect', but working with the full
   ;; node instead of just the node's data.
   (cl-loop with node = (ewoc-nth ewoc 0)
-           do (setf node (ewoc-next ewoc node))
            while node
            when (funcall predicate node)
-           collect node))
+           collect node
+           do (setf node (ewoc-next ewoc node))))
 
 (provide 'hyperdrive-ewoc)
 
