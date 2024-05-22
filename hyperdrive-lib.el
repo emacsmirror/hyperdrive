@@ -1489,9 +1489,6 @@ Or if gateway isn't ready within timeout, show an error."
         (lambda ()
           ;; FIXME: Double-check this behavior.  Is the timer running multiple times?
           (cond ((and (h/gateway-live-p) (h//gateway-ready-p))
-                 ;; FIXME: If the gateway is already running outside of Emacs,
-                 ;; will `h/gateway-live-p' return non-nil if `check' runs
-                 ;; before the subprocess dies with an error?
                  (run-hooks 'h/gateway-ready-hook))
                 ((h//gateway-ready-p)
                  ;; Gateway is responsive, so must be running from outside Emacs.
