@@ -1358,8 +1358,8 @@ gateway version."
   "Restart the gateway."
   (interactive)
   (h/message "Restarting gateway...")
-  ;; TODO: Just start the gateway if it's already stopped?
-  (h/stop)
+  (when (or (h/gateway-live-p) (h//gateway-ready-p))
+    (h/stop))
   (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
     (cl-loop while (h/gateway-live-p)
              do (sleep-for 0.2)))
