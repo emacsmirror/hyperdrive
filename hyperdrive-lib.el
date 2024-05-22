@@ -1434,6 +1434,8 @@ Default function; see variable `h/gateway-start-function'."
            :command (cons hyper-gateway-ushin-path
                           (split-string-and-unquote h/gateway-command-args))
            :connection-type 'pipe))
+    ;; TODO: Consider debouncing this function in case the user were to run it
+    ;; twice in close succession.
     (h/message "Starting gateway...")))
 
 (defun h//gateway-after-start-announce ()
