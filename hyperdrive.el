@@ -116,7 +116,7 @@ which see."
   "Say version number of gateway.
 Return version if gateway is running; otherwise signal an error."
   (interactive)
-  (h/message "%s" (h//gateway-version)))
+  (h/message "%S" (h//gateway-version)))
 
 ;;;###autoload
 (defun hyperdrive-new (seed)

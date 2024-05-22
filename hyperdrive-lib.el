@@ -209,11 +209,12 @@ this function."
   (setf h/gateway-version-checked-p t))
 
 (defun h//gateway-version ()
-  "Return the version number of gateway.
+  "Return the name and version number of gateway as a plist.
 If it's not running, signal an error."
   (condition-case err
-      (let ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port)))
-        (alist-get 'version (plz 'get url :as #'json-read)))
+      (pcase-let* ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port))
+                   ((map name version) (plz 'get url :as #'json-read)))
+        (list :name name :version version))
     (plz-error (h/api-default-else nil (caddr err)))))
 
 (defun h/api-default-else (else plz-err)
