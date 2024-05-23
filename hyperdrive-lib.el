@@ -1418,13 +1418,14 @@ Then calls THEN if given."
 (defun h//gateway-start-default ()
   "Start the gateway as an Emacs subprocess.
 Default function; see variable `h/gateway-start-function'."
-  (let ((hyper-gateway-ushin-path
-         (or (h//hyper-gateway-ushin-path)
-             (if (yes-or-no-p "hyper-gateway-ushin not installed; install? ")
-                 (progn
-                   (declare-function h/install "hyperdrive")
-                   (h/install))
-               (h/error "Gateway not installed; aborted")))))
+  (let ((hyper-gateway-ushin-path (h//hyper-gateway-ushin-path)))
+    (if (not hyper-gateway-ushin-path)
+        (if (yes-or-no-p "hyper-gateway-ushin not installed; install? ")
+            (progn
+              (declare-function h/install "hyperdrive")
+              (h/install))
+          (h/error "Gateway not installed; aborted")))
+    ;; Gateway is installed: start it.
     (setf h/gateway-process
           (make-process
            :name "hyper-gateway-ushin"
