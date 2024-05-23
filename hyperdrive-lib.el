@@ -1497,6 +1497,10 @@ Or if gateway isn't ready within timeout, show an error."
                  (run-hooks 'h/gateway-ready-hook))
                 ((< 10 (float-time (time-subtract nil start-time)))
                  ;; Gateway still not responsive: show error.
+
+                 ;; TODO: `h//gateway-wait-for-ready' should either be called
+                 ;; from within `hyperdrive--gateway-start-default' or it should
+                 ;; have customizable error handling.
                  (pop-to-buffer " *hyperdrive-start*")
                  (h/error "Gateway failed to start (see process buffer for errors)"))
                 (t (run-at-time 0.1 nil check))))))
