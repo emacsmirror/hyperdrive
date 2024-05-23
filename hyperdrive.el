@@ -99,8 +99,7 @@
 Calls function set in option `hyperdrive-gateway-start-function',
 which see."
   (interactive)
-  (unless (h//gateway-ready-p)
-    (funcall h/gateway-start-function))
+  (funcall h/gateway-start-function)
   (h//gateway-wait-for-ready))
 
 ;;;###autoload
