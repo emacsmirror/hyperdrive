@@ -1209,8 +1209,7 @@ If you run into issues, please first try resetting the values of
 # TODO: Update the next paragraph to mention install/upgrade command and omit version numbers.
 
 Please ensure that your version of ~hyper-gateway-ushin~ (~M-x
-hyperdrive-hyper-gateway-ushin-version~) is version `3.8.0` ([download
-from
+hyperdrive-gateway-version~) is version `3.8.0` ([download from
 Codeberg](https://codeberg.org/USHIN/hyper-gateway-ushin/releases/tag/v3.8.0)
 or [download from
 SourceHut](https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.8.0)).

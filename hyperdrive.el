@@ -816,7 +816,7 @@ The return value of this function is the retrieval buffer."
       :help "Start hyper-gateway-ushin"]
      ["Stop Gateway" h/stop
       :help "Stop hyper-gateway-ushin"]
-     ["Gateway version" h/hyper-gateway-ushin-version
+     ["Gateway version" h/gateway-version
       :help "Say hyper-gateway-ushin version"])
     "---"
     ["Open URL" h/open-url
