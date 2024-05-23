@@ -408,9 +408,7 @@ Keys are regexps matched against MIME types.")
 
 (declare-function h//gateway-start-default "hyperdrive-lib")
 (defcustom h/gateway-start-function #'h//gateway-start-default
-  "Function called to start the gateway.
-Should call `hyperdrive--gateway-wait-for-ready' after starting
-the gateway process."
+  "Function called to start the gateway."
   :type 'function)
 
 (declare-function h//gateway-stop-default "hyperdrive-lib")
