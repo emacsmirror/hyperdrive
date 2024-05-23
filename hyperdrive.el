@@ -114,6 +114,11 @@ which see."
          ;; "live".  This probably should never happen, but if it were to, this
          ;; distinct message might help us understand what's going on.
          (h/message "Gateway appears to be starting."))
+        ((not (h//hyper-gateway-ushin-path))
+         ;; Gateway appears to not be installed: suggest to install it.
+         (error "Hyperdrive: %s"
+                (substitute-command-keys
+                 "Gateway not installed; try \\[hyperdrive-install]")))
         (t (funcall h/gateway-start-function)))
   (h//gateway-wait-for-ready))
 
