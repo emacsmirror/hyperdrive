@@ -99,7 +99,22 @@
 Calls function set in option `hyperdrive-gateway-start-function',
 which see."
   (interactive)
-  (funcall h/gateway-start-function)
+  (cond (h/install-in-progress-p
+         ;; Skip `h//gateway-wait-for-ready'.
+         (h/error "Gateway installation in-progress"))
+        ((and (h//gateway-ready-p)
+              (h/gateway-live-p))
+         (h/message "Gateway already running."))
+        ((h//gateway-ready-p)
+         (h/message "Gateway already running outside of Emacs."))
+        ((h/gateway-live-p)
+         (h/message "Gateway already starting."))
+        (h/gateway-process
+         ;; Process variable is non-nil: gateway might be starting but not yet
+         ;; "live".  This probably should never happen, but if it were to, this
+         ;; distinct message might help us understand what's going on.
+         (h/message "Gateway appears to be starting."))
+        (t (funcall h/gateway-start-function)))
   (h//gateway-wait-for-ready))
 
 ;;;###autoload

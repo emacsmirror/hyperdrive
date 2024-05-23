@@ -1418,37 +1418,21 @@ Then calls THEN if given."
 (defun h//gateway-start-default ()
   "Start the gateway as an Emacs subprocess.
 Default function; see variable `h/gateway-start-function'."
-  (cond (h/install-in-progress-p
-         (h/error "Gateway installation in-progress"))
-        ((and (h//gateway-ready-p)
-              (h/gateway-live-p))
-         (h/message "Gateway already running."))
-        ((h//gateway-ready-p)
-         (h/message "Gateway already running outside of Emacs."))
-        ((h/gateway-live-p)
-         (h/message "Gateway already starting."))
-        (h/gateway-process
-         ;; Process variable is non-nil: gateway might be starting but not yet
-         ;; "live".  This probably should never happen, but if it were to, this
-         ;; distinct message might help us understand what's going on.
-         (h/message "Gateway appears to be starting."))
-        (t
-         ;; Start the gateway.
-         (let ((hyper-gateway-ushin-path
-                (or (h//hyper-gateway-ushin-path)
-                    (if (yes-or-no-p "hyper-gateway-ushin not installed; install? ")
-                        (progn
-                          (declare-function h/install "hyperdrive")
-                          (h/install))
-                      (h/error "Gateway not installed; aborted")))))
-           (setf h/gateway-process
-                 (make-process
-                  :name "hyper-gateway-ushin"
-                  :buffer " *hyperdrive-start*"
-                  :command (cons hyper-gateway-ushin-path
-                                 (split-string-and-unquote h/gateway-command-args))
-                  :connection-type 'pipe))
-           (h/message "Starting gateway...")))))
+  (let ((hyper-gateway-ushin-path
+         (or (h//hyper-gateway-ushin-path)
+             (if (yes-or-no-p "hyper-gateway-ushin not installed; install? ")
+                 (progn
+                   (declare-function h/install "hyperdrive")
+                   (h/install))
+               (h/error "Gateway not installed; aborted")))))
+    (setf h/gateway-process
+          (make-process
+           :name "hyper-gateway-ushin"
+           :buffer " *hyperdrive-start*"
+           :command (cons hyper-gateway-ushin-path
+                          (split-string-and-unquote h/gateway-command-args))
+           :connection-type 'pipe))
+    (h/message "Starting gateway...")))
 
 (defun h/announce-gateway-ready ()
   "Announce that the gateway is ready."
@@ -1510,12 +1494,8 @@ Or if gateway isn't ready within timeout, show an error."
        (check
         (lambda ()
           ;; FIXME: Double-check this behavior.  Is the timer running multiple times?
-          (cond ((and (h/gateway-live-p) (h//gateway-ready-p))
+          (cond ((h//gateway-ready-p)
                  (run-hooks 'h/gateway-ready-hook))
-                ((h//gateway-ready-p)
-                 ;; Gateway is responsive, so must be running from outside Emacs.
-                 (run-hooks 'h/gateway-ready-hook)
-                 (h/message "Gateway ready (already running outside of Emacs)"))
                 ((< 10 (float-time (time-subtract nil start-time)))
                  ;; Gateway still not responsive: show error.
                  (pop-to-buffer " *hyperdrive-start*")
