@@ -424,7 +424,9 @@ gateway process."
   :type 'function)
 
 (defcustom h/gateway-ready-hook
-  '(h/check-gateway-version h/gateway-after-start-announce)
+  '( h/check-gateway-version
+     h/announce-gateway-ready
+     h/menu-refresh)
   "Hook called when gateway is ready after starting it.
 This hook is called by `hyperdrive--gateway-wait-for-ready' after
 `hyperdrive-start'."

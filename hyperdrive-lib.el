@@ -1445,10 +1445,20 @@ Default function; see variable `h/gateway-start-function'."
     ;; twice in close succession.
     (h/message "Starting gateway...")))
 
-(defun h/gateway-after-start-announce ()
+(defun h/announce-gateway-ready ()
   "Announce that the gateway is ready."
-  ;; TODO: Update hyperdrive-menu to indicate "gateway ready".
   (h/message "Gateway ready."))
+
+(defun h/menu-refresh ()
+  "Refresh `hyperdrive-menu' if it's open."
+  (defvar transient-current-command)
+  (when (and (equal transient-current-command 'h/menu)
+	     (not (active-minibuffer-window)))
+    ;; Assume that `hyperdrive-menu' is visible and refresh it.
+    (declare-function transient-quit-all "transient")
+    (transient-quit-all)
+    (declare-function h/menu "hyperdrive")
+    (call-interactively #'h/menu)))
 
 (defun h//gateway-stop-default ()
   "Stop the gateway subprocess."
