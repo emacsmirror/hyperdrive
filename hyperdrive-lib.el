@@ -1494,7 +1494,6 @@ Or if gateway isn't ready within timeout, show an error."
       ((start-time (current-time))
        (check
         (lambda ()
-          ;; FIXME: Double-check this behavior.  Is the timer running multiple times?
           (cond ((h//gateway-ready-p)
                  (run-hooks 'h/gateway-ready-hook))
                 ((< 10 (float-time (time-subtract nil start-time)))
