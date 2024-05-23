@@ -1474,10 +1474,9 @@ process is running.  See also function
   (funcall h/gateway-live-predicate))
 
 (defun h/gateway-live-p-default ()
-  "Return non-nil if the gateway process is running.
+  "Return non-nil if the gateway is running as an Emacs subprocess.
 This does not mean that the gateway is responsive, only that the
-process is running.  See also function
-`hyperdrive--gateway-ready-p'."
+process is running."
   (process-live-p h/gateway-process))
 
 (defun h//gateway-ready-p ()
