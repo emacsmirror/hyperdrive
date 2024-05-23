@@ -1354,17 +1354,10 @@ gateway version."
              (rename-file file-name destination-name)
              (chmod destination-name #o755))
            (setf h/install-in-progress-p nil)
-           (cond ((h/gateway-live-p)
-                  ;; Gateway running inside of Emacs: prompt to restart it.
-                  (when (yes-or-no-p "Installed hyper-gateway-ushin.  Restart gateway?")
-                    (h/restart)))
-                 ((h//gateway-ready-p)
-                  ;; Gateway appears to be running outside of Emacs: the user
-                  ;; must stop it manually before we can start it.
-                  (h/message "New gateway installed but an existing gateway process is running outside of Emacs; you must manually stop it before the new version can be started with \\[hyperdrive-start]"))
-                 (t
-                  ;; Gateway not running: prompt the user to start it.
-                  (h/message "hyper-gateway-ushin installed.  Try \\[hyperdrive-start].")))))
+           (h/message "Gateway installed.  Try \\[%s]"
+                      (if (h//gateway-ready-p)
+                          "hyperdrive-restart"
+                        "hyperdrive-start"))))
       (try))))
 
 (defun h/restart ()
