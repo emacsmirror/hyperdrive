@@ -1281,7 +1281,7 @@ Intended for relative (i.e. non-full) URLs."
 
 ;;;;; Installation
 
-(defvar h/gateway-url-alist
+(defvar h/gateway-urls-and-hashes
   '((gnu/linux
      ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.8.0/hyper-gateway-ushin-linux"
        :sha256 "8ff669bd378e88a3c80d65861f4088071852afaedf7bba56c88c1a162ed9e4f3")
@@ -1313,7 +1313,7 @@ gateway version."
       (unless (yes-or-no-p "Reinstall/upgrade hyper-gateway-ushin? ")
         (user-error "Not reinstalling/upgrading; aborted"))))
   (setf h/install-in-progress-p t)
-  (let ((urls-and-hashes (alist-get system-type h/gateway-url-alist)))
+  (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes)))
     (cl-labels
         ((try ()
            (if-let ((url-and-hash (pop urls-and-hashes)))
@@ -1380,7 +1380,7 @@ gateway version."
 ;;     (let* ((file-hash (with-temp-buffer
 ;;                          (insert-file-contents-literally file-name)
 ;;                          (secure-hash 'sha256 (current-buffer))))
-;;            (urls-and-hashes (alist-get system-type h/gateway-url-alist)))
+;;            (urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes)))
 ;;       (cl-loop for pair in urls-and-hashes
 ;;                for expected-hash = (plist-get pair :sha256)
 ;;                thereis (equal expected-hash file-hash)))))
