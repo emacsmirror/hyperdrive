@@ -1420,19 +1420,31 @@ Then calls THEN if given."
   "Start the gateway as an Emacs subprocess.
 Default function; see variable `h/gateway-start-function'."
   (let ((hyper-gateway-ushin-path (h//hyper-gateway-ushin-path)))
-    (if (not hyper-gateway-ushin-path)
-        ;; Gateway appears to not be installed: suggest to install it.
-        (h/message "Gateway not installed; try \\[hyperdrive-install]")
+    (cond (h/gateway-process
+           ;; Process variable is non-nil: gateway might be starting but not yet
+           ;; "live", which was checked in `h/start'.  This probably should never
+           ;; happen, but if it were to, this distinct message might help us
+           ;; understand what's going on.
+           (h/error "Gateway appears to be starting."))
+          ((and (not hyper-gateway-ushin-path)
+                hyperdrive-install-in-progress-p)
+           (h/error "Gateway installation in-progress"))
+          ((not hyper-gateway-ushin-path)
+           (error "Hyperdrive: %s"
+                  (substitute-command-keys
 
-      ;; Gateway is installed: start it.
-      (setf h/gateway-process
-            (make-process
-             :name "hyper-gateway-ushin"
-             :buffer " *hyperdrive-start*"
-             :command (cons hyper-gateway-ushin-path
-                            (split-string-and-unquote h/gateway-command-args))
-             :connection-type 'pipe))
-      (h/message "Starting gateway..."))))
+                   "Gateway not installed; try \\[hyperdrive-install]")))
+          (hyperdrive-install-in-progress-p
+           (h/message
+            "Gateway installation in-progress; starting old gateway anyway."))
+          (t (h/message "Starting gateway.")))
+    (setf h/gateway-process
+          (make-process
+           :name "hyper-gateway-ushin"
+           :buffer " *hyperdrive-start*"
+           :command (cons hyper-gateway-ushin-path
+                          (split-string-and-unquote h/gateway-command-args))
+           :connection-type 'pipe))))
 
 (defun h/announce-gateway-ready ()
   "Announce that the gateway is ready."
