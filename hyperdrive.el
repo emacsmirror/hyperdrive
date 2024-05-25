@@ -1321,7 +1321,6 @@ If FORCEP, don't prompt for confirmation before downloading."
                  (download url sha256))
              (setf h/install-in-progress-p nil)
              (h/error "Downloading failed; no more mirrors available")))
-         ;; TODO: Test.
          (head-size (url)
            (when-let ((response (plz 'head url :as 'response)))
              (cl-parse-integer
