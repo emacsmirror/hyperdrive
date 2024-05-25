@@ -1498,7 +1498,8 @@ Or if gateway isn't ready within timeout, show an error."
                 ((< 10 (float-time (time-subtract nil start-time)))
                  ;; Gateway still not responsive: show error.
                  (if (equal h/gateway-start-function
-                            (get 'h/gateway-start-function 'standard-value))
+                            (eval (car (get 'h/gateway-start-function
+                                            'standard-value))))
                      (progn
                        ;; User has not customized the start function: show the
                        ;; process buffer.
