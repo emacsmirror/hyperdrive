@@ -227,7 +227,9 @@
      :inapt-if-not (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
     ("G v" "Version" h/gateway-version
      :transient t
-     :inapt-if-not (lambda () (h//gateway-ready-p)))]
+     :inapt-if-not (lambda () (h//gateway-ready-p)))
+    ("G i" "Install" h/install
+     :inapt-if-non-nil hyperdrive-install-in-progress-p)]
    ["Bookmark"
     ("b j" "Jump" h/bookmark-jump)
     ("b l" "List" h/bookmark-list)
