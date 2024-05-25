@@ -1318,6 +1318,7 @@ gateway version."
         ((try ()
            (if-let ((url-and-hash (pop urls-and-hashes)))
                (pcase-let (((map :url :sha256) url-and-hash))
+                 ;; TODO: Prompt before downloading.
                  (download url sha256))
              (setf h/install-in-progress-p nil)
              (h/error "Downloading failed; no more mirrors available")))
