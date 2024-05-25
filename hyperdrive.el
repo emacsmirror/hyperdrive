@@ -1301,17 +1301,16 @@ Intended for relative (i.e. non-full) URLs."
 
 ;;;###autoload
 (defun h/install (&optional forcep)
-  "Install hyper-gateway-ushin.
-If FORCEP, force downloading and installing of the expected
-gateway version."
+  "Download and install hyper-gateway-ushin.
+If FORCEP, don't prompt for confirmation before downloading."
   (interactive (list current-prefix-arg))
   (when h/install-in-progress-p
     (h/error "Installation of gateway already in progress"))
   (declare-function h//hyper-gateway-ushin-path "hyperdrive-lib")
   (unless forcep
     (when (h//hyper-gateway-ushin-path)
-      (unless (yes-or-no-p "Reinstall/upgrade hyper-gateway-ushin? ")
-        (user-error "Not reinstalling/upgrading; aborted"))))
+      (unless (yes-or-no-p "Download and reinstall/upgrade hyper-gateway-ushin? ")
+        (user-error "Not downloading; aborted"))))
   (setf h/install-in-progress-p t)
   (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes)))
     (cl-labels
