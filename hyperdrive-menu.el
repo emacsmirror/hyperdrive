@@ -216,11 +216,18 @@
                      (t "off"))
                'face 'transient-value)))
     ("G s" "Start" h/start
-     :transient t)
+     :transient t
+     :inapt-if (lambda ()
+                 (and (equal h/gateway-start-function
+                             (eval (car (get 'h/gateway-start-function
+                                             'standard-value))))
+                      (not (h//hyper-gateway-ushin-path)))))
     ("G S" "Stop" h/stop
-     :transient t)
+     :transient t
+     :inapt-if-not (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
     ("G v" "Version" h/gateway-version
-     :transient t)]
+     :transient t
+     :inapt-if-not (lambda () (h//gateway-ready-p)))]
    ["Bookmark"
     ("b j" "Jump" h/bookmark-jump)
     ("b l" "List" h/bookmark-list)
