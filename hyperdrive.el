@@ -1311,7 +1311,6 @@ If FORCEP, don't prompt for confirmation before downloading."
     (when (h//hyper-gateway-ushin-path)
       (unless (yes-or-no-p "Download and reinstall/upgrade hyper-gateway-ushin? ")
         (user-error "Not downloading; aborted"))))
-  (setf h/install-in-progress-p t)
   (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes)))
     (cl-labels
         ((try ()
@@ -1357,6 +1356,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                       (if (h//gateway-ready-p)
                           "hyperdrive-restart"
                         "hyperdrive-start"))))
+      (setf h/install-in-progress-p t)
       (try))))
 
 (defun h/restart ()
