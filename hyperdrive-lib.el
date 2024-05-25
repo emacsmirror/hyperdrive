@@ -1461,8 +1461,6 @@ Default function; see variable `h/gateway-start-function'."
   (with-timeout (4 (h/error "Gateway still running"))
     (cl-loop while (h/gateway-live-p)
              do (sleep-for 0.2)))
-  ;; TODO: Consider killing the process buffer and setting the variable nil in
-  ;; the sentinel.
   (kill-buffer (process-buffer h/gateway-process))
   (setf h/gateway-process nil)
   (h/message "Gateway stopped."))
