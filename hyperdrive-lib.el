@@ -36,6 +36,7 @@
 (require 'compat)
 (require 'persist)
 (require 'plz)
+(require 'transient)
 
 (require 'hyperdrive-vars)
 
@@ -1441,14 +1442,15 @@ Default function; see variable `h/gateway-start-function'."
 
 (defun h/menu-refresh ()
   "Refresh `hyperdrive-menu' if it's open."
-  (defvar transient-current-command)
-  (when (and (equal transient-current-command 'h/menu)
+  (when (and (eq transient-current-command 'h/menu)
+             ;; Depending on transient-show-popup customization, there
+             ;; might be no popup (yet).
+             transient--showp
+             ;; FIXME(transient): This probably does not detect all cases of a
+             ;; suspended transient, but I think there is no proper way to query
+             ;; that state yet.  I'll look into that.  --Jonas
 	     (not (active-minibuffer-window)))
-    ;; Assume that `hyperdrive-menu' is visible and refresh it.
-    (declare-function transient-quit-all "transient")
-    (transient-quit-all)
-    (declare-function h/menu "hyperdrive")
-    (call-interactively #'h/menu)))
+    (transient--show)))
 
 (defun h//gateway-stop-default ()
   "Stop the gateway subprocess."
