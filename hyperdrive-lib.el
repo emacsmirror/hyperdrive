@@ -1421,20 +1421,18 @@ Then calls THEN if given."
 Default function; see variable `h/gateway-start-function'."
   (let ((hyper-gateway-ushin-path (h//hyper-gateway-ushin-path)))
     (if (not hyper-gateway-ushin-path)
-        (if (yes-or-no-p "hyper-gateway-ushin not installed; install? ")
-            (progn
-              (declare-function h/install "hyperdrive")
-              (h/install))
-          (h/error "Gateway not installed; aborted")))
-    ;; Gateway is installed: start it.
-    (setf h/gateway-process
-          (make-process
-           :name "hyper-gateway-ushin"
-           :buffer " *hyperdrive-start*"
-           :command (cons hyper-gateway-ushin-path
-                          (split-string-and-unquote h/gateway-command-args))
-           :connection-type 'pipe))
-    (h/message "Starting gateway...")))
+        ;; Gateway appears to not be installed: suggest to install it.
+        (h/message "Gateway not installed; try \\[hyperdrive-install]")
+
+      ;; Gateway is installed: start it.
+      (setf h/gateway-process
+            (make-process
+             :name "hyper-gateway-ushin"
+             :buffer " *hyperdrive-start*"
+             :command (cons hyper-gateway-ushin-path
+                            (split-string-and-unquote h/gateway-command-args))
+             :connection-type 'pipe))
+      (h/message "Starting gateway..."))))
 
 (defun h/announce-gateway-ready ()
   "Announce that the gateway is ready."
