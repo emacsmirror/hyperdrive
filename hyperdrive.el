@@ -1312,7 +1312,7 @@ If FORCEP, don't prompt for confirmation before downloading."
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
-           (plz 'get url :as 'file
+           (plz 'get url :as 'file :timeout nil
              :then (lambda (filename)
                      (check filename sha256 url))
              :else (lambda (plz-error)
