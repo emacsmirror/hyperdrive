@@ -1450,6 +1450,8 @@ Default function; see variable `h/gateway-start-function'."
   "Announce that the gateway is ready."
   (h/message "Gateway ready."))
 
+;; TODO: Doesn't work if hyperdrive-start called outside with M-x, not from menu
+;; TODO: Doesn't refresh gateway version inapt-p.
 (defun h/menu-refresh ()
   "Refresh `hyperdrive-menu' if it's open."
   (when (and (eq transient-current-command 'h/menu)
