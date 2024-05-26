@@ -1425,14 +1425,13 @@ Default function; see variable `h/gateway-start-function'."
            ;; "live", which was checked in `h/start'.  This probably should never
            ;; happen, but if it were to, this distinct message might help us
            ;; understand what's going on.
-           (h/error "Gateway appears to be starting."))
+           (h/error "Gateway appears to be starting"))
           ((and (not hyper-gateway-ushin-path)
                 hyperdrive-install-in-progress-p)
            (h/error "Gateway installation in-progress"))
           ((not hyper-gateway-ushin-path)
            (error "Hyperdrive: %s"
                   (substitute-command-keys
-
                    "Gateway not installed; try \\[hyperdrive-install]")))
           (hyperdrive-install-in-progress-p
            (h/message
