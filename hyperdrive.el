@@ -817,8 +817,6 @@ The return value of this function is the retrieval buffer."
 
 (defvar h/menu-bar-menu
   '(("Gateway"
-     :label
-     (format "Gateway (%s)" (if (h//gateway-ready-p) "on" "off"))
      ["Start Gateway" h/start
       :help "Start hyper-gateway-ushin"]
      ["Stop Gateway" h/stop
