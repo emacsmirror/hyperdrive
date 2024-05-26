@@ -1338,6 +1338,7 @@ If FORCEP, don't prompt for confirmation before downloading."
              (rename-file file-name destination-name)
              (chmod destination-name #o755))
            (setf h/install-in-progress-p nil)
+           (h/menu-refresh)
            (h/message "Gateway installed.  Try \\[%s]"
                       (if (h//gateway-ready-p)
                           "hyperdrive-restart"

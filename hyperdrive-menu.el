@@ -211,6 +211,11 @@
                      ((and (equal h/gateway-start-function
                                   (eval (car (get 'h/gateway-start-function
                                                   'standard-value))))
+                           h/install-in-progress-p)
+                      "installing")
+                     ((and (equal h/gateway-start-function
+                                  (eval (car (get 'h/gateway-start-function
+                                                  'standard-value))))
                            (not (h//hyper-gateway-ushin-path)))
                       "not found")
                      (t "off"))
