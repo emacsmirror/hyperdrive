@@ -813,6 +813,8 @@ The return value of this function is the retrieval buffer."
 
 ;;;;; `easy-menu' integration
 
+;; TODO: Add install button
+
 (defvar h/menu-bar-menu
   '(("Gateway"
      :label
