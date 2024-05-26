@@ -1314,20 +1314,22 @@ If FORCEP, don't prompt for confirmation before downloading."
          (download (url sha256)
            (plz 'get url :as 'file
              :then (lambda (filename)
-                     (check filename sha256))
+                     (check filename sha256 url))
              :else (lambda (plz-error)
-                     (h/message "Trying next source because downloading failed: %S"
-                                plz-error)
+                     (h/message "Trying next source because downloading from URL %S failed: %S"
+                                url plz-error)
                      (try)))
            (h/message "Downloading gateway (%s)..."
                       (or (ignore-errors
                             (file-size-human-readable (head-size url)))
                           "unknown size")))
-         (check (file-name sha256)
+         (check (file-name sha256 url)
            (if (with-temp-buffer
                  (insert-file-contents-literally file-name)
                  (equal sha256 (secure-hash 'sha256 (current-buffer))))
                (then file-name)
+             (h/message "Trying next source because hash comparison failed from URL: %s"
+                        url)
              (try)))
          (then (file-name)
            (let ((destination-name
