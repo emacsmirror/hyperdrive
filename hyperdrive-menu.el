@@ -234,6 +234,7 @@
      :transient t
      :inapt-if-not (lambda () (h//gateway-ready-p)))
     ("G i" "Install" h/install
+     :transient t
      :inapt-if-non-nil hyperdrive-install-in-progress-p)]
    ["Bookmark"
     ("b j" "Jump" h/bookmark-jump)
