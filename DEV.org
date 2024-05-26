@@ -1,4 +1,6 @@
 #+title: Hyperdrive.el notes
+#+TODO: TODO | DONE CANCELED
+#+TODO: DECIDE | DECISION
 
 * Reference
 
@@ -463,4 +465,14 @@ Depending on the resolution of [[https://github.com/jrblevin/markdown-mode/issue
 ** Targets
 
 Targets are not currently implemented.
+
+* UI
+
+** Menu bar
+
+*** DECISION Don't show status indicators in menu bar
+
+Since the menu bar's items can't be updated while the menu is displayed, showing an indicator could be misleading to the user, since it could become outdated while the menu is displayed (e.g. while starting the gateway).
+
+So we won't show such indicators in the menu bar.  Instead, the Transient ~hyperdrive-menu~ UI is a suitable "dashboard" for such indicators, because the Transient can be refreshed while it's displayed.
 
