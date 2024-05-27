@@ -1492,6 +1492,17 @@ This does not mean that the gateway is responsive, only that the
 process is running."
   (process-live-p h/gateway-process))
 
+(defun h/gateway-installed-p ()
+  "Return non-nil if the gateway program is installed.
+Calls function set in option
+`hyperdrive-gateway-installed-predicate'."
+  (funcall h/gateway-installed-predicate))
+
+(defun h/gateway-installed-p-default ()
+  "Return non-nil if the gateway program is installed."
+  (and-let* ((hyper-gateway-ushin-path (hyperdrive--hyper-gateway-ushin-path)))
+    (file-executable-p hyper-gateway-ushin-path)))
+
 (defun h//gateway-ready-p ()
   "Return non-nil if the gateway is running and accessible.
 Times out after 2 seconds."

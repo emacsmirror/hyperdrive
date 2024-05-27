@@ -429,6 +429,11 @@ gateway process."
   "Predicate function which returns non-nil if the gateway process is live."
   :type 'function)
 
+(declare-function h/gateway-installed-p-default "hyperdrive-lib")
+(defcustom h/gateway-installed-predicate #'h/gateway-installed-p-default
+  "Predicate function which returns non-nil if the gateway process is installed."
+  :type 'function)
+
 (defcustom h/gateway-ready-hook
   '( h/check-gateway-version
      h/announce-gateway-ready
