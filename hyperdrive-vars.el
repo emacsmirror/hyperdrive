@@ -255,6 +255,9 @@ value (and should only be present once in the string).  Used in
                (cons :tag "Hyperdrive domains" (const domains)
                      (string :tag "Format string"))))
 
+;; TODO: Consider adding h/gateway-program variable also, set by default to
+;; "hyper-gateway-ushin"
+
 (defcustom h/gateway-directory (expand-file-name "~/.local/lib/hyperdrive.el")
   "Where the hyper-gateway executable is found.
 If not found here, the \"PATH\" environment variable is checked
