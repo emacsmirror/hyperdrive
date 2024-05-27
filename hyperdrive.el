@@ -1378,6 +1378,8 @@ If FORCEP, don't prompt for confirmation before downloading."
 (defun h/cancel-install ()
   "Stop downloading/installing hyper-gateway-ushin."
   (interactive)
+  (unless (h/gateway-installing-p)
+    (h/user-error "No installation in progress"))
   (h/message "Cancelling install")
   (interrupt-process h/install-in-progress))
 
