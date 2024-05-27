@@ -228,7 +228,6 @@
     ("G v" "Version" h/gateway-version
      :transient t
      :inapt-if-not (lambda () (h//gateway-ready-p)))
-    ;; TODO: Replace with "Cancel install"
     ("G i" "Install" h/install
      :description
      (lambda () (cond ((and (h//gateway-ready-p)
@@ -238,7 +237,10 @@
                  ((h/gateway-installed-p) "Reinstall")
                  (t "Install")))
      :transient t
-     :inapt-if h/gateway-installing-p)]
+     :if-not h/gateway-installing-p)
+    ("G c" "Cancel install" h/cancel-install
+     :transient t
+     :if h/gateway-installing-p)]
    ["Bookmark"
     ("b j" "Jump" h/bookmark-jump)
     ("b l" "List" h/bookmark-list)
