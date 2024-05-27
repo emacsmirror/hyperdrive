@@ -1292,9 +1292,8 @@ If FORCEP, don't prompt for confirmation before downloading."
   (interactive (list current-prefix-arg))
   (when h/install-in-progress-p
     (h/error "Installation of gateway already in progress"))
-  (declare-function h//hyper-gateway-ushin-path "hyperdrive-lib")
   (unless forcep
-    (when (h//hyper-gateway-ushin-path)
+    (when (h/gateway-installed-p)
       (unless (yes-or-no-p "Download and reinstall/upgrade hyper-gateway-ushin? ")
         (user-error "Not downloading; aborted"))))
   (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes)))

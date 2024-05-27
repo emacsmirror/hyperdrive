@@ -208,25 +208,15 @@
               (propertize
                (cond ((h//gateway-ready-p) "on")
                      ((h/gateway-live-p) "starting")
-                     ((and (equal h/gateway-start-function
-                                  (eval (car (get 'h/gateway-start-function
-                                                  'standard-value))))
-                           h/install-in-progress-p)
-                      "installing")
-                     ((and (equal h/gateway-start-function
-                                  (eval (car (get 'h/gateway-start-function
-                                                  'standard-value))))
-                           (not (h//hyper-gateway-ushin-path)))
-                      "not found")
-                     (t "off"))
+                     ((and (h/gateway-installed-p) h/install-in-progress-p)
+                      "upgrading")
+                     (h/install-in-progress-p "installing")
+                     ((h/gateway-installed-p) "off")
+                     (t "not found"))
                'face 'transient-value)))
     ("G s" "Start" h/start
      :transient t
-     :inapt-if (lambda ()
-                 (and (equal h/gateway-start-function
-                             (eval (car (get 'h/gateway-start-function
-                                             'standard-value))))
-                      (not (h//hyper-gateway-ushin-path)))))
+     :inapt-if-not (lambda () (h/gateway-installed-p)))
     ("G S" "Stop" h/stop
      :transient t
      :inapt-if-not (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))

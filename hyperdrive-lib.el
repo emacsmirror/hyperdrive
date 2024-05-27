@@ -1419,17 +1419,17 @@ Then calls THEN if given."
 (defun h//gateway-start-default ()
   "Start the gateway as an Emacs subprocess.
 Default function; see variable `h/gateway-start-function'."
-  (let ((hyper-gateway-ushin-path (h//hyper-gateway-ushin-path)))
+  (let ((hyper-gateway-ushin-path (h//hyper-gateway-ushin-path))
+        (gateway-installed-p (h/gateway-installed-p)))
     (cond (h/gateway-process
            ;; Process variable is non-nil: gateway might be starting but not yet
            ;; "live", which was checked in `h/start'.  This probably should never
            ;; happen, but if it were to, this distinct message might help us
            ;; understand what's going on.
            (h/error "Gateway appears to be starting"))
-          ((and (not hyper-gateway-ushin-path)
-                hyperdrive-install-in-progress-p)
+          ((and (not gateway-installed-p) hyperdrive-install-in-progress-p)
            (h/error "Gateway installation in-progress"))
-          ((not hyper-gateway-ushin-path)
+          ((not gateway-installed-p)
            (error "Hyperdrive: %s"
                   (substitute-command-keys
                    "Gateway not installed; try \\[hyperdrive-install]")))
