@@ -1459,7 +1459,7 @@ Default function; see variable `h/gateway-start-function'."
   "Stop the gateway subprocess."
   (unless (h/gateway-live-p-default)
     ;; NOTE: We do not try to stop the process if we didn't start it ourselves.
-    (h/error "Gateway not running as subprocess"))
+    (h/user-error "Gateway not running as subprocess"))
   (interrupt-process h/gateway-process)
   (with-timeout (4 (h/error "Gateway still running"))
     (cl-loop while (h/gateway-live-p)
