@@ -233,6 +233,7 @@
     ("G v" "Version" h/gateway-version
      :transient t
      :inapt-if-not (lambda () (h//gateway-ready-p)))
+    ;; TODO: Replace with "Cancel install"
     ("G i" "Install" h/install
      :transient t
      :inapt-if-non-nil hyperdrive-install-in-progress-p)]
