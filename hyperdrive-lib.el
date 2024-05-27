@@ -1484,6 +1484,10 @@ This does not mean that the gateway is responsive, only that the
 process is running."
   (process-live-p h/gateway-process))
 
+(defun h/gateway-installing-p ()
+  "Return non-nil if the gateway program is being installed."
+  (process-live-p h/install-in-progress))
+
 (defun h/gateway-installed-p ()
   "Return non-nil if the gateway program is installed.
 Calls function set in option
