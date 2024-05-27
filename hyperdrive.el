@@ -1311,7 +1311,7 @@ Intended for relative (i.e. non-full) URLs."
 If FORCEP, don't prompt for confirmation before downloading."
   (interactive (list current-prefix-arg))
   (when (h/gateway-installing-p)
-    (h/error "Installation of gateway already in progress"))
+    (h/user-error "Installation of gateway already in progress"))
   (unless forcep
     (when (h/gateway-installed-p)
       (unless (yes-or-no-p "Download and reinstall/upgrade hyper-gateway-ushin? ")
