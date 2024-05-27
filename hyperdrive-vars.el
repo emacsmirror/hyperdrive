@@ -376,6 +376,9 @@ If the version was unexpected,
 (defvar h/install-in-progress-p nil
   "Non-nil while hyperdrive is installing or upgrading the gateway.")
 
+(defvar h//gateway-starting-timer nil
+  "The timer used when the gateway is starting.")
+
 (defvar-local h/current-entry nil
   "Entry for current buffer.")
 (put 'h/current-entry 'permanent-local t)

@@ -1474,6 +1474,8 @@ Default function; see variable `h/gateway-start-function'."
              do (sleep-for 0.2)))
   (kill-buffer (process-buffer h/gateway-process))
   (setf h/gateway-process nil)
+  (when (timerp h//gateway-starting-timer)
+    (cancel-timer h//gateway-starting-timer))
   (h/message "Gateway stopped."))
 
 (defun h/gateway-live-p ()
@@ -1523,7 +1525,8 @@ Or if gateway isn't ready within timeout, show an error."
                    ;; User appears to have customized the start function: don't
                    ;; show the process buffer.
                    (h/error "Gateway failed to start")))
-                (t (run-at-time 0.1 nil check))))))
+                (t
+                 (setf h//gateway-starting-timer (run-at-time 0.1 nil check)))))))
     (funcall check)))
 
 ;;;; Misc.
