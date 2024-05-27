@@ -1508,13 +1508,17 @@ Or if gateway isn't ready within timeout, show an error."
                  (run-hooks 'h/gateway-ready-hook))
                 ((< 10 (float-time (time-subtract nil start-time)))
                  ;; Gateway still not responsive: show error.
-                 (if (equal h/gateway-start-function
-                            (eval (car (get 'h/gateway-start-function
-                                            'standard-value))))
+                 (if-let (((equal h/gateway-start-function
+                                  (eval (car (get 'h/gateway-start-function
+                                                  'standard-value)))))
+                          (process-buffer (process-buffer h/gateway-process)))
+                     ;; TODO: why does the process still exist when make-process
+                     ;; fails, e.g., if the gateway command is something wrong
+                     ;; like "ls"?
                      (progn
                        ;; User has not customized the start function: show the
                        ;; process buffer.
-                       (pop-to-buffer " *hyperdrive-start*")
+                       (pop-to-buffer process-buffer)
                        (h/error "Gateway failed to start (see process buffer for errors)"))
                    ;; User appears to have customized the start function: don't
                    ;; show the process buffer.
