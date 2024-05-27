@@ -838,7 +838,11 @@ The return value of this function is the retrieval buffer."
                     "Upgrade gateway")
                    ((h/gateway-installed-p) "Reinstall gateway")
                    (t "Install gateway"))
-      :help "Download and install gateway"])
+      :visible (not (hyperdrive-gateway-installing-p))
+      :help "Download and install gateway"]
+     ["Cancel install" h/cancel-install
+      :visible (hyperdrive-gateway-installing-p)
+      :help "Cancel running download/installation"])
     "---"
     ["Open URL" h/open-url
      :help "Load a hyperdrive URL"]
