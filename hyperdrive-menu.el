@@ -216,7 +216,12 @@
                'face 'transient-value)))
     ("G s" "Start" h/start
      :transient t
-     :inapt-if-not (lambda () (h/gateway-installed-p)))
+     :inapt-if-not (lambda () (h/gateway-installed-p))
+     :if-not (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
+    ("G r" "Restart" h/restart
+     :transient t
+     :inapt-if-not (lambda () (h/gateway-installed-p))
+     :if (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
     ("G S" "Stop" h/stop
      :transient t
      :inapt-if-not (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
