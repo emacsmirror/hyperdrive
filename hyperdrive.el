@@ -1286,7 +1286,7 @@ Intended for relative (i.e. non-full) URLs."
   "Alist mapping `system-type' to URLs where hyper-gateway-ushin can be downloaded.")
 
 ;;;###autoload
-(defun h/install (&optional forcep)
+(defun hyperdrive-install (&optional forcep)
   "Download and install hyper-gateway-ushin.
 If FORCEP, don't prompt for confirmation before downloading."
   (interactive (list current-prefix-arg))
