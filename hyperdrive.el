@@ -823,8 +823,6 @@ The return value of this function is the retrieval buffer."
 
 ;;;;; `easy-menu' integration
 
-;; TODO: Add install button
-
 (defvar h/menu-bar-menu
   '(("Gateway"
      ["Start Gateway" h/start
@@ -832,7 +830,15 @@ The return value of this function is the retrieval buffer."
      ["Stop Gateway" h/stop
       :help "Stop hyper-gateway-ushin"]
      ["Gateway version" h/gateway-version
-      :help "Say hyper-gateway-ushin version"])
+      :help "Say hyper-gateway-ushin version"]
+     ["Install gateway" h/install
+      :label (cond ((and (h//gateway-ready-p)
+                         (not (equal h/gateway-version-expected
+                                     (h//gateway-version))))
+                    "Upgrade gateway")
+                   ((h/gateway-installed-p) "Reinstall gateway")
+                   (t "Install gateway"))
+      :help "Download and install gateway"])
     "---"
     ["Open URL" h/open-url
      :help "Load a hyperdrive URL"]
