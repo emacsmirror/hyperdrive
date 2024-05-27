@@ -230,6 +230,13 @@
      :inapt-if-not (lambda () (h//gateway-ready-p)))
     ;; TODO: Replace with "Cancel install"
     ("G i" "Install" h/install
+     :description
+     (lambda () (cond ((and (h//gateway-ready-p)
+                       (not (equal h/gateway-version-expected
+                                   (h//gateway-version))))
+                  "Upgrade")
+                 ((h/gateway-installed-p) "Reinstall")
+                 (t "Install")))
      :transient t
      :inapt-if-non-nil hyperdrive-install-in-progress-p)]
    ["Bookmark"
