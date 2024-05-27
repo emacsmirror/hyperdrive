@@ -107,13 +107,13 @@ which see."
           ((h/gateway-live-p)
            (h/message "Gateway already starting."))
           ((and (not gateway-installed-p)
-                (process-live-p h/install-in-progress-p))
+                (process-live-p h/install-in-progress))
            (h/user-error "Gateway installation in-progress"))
           ((not gateway-installed-p)
            (h/user-error "Gateway not installed; try \\[hyperdrive-install]"))
           (t
            (h/message
-            (if hyperdrive-install-in-progress-p
+            (if hyperdrive-install-in-progress
                 "Gateway installation in-progress; starting old gateway anyway."
               "Starting gateway."))
            (funcall h/gateway-start-function))))
@@ -1301,7 +1301,7 @@ Intended for relative (i.e. non-full) URLs."
   "Download and install hyper-gateway-ushin.
 If FORCEP, don't prompt for confirmation before downloading."
   (interactive (list current-prefix-arg))
-  (when (process-live-p h/install-in-progress-p)
+  (when (process-live-p h/install-in-progress)
     (h/error "Installation of gateway already in progress"))
   (unless forcep
     (when (h/gateway-installed-p)
@@ -1314,7 +1314,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                (pcase-let (((map :url :sha256) url-and-hash))
                  ;; TODO: Prompt before downloading.
                  (download url sha256))
-             (setf h/install-in-progress-p nil)
+             (setf h/install-in-progress nil)
              (h/menu-refresh)
              (h/error "Downloading failed; no more mirrors available")))
          (head-size (url)
@@ -1322,7 +1322,7 @@ If FORCEP, don't prompt for confirmation before downloading."
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
-           (setf h/install-in-progress-p
+           (setf h/install-in-progress
                  (plz 'get url :as 'file :timeout nil
                    :then (lambda (filename)
                            (check filename sha256 url))
@@ -1357,7 +1357,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                (mkdir h/gateway-directory t))
              (rename-file file-name destination-name)
              (chmod destination-name #o755))
-           (setf h/install-in-progress-p nil)
+           (setf h/install-in-progress nil)
            (h/menu-refresh)
            (h/message "Gateway installed.  Try \\[%s]"
                       (if (h//gateway-ready-p)
@@ -1369,7 +1369,7 @@ If FORCEP, don't prompt for confirmation before downloading."
   "Stop downloading/installing hyper-gateway-ushin."
   (interactive)
   (h/message "Cancelling install")
-  (interrupt-process h/install-in-progress-p))
+  (interrupt-process h/install-in-progress))
 
 (defun h/restart ()
   "Restart the gateway."
