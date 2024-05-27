@@ -106,14 +106,13 @@ which see."
            (h/message "Gateway already running outside of Emacs."))
           ((h/gateway-live-p)
            (h/message "Gateway already starting."))
-          ((and (not gateway-installed-p)
-                (process-live-p h/install-in-progress))
+          ((and (not gateway-installed-p) (h/gateway-installing-p))
            (h/user-error "Gateway installation in-progress"))
           ((not gateway-installed-p)
            (h/user-error "Gateway not installed; try \\[hyperdrive-install]"))
           (t
            (h/message
-            (if hyperdrive-install-in-progress
+            (if (h/gateway-installing-p)
                 "Gateway installation in-progress; starting old gateway anyway."
               "Starting gateway."))
            (funcall h/gateway-start-function))))
@@ -1301,7 +1300,7 @@ Intended for relative (i.e. non-full) URLs."
   "Download and install hyper-gateway-ushin.
 If FORCEP, don't prompt for confirmation before downloading."
   (interactive (list current-prefix-arg))
-  (when (process-live-p h/install-in-progress)
+  (when (h/gateway-installing-p)
     (h/error "Installation of gateway already in progress"))
   (unless forcep
     (when (h/gateway-installed-p)

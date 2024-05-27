@@ -208,9 +208,9 @@
               (propertize
                (cond ((h//gateway-ready-p) "on")
                      ((h/gateway-live-p) "starting")
-                     ((and (h/gateway-installed-p) h/install-in-progress)
+                     ((and (h/gateway-installed-p) (h/gateway-installing-p))
                       "upgrading")
-                     (h/install-in-progress "installing")
+                     ((h/gateway-installing-p) "installing")
                      ((h/gateway-installed-p) "off")
                      (t "not found"))
                'face 'transient-value)))
@@ -238,7 +238,7 @@
                  ((h/gateway-installed-p) "Reinstall")
                  (t "Install")))
      :transient t
-     :inapt-if-non-nil hyperdrive-install-in-progress)]
+     :inapt-if h/gateway-installing-p)]
    ["Bookmark"
     ("b j" "Jump" h/bookmark-jump)
     ("b l" "List" h/bookmark-list)
