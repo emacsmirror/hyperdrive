@@ -1461,7 +1461,7 @@ Default function; see variable `h/gateway-start-function'."
              ;; suspended transient, but I think there is no proper way to query
              ;; that state yet.  I'll look into that.  --Jonas
 	     (not (active-minibuffer-window)))
-    (transient--show)))
+    (transient--refresh-transient)))
 
 (defun h//gateway-stop-default ()
   "Stop the gateway subprocess."
