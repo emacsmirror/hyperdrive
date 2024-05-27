@@ -524,7 +524,7 @@ Interactively, use the `hyperdrive-current-entry'.  If THEN, pass
 it to `hyperdrive-open'."
   (interactive (progn
                  (unless (and h/mode h/current-entry)
-                   (user-error "Not a hyperdrive buffer"))
+                   (h/user-error "Not a hyperdrive buffer"))
                  (list h/current-entry))
                h/mode)
   (if-let ((parent (h/parent entry)))
@@ -1315,7 +1315,7 @@ If FORCEP, don't prompt for confirmation before downloading."
   (unless forcep
     (when (h/gateway-installed-p)
       (unless (yes-or-no-p "Download and reinstall/upgrade hyper-gateway-ushin? ")
-        (user-error "Not downloading; aborted"))))
+        (h/user-error "Not downloading; aborted"))))
   (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes)))
     (cl-labels
         ((try ()

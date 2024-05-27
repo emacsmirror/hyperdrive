@@ -289,7 +289,7 @@ before making the entry struct."
                         ;; not recognizable anyway.
                         (unless (y-or-n-p
                                  (format "Suspicious domain: %s; continue anyway?" host))
-                          (user-error "Suspicious domain %s" host)))
+                          (h/user-error "Suspicious domain %s" host)))
                       (h/create :domains (list host)))
                      (_  ;; Assume host is a public-key
                       (or (gethash host h/hyperdrives)
