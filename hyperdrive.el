@@ -106,7 +106,8 @@ which see."
            (h/message "Gateway already running outside of Emacs."))
           ((h/gateway-live-p)
            (h/message "Gateway already starting."))
-          ((and (not gateway-installed-p) h/install-in-progress-p)
+          ((and (not gateway-installed-p)
+                (process-live-p h/install-in-progress-p))
            (h/user-error "Gateway installation in-progress"))
           ((not gateway-installed-p)
            (h/user-error "Gateway not installed; try \\[hyperdrive-install]"))
@@ -1300,7 +1301,7 @@ Intended for relative (i.e. non-full) URLs."
   "Download and install hyper-gateway-ushin.
 If FORCEP, don't prompt for confirmation before downloading."
   (interactive (list current-prefix-arg))
-  (when h/install-in-progress-p
+  (when (process-live-p h/install-in-progress-p)
     (h/error "Installation of gateway already in progress"))
   (unless forcep
     (when (h/gateway-installed-p)
@@ -1321,13 +1322,14 @@ If FORCEP, don't prompt for confirmation before downloading."
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
-           (plz 'get url :as 'file :timeout nil
-             :then (lambda (filename)
-                     (check filename sha256 url))
-             :else (lambda (plz-error)
-                     (h/message "Trying next source because downloading from URL %S failed: %S"
-                                url plz-error)
-                     (try)))
+           (setf h/install-in-progress-p
+                 (plz 'get url :as 'file :timeout nil
+                   :then (lambda (filename)
+                           (check filename sha256 url))
+                   :else (lambda (plz-error)
+                           (h/message "Trying next source because downloading from URL %S failed: %S"
+                                      url plz-error)
+                           (try))))
            (h/message "Downloading gateway (%s)..."
                       (or (ignore-errors
                             (file-size-human-readable (head-size url)))
@@ -1355,7 +1357,6 @@ If FORCEP, don't prompt for confirmation before downloading."
                       (if (h//gateway-ready-p)
                           "hyperdrive-restart"
                         "hyperdrive-start"))))
-      (setf h/install-in-progress-p t)
       (try))))
 
 (defun h/restart ()
