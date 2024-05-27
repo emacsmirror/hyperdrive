@@ -99,13 +99,23 @@
 Calls function set in option `hyperdrive-gateway-start-function',
 which see."
   (interactive)
-  (cond ((and (h//gateway-ready-p) (h/gateway-live-p))
-         (h/message "Gateway already running."))
-        ((h//gateway-ready-p)
-         (h/message "Gateway already running outside of Emacs."))
-        ((h/gateway-live-p)
-         (h/message "Gateway already starting."))
-        (t (funcall h/gateway-start-function)))
+  (let ((gateway-installed-p (h/gateway-installed-p)))
+    (cond ((and (h//gateway-ready-p) (h/gateway-live-p))
+           (h/message "Gateway already running."))
+          ((h//gateway-ready-p)
+           (h/message "Gateway already running outside of Emacs."))
+          ((h/gateway-live-p)
+           (h/message "Gateway already starting."))
+          ((and (not gateway-installed-p) h/install-in-progress-p)
+           (h/user-error "Gateway installation in-progress"))
+          ((not gateway-installed-p)
+           (h/user-error "Gateway not installed; try \\[hyperdrive-install]"))
+          (t
+           (h/message
+            (if hyperdrive-install-in-progress-p
+                "Gateway installation in-progress; starting old gateway anyway."
+              "Starting gateway."))
+           (funcall h/gateway-start-function))))
   (h//gateway-wait-for-ready))
 
 ;;;###autoload
