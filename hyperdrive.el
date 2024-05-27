@@ -1327,9 +1327,15 @@ If FORCEP, don't prompt for confirmation before downloading."
                    :then (lambda (filename)
                            (check filename sha256 url))
                    :else (lambda (plz-error)
-                           (h/message "Trying next source because downloading from URL %S failed: %S"
-                                      url plz-error)
-                           (try))))
+                           (pcase (plz-error-curl-error plz-error)
+                             (`(2 .  ,_)
+                              ;; "Failed to initialize", likely due to
+                              ;; `interrupt-process' in `h/cancel-install'.
+                              (h/message "Canceled install"))
+                             (_  ; Otherwise, display error and try next URL.
+                              (h/message "Trying next source because downloading from URL %S failed: %S"
+                                         url plz-error)
+                              (try))))))
            (h/message "Downloading gateway (%s)..."
                       (or (ignore-errors
                             (file-size-human-readable (head-size url)))
@@ -1358,6 +1364,12 @@ If FORCEP, don't prompt for confirmation before downloading."
                           "hyperdrive-restart"
                         "hyperdrive-start"))))
       (try))))
+
+(defun h/cancel-install ()
+  "Stop downloading/installing hyper-gateway-ushin."
+  (interactive)
+  (h/message "Cancelling install")
+  (interrupt-process h/install-in-progress-p))
 
 (defun h/restart ()
   "Restart the gateway."
