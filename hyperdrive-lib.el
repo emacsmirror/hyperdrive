@@ -1419,16 +1419,6 @@ Then calls THEN if given."
 (defun h//gateway-start-default ()
   "Start the gateway as an Emacs subprocess.
 Default function; see variable `h/gateway-start-function'."
-  (when h/gateway-process
-    ;; TODO: `h/gateway-process' appears to be non-nil but not live when
-    ;; make-process receives a bad command line program, like "ls"
-    ;; instead of "hyper-gateway-ushin".
-
-    ;; Process variable is non-nil: gateway might be starting but not yet
-    ;; "live", which was checked in `h/start'.  This probably should never
-    ;; happen, but if it were to, this distinct message might help us
-    ;; understand what's going on.
-    (h/error "Gateway appears to be starting"))
   (setf h/gateway-process
         (make-process
          :name "hyper-gateway-ushin"
