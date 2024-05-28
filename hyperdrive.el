@@ -1323,7 +1323,6 @@ If FORCEP, don't prompt for confirmation before downloading."
                (pcase-let (((map :url :sha256) url-and-hash))
                  ;; TODO: Prompt before downloading.
                  (download url sha256))
-             ;; TODO: Is it correct to set the global var to nil here and in callback?
              (setf h/install-process nil)
              (h/menu-refresh)
              (h/error "Downloading failed; no more mirrors available")))
