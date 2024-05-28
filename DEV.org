@@ -477,3 +477,7 @@ Since the menu bar's items can't be updated while the menu is displayed, showing
 
 So we won't show such indicators in the menu bar.  Instead, the Transient ~hyperdrive-menu~ UI is a suitable "dashboard" for such indicators, because the Transient can be refreshed while it's displayed.
 
+** DECISION No uninstall command
+
++ [X] Should we add an uninstall command? :: Probably not, due to issues with potentially shared data and data loss.  Probably sufficient to document the file/directory locations in a manual section and allow the user to delete them if desired.
+
