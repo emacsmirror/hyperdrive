@@ -214,6 +214,18 @@
                      ((h/gateway-installed-p) "off")
                      (t "not found"))
                'face 'transient-value)))
+    ("G i" "Install" h/install
+     :description
+     (lambda () (if (and (h//gateway-ready-p)
+                    (not (equal h/gateway-version-expected
+                                (h//gateway-version))))
+               "Upgrade"
+             "Install"))
+     :transient t
+     :if-not (lambda () (or (h/gateway-installing-p) (h/gateway-installed-p))))
+    ("G c" "Cancel install" h/cancel-install
+     :transient t
+     :if h/gateway-installing-p)
     ("G s" "Start" h/start
      :transient t
      :inapt-if-not (lambda () (h/gateway-installed-p))
@@ -227,19 +239,7 @@
      :inapt-if-not (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
     ("G v" "Version" h/gateway-version
      :transient t
-     :inapt-if-not (lambda () (h//gateway-ready-p)))
-    ("G i" "Install" h/install
-     :description
-     (lambda () (if (and (h//gateway-ready-p)
-                    (not (equal h/gateway-version-expected
-                                (h//gateway-version))))
-               "Upgrade"
-             "Install"))
-     :transient t
-     :if-not (lambda () (or (h/gateway-installing-p) (h/gateway-installed-p))))
-    ("G c" "Cancel install" h/cancel-install
-     :transient t
-     :if h/gateway-installing-p)]
+     :inapt-if-not (lambda () (h//gateway-ready-p)))]
    ["Bookmark"
     ("b j" "Jump" h/bookmark-jump)
     ("b l" "List" h/bookmark-list)
