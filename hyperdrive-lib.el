@@ -1412,9 +1412,9 @@ Then calls THEN if given."
 (defun h//hyper-gateway-ushin-path ()
   "Return path to hyper-gateway-ushin executable, or nil if not found."
   (cond ((file-exists-p
-          (expand-file-name "hyper-gateway-ushin" hyperdrive-gateway-directory))
-         (expand-file-name "hyper-gateway-ushin" hyperdrive-gateway-directory))
-        ((executable-find "hyper-gateway-ushin"))))
+          (expand-file-name h/gateway-program hyperdrive-gateway-directory))
+         (expand-file-name h/gateway-program hyperdrive-gateway-directory))
+        ((executable-find h/gateway-program))))
 
 (defun h//gateway-start-default ()
   "Start the gateway as an Emacs subprocess.

@@ -1365,7 +1365,7 @@ If FORCEP, don't prompt for confirmation before downloading."
              (try)))
          (then (file-name)
            (let ((destination-name
-                  (expand-file-name "hyper-gateway-ushin" h/gateway-directory)))
+                  (expand-file-name h/gateway-program h/gateway-directory)))
              (when (file-exists-p destination-name)
                (move-file-to-trash destination-name))
              (unless (file-directory-p h/gateway-directory)
