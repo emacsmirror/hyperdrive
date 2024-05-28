@@ -832,9 +832,7 @@ The return value of this function is the retrieval buffer."
      ["Gateway version" h/gateway-version
       :help "Say hyper-gateway-ushin version"]
      ["Install gateway" h/install
-      :label (cond ((h/gateway-needs-upgrade-p) "Upgrade gateway")
-                   ((h/gateway-installed-p) "Reinstall gateway")
-                   (t "Install gateway"))
+      :label (if (h/gateway-needs-upgrade-p) "Upgrade" "Install")
       :visible (and (not (h/gateway-installing-p))
                     (or (not (h/gateway-installed-p))
                         (h/gateway-needs-upgrade-p)))
