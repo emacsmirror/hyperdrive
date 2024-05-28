@@ -22,7 +22,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - Switch from `hyper-gateway` to `hyper-gateway-ushin` fork!  Please
   follow the [installation
   instructions](https://git.sr.ht/~ushin/hyper-gateway-ushin#installation).
-- Much faster loading of directory listing
+- Directory listings load faster
 - Improved defcustom types
 - Better error message when ~hyper-gateway-ushin~ is not installed.
   Thanks to ~magnum~ on XMPP for reporting.
