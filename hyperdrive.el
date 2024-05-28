@@ -835,7 +835,9 @@ The return value of this function is the retrieval buffer."
       :label (cond ((h/gateway-needs-upgrade-p) "Upgrade gateway")
                    ((h/gateway-installed-p) "Reinstall gateway")
                    (t "Install gateway"))
-      :visible (not (hyperdrive-gateway-installing-p))
+      :visible (and (not (h/gateway-installing-p))
+                    (or (not (h/gateway-installed-p))
+                        (h/gateway-needs-upgrade-p)))
       :help "Download and install gateway"]
      ["Cancel install" h/cancel-install
       :visible (hyperdrive-gateway-installing-p)
