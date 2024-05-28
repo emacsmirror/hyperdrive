@@ -216,11 +216,7 @@
                'face 'transient-value)))
     ("G i" "Install" h/install
      :description
-     (lambda () (if (and (h//gateway-ready-p)
-                    (not (equal h/gateway-version-expected
-                                (h//gateway-version))))
-               "Upgrade"
-             "Install"))
+     (lambda () (if (h/gateway-needs-upgrade-p) "Upgrade" "Install"))
      :transient t
      :if-not (lambda () (or (h/gateway-installing-p) (h/gateway-installed-p))))
     ("G c" "Cancel install" h/cancel-install

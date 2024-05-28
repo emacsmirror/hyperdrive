@@ -198,14 +198,17 @@ make the request."
        ;; We pass only the `plz-error' struct to the ELSE* function.
        (funcall else* (caddr err))))))
 
+(defun h/gateway-needs-upgrade-p ()
+  "Return non-nil if the gateway is responsive and needs upgraded."
+  (and (h//gateway-ready-p)
+       (not (equal h/gateway-version-expected (h//gateway-version)))))
+
 (defun h/check-gateway-version ()
   "Warn if gateway is at not at the expected version.
 Unconditionally sets `h/gateway-version-checked-p' to t.  The
 caller should ensure that the gateway is running before calling
 this function."
-  (unless (equal h/gateway-version-expected
-                 ;; This will signal an error if the gateway is not responsive.
-                 (h//gateway-version))
+  (when (h/gateway-needs-upgrade-p)
     (display-warning 'hyperdrive "Gateway version not expected; consider installing the latest version with \\[hyperdrive-install]" :warning))
   (setf h/gateway-version-checked-p t))
 
