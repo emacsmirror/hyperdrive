@@ -209,7 +209,11 @@ Unconditionally sets `h/gateway-version-checked-p' to t.  The
 caller should ensure that the gateway is running before calling
 this function."
   (when (h/gateway-needs-upgrade-p)
-    (display-warning 'hyperdrive "Gateway version not expected; consider installing the latest version with \\[hyperdrive-install]" :warning))
+    (display-warning
+     'hyperdrive
+     (substitute-command-keys
+      "Gateway version not expected; consider installing the latest version with \\[hyperdrive-install]")
+     :warning))
   (setf h/gateway-version-checked-p t))
 
 (defun h//gateway-version ()
