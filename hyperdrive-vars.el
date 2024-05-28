@@ -378,7 +378,7 @@ If the version was unexpected,
 `hyperdrive-check-gateway-version' displayed a warning.")
 
 (defvar h/gateway-process nil
-  "Hyper-gateway-ushin process.")
+  "Gateway process.")
 
 (defvar h/install-process nil
   "When non-nil, the curl process downloading the gateway for install/upgrade.")
