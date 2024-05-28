@@ -1357,7 +1357,10 @@ If FORCEP, don't prompt for confirmation before downloading."
            (if (with-temp-buffer
                  (insert-file-contents-literally file-name)
                  (equal sha256 (secure-hash 'sha256 (current-buffer))))
+               ;; Hash matches: finish installation.
                (then file-name)
+             ;; Hash doesn't match: delete file and try next source.
+             (delete-file file-file)
              (h/message "Trying next source because hash comparison failed from URL: %s"
                         url)
              (try)))
