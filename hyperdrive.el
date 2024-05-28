@@ -1384,7 +1384,8 @@ If FORCEP, don't prompt for confirmation before downloading."
   (unless (h/gateway-installing-p)
     (h/user-error "No installation in progress"))
   (h/message "Cancelling install")
-  (interrupt-process h/install-process))
+  (interrupt-process h/install-process)
+  (setf h/install-process nil))
 
 (defun h/restart ()
   "Restart the gateway."
