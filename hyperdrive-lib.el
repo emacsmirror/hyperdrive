@@ -1421,7 +1421,7 @@ Then calls THEN if given."
 Default function; see variable `h/gateway-start-function'."
   (setf h/gateway-process
         (make-process
-         :name "hyper-gateway-ushin"
+         :name "hyperdrive-gateway"
          :buffer " *hyperdrive-start*"
          :command (cons (h//hyper-gateway-ushin-path)
                         (split-string-and-unquote h/gateway-command-args))
