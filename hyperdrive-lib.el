@@ -1485,7 +1485,11 @@ process is running."
 
 (defun h/gateway-installing-p ()
   "Return non-nil if the gateway program is being installed."
-  (process-live-p h/install-process))
+  ;; If this variable is non-nil, it might be a dead process, but it is
+  ;; interpreted to mean that we are still trying to download and install the
+  ;; gateway, because we are still trying other sources; we will set the
+  ;; variable nil when we succeed, give up, or are canceled.
+  h/install-process)
 
 (defun h/gateway-installed-p ()
   "Return non-nil if the gateway program is installed."
