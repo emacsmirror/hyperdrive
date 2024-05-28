@@ -376,8 +376,8 @@ If the version was unexpected,
 (defvar h/gateway-process nil
   "Hyper-gateway-ushin process.")
 
-(defvar h/install-in-progress nil
-  "Non-nil while hyperdrive is installing or upgrading the gateway.")
+(defvar h/install-process nil
+  "When non-nil, the curl process downloading the gateway for install/upgrade.")
 
 (defvar h//gateway-starting-timer nil
   "The timer used when the gateway is starting.")

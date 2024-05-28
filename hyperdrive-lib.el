@@ -1485,7 +1485,7 @@ process is running."
 
 (defun h/gateway-installing-p ()
   "Return non-nil if the gateway program is being installed."
-  (process-live-p h/install-in-progress))
+  (process-live-p h/install-process))
 
 (defun h/gateway-installed-p ()
   "Return non-nil if the gateway program is installed."

@@ -1324,7 +1324,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                  ;; TODO: Prompt before downloading.
                  (download url sha256))
              ;; TODO: Is it correct to set the global var to nil here and in callback?
-             (setf h/install-in-progress nil)
+             (setf h/install-process nil)
              (h/menu-refresh)
              (h/error "Downloading failed; no more mirrors available")))
          (head-size (url)
@@ -1332,7 +1332,7 @@ If FORCEP, don't prompt for confirmation before downloading."
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
-           (setf h/install-in-progress
+           (setf h/install-process
                  (plz 'get url :as 'file :timeout nil
                    :then (lambda (filename)
                            (check filename sha256 url))
@@ -1367,7 +1367,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                (mkdir h/gateway-directory t))
              (rename-file file-name destination-name)
              (chmod destination-name #o755))
-           (setf h/install-in-progress nil)
+           (setf h/install-process nil)
            (h/menu-refresh)
            (h/message "Gateway installed.  Try \\[%s]"
                       (if (h//gateway-ready-p)
@@ -1381,7 +1381,7 @@ If FORCEP, don't prompt for confirmation before downloading."
   (unless (h/gateway-installing-p)
     (h/user-error "No installation in progress"))
   (h/message "Cancelling install")
-  (interrupt-process h/install-in-progress))
+  (interrupt-process h/install-process))
 
 (defun h/restart ()
   "Restart the gateway."
