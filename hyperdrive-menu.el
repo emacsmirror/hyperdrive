@@ -230,14 +230,13 @@
      :inapt-if-not (lambda () (h//gateway-ready-p)))
     ("G i" "Install" h/install
      :description
-     (lambda () (cond ((and (h//gateway-ready-p)
-                       (not (equal h/gateway-version-expected
-                                   (h//gateway-version))))
-                  "Upgrade")
-                 ((h/gateway-installed-p) "Reinstall")
-                 (t "Install")))
+     (lambda () (if (and (h//gateway-ready-p)
+                    (not (equal h/gateway-version-expected
+                                (h//gateway-version))))
+               "Upgrade"
+             "Install"))
      :transient t
-     :if-not h/gateway-installing-p)
+     :if-not (lambda () (or (h/gateway-installing-p) (h/gateway-installed-p))))
     ("G c" "Cancel install" h/cancel-install
      :transient t
      :if h/gateway-installing-p)]
