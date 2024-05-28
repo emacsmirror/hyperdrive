@@ -1431,9 +1431,10 @@ Default function; see variable `h/gateway-start-function'."
   "Announce that the gateway is ready."
   (h/message "Gateway ready."))
 
-;; TODO: Doesn't work if hyperdrive-start called outside with M-x, not from menu
 (defun h/menu-refresh ()
   "Refresh `hyperdrive-menu' if it's open."
+  ;; TODO: Doesn't work if hyperdrive-start called outside with M-x, not from
+  ;; menu.  Jonas might add a variable like `transient-active-command' to DTRT.
   (when (and (eq transient-current-command 'h/menu)
              ;; Depending on transient-show-popup customization, there
              ;; might be no popup (yet).
