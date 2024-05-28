@@ -1332,20 +1332,23 @@ If FORCEP, don't prompt for confirmation before downloading."
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
-           (setf h/install-process
-                 (plz 'get url :as 'file :timeout nil
-                   :then (lambda (filename)
-                           (check filename sha256 url))
-                   :else (lambda (plz-error)
-                           (pcase (plz-error-curl-error plz-error)
-                             (`(2 .  ,_)
-                              ;; "Failed to initialize", likely due to
-                              ;; `interrupt-process' in `h/cancel-install'.
-                              (h/message "Canceled install"))
-                             (_  ; Otherwise, display error and try next URL.
-                              (h/message "Trying next source because downloading from URL %S failed: %S"
-                                         url plz-error)
-                              (try))))))
+           (let ((temp-file (make-temp-file "hyperdrive-gateway-")))
+             (setf h/install-process
+                   (plz 'get url :as `(file ,temp-file) :timeout nil
+                     :then (lambda (filename)
+                             (check filename sha256 url))
+                     :else (lambda (plz-error)
+                             (pcase (plz-error-curl-error plz-error)
+                               (`(2 .  ,_)
+                                ;; "Failed to initialize", likely due to
+                                ;; `interrupt-process' in `h/cancel-install'.
+                                (h/message "Canceled install"))
+                               (_   ; Otherwise, display error and try next URL.
+                                (h/message "Trying next source because downloading from URL %S failed: %S"
+                                           url plz-error)
+                                (try)))
+                             (when (file-exists-p temp-file)
+                               (delete-file temp-file))))))
            (h/message "Downloading gateway (%s)..."
                       (or (ignore-errors
                             (file-size-human-readable (head-size url)))
