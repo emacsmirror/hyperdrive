@@ -1508,9 +1508,6 @@ Or if gateway isn't ready within timeout, show an error."
                                   (eval (car (get 'h/gateway-start-function
                                                   'standard-value)))))
                           (process-buffer (process-buffer h/gateway-process)))
-                     ;; TODO: why does the process still exist when make-process
-                     ;; fails, e.g., if the gateway command is something wrong
-                     ;; like "ls"?
                      (progn
                        ;; User has not customized the start function: show the
                        ;; process buffer.
