@@ -1062,7 +1062,7 @@ DNS domains are checked for suspicious characters (see
 You can adjust the following options in the customization interface by
 running ~M-x customize-group RET hyperdrive RET~:
 
-- User Option: hyperdrive-hyper-gateway-ushin-port ::
+- User Option: hyperdrive-gateway-port ::
 
   ~hyperdrive.el~ will send HTTP requests to ~hyper-gateway-ushin~ on this port.
   Defaults to ~4973~.

@@ -154,7 +154,7 @@ See `hyperdrive-directory-sort' for the type of DIRECTION."
 Calls `hyperdrive--httpify-url' to convert HYPER-URL starting
 with `hyperdrive--hyper-prefix' to a URL starting with
 \"http://localhost:4973/hyper/\" (assuming that
-`hyperdrive-hyper-gateway-ushin-port' is \"4973\").
+`hyperdrive-gateway-port' is \"4973\").
 
 REST is passed to `plz', which see.
 
@@ -220,7 +220,7 @@ this function."
   "Return the name and version number of gateway as a plist.
 If it's not running, signal an error."
   (condition-case err
-      (pcase-let* ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port))
+      (pcase-let* ((url (format "http://localhost:%d/" h/gateway-port))
                    ((map name version) (plz 'get url :as #'json-read)))
         (list :name name :version version))
     (plz-error (h/api-default-else nil (caddr err)))))
@@ -246,7 +246,7 @@ PLZ-ERR should be a `plz-error' struct."
 (defun h//httpify-url (url)
   "Return localhost HTTP URL for HYPER-URL."
   (format "http://localhost:%d/hyper/%s"
-          h/hyper-gateway-ushin-port
+          h/gateway-port
           (substring url (length h//hyper-prefix))))
 
 (cl-defun h//write (url &key body then else queue)
@@ -1498,7 +1498,7 @@ process is running."
   "Return non-nil if the gateway is running and accessible.
 Times out after 2 seconds."
   (ignore-errors
-    (plz 'get (format "http://localhost:%d/" h/hyper-gateway-ushin-port)
+    (plz 'get (format "http://localhost:%d/" h/gateway-port)
       :connect-timeout 2 :timeout 2)))
 
 (defun h//gateway-wait-for-ready ()

@@ -1463,7 +1463,7 @@ DNS domains are checked for suspicious characters (see
 You can adjust the following options in the customization interface by
 running @code{M-x customize-group RET hyperdrive RET}:
 
-@defopt hyperdrive-hyper-gateway-ushin-port
+@defopt hyperdrive-gateway-port
 @code{hyperdrive.el} will send HTTP requests to @code{hyper-gateway-ushin} on this port.
 Defaults to @code{4973}.
 @end defopt
