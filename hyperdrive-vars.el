@@ -38,6 +38,25 @@
   :group 'external
   :prefix "hyperdrive-")
 
+(defcustom h/gateway-directory (expand-file-name "~/.local/lib/hyperdrive.el")
+  "Where the hyper-gateway executable is found.
+If not found here, the \"PATH\" environment variable is checked
+with `executable-find'.  Command `hyperdrive-install' installs to
+this directory."
+  :type 'directory)
+
+(defcustom h/gateway-program "hyper-gateway-ushin"
+  "Name of gateway executable.
+Command `hyperdrive-install' installs to this name inside
+`hyperdrive-gateway-directory'.  Function
+`h//gateway-path' looks for executable by this name."
+  :type 'string)
+
+(defcustom h/gateway-command-args "run --writable true --silent true"
+  "Arguments passed to the gateway."
+  :type 'string
+  :group 'hyperdrive)
+
 (defalias 'hyperdrive-hyper-gateway-port 'hyperdrive-gateway-port
   ;; TODO(v0.5.0) Remove this alias
   "Renamed in hyperdrive.el v0.4.0 to reflect update to hyper-gateway-ushin.
@@ -257,20 +276,6 @@ value (and should only be present once in the string).  Used in
                (cons :tag "Hyperdrive domains" (const domains)
                      (string :tag "Format string"))))
 
-(defcustom h/gateway-program "hyper-gateway-ushin"
-  "Name of gateway executable.
-Command `hyperdrive-install' installs to this name inside
-`hyperdrive-gateway-directory'.  Function
-`h//gateway-path' looks for executable by this name."
-  :type 'string)
-
-(defcustom h/gateway-directory (expand-file-name "~/.local/lib/hyperdrive.el")
-  "Where the hyper-gateway executable is found.
-If not found here, the \"PATH\" environment variable is checked
-with `executable-find'.  Command `hyperdrive-install' installs to
-this directory."
-  :type 'directory)
-
 ;;;;; Faces
 
 (defgroup hyperdrive-faces nil
@@ -446,11 +451,6 @@ gateway process."
 This hook is called by `hyperdrive--gateway-wait-for-ready' after
 `hyperdrive-start'."
   :type 'hook)
-
-(defcustom h/gateway-command-args "run --writable true --silent true"
-  "Arguments passed to the gateway."
-  :type 'string
-  :group 'hyperdrive)
 
 ;;;; Footer
 
