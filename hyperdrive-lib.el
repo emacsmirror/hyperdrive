@@ -1418,8 +1418,8 @@ Then calls THEN if given."
 See user options `hyperdrive-gateway-program' and
 `hyperdrive-gateway-directory'."
   (cond ((file-exists-p
-          (expand-file-name h/gateway-program hyperdrive-gateway-directory))
-         (expand-file-name h/gateway-program hyperdrive-gateway-directory))
+          (expand-file-name h/gateway-program h/gateway-directory))
+         (expand-file-name h/gateway-program h/gateway-directory))
         ((executable-find h/gateway-program))))
 
 (defun h//gateway-start-default ()
