@@ -59,6 +59,7 @@ This manual is for @code{hyperdrive.el} version 0.4-pre.
 * Tips::
 * Troubleshooting::
 * Contributing/Getting help::
+* Uninstalling::
 * Acknowledgments::
 * Indices::
 * GNU Free Documentation License::
@@ -1649,6 +1650,9 @@ You're welcome to join our public XMPP chat room!
 
 Bugs can be submitted to the @uref{https://todo.sr.ht/~ushin/ushin, ushin issue tracker}. Patches, comments or
 questions can be submitted to the @uref{https://lists.sr.ht/~ushin/ushin, ushin public inbox}.
+
+@node Uninstalling
+@chapter Uninstalling
 
 @node Acknowledgments
 @chapter Acknowledgments

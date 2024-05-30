@@ -1219,6 +1219,11 @@ You're welcome to join our public XMPP chat room!
 Bugs can be submitted to the [[https://todo.sr.ht/~ushin/ushin][ushin issue tracker]]. Patches, comments or
 questions can be submitted to the [[https://lists.sr.ht/~ushin/ushin][ushin public inbox]].
 
+* Uninstalling
+
+# TODO: ~M-x package-delete hyperdrive~, note where corestore data is
+# stored
+
 * Acknowledgments
 
 [[https://github.com/alphapapa/][Adam Porter]] for rewriting ~hyperdrive.el~ and for his work on ~plz.el~.
