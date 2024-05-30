@@ -833,9 +833,11 @@ The return value of this function is the retrieval buffer."
       :help "Restart the gateway"
       :visible (or (h/gateway-live-p) (h//gateway-ready-p))]
      ["Stop Gateway" h/stop
-      :help "Stop the gateway"]
+      :help "Stop the gateway"
+      :active (or (h/gateway-live-p) (h//gateway-ready-p))]
      ["Gateway Version" h/gateway-version
-      :help "Say gateway version"]
+      :help "Say gateway version"
+      :active (h//gateway-ready-p)]
      ["Install Gateway" h/install
       :label (if (h/gateway-needs-upgrade-p) "Upgrade" "Install")
       :visible (and (not (h/gateway-installing-p))
