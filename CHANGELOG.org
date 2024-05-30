@@ -6,6 +6,9 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 * 0.4-pre
 
+Version ~0.4~ features [[https://ushin.org/hyperdrive/hyperdrive-manual.html#Org_002dtransclusion-integration][org-transclusion integration]], easy gateway
+installation with ~M-x hyperdrive-install~, and a faster directory UI!
+
 ** Security
 
 - By default, don't automatically load major mode when browsing
@@ -14,8 +17,13 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 ** Added
 
-- Simplified installation: After ~M-x package-install hyperdrive.el~,
-  run ~M-x hyperdrive-install~ to install the gateway.
+- Easy installation: After ~M-x package-install hyperdrive.el~, run ~M-x
+  hyperdrive-install~ to install the gateway.
+- Cancel installation in progress with ~hyperdrive-cancel-install~.
+- Add ~hyperdrive-install~ and ~hyperdrive-cancel-install~ bindings to
+  ~hyperdrive-menu~ and menu bar.
+- Add ~hyperdrive-restart~ to restart the gateway, also bound in
+  ~hyperdrive-menu~ and menu bar.
 - When visiting an old version of a hyperdrive file, press ~n~ and ~p~ to
   traverse the version history.  Press ~q~ to kill the current buffer.
 
@@ -25,11 +33,24 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
   follow the [installation
   instructions](https://git.sr.ht/~ushin/hyper-gateway-ushin#installation).
 - Directory listings load faster
-- Improved defcustom types
+- Improve gateway status indicators in ~hyperdrive-menu~ to update
+  asynchronously with "starting", "installing", "upgrading", etc.
+- Improve messages and errors when starting and stopping gateway.
+- Remove gateway status indicator in hyperdrive menu bar since menu
+  bar labels cannot be updated while the menu bar is open.
 - Better error message when the gateway is not installed.
   Thanks to ~magnum~ on XMPP for reporting.
-- Removed ~hyperdrive-reuse-buffers~ user option to ensure consistent
+- Remove ~hyperdrive-reuse-buffers~ user option to ensure consistent
   behavior when uniquifying buffer names.
+- Remove ~hyperdrive-gateway-process-type~ user option. To customize
+  gateway startup, see options ~hyperdrive-gateway-start-function~,
+  ~hyperdrive-gateway-stop-function~, ~hyperdrive-gateway-live-predicate~.
+- Remove ~hyperdrive-gateway-command~ user option. To customize gateway
+  command, see options ~hyperdrive-gateway-directory~,
+  ~hyperdrive-gateway-program~, ~hyperdrive-gateway-command-args~.
+- Rename and alias ~hyperdrive-hyper-gateway-ushin-port~ to
+  ~hyperdrive-gateway-port~.  Alias will be removed in a later version.
+- Improve defcustom types
 
 ** Fixed
 
@@ -37,6 +58,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 - More reliably kill intermediate buffers when generating a diff.
 - Avoid unnecessarily updating ~hyperdrive-version-ranges~.
 - Include the first file in a directory as an ~imenu~ candidate.
+- Start gateway subprocess on ~hyperdrive-gateway-port~.
 
 ** Internal
 

@@ -75,6 +75,7 @@ Installation
 
 Usage
 
+* Install the gateway::
 * Menu bar support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
@@ -94,6 +95,10 @@ Usage
 * Non-interactive use::
 * Org-transclusion integration::
 * Miscellaneous features::
+
+Start/stop the gateway
+
+* Advanced gateway customization::
 
 Open a hyperdrive
 
@@ -266,6 +271,7 @@ On the network it still may be there.
 @end display
 
 @menu
+* Install the gateway::
 * Menu bar support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
@@ -286,6 +292,21 @@ On the network it still may be there.
 * Org-transclusion integration::
 * Miscellaneous features::
 @end menu
+
+@node Install the gateway
+@section Install the gateway
+
+Run @code{M-x hyperdrive-install} to download and install the gateway program
+(see @ref{hyper-gateway-ushin}):
+
+@deffn Command hyperdrive-install
+Download and install the gateway.  Prompts for confirmation before
+downloading.
+@end deffn
+
+@deffn Command hyperdrive-cancel-install
+Cancel installation in progress.
+@end deffn
 
 @node Menu bar support
 @section Menu bar support
@@ -341,32 +362,43 @@ and in the ``Hyperdrive'' menu bar (see @ref{Menu bar support}).
 Start the gateway.
 @end deffn
 
+@defopt hyperdrive-gateway-ready-hook
+Hook run when the gateway becomes responsive after @code{hyperdrive-start}.
+One of the default hooks, @code{hyperdrive-check-gateway-version}, will
+warn you if you're running an outdated version of the gateway.
+@end defopt
+
 @deffn Command hyperdrive-stop
 Stop the gateway.
 @end deffn
 
-@defopt hyperdrive-gateway-process-type
-How to start and stop the gateway.  By default, @code{hyperdrive.el} will
-autodetect the appropriate process type.  If you have configured
-@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#how-do-i-run-hyper-gateway-ushin-as-a-background-process-on-gnulinux--systemd, hyper-gateway-ushin
-to run as a systemd service}, then @code{hyperdrive.el} will automatically
-use @code{systemd} to manage the gateway.  Otherwise, @code{hyperdrive.el} will
+@deffn Command hyperdrive-restart
+Restart the gateway.
+@end deffn
+
+@deffn Command hyperdrive-gateway-version
+Say the version of the gateway which is running.
+@end deffn
+
+@menu
+* Advanced gateway customization::
+@end menu
+
+@node Advanced gateway customization
+@subsection Advanced gateway customization
+
+@defopt hyperdrive-gateway-start-function
+Function run to start the gateway.  By default, @code{hyperdrive.el} will
 start the gateway as an Emacs subprocess.
 @end defopt
 
-@defopt hyperdrive-gateway-command
-The command run to start the gateway as an Emacs subprocess.  This
-option only takes effect when @code{hyperdrive-gateway-process-type} is
-set to @code{subprocess}.
+@defopt hyperdrive-gateway-stop-function
+Function run to stop the gateway.
 @end defopt
 
-Alternatively, you can start the gateway manually by running:
-
-@example
-hyper-gateway-ushin run --writable true
-@end example
-
-For full usage instructions, see the @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#usage, hyper-gateway-ushin README}.
+@defopt hyperdrive-gateway-live-predicate
+Function run to check that the gateway process is live.
+@end defopt
 
 @node Open a hyperdrive
 @section Open a hyperdrive
@@ -1456,9 +1488,28 @@ DNS domains are checked for suspicious characters (see
 You can adjust the following options in the customization interface by
 running @code{M-x customize-group RET hyperdrive RET}:
 
+@defopt hyperdrive-gateway-program
+Name of executable to run when starting the gateway with
+@code{hyperdrive-gateway-start-function}.  @code{hyperdrive-install} will install
+the gateway to this file in @code{hyperdrive-gateway-directory}.
+@end defopt
+
+@defopt hyperdrive-gateway-directory
+Filesystem directory in which the gateway is expected to be found.
+@code{hyperdrive-install} will install the gateway to this location.  When
+starting the gateway, if @code{hyperdrive-gateway-program} is not found in
+this directory, Emacs searches @code{PATH} for @code{hyperdrive-gateway-program}.
+@end defopt
+
+@defopt hyperdrive-gateway-command-args
+Command line arguments passed to the gateway when starting the
+gateway with the default @code{hyperdrive-gateway-start-function}.
+@end defopt
+
 @defopt hyperdrive-gateway-port
 @code{hyperdrive.el} will send HTTP requests to the gateway on this port.
-Defaults to @code{4973}.
+Defaults to @code{4973}.  The default @code{hyperdrive-gateway-start-function}
+will start the gateway on this port.
 @end defopt
 
 @defopt hyperdrive-persist-location
