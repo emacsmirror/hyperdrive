@@ -52,7 +52,8 @@ Command `hyperdrive-install' installs to this name inside
 `h//gateway-path' looks for executable by this name."
   :type 'string)
 
-(defcustom h/gateway-command-args "run --writable true --silent true"
+(defcustom h/gateway-command-args
+  (format "run --writable true --silent true --port %s" hyperdrive-gateway-port)
   "Arguments passed to the gateway."
   :type 'string
   :group 'hyperdrive)
