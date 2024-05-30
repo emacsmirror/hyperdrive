@@ -33,6 +33,7 @@
 
 ;;;; Installation:
 
+;; TODO: Update installation instructions
 ;; hyperdrive.el requires Emacs version 28.1 or later.
 
 ;; hyperdrive.el is available on MELPA:
