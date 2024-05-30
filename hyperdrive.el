@@ -827,7 +827,11 @@ The return value of this function is the retrieval buffer."
 (defvar h/menu-bar-menu
   '(("Gateway"
      ["Start Gateway" h/start
-      :help "Start the gateway"]
+      :help "Start the gateway"
+      :visible (not (or (h/gateway-live-p) (h//gateway-ready-p)))]
+     ["Restart Gateway" h/restart
+      :help "Restart the gateway"
+      :visible (or (h/gateway-live-p) (h//gateway-ready-p))]
      ["Stop Gateway" h/stop
       :help "Stop the gateway"]
      ["Gateway version" h/gateway-version
