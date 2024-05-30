@@ -834,15 +834,15 @@ The return value of this function is the retrieval buffer."
       :visible (or (h/gateway-live-p) (h//gateway-ready-p))]
      ["Stop Gateway" h/stop
       :help "Stop the gateway"]
-     ["Gateway version" h/gateway-version
+     ["Gateway Version" h/gateway-version
       :help "Say gateway version"]
-     ["Install gateway" h/install
+     ["Install Gateway" h/install
       :label (if (h/gateway-needs-upgrade-p) "Upgrade" "Install")
       :visible (and (not (h/gateway-installing-p))
                     (or (not (h/gateway-installed-p))
                         (h/gateway-needs-upgrade-p)))
       :help "Download and install gateway"]
-     ["Cancel install" h/cancel-install
+     ["Cancel Install" h/cancel-install
       :visible (hyperdrive-gateway-installing-p)
       :help "Cancel running download/installation"])
     "---"
