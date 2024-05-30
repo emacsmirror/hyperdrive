@@ -1229,24 +1229,23 @@ to the relevant section in the ~hyperdrive.el~ manual.
 
 * Troubleshooting
 
-If you run into issues, please first try resetting the values of
-~hyperdrive-hyperdrives~ and ~hyperdrive-version-ranges~:
+** Reinstall/upgrade the gateway
+
+Please ensure that you have the expected version of the gateway by
+running ~M-x hyperdrive-install~.
+
+** Reset bad persist variables
+
+It is possible that the persisted values of ~hyperdrive-hyperdrives~
+and/or ~hyperdrive-version-ranges~ are wrong.  Reset them by evaluating:
 
 #+begin_src emacs-lisp
   (progn
-    (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
+    (persist-reset 'hyperdrive-hyperdrives)
     (persist-save 'hyperdrive-hyperdrives)
-    (setf hyperdrive-version-ranges (make-hash-table :test #'equal))
+    (persist-reset 'hyperdrive-version-ranges)
     (persist-save 'hyperdrive-version-ranges))
 #+end_src
-
-# TODO: Update the next paragraph to mention install/upgrade command and omit version numbers.
-
-Please ensure that your version of ~hyper-gateway-ushin~ (~M-x
-hyperdrive-gateway-version~) is version `3.8.0` ([download from
-Codeberg](https://codeberg.org/USHIN/hyper-gateway-ushin/releases/tag/v3.8.0)
-or [download from
-SourceHut](https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.8.0)).
 
 * Contributing/Getting help
 

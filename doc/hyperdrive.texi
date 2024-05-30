@@ -171,6 +171,11 @@ Tips
 
 * Quick documentation access::
 
+Troubleshooting
+
+* Reinstall/upgrade the gateway::
+* Reset bad persist variables::
+
 Indices
 
 * Keystroke index::
@@ -1670,22 +1675,30 @@ to the relevant section in the @code{hyperdrive.el} manual.
 @node Troubleshooting
 @chapter Troubleshooting
 
-If you run into issues, please first try resetting the values of
-@code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}:
+@menu
+* Reinstall/upgrade the gateway::
+* Reset bad persist variables::
+@end menu
+
+@node Reinstall/upgrade the gateway
+@section Reinstall/upgrade the gateway
+
+Please ensure that you have the expected version of the gateway by
+running @code{M-x hyperdrive-install}.
+
+@node Reset bad persist variables
+@section Reset bad persist variables
+
+It is possible that the persisted values of @code{hyperdrive-hyperdrives}
+and/or @code{hyperdrive-version-ranges} are wrong.  Reset them by evaluating:
 
 @lisp
 (progn
-  (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
+  (persist-reset 'hyperdrive-hyperdrives)
   (persist-save 'hyperdrive-hyperdrives)
-  (setf hyperdrive-version-ranges (make-hash-table :test #'equal))
+  (persist-reset 'hyperdrive-version-ranges)
   (persist-save 'hyperdrive-version-ranges))
 @end lisp
-
-Please ensure that your version of @code{hyper-gateway-ushin} (@code{M-x
-hyperdrive-gateway-version}) is version `3.8.0` ([download from
-Codeberg](@uref{https://codeberg.org/USHIN/hyper-gateway-ushin/releases/tag/v3.8.0})
-or [download from
-SourceHut](@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.8.0})).
 
 @node Contributing/Getting help
 @chapter Contributing/Getting help
