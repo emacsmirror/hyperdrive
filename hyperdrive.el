@@ -96,7 +96,7 @@
 
 ;;;###autoload
 (defun hyperdrive-start ()
-  "Start `hyper-gateway-ushin' if not already running.
+  "Start the gateway if not already running.
 Calls function set in option `hyperdrive-gateway-start-function',
 which see."
   (interactive)
@@ -121,7 +121,7 @@ which see."
 
 ;;;###autoload
 (defun hyperdrive-stop ()
-  "Stop `hyper-gateway-ushin' if running.
+  "Stop the gateway if running.
 Calls function set in option `hyperdrive-gateway-stop-function',
 which see."
   (interactive)
@@ -479,7 +479,7 @@ use, see `hyperdrive-write'."
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
                   ;; FIXME: For large buffers, `buffer-size' returns a different
-                  ;; value than hyper-gateway-ushin's Content-Length header.
+                  ;; value than the gateway's Content-Length header.
                   (setf (he/size entry) (buffer-size))
                   ;; FIXME: Will entry type ever be anything besides text/plain?
                   ;;        /.well-known/host-meta.json ?
@@ -827,11 +827,11 @@ The return value of this function is the retrieval buffer."
 (defvar h/menu-bar-menu
   '(("Gateway"
      ["Start Gateway" h/start
-      :help "Start hyper-gateway-ushin"]
+      :help "Start the gateway"]
      ["Stop Gateway" h/stop
-      :help "Stop hyper-gateway-ushin"]
+      :help "Stop the gateway"]
      ["Gateway version" h/gateway-version
-      :help "Say hyper-gateway-ushin version"]
+      :help "Say gateway version"]
      ["Install gateway" h/install
       :label (if (h/gateway-needs-upgrade-p) "Upgrade" "Install")
       :visible (and (not (h/gateway-installing-p))
@@ -1301,18 +1301,18 @@ Intended for relative (i.e. non-full) URLs."
        :sha256 "c347255d3fc5e6499fc10bea4d20e62798fb5968960dbbe26d507d11688326bb")
      ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.8.0/hyper-gateway-windows-v3.8.0.exe"
        :sha256 "")))
-  "Alist mapping `system-type' to URLs where hyper-gateway-ushin can be downloaded.")
+  "Alist mapping `system-type' to URLs where the gateway can be downloaded.")
 
 ;;;###autoload
 (defun hyperdrive-install (&optional forcep)
-  "Download and install hyper-gateway-ushin.
+  "Download and install the gateway.
 If FORCEP, don't prompt for confirmation before downloading."
   (interactive (list current-prefix-arg))
   (when (h/gateway-installing-p)
     (h/user-error "Installation of gateway already in progress"))
   (unless forcep
     (when (h/gateway-installed-p)
-      (unless (yes-or-no-p "Download and reinstall/upgrade hyper-gateway-ushin? ")
+      (unless (yes-or-no-p "Download and reinstall/upgrade the gateway? ")
         (h/user-error "Not downloading; aborted"))))
   (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes))
         (destination (expand-file-name h/gateway-program h/gateway-directory)))
@@ -1378,7 +1378,7 @@ If FORCEP, don't prompt for confirmation before downloading."
       (try))))
 
 (defun h/cancel-install ()
-  "Stop downloading/installing hyper-gateway-ushin."
+  "Stop downloading/installing the gateway."
   (interactive)
   (unless (h/gateway-installing-p)
     (h/user-error "No installation in progress"))
@@ -1401,7 +1401,7 @@ If FORCEP, don't prompt for confirmation before downloading."
 ;;   "Return non-nil if a local installation of the gateway appears valid.
 ;; That is, if an executable file exists at the expected location
 ;; with an expected hash."
-;;   (when-let ((file-name (h//hyper-gateway-ushin-path)))
+;;   (when-let ((file-name (h//gateway-path)))
 ;;     (let* ((file-hash (with-temp-buffer
 ;;                          (insert-file-contents-literally file-name)
 ;;                          (secure-hash 'sha256 (current-buffer))))

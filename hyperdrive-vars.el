@@ -43,7 +43,7 @@
   "Renamed in hyperdrive.el v0.4.0 to reflect update to hyper-gateway-ushin.
 This alias will be removed in a later version of `hyperdrive.el'.")
 (defcustom h/gateway-port 4973
-  "Port to use to send requests to the hyper-gateway-ushin server."
+  "Port to use to send requests to the gateway server."
   :type 'natnum)
 
 (defcustom h/safe-hyperdrives nil
@@ -261,7 +261,7 @@ value (and should only be present once in the string).  Used in
   "Name of gateway executable.
 Command `hyperdrive-install' installs to this name inside
 `hyperdrive-gateway-directory'.  Function
-`h//hyper-gateway-ushin-path' looks for executable by this name."
+`h//gateway-path' looks for executable by this name."
   :type 'string)
 
 (defcustom h/gateway-directory (expand-file-name "~/.local/lib/hyperdrive.el")
@@ -448,7 +448,7 @@ This hook is called by `hyperdrive--gateway-wait-for-ready' after
   :type 'hook)
 
 (defcustom h/gateway-command-args "run --writable true --silent true"
-  "Arguments passed to hyper-gateway-ushin."
+  "Arguments passed to the gateway."
   :type 'string
   :group 'hyperdrive)
 

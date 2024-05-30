@@ -72,7 +72,7 @@ These checklists should be followed when releasing new versions:
 
 /A list of the places where version numbers are present and need to be updated./
 
-** hyper-gateway-ushin version numbers
+** Gateway version numbers
 
 + [ ] [[file:hyperdrive.el::(defvar h/gateway-urls-and-hashes][h/gateway-urls-and-hashes variable]]
 + [ ] [[file:hyperdrive-vars.el::defvar h/gateway-version-expected "3.7.0"][h/gateway-version-expected variable]]

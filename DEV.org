@@ -37,7 +37,7 @@ So, e.g. ~makem~'s ~lint-declare~ rule, which uses ~check-declare~, gives false 
 
 ** Decisions
 
-+ We don't want to delete or install ~hyper-gateway-ushin~ anywhere other than ~~/.local/lib/hyperdrive.el~. :: In case the user has installed a different version at a different location, we want to respect that.
++ We don't want to delete or install the gateway anywhere other than ~~/.local/lib/hyperdrive.el~. :: In case the user has installed a different version at a different location, we want to respect that.
 +  :: 
 
 ** Testing gateway commands

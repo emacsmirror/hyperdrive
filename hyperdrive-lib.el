@@ -235,8 +235,7 @@ PLZ-ERR should be a `plz-error' struct."
      ;; Curl error 7 is "Failed to connect to host."
      (h/user-error "Gateway not running.  Use \\[hyperdrive-start] to start it"))
     ((app plz-error-response (cl-struct plz-response (status (or 403 405)) body))
-     ;; 403 Forbidden or 405 Method Not Allowed: Display message from
-     ;; hyper-gateway-ushin.
+     ;; 403 Forbidden or 405 Method Not Allowed: Display message from gateway.
      (h/error "%s" body))
     ((guard else)
      (funcall else plz-err))
@@ -604,7 +603,7 @@ echo area when the request for the file is made."
                      (not-found-action))))
                   (500 ;; Generic error, likely a mistyped URL
                    (h/message
-                    "Generic hyper-gateway-ushin status 500 error. %s %s"
+                    "Generic gateway status 500 error. %s %s"
                     "Is this URL correct?" (he/url entry)))
                   (_ (h/message "Unable to load URL \"%s\": %S"
                                 (he/url entry) err))))))
@@ -963,7 +962,7 @@ HYPERDRIVE's public metadata file."
 (cl-defun h/purge-no-prompt (hyperdrive &key then else)
   "Purge all data corresponding to HYPERDRIVE, then call THEN with response.
 
-- HYPERDRIVE file content and metadata managed by hyper-gateway-ushin
+- HYPERDRIVE file content and metadata managed by the gateway
 - hash table entry for HYPERDRIVE in `hyperdrive-hyperdrives'
 - hash table entries for HYPERDRIVE in `hyperdrive-version-ranges'
 
@@ -1416,8 +1415,10 @@ Then calls THEN if given."
 
 ;;;; Gateway process
 
-(defun h//hyper-gateway-ushin-path ()
-  "Return path to hyper-gateway-ushin executable, or nil if not found."
+(defun h//gateway-path ()
+  "Return path to gateway executable, or nil if not found.
+See user options `hyperdrive-gateway-program' and
+`hyperdrive-gateway-directory'."
   (cond ((file-exists-p
           (expand-file-name h/gateway-program hyperdrive-gateway-directory))
          (expand-file-name h/gateway-program hyperdrive-gateway-directory))
@@ -1430,7 +1431,7 @@ Default function; see variable `h/gateway-start-function'."
         (make-process
          :name "hyperdrive-gateway"
          :buffer " *hyperdrive-start*"
-         :command (cons (h//hyper-gateway-ushin-path)
+         :command (cons (h//gateway-path)
                         (split-string-and-unquote h/gateway-command-args))
          :connection-type 'pipe)))
 
@@ -1491,8 +1492,8 @@ process is running."
 
 (defun h/gateway-installed-p ()
   "Return non-nil if the gateway program is installed."
-  (and-let* ((hyper-gateway-ushin-path (hyperdrive--hyper-gateway-ushin-path)))
-    (file-executable-p hyper-gateway-ushin-path)))
+  (and-let* ((gateway-path (hyperdrive--gateway-path)))
+    (file-executable-p gateway-path)))
 
 (defun h//gateway-ready-p ()
   "Return non-nil if the gateway is running and accessible.

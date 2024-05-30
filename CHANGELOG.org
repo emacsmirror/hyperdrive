@@ -15,7 +15,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 ** Added
 
 - Simplified installation: After ~M-x package-install hyperdrive.el~,
-  run ~M-x hyperdrive-install~ to install ~hyper-gateway-ushin~.
+  run ~M-x hyperdrive-install~ to install the gateway.
 - When visiting an old version of a hyperdrive file, press ~n~ and ~p~ to
   traverse the version history.  Press ~q~ to kill the current buffer.
 
@@ -26,7 +26,7 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
   instructions](https://git.sr.ht/~ushin/hyper-gateway-ushin#installation).
 - Directory listings load faster
 - Improved defcustom types
-- Better error message when ~hyper-gateway-ushin~ is not installed.
+- Better error message when the gateway is not installed.
   Thanks to ~magnum~ on XMPP for reporting.
 - Removed ~hyperdrive-reuse-buffers~ user option to ensure consistent
   behavior when uniquifying buffer names.
