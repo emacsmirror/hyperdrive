@@ -59,7 +59,7 @@ This manual is for @code{hyperdrive.el} version 0.4-pre.
 * Tips::
 * Troubleshooting::
 * Contributing/Getting help::
-* Uninstalling::
+* Uninstallation::
 * Acknowledgments::
 * Indices::
 * GNU Free Documentation License::
@@ -1715,8 +1715,18 @@ You're welcome to join our public XMPP chat room!
 Bugs can be submitted to the @uref{https://todo.sr.ht/~ushin/ushin, ushin issue tracker}. Patches, comments or
 questions can be submitted to the @uref{https://lists.sr.ht/~ushin/ushin, ushin public inbox}.
 
-@node Uninstalling
-@chapter Uninstalling
+@node Uninstallation
+@chapter Uninstallation
+
+If you have installed the gateway with @code{hyperdrive-install}, you can
+delete the gateway which Emacs downloaded according to the values of
+@code{hyperdrive-gateway-directory} and @code{hyperdrive-gateway-program}, which is
+@code{~/.local/lib/hyperdrive.el/hyper-gateway-ushin} by default.
+
+You can delete the user data which @code{hyper-gateway-ushin} stores by
+default in @code{~/.local/share/hyper-gateway-nodejs}.
+
+You can remove @code{hyperdrive.el} with @code{M-x package-delete hyperdrive}.
 
 @node Acknowledgments
 @chapter Acknowledgments

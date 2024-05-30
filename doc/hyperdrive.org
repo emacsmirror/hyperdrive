@@ -1257,10 +1257,17 @@ You're welcome to join our public XMPP chat room!
 Bugs can be submitted to the [[https://todo.sr.ht/~ushin/ushin][ushin issue tracker]]. Patches, comments or
 questions can be submitted to the [[https://lists.sr.ht/~ushin/ushin][ushin public inbox]].
 
-* Uninstalling
+* Uninstallation
 
-# TODO: ~M-x package-delete hyperdrive~, note where corestore data is
-# stored
+If you have installed the gateway with ~hyperdrive-install~, you can
+delete the gateway which Emacs downloaded according to the values of
+~hyperdrive-gateway-directory~ and ~hyperdrive-gateway-program~, which is
+~~/.local/lib/hyperdrive.el/hyper-gateway-ushin~ by default.
+
+You can delete the user data which ~hyper-gateway-ushin~ stores by
+default in ~~/.local/share/hyper-gateway-nodejs~.
+
+You can remove ~hyperdrive.el~ with ~M-x package-delete hyperdrive~.
 
 * Acknowledgments
 
