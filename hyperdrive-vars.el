@@ -39,7 +39,9 @@
   :prefix "hyperdrive-")
 
 (defalias 'hyperdrive-hyper-gateway-port 'hyperdrive-gateway-port
-  "Renamed in hyperdrive.el v0.4.0 to reflect update to hyper-gateway-ushin.")
+  ;; TODO(v0.5.0) Remove this alias
+  "Renamed in hyperdrive.el v0.4.0 to reflect update to hyper-gateway-ushin.
+This alias will be removed in a later version of `hyperdrive.el'.")
 (defcustom h/gateway-port 4973
   "Port to use to send requests to the hyper-gateway-ushin server."
   :type 'natnum)
