@@ -210,7 +210,9 @@ Unconditionally sets `h/gateway-version-checked-p' to t."
     (display-warning
      'hyperdrive
      (substitute-command-keys
-      "Gateway version not expected; consider installing the latest version with \\[hyperdrive-install]")
+      (format
+       "Gateway version %S not expected %S; consider installing the latest version with \\[hyperdrive-install]"
+       (h//gateway-version) h/gateway-version-expected))
      :warning))
   (setf h/gateway-version-checked-p t))
 
