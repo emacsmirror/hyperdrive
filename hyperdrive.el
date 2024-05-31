@@ -1358,7 +1358,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                ;; Hash matches: finish installation.
                (then file-name)
              ;; Hash doesn't match: delete file and try next source.
-             (delete-file file-file)
+             (delete-file file-name)
              (h/message "Trying next source because hash comparison failed from URL: %s"
                         url)
              (try)))
