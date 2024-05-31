@@ -286,7 +286,6 @@ before making the entry struct."
        ;; `h/create', but perhaps it would be good to add a function which wraps
        ;; `h/create' and returns either an existing hyperdrive or a new one?
        (hyperdrive (pcase host
-                     ;; FIXME: Duplicate hyperdrive (one has domain and nothing else)
                      ((rx ".") ; Assume host is a DNSLink domain.
                       ;; See code for <https://github.com/RangerMauve/hyper-sdk#sdkget>.
                       (when (and (>= emacs-major-version 29)
