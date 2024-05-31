@@ -30,8 +30,7 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
 ** Changed
 
 - Switch from `hyper-gateway` to `hyper-gateway-ushin` fork!  Please
-  follow the [installation
-  instructions](https://git.sr.ht/~ushin/hyper-gateway-ushin#installation).
+  follow the [[https://git.sr.ht/~ushin/hyper-gateway-ushin#installation][installation instructions]].
 - Directory listings load faster
 - Improve gateway status indicators in ~hyperdrive-menu~ to update
   asynchronously with "starting", "installing", "upgrading", etc.
