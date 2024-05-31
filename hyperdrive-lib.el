@@ -84,7 +84,8 @@ Passes ARGS to `format-message'."
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
   (metadata nil :documentation "Public metadata alist.")
   (latest-version nil :documentation "Latest known version of hyperdrive.")
-  (etc nil :documentation "Alist of extra data."))
+  (etc nil :documentation "Alist of extra data.
+- disk-usage :: Number of bytes occupied locally by the drive."))
 
 (defun h/url (hyperdrive)
   "Return a \"hyper://\"-prefixed URL from a HYPERDRIVE struct.
@@ -672,12 +673,15 @@ The following ENTRY hyperdrive slots are filled:
 - \\+`public-key'
 - \\+`writablep' (when headers include Allow)
 - \\+`domains' (merged with current persisted value)
+- \\+`etc' (disk-usage)
 
 Returns filled ENTRY."
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive) entry)
-       ((cl-struct hyperdrive writablep domains) hyperdrive)
-       ((map link content-length content-type etag last-modified allow) headers)
+       ((cl-struct hyperdrive writablep domains etc) hyperdrive)
+       ((map link content-length content-type etag
+             last-modified allow x-drive-size)
+        headers)
        ;; If URL hostname was a DNSLink domain,
        ;; entry doesn't yet have a public-key slot.
        (public-key (progn (string-match h//public-key-re link)
@@ -693,6 +697,9 @@ Returns filled ENTRY."
                                  (cl-parse-integer content-length))))
     (setf (he/type entry) content-type)
     (setf (he/mtime entry) last-modified)
+    (when x-drive-size
+      (setf (map-elt etc 'disk-usage) (cl-parse-integer x-drive-size)))
+    (setf (h/etc hyperdrive) etc)
     (if persisted-hyperdrive
         (progn
           ;; Ensure that entry's hyperdrive is the persisted

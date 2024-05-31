@@ -320,7 +320,7 @@ value (and should only be present once in the string).  Used in
   "Subdirectories.")
 
 (defface h/size '((t (:inherit font-lock-doc-face)))
-  "Size of entries.")
+  "File sizes.")
 
 (defface h/timestamp '((t (:inherit default)))
   "Entry timestamp.")
