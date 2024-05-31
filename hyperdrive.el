@@ -1318,13 +1318,25 @@ If FORCEP, don't prompt for confirmation before downloading."
         (destination (expand-file-name h/gateway-program h/gateway-directory)))
     (cl-labels
         ((try ()
-           (if-let ((url-and-hash (pop urls-and-hashes)))
-               (pcase-let (((map :url :sha256) url-and-hash))
-                 ;; TODO: Prompt before downloading.
-                 (download url sha256))
-             (setf h/install-process nil)
-             (h/menu-refresh)
-             (h/error "Downloading failed; no more mirrors available")))
+           (pcase-let* (((map :url :sha256) (pop urls-and-hashes))
+                        (size (or forcep (ignore-errors
+                                           (h/message "Checking server...")
+                                           (file-size-human-readable
+                                            (head-size url))))))
+             (if size
+                 (if (or forcep
+                         (yes-or-no-p
+                          (format "Download and install gateway (%s)? " size)))
+                     (progn
+                       (setf forcep t)  ;; Don't prompt again.
+                       (download url sha256))
+                   (h/message "Installation canceled."))
+               ;; HEAD request failed: try next URL.
+               (if urls-and-hashes
+                   (try)
+                 (setf h/install-process nil)
+                 (hyperdrive-menu-refresh)
+                 (hyperdrive-error "Downloading failed; no more mirrors available")))))
          (head-size (url)
            (when-let ((response (plz 'head url :as 'response)))
              (cl-parse-integer
@@ -1347,10 +1359,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                                 (try)))
                              (when (file-exists-p temp-file)
                                (delete-file temp-file))))))
-           (h/message "Downloading gateway (%s)..."
-                      (or (ignore-errors
-                            (file-size-human-readable (head-size url)))
-                          "unknown size")))
+           (h/message "Downloading gateway..."))
          (check (file-name sha256 url)
            (if (with-temp-buffer
                  (insert-file-contents-literally file-name)
