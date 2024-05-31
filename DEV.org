@@ -1,4 +1,7 @@
 #+title: Hyperdrive.el notes
+#+TODO: TODO WAITING | DONE CANCELED
+#+TODO: PROJECT | COMPLETED CANCELED
+#+TODO: DECIDE | DECISION
 
 * Reference
 
@@ -16,6 +19,48 @@ So, e.g. ~makem~'s ~lint-declare~ rule, which uses ~check-declare~, gives false 
 - State "TODO"       from              [2023-11-28 Tue 16:31]
 :END:
 
+* Gateway version automatic installation/upgrading
+
++ Design :: As simple as possible.
+  - We do /not/ attempt to automatically detect the latest gateway release on Sourcehut's Web page.
+  - We include with ~hyperdrive.el~ the known-latest version, with URL and hash.
+  - When we want to release a new version of the gateway, we will then release a new version of ~hyperdrive.el~ with the corresponding information.
+  - The client will, upon first use, check the installed version of the gateway and prompt the user to upgrade it if necessary.
+
+** Considerations
+
++ Gateway :: The status could be:
+  - [ ] Gateway may or may not be running
+  - [ ] Gateway may or may not have been downloaded at correct version
+  - [ ] Gateway may or may not have been downloaded at different version
+  - [ ] Gateway may be installed at location in PATH but not the one we expect
+
+** Decisions
+
++ We don't want to delete or install the gateway anywhere other than ~~/.local/lib/hyperdrive.el~. :: In case the user has installed a different version at a different location, we want to respect that.
++  :: 
+
+** Testing gateway commands
+
+| Should test           | 👍 install | 👍 start | 👍 stop | gateway-in-expected-place | gateway-only-in-path | running-as-subprocess | running-outside-Emacs |
+|-----------------------+------------+----------+---------+---------------------------+----------------------+-----------------------+-----------------------|
+| no (impossible)       |            |          |         | yes                       | yes                  | yes                   | yes                   |
+| no (impossible)       |            |          |         | yes                       | no                   | yes                   | yes                   |
+| no (impossible)       |            |          |         | no                        | yes                  | yes                   | yes                   |
+| no (impossible)       |            |          |         | no                        | no                   | yes                   | yes                   |
+| no (unlikely)         |            |          |         | yes                       | no                   | no                    | yes                   |
+| no (unlikely)         |            |          |         | no                        | no                   | no                    | yes                   |
+| no (unlikely)         |            |          |         | no                        | no                   | yes                   | no                    |
+| no (won't check PATH) |            |          |         | yes                       | yes                  | no                    | yes                   |
+| no (won't check PATH) |            |          |         | yes                       | yes                  | yes                   | no                    |
+| no (won't check PATH) |            |          |         | yes                       | yes                  | no                    | no                    |
+|-----------------------+------------+----------+---------+---------------------------+----------------------+-----------------------+-----------------------|
+| yes                   | yes        | yes      | yes     | no                        | no                   | no                    | no                    |
+| yes                   | yes        | yes      | yes     | no                        | yes                  | no                    | no                    |
+| yes                   | yes        | yes      | yes     | no                        | yes                  | no                    | yes                   |
+| yes                   | yes        | yes      | yes     | no                        | yes                  | yes                   | no                    |
+| yes                   | yes        | yes      | yes     | yes                       | no                   | no                    | no                    |
+| yes                   | yes        | yes      | yes     | yes                       | no                   | yes                   | no                    |
 * PROJECT Petnames
 :PROPERTIES:
 :ID:       e5b0c0f1-7ebc-4e8c-9712-cd2cd4a055ce
@@ -421,4 +466,18 @@ Depending on the resolution of [[https://github.com/jrblevin/markdown-mode/issue
 ** Targets
 
 Targets are not currently implemented.
+
+* UI
+
+** Menu bar
+
+*** DECISION Don't show status indicators in menu bar
+
+Since the menu bar's items can't be updated while the menu is displayed, showing an indicator could be misleading to the user, since it could become outdated while the menu is displayed (e.g. while starting the gateway).
+
+So we won't show such indicators in the menu bar.  Instead, the Transient ~hyperdrive-menu~ UI is a suitable "dashboard" for such indicators, because the Transient can be refreshed while it's displayed.
+
+** DECISION No uninstall command
+
++ [X] Should we add an uninstall command? :: Probably not, due to issues with potentially shared data and data loss.  Probably sufficient to document the file/directory locations in a manual section and allow the user to delete them if desired.
 

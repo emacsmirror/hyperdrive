@@ -34,7 +34,7 @@ Here are various link types which we want to test.
 + [[hyper://PUBLIC_KEY/links%20test.org]]
 + hyper://PUBLIC_KEY/links%20test.org
 
-+ [2023-08-30 Wed 14:43] Getting this error (with the public key changed to the real one), for both the bracketed and unbracketed links: ~Hyperdrive: Generic hyper-gateway-ushin status 500 error. Is this URL correct? hyper:////wnqpdr9xdy1p9wofqbj7e7csueg7aynqbot8gt53ueunezry6any/links%20test.org~
++ [2023-08-30 Wed 14:43] Getting this error (with the public key changed to the real one), for both the bracketed and unbracketed links: ~Hyperdrive: Generic gateway status 500 error. Is this URL correct? hyper:////wnqpdr9xdy1p9wofqbj7e7csueg7aynqbot8gt53ueunezry6any/links%20test.org~
 
   + There are FOUR SLASHES.
     

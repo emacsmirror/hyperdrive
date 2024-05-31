@@ -33,19 +33,14 @@
 
 ;;;; Installation:
 
-;; hyperdrive.el requires Emacs version 28.1 or later.
+;; hyperdrive.el can be installed on Emacs version 28.1 or later with
 
-;; hyperdrive.el is available on MELPA:
-;; https://melpa.org/#/getting-started
+;; M-x package-install hyperdrive
 
-;; Once you've set up MELPA, run
-;; M-x package-install RET hyperdrive RET
+;; hyperdrive.el relies on hyper-gateway-ushin for connecting to the P2P
+;; network.  You can download and install the gateway by running
 
-;; hyperdrive.el relies on hyper-gateway-ushin for connecting to the P2P network:
-;; https://git.sr.ht/~ushin/hyper-gateway-ushin
-
-;; Installation instructions:
-;; https://git.sr.ht/~ushin/hyper-gateway-ushin/#installation
+;; M-x hyperdrive-install
 
 ;;; Code:
 
@@ -95,29 +90,43 @@
 
 ;;;###autoload
 (defun hyperdrive-start ()
-  "Start `hyper-gateway-ushin' if not already running.
-Customize behavior with `hyperdrive-gateway-process-type', which see."
+  "Start the gateway if not already running.
+Calls function set in option `hyperdrive-gateway-start-function',
+which see."
   (interactive)
-  ;; TODO: Verify that the expected version, e.g., 3.7.0, is installed.
-  (h//gateway-start))
+  (let ((gateway-installed-p (h/gateway-installed-p)))
+    (cond ((and (h//gateway-ready-p) (h/gateway-live-p))
+           (h/message "Gateway already running."))
+          ((h//gateway-ready-p)
+           (h/message "Gateway already running outside of Emacs."))
+          ((h/gateway-live-p)
+           (h/message "Gateway already starting."))
+          ((and (not gateway-installed-p) (h/gateway-installing-p))
+           (h/user-error "Gateway installation in-progress"))
+          ((not gateway-installed-p)
+           (h/user-error "Gateway not installed; try \\[hyperdrive-install]"))
+          (t
+           (h/message
+            (if (h/gateway-installing-p)
+                "Gateway installation in-progress; starting old gateway anyway."
+              "Starting gateway."))
+           (funcall h/gateway-start-function))))
+  (h//gateway-wait-for-ready))
 
 ;;;###autoload
 (defun hyperdrive-stop ()
-  "Stop `hyper-gateway-ushin' if running.
-Customize behavior with `hyperdrive-gateway-process-type', which see."
+  "Stop the gateway if running.
+Calls function set in option `hyperdrive-gateway-stop-function',
+which see."
   (interactive)
-  (h//gateway-stop))
+  (funcall h/gateway-stop-function))
 
 ;;;###autoload
-(defun hyperdrive-hyper-gateway-ushin-version ()
-  "Say version number of `hyper-gateway-ushin'.
-Gateway must be running."
+(defun hyperdrive-gateway-version ()
+  "Say version number of gateway.
+Return version if gateway is running; otherwise signal an error."
   (interactive)
-  (condition-case err
-      (let ((url (format "http://localhost:%d/" h/hyper-gateway-ushin-port)))
-        (h/message "hyper-gateway-ushin version %s"
-                   (alist-get 'version (plz 'get url :as #'json-read))))
-    (plz-error (h/api-default-else nil (caddr err)))))
+  (h/message "%S" (h//gateway-version)))
 
 ;;;###autoload
 (defun hyperdrive-new (seed)
@@ -464,7 +473,7 @@ use, see `hyperdrive-write'."
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
                   ;; FIXME: For large buffers, `buffer-size' returns a different
-                  ;; value than hyper-gateway-ushin's Content-Length header.
+                  ;; value than the gateway's Content-Length header.
                   (setf (he/size entry) (buffer-size))
                   ;; FIXME: Will entry type ever be anything besides text/plain?
                   ;;        /.well-known/host-meta.json ?
@@ -510,7 +519,7 @@ Interactively, use the `hyperdrive-current-entry'.  If THEN, pass
 it to `hyperdrive-open'."
   (interactive (progn
                  (unless (and h/mode h/current-entry)
-                   (user-error "Not a hyperdrive buffer"))
+                   (h/user-error "Not a hyperdrive buffer"))
                  (list h/current-entry))
                h/mode)
   (if-let ((parent (h/parent entry)))
@@ -811,14 +820,27 @@ The return value of this function is the retrieval buffer."
 
 (defvar h/menu-bar-menu
   '(("Gateway"
-     :label
-     (format "Gateway (%s)" (if (h/status) "on" "off"))
      ["Start Gateway" h/start
-      :help "Start hyper-gateway-ushin"]
+      :help "Start the gateway"
+      :visible (not (or (h/gateway-live-p) (h//gateway-ready-p)))]
+     ["Restart Gateway" h/restart
+      :help "Restart the gateway"
+      :visible (or (h/gateway-live-p) (h//gateway-ready-p))]
      ["Stop Gateway" h/stop
-      :help "Stop hyper-gateway-ushin"]
-     ["Gateway version" h/hyper-gateway-ushin-version
-      :help "Say hyper-gateway-ushin version"])
+      :help "Stop the gateway"
+      :active (or (h/gateway-live-p) (h//gateway-ready-p))]
+     ["Gateway Version" h/gateway-version
+      :help "Say gateway version"
+      :active (h//gateway-ready-p)]
+     ["Install Gateway" h/install
+      :label (if (h/gateway-needs-upgrade-p) "Upgrade" "Install")
+      :visible (and (not (h/gateway-installing-p))
+                    (or (not (h/gateway-installed-p))
+                        (h/gateway-needs-upgrade-p)))
+      :help "Download and install gateway"]
+     ["Cancel Install" h/cancel-install
+      :visible (hyperdrive-gateway-installing-p)
+      :help "Cancel running download/installation"])
     "---"
     ["Open URL" h/open-url
      :help "Load a hyperdrive URL"]
@@ -1260,6 +1282,148 @@ Intended for relative (i.e. non-full) URLs."
     "n" #'h/set-nickname)
 
   (add-to-list 'embark-keymap-alist '(hyperdrive . h/embark-hyperdrive-map)))
+
+;;;;; Installation
+
+(defvar h/gateway-urls-and-hashes
+  '((gnu/linux
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.8.0/hyper-gateway-ushin-linux"
+       :sha256 "8ff669bd378e88a3c80d65861f4088071852afaedf7bba56c88c1a162ed9e4f3")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.8.0/hyper-gateway-linux-v3.8.0"
+       :sha256 ""))
+    (darwin
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.8.0/hyper-gateway-ushin-macos"
+       :sha256 "22f6131f48d740f429690f16baac19b20a2211250360a89580db95415398d03c")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.8.0/hyper-gateway-macos-v3.8.0"
+       :sha256 ""))
+    (windows-nt
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.8.0/hyper-gateway-ushin-windows.exe"
+       :sha256 "c347255d3fc5e6499fc10bea4d20e62798fb5968960dbbe26d507d11688326bb")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.8.0/hyper-gateway-windows-v3.8.0.exe"
+       :sha256 "")))
+  "Alist mapping `system-type' to URLs where the gateway can be downloaded.")
+
+;;;###autoload
+(defun hyperdrive-install (&optional forcep)
+  "Download and install the gateway.
+If FORCEP, don't prompt for confirmation before downloading."
+  (interactive (list current-prefix-arg))
+  (when (h/gateway-installing-p)
+    (h/user-error "Installation of gateway already in progress"))
+  (unless forcep
+    (when (h/gateway-installed-p)
+      (unless (yes-or-no-p "Download and reinstall/upgrade the gateway? ")
+        (h/user-error "Not downloading; aborted"))))
+  (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes))
+        (destination (expand-file-name h/gateway-program h/gateway-directory))
+        size)
+    (cl-labels
+        ((try ()
+           (pcase-let (((map :url :sha256) (pop urls-and-hashes)))
+             (unless size
+               ;; Only successfully get size once.
+               (ignore-errors
+                 (h/message "Checking server %S..."
+                            (url-host (url-generic-parse-url url)))
+                 (setf size (file-size-human-readable
+                             (head-size url)))))
+             (if size
+                 (if (or forcep
+                         (yes-or-no-p
+                          (format "Download and install gateway (%s)? " size)))
+                     (progn
+                       (setf forcep t) ;; Don't prompt again.
+                       (download url sha256))
+                   (h/message "Installation canceled."))
+               ;; HEAD request failed: try next URL.
+               (h/message "Server %S unresponsive.  Trying next server..."
+                          (url-host (url-generic-parse-url url)))
+               (if urls-and-hashes
+                   (try)
+                 (setf h/install-process nil)
+                 (hyperdrive-menu-refresh)
+                 (hyperdrive-error "Downloading failed; no more mirrors available")))))
+         (head-size (url)
+           (when-let ((response (plz 'head url :as 'response :connect-timeout 5)))
+             (cl-parse-integer
+              (alist-get 'content-length (plz-response-headers response)))))
+         (download (url sha256)
+           (let ((temp-file (make-temp-name "hyperdrive-gateway-")))
+             (setf h/install-process
+                   (plz 'get url :as `(file ,temp-file) :timeout nil
+                     :then (lambda (filename)
+                             (check filename sha256 url))
+                     :else (lambda (plz-error)
+                             (pcase (plz-error-curl-error plz-error)
+                               (`(2 .  ,_)
+                                ;; "Failed to initialize", likely due to
+                                ;; `interrupt-process' in `h/cancel-install'.
+                                (h/message "Canceled install"))
+                               (_   ; Otherwise, display error and try next URL.
+                                (h/message "Trying next source because downloading from URL %S failed: %S"
+                                           url plz-error)
+                                (try)))
+                             (when (file-exists-p temp-file)
+                               (delete-file temp-file)))))
+             (h/message "Downloading %s from %S to %S" size url destination)))
+         (check (file-name sha256 url)
+           (if (with-temp-buffer
+                 (insert-file-contents-literally file-name)
+                 (equal sha256 (secure-hash 'sha256 (current-buffer))))
+               ;; Hash matches: finish installation.
+               (then file-name)
+             ;; Hash doesn't match: delete file and try next source.
+             (delete-file file-name)
+             (h/message "Trying next source because hash comparison failed from URL: %s"
+                        url)
+             (try)))
+         (then (file-name)
+           (when (file-exists-p destination)
+             (move-file-to-trash destination))
+           (unless (file-directory-p h/gateway-directory)
+             (mkdir h/gateway-directory t))
+           (rename-file file-name destination)
+           (chmod destination #o755)
+           (setf h/install-process nil)
+           (h/menu-refresh)
+           (h/message "Gateway installed.  Try \\[%s]"
+                      (if (h//gateway-ready-p)
+                          "hyperdrive-restart"
+                        "hyperdrive-start"))))
+      (try))))
+
+(defun h/cancel-install ()
+  "Stop downloading/installing the gateway."
+  (interactive)
+  (unless (h/gateway-installing-p)
+    (h/user-error "No installation in progress"))
+  (h/message "Cancelling install")
+  (interrupt-process h/install-process)
+  (setf h/install-process nil))
+
+(defun h/restart ()
+  "Restart the gateway."
+  (interactive)
+  (h/message "Restarting gateway...")
+  (when (or (h/gateway-live-p) (h//gateway-ready-p))
+    (h/stop))
+  (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
+    (cl-loop while (h/gateway-live-p)
+             do (sleep-for 0.2)))
+  (h/start))
+
+;; (defun h//gateway-appears-valid-p ()
+;;   "Return non-nil if a local installation of the gateway appears valid.
+;; That is, if an executable file exists at the expected location
+;; with an expected hash."
+;;   (when-let ((file-name (h//gateway-path)))
+;;     (let* ((file-hash (with-temp-buffer
+;;                          (insert-file-contents-literally file-name)
+;;                          (secure-hash 'sha256 (current-buffer))))
+;;            (urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes)))
+;;       (cl-loop for pair in urls-and-hashes
+;;                for expected-hash = (plist-get pair :sha256)
+;;                thereis (equal expected-hash file-hash)))))
 
 ;;;; Footer
 

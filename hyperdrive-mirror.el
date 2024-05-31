@@ -144,9 +144,10 @@ After uploading files, open PARENT-ENTRY."
           :then (lambda (_)
                   (progress-reporter-update progress-reporter (cl-incf count))))))))
 
-(cl-defun h/mirror--check-items (source files hyperdrive target-dir &key then progress-fn)
+(cl-defun h/mirror--check-items (source files hyperdrive target-dir &key then progress-fun)
   "Call THEN with list of FILES to mirror from SOURCE to TARGET-DIR in HYPERDRIVE.
-If PROGRESS-FN, call it with no arguments after each item has been checked."
+If PROGRESS-FUN, call it with no arguments after each item has
+been checked."
   (let* ((items)
          (metadata-queue (make-plz-queue
                           :limit h/queue-limit
@@ -167,8 +168,8 @@ If PROGRESS-FN, call it with no arguments after each item has been checked."
                          (url (he/url entry)))
                     (push (make-hyperdrive-mirror-item :file file :url url :status status)
                           items)
-                    (when progress-fn
-                      (funcall progress-fn))))
+                    (when progress-fun
+                      (funcall progress-fun))))
           :else (lambda (plz-error)
                   (let ((status-code (plz-response-status (plz-error-response plz-error))))
                     (pcase status-code
@@ -178,8 +179,8 @@ If PROGRESS-FN, call it with no arguments after each item has been checked."
                        (push (make-hyperdrive-mirror-item
                               :file file :url (he/url entry) :status 'new)
                              items)
-                       (when progress-fn
-                         (funcall progress-fn)))
+                       (when progress-fun
+                         (funcall progress-fun)))
                       (_
                        (h/error "Unable to get metadata for URL \"%s\": %S"
                                 (he/url entry) plz-error))))))))))

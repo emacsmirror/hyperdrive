@@ -205,14 +205,40 @@
     :description
     (lambda ()
       (concat (propertize "Gateway: " 'face 'transient-heading)
-              (propertize (if (h/status) "on" "off")
-                          'face 'transient-value)))
+              (propertize
+               (cond ((h//gateway-ready-p) "on")
+                     ((h/gateway-live-p) "starting")
+                     ((and (h/gateway-installed-p) (h/gateway-installing-p))
+                      "upgrading")
+                     ((h/gateway-installing-p) "installing")
+                     ((h/gateway-installed-p) "off")
+                     (t "not found"))
+               'face 'transient-value)))
+    ("G i" "Install" h/install
+     :description
+     (lambda () (if (h/gateway-needs-upgrade-p) "Upgrade" "Install"))
+     :transient t
+     :if (lambda ()
+           (and (not (h/gateway-installing-p))
+                (or (not (h/gateway-installed-p))
+                    (h/gateway-needs-upgrade-p)))))
+    ("G c" "Cancel install" h/cancel-install
+     :transient t
+     :if h/gateway-installing-p)
     ("G s" "Start" h/start
-     :transient t)
+     :transient t
+     :inapt-if-not (lambda () (h/gateway-installed-p))
+     :if-not (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
+    ("G r" "Restart" h/restart
+     :transient t
+     :inapt-if-not (lambda () (h/gateway-installed-p))
+     :if (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
     ("G S" "Stop" h/stop
-     :transient t)
-    ("G v" "Version" h/hyper-gateway-ushin-version
-     :transient t)]
+     :transient t
+     :inapt-if-not (lambda () (or (h/gateway-live-p) (h//gateway-ready-p))))
+    ("G v" "Version" h/gateway-version
+     :transient t
+     :inapt-if-not (lambda () (h//gateway-ready-p)))]
    ["Bookmark"
     ("b j" "Jump" h/bookmark-jump)
     ("b l" "List" h/bookmark-list)

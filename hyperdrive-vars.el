@@ -38,10 +38,34 @@
   :group 'external
   :prefix "hyperdrive-")
 
-(defalias 'hyperdrive-hyper-gateway-port 'hyperdrive-hyper-gateway-ushin-port
-  "Renamed in hyperdrive.el v0.4.0 to reflect update to hyper-gateway-ushin.")
-(defcustom h/hyper-gateway-ushin-port 4973
-  "Port to use to send requests to the hyper-gateway-ushin server."
+(defcustom h/gateway-directory (expand-file-name "~/.local/lib/hyperdrive.el")
+  "Where the hyper-gateway executable is found.
+If not found here, the \"PATH\" environment variable is checked
+with `executable-find'.  Command `hyperdrive-install' installs to
+this directory."
+  :type 'directory)
+
+(defcustom h/gateway-program "hyper-gateway-ushin"
+  "Name of gateway executable.
+Command `hyperdrive-install' installs to this name inside
+`hyperdrive-gateway-directory'.  Function
+`h//gateway-path' looks for executable by this name."
+  :type 'string)
+
+(defcustom h/gateway-command-args "run --writable true --silent true"
+  "Arguments passed to the gateway.
+Note that the \"--port\" argument should not be included here, as
+it is added automatically at runtime using the value of
+`hyperdrive-gateway-port'."
+  :type 'string
+  :group 'hyperdrive)
+
+(define-obsolete-variable-alias
+  ;; TODO(v0.5.0) Remove this alias.
+  'hyperdrive-hyper-gateway-port 'hyperdrive-gateway-port "0.4.0")
+
+(defcustom h/gateway-port 4973
+  "Port to use to send requests to the gateway server."
   :type 'natnum)
 
 (defcustom h/safe-hyperdrives nil
@@ -355,9 +379,22 @@ values are alists mapping version range starts to plists with
 
 ;;;;; Internals
 
+(defvar h/gateway-version-expected
+  '(:name "hyper-gateway-ushin" :version "3.8.0"))
+
+(defvar h/gateway-version-checked-p nil
+  "Non-nil if the gateway's version has been checked.
+If the version was unexpected,
+`hyperdrive-check-gateway-version' displayed a warning.")
+
 (defvar h/gateway-process nil
-  "Hyper-gateway-ushin process.
-Only used when `hyperdrive-gateway-process-type' is `subprocess'.")
+  "Gateway process.")
+
+(defvar h/install-process nil
+  "When non-nil, the curl process downloading the gateway for install/upgrade.")
+
+(defvar h//gateway-starting-timer nil
+  "The timer used when the gateway is starting.")
 
 (defvar-local h/current-entry nil
   "Entry for current buffer.")
@@ -388,6 +425,35 @@ Keys are regexps matched against MIME types.")
            :descending string>
            :desc "Name"))
   "Fields for sorting hyperdrive directory buffer columns.")
+
+(declare-function h//gateway-start-default "hyperdrive-lib")
+(defcustom h/gateway-start-function #'h//gateway-start-default
+  "Function called to start the gateway.
+If this function signals an error, the `h/gateway-ready-hook'
+will not be run; otherwise, the hook will be run when the gateway
+appears to be ready."
+  :type 'function)
+
+(declare-function h//gateway-stop-default "hyperdrive-lib")
+(defcustom h/gateway-stop-function #'h//gateway-stop-default
+  "Function called to stop the gateway.
+This function should signal an error if it fails to stop the
+gateway process."
+  :type 'function)
+
+(declare-function h/gateway-live-p-default "hyperdrive-lib")
+(defcustom h/gateway-live-predicate #'h/gateway-live-p-default
+  "Predicate function which returns non-nil if the gateway process is live."
+  :type 'function)
+
+(defcustom h/gateway-ready-hook
+  '( h/check-gateway-version
+     h/announce-gateway-ready
+     h/menu-refresh)
+  "Hook called when gateway is ready after starting it.
+This hook is called by `hyperdrive--gateway-wait-for-ready' after
+`hyperdrive-start'."
+  :type 'hook)
 
 ;;;; Footer
 

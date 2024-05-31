@@ -59,6 +59,7 @@ This manual is for @code{hyperdrive.el} version 0.4-pre.
 * Tips::
 * Troubleshooting::
 * Contributing/Getting help::
+* Uninstallation::
 * Acknowledgments::
 * Indices::
 * GNU Free Documentation License::
@@ -69,11 +70,12 @@ This manual is for @code{hyperdrive.el} version 0.4-pre.
 Installation
 
 * Install Emacs::
-* Install hyper-gateway-ushin::
 * Install hyperdrive.el: Install hyperdriveel. 
+* Install hyper-gateway-ushin::
 
 Usage
 
+* Install the gateway::
 * Menu bar support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
@@ -93,6 +95,10 @@ Usage
 * Non-interactive use::
 * Org-transclusion integration::
 * Miscellaneous features::
+
+Start/stop the gateway
+
+* Advanced gateway customization::
 
 Open a hyperdrive
 
@@ -165,6 +171,11 @@ Tips
 
 * Quick documentation access::
 
+Troubleshooting
+
+* Reinstall/upgrade the gateway::
+* Reset bad persist variables::
+
 Indices
 
 * Keystroke index::
@@ -198,20 +209,14 @@ modify this GNU manual.''
 
 @menu
 * Install Emacs::
-* Install hyper-gateway-ushin::
 * Install hyperdrive.el: Install hyperdriveel. 
+* Install hyper-gateway-ushin::
 @end menu
 
 @node Install Emacs
 @section Install Emacs
 
 @code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, GNU Emacs} version 28.1 or later.
-
-@node Install hyper-gateway-ushin
-@section Install hyper-gateway-ushin
-
-@code{hyperdrive.el} relies on @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/, hyper-gateway-ushin} for talking to the
-hypercore network (@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#installation, installation instructions}).
 
 @node Install hyperdriveel
 @section Install hyperdrive.el
@@ -224,6 +229,17 @@ version of @code{hyperdrive.el} by running @code{M-x package-refresh-contents} t
 @code{M-x package-upgrade RET hyperdrive}.  On Emacs 28, If @code{package-upgrade}
 is not available as a command, display the list of packages with @code{M-x
 list-packages}, select @code{hyperdrive}, and click the @code{Install} button.
+
+@node Install hyper-gateway-ushin
+@section Install hyper-gateway-ushin
+
+@code{hyperdrive.el} relies on @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/, hyper-gateway-ushin} for talking to the
+hypercore network.
+
+After installing @code{hyperdrive.el} (see @ref{Install hyperdriveel, , Install hyperdrive.el}), run @code{M-x
+hyperdrive-install} to download and install the gateway.
+
+Alternatively, follow the @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#installation, manual installation instructions}.
 
 @node Example configuration
 @chapter Example configuration
@@ -260,6 +276,7 @@ On the network it still may be there.
 @end display
 
 @menu
+* Install the gateway::
 * Menu bar support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
@@ -280,6 +297,21 @@ On the network it still may be there.
 * Org-transclusion integration::
 * Miscellaneous features::
 @end menu
+
+@node Install the gateway
+@section Install the gateway
+
+Run @code{M-x hyperdrive-install} to download and install the gateway program
+(see @ref{hyper-gateway-ushin}):
+
+@deffn Command hyperdrive-install
+Download and install the gateway.  Prompts for confirmation before
+downloading.
+@end deffn
+
+@deffn Command hyperdrive-cancel-install
+Cancel installation in progress.
+@end deffn
 
 @node Menu bar support
 @section Menu bar support
@@ -326,41 +358,52 @@ documentation,,transient,}.  To learn about the commands available in
 @node Start/stop the gateway
 @section Start/stop the gateway
 
-To connect with peers, you'll need to start @code{hyper-gateway-ushin} (see
-@ref{hyper-gateway-ushin}).  The current running status of the gateway can
-be seen in @code{hyperdrive-menu} (see @ref{Hyperdrive menu command}) and in the
-``Hyperdrive'' menu bar (see @ref{Menu bar support}).
+To connect with peers, you'll need to start the gateway (see
+@ref{hyper-gateway-ushin}).  The current running status of the gateway
+can be seen in @code{hyperdrive-menu} (see @ref{Hyperdrive menu command})
+and in the ``Hyperdrive'' menu bar (see @ref{Menu bar support}).
 
 @deffn Command hyperdrive-start
-Start @code{hyper-gateway-ushin}.
+Start the gateway.
 @end deffn
+
+@defopt hyperdrive-gateway-ready-hook
+Hook run when the gateway becomes responsive after @code{hyperdrive-start}.
+One of the default hooks, @code{hyperdrive-check-gateway-version}, will
+warn you if you're running an outdated version of the gateway.
+@end defopt
 
 @deffn Command hyperdrive-stop
-Stop @code{hyper-gateway-ushin}.
+Stop the gateway.
 @end deffn
 
-@defopt hyperdrive-gateway-process-type
-How to start and stop @code{hyper-gateway-ushin}.  By default,
-@code{hyperdrive.el} will autodetect the appropriate process type.  If you
-have configured @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#how-do-i-run-hyper-gateway-ushin-as-a-background-process-on-gnulinux--systemd, hyper-gateway-ushin to run as a systemd service},
-then @code{hyperdrive.el} will automatically use @code{systemd} to manage the
-gateway.  Otherwise, @code{hyperdrive.el} will start @code{hyper-gateway-ushin}
-as an Emacs subprocess.
+@deffn Command hyperdrive-restart
+Restart the gateway.
+@end deffn
+
+@deffn Command hyperdrive-gateway-version
+Say the version of the gateway which is running.
+@end deffn
+
+@menu
+* Advanced gateway customization::
+@end menu
+
+@node Advanced gateway customization
+@subsection Advanced gateway customization
+
+@defopt hyperdrive-gateway-start-function
+Function run to start the gateway.  By default, @code{hyperdrive.el} will
+start the gateway as an Emacs subprocess.
 @end defopt
 
-@defopt hyperdrive-gateway-command
-The command run to start @code{hyper-gateway-ushin} as an Emacs subprocess.  This
-option only takes effect when @code{hyperdrive-gateway-process-type} is set
-to @code{subprocess}.
+@defopt hyperdrive-gateway-stop-function
+Function run to stop the gateway.
 @end defopt
 
-Alternatively, you can start @code{hyper-gateway-ushin} manually by running:
-
-@example
-hyper-gateway-ushin run --writable true
-@end example
-
-For full usage instructions, see the @uref{https://git.sr.ht/~ushin/hyper-gateway-ushin#usage, hyper-gateway-ushin README}.
+@defopt hyperdrive-gateway-live-predicate
+Function run to check that the gateway process is live.
+@end defopt
 
 @node Open a hyperdrive
 @section Open a hyperdrive
@@ -1284,14 +1327,13 @@ your hyperdrive was actually created at version 51 of your hyperdrive:
 @end multitable
 
 Running @code{hyperdrive-previous} while looking at @code{/bar.org} at version 51 or
-52 will send a request for @code{/bar.org} at version 50.
-@code{hyper-gateway-ushin} will report that @code{/bar.org} does not exist at
-version 50, but it won't report whether @code{/bar.org} ever existed @emph{before}
-version 50.  For example, @code{/bar.org} might have been created at version
-6, deleted at 14, then created again at version 51.  @code{hyperdrive.el}
-will keep sending requests to the network (up to
-@code{hyperdrive-fill-version-ranges-limit}) until the history view looks
-like:
+52 will send a request for @code{/bar.org} at version 50.  The gateway will
+report that @code{/bar.org} does not exist at version 50, but it won't report
+whether @code{/bar.org} ever existed @emph{before} version 50.  For example,
+@code{/bar.org} might have been created at version 6, deleted at 14, then
+created again at version 51.  @code{hyperdrive.el} will keep sending requests
+to the network (up to @code{hyperdrive-fill-version-ranges-limit}) until the
+history view looks like:
 
 @multitable {aaaaaaaaaaaaa} {aaaaaa}
 @headitem Version range
@@ -1332,7 +1374,7 @@ contains, which can never prove that a directory doesn't exist.
 
 The secret master key is combined with a seed (see @ref{Seeds}) to generate
 a new public key for a hyperdrive when you run @code{hyperdrive-new}.  Your
-master key is generated automatically by @code{hyper-gateway-ushin}.
+master key is generated automatically by the gateway.
 
 @node hyper-gateway-ushin
 @section hyper-gateway-ushin
@@ -1392,8 +1434,8 @@ Public keys are globally unique identifiers for hyperdrives.  They
 make up the first part of a @code{hyper://} URL@.  Public keys are
 52-character-long @uref{https://en.wikipedia.org/wiki/Base32#z-base-32, z-base-32} encoded keys generated from your master
 key (see @ref{Master key}) and a @ref{Seeds, , seed} string.  When you run @code{hyperdrive-new}
-and type a new seed, @code{hyper-gateway-ushin} automatically generates a
-new public key.
+and type a new seed, the gateway automatically generates a new public
+key.
 
 @node Nicknames
 @subsection Nicknames
@@ -1451,9 +1493,28 @@ DNS domains are checked for suspicious characters (see
 You can adjust the following options in the customization interface by
 running @code{M-x customize-group RET hyperdrive RET}:
 
-@defopt hyperdrive-hyper-gateway-ushin-port
-@code{hyperdrive.el} will send HTTP requests to @code{hyper-gateway-ushin} on this port.
-Defaults to @code{4973}.
+@defopt hyperdrive-gateway-program
+Name of executable to run when starting the gateway with
+@code{hyperdrive-gateway-start-function}.  @code{hyperdrive-install} will install
+the gateway to this file in @code{hyperdrive-gateway-directory}.
+@end defopt
+
+@defopt hyperdrive-gateway-directory
+Filesystem directory in which the gateway is expected to be found.
+@code{hyperdrive-install} will install the gateway to this location.  When
+starting the gateway, if @code{hyperdrive-gateway-program} is not found in
+this directory, Emacs searches @code{PATH} for @code{hyperdrive-gateway-program}.
+@end defopt
+
+@defopt hyperdrive-gateway-command-args
+Command line arguments passed to the gateway when starting the
+gateway with the default @code{hyperdrive-gateway-start-function}.
+@end defopt
+
+@defopt hyperdrive-gateway-port
+@code{hyperdrive.el} will send HTTP requests to the gateway on this port.
+Defaults to @code{4973}.  The default @code{hyperdrive-gateway-start-function}
+will start the gateway on this port.
 @end defopt
 
 @defopt hyperdrive-persist-location
@@ -1468,8 +1529,8 @@ which see.
 @end defopt
 
 @defopt hyperdrive-queue-limit
-Default number of request sent to @code{hyper-gateway-ushin} at a time in
-a queue.  Defaults to @code{20}.
+Default number of request sent to the gateway at a time in a queue.
+Defaults to @code{20}.
 @end defopt
 
 @defopt hyperdrive-fill-version-ranges-limit
@@ -1614,23 +1675,30 @@ to the relevant section in the @code{hyperdrive.el} manual.
 @node Troubleshooting
 @chapter Troubleshooting
 
-If you run into issues, please first try resetting the values of
-@code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}:
+@menu
+* Reinstall/upgrade the gateway::
+* Reset bad persist variables::
+@end menu
+
+@node Reinstall/upgrade the gateway
+@section Reinstall/upgrade the gateway
+
+Please ensure that you have the expected version of the gateway by
+running @code{M-x hyperdrive-install}.
+
+@node Reset bad persist variables
+@section Reset bad persist variables
+
+It is possible that the persisted values of @code{hyperdrive-hyperdrives}
+and/or @code{hyperdrive-version-ranges} are wrong.  Reset them by evaluating:
 
 @lisp
 (progn
-  (setf hyperdrive-hyperdrives (make-hash-table :test #'equal))
+  (persist-reset 'hyperdrive-hyperdrives)
   (persist-save 'hyperdrive-hyperdrives)
-  (setf hyperdrive-version-ranges (make-hash-table :test #'equal))
+  (persist-reset 'hyperdrive-version-ranges)
   (persist-save 'hyperdrive-version-ranges))
 @end lisp
-
-Please ensure that your version of @code{hyper-gateway-ushin} (@code{M-x
-hyperdrive-hyper-gateway-ushin-version}) is version `3.8.0` ([download
-from
-Codeberg](@uref{https://codeberg.org/USHIN/hyper-gateway-ushin/releases/tag/v3.8.0})
-or [download from
-SourceHut](@uref{https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/v3.8.0})).
 
 @node Contributing/Getting help
 @chapter Contributing/Getting help
@@ -1646,6 +1714,19 @@ You're welcome to join our public XMPP chat room!
 
 Bugs can be submitted to the @uref{https://todo.sr.ht/~ushin/ushin, ushin issue tracker}. Patches, comments or
 questions can be submitted to the @uref{https://lists.sr.ht/~ushin/ushin, ushin public inbox}.
+
+@node Uninstallation
+@chapter Uninstallation
+
+If you have installed the gateway with @code{hyperdrive-install}, you can
+delete the gateway which Emacs downloaded according to the values of
+@code{hyperdrive-gateway-directory} and @code{hyperdrive-gateway-program}, which is
+@code{~/.local/lib/hyperdrive.el/hyper-gateway-ushin} by default.
+
+You can delete the user data which @code{hyper-gateway-ushin} stores by
+default in @code{~/.local/share/hyper-gateway-nodejs}.
+
+You can remove @code{hyperdrive.el} with @code{M-x package-delete hyperdrive}.
 
 @node Acknowledgments
 @chapter Acknowledgments
