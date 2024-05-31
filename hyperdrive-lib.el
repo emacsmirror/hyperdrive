@@ -1432,7 +1432,8 @@ Default function; see variable `h/gateway-start-function'."
          :name "hyperdrive-gateway"
          :buffer " *hyperdrive-start*"
          :command (cons (h//gateway-path)
-                        (split-string-and-unquote h/gateway-command-args))
+                        (append (split-string-and-unquote h/gateway-command-args)
+                                (list "--port" (number-to-string h/gateway-port))))
          :connection-type 'pipe)))
 
 (defun h/announce-gateway-ready ()
