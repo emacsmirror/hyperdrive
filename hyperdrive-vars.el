@@ -55,7 +55,7 @@ Command `hyperdrive-install' installs to this name inside
 (defcustom h/gateway-command-args "run --writable true --silent true"
   "Arguments passed to the gateway.
 Note that the \"--port\" argument should not be included here, as
-it is added automatically at runtime using the value of
+it is added automatically at run-time using the value of
 `hyperdrive-gateway-port'."
   :type 'string
   :group 'hyperdrive)
