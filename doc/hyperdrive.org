@@ -559,9 +559,9 @@ You can customize the history view:
 ** Describe a hyperdrive
 
 To see information about a hyperdrive, such as its public key, seed,
-petname, nickname, domains, writable, or other metadata, run
-~hyperdrive-describe-hyperdrive~. For more on what this information
-means, see [[*Naming]].
+petname, nickname, domains, writability, local disk usage, or other
+metadata, run ~hyperdrive-describe-hyperdrive~.  For more on what this
+information means, see [[*Naming]].
 
 - Command: hyperdrive-describe-hyperdrive ::
 

@@ -854,9 +854,9 @@ Display buffer action for hyperdrive history buffers.  Passed to
 @section Describe a hyperdrive
 
 To see information about a hyperdrive, such as its public key, seed,
-petname, nickname, domains, writable, or other metadata, run
-@code{hyperdrive-describe-hyperdrive}. For more on what this information
-means, see @ref{Naming}.
+petname, nickname, domains, writability, local disk usage, or other
+metadata, run @code{hyperdrive-describe-hyperdrive}.  For more on what this
+information means, see @ref{Naming}.
 
 @deffn Command hyperdrive-describe-hyperdrive
 Display the description of the hyperdrive containing the current
