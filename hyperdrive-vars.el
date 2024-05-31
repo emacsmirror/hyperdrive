@@ -58,10 +58,10 @@ Command `hyperdrive-install' installs to this name inside
   :type 'string
   :group 'hyperdrive)
 
-(defalias 'hyperdrive-hyper-gateway-port 'hyperdrive-gateway-port
-  ;; TODO(v0.5.0) Remove this alias
-  "Renamed in hyperdrive.el v0.4.0 to reflect update to hyper-gateway-ushin.
-This alias will be removed in a later version of `hyperdrive.el'.")
+(define-obsolete-variable-alias
+  ;; TODO(v0.5.0) Remove this alias.
+  'hyperdrive-hyper-gateway-port 'hyperdrive-gateway-port "0.4.0")
+
 (defcustom h/gateway-port 4973
   "Port to use to send requests to the gateway server."
   :type 'natnum)
