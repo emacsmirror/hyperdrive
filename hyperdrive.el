@@ -1315,30 +1315,36 @@ If FORCEP, don't prompt for confirmation before downloading."
       (unless (yes-or-no-p "Download and reinstall/upgrade the gateway? ")
         (h/user-error "Not downloading; aborted"))))
   (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes))
-        (destination (expand-file-name h/gateway-program h/gateway-directory)))
+        (destination (expand-file-name h/gateway-program h/gateway-directory))
+        size)
     (cl-labels
         ((try ()
-           (pcase-let* (((map :url :sha256) (pop urls-and-hashes))
-                        (size (or forcep (ignore-errors
-                                           (h/message "Checking server...")
-                                           (file-size-human-readable
-                                            (head-size url))))))
+           (pcase-let (((map :url :sha256) (pop urls-and-hashes)))
+             (unless size
+               ;; Only successfully get size once.
+               (ignore-errors
+                 (h/message "Checking server %S..."
+                            (url-host (url-generic-parse-url url)))
+                 (setf size (file-size-human-readable
+                             (head-size url)))))
              (if size
                  (if (or forcep
                          (yes-or-no-p
                           (format "Download and install gateway (%s)? " size)))
                      (progn
-                       (setf forcep t)  ;; Don't prompt again.
+                       (setf forcep t) ;; Don't prompt again.
                        (download url sha256))
                    (h/message "Installation canceled."))
                ;; HEAD request failed: try next URL.
+               (h/message "Server %S unresponsive.  Trying next server..."
+                          (url-host (url-generic-parse-url url)))
                (if urls-and-hashes
                    (try)
                  (setf h/install-process nil)
                  (hyperdrive-menu-refresh)
                  (hyperdrive-error "Downloading failed; no more mirrors available")))))
          (head-size (url)
-           (when-let ((response (plz 'head url :as 'response)))
+           (when-let ((response (plz 'head url :as 'response :connect-timeout 5)))
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
@@ -1358,8 +1364,8 @@ If FORCEP, don't prompt for confirmation before downloading."
                                            url plz-error)
                                 (try)))
                              (when (file-exists-p temp-file)
-                               (delete-file temp-file))))))
-           (h/message "Downloading gateway..."))
+                               (delete-file temp-file)))))
+             (h/message "Downloading %s from %S to %S" size url destination)))
          (check (file-name sha256 url)
            (if (with-temp-buffer
                  (insert-file-contents-literally file-name)
