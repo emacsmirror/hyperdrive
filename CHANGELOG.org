@@ -42,6 +42,8 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
   Thanks to ~magnum~ on XMPP for reporting.
 - Remove ~hyperdrive-reuse-buffers~ user option to ensure consistent
   behavior when uniquifying buffer names.
+- Remove ~hyperdrive-honor-auto-mode-alist~ user option; hyperdrives
+  marked as ~safe~ now always enable a major mode.
 - Remove ~hyperdrive-gateway-process-type~ user option. To customize
   gateway startup, see options ~hyperdrive-gateway-start-function~,
   ~hyperdrive-gateway-stop-function~, ~hyperdrive-gateway-live-predicate~.
