@@ -152,6 +152,25 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
       (h/open (h/url-entry url)))))
 
 ;;;###autoload
+(defun hyperdrive-mark-as-safe (hyperdrive safep)
+  "Mark HYPERDRIVE as safe according to SAFEP.
+Interactively, prompt to toggle safety.  With universal prefix
+argument \\[universal-argument], toggle without prompting."
+  (interactive
+   (pcase-let* ((hyperdrive (h/complete-hyperdrive :force-prompt t))
+                ((cl-struct hyperdrive (etc (map safep))) hyperdrive)
+                (mark-safe-p
+                 (yes-or-no-p
+                  (format "Mark `%s' as safe (currently: %s)?"
+                          (h//format-hyperdrive hyperdrive)
+                          (if safep
+                              (propertize "safe" 'face 'success)
+                            (propertize "not safe" 'face 'error))))))
+     (list hyperdrive mark-safe-p)))
+  (setf (map-elt (h/etc hyperdrive) 'safep) safep)
+  (h/persist hyperdrive))
+
+;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
   "Purge all data corresponding to HYPERDRIVE."
   (interactive (list (h/complete-hyperdrive :force-prompt t)))
