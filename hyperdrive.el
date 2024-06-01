@@ -917,7 +917,7 @@ The return value of this function is the retrieval buffer."
                                                                  (call-interactively #'h/set-petname)))
                                                             :help "Set petname for hyperdrive"
                                                             :label
-                                                            (format-message "Set petname: `%s'"
+                                                            (format-message "Set Petname: `%s'"
                                                                             (pcase (h/petname drive)
                                                                               (`nil "none")
                                                                               (it it))))
@@ -929,7 +929,7 @@ The return value of this function is the retrieval buffer."
                                                             :help "Set nickname for hyperdrive"
                                                             :active (h/writablep drive)
                                                             :label
-                                                            (format-message "Set nickname: `%s'"
+                                                            (format-message "Set Nickname: `%s'"
                                                                             (pcase (alist-get 'name (h/metadata drive))
                                                                               (`nil "none")
                                                                               (it it))))
