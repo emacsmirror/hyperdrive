@@ -945,6 +945,17 @@ The return value of this function is the retrieval buffer."
                                                                             (pcase (alist-get 'name (h/metadata drive))
                                                                               (`nil "none")
                                                                               (it it))))
+                                                    (vector "Mark as Safe"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (let ((h/current-entry ,entry))
+                                                                 (call-interactively #'h/mark-as-safe)))
+                                                            :help "Mark hyperdrive as safe or not"
+                                                            :label
+                                                            (format-message "Mark as Safe: `%s'"
+                                                                            (if (alist-get 'safep (h/etc drive))
+                                                                                "safe"
+                                                                              "not safe")))
                                                     "---"
                                                     (vector "Purge"
                                                             `(lambda ()
