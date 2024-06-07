@@ -78,14 +78,13 @@
                ;; TODO: Remove this check and add useful history transient UI.
                (not (eq 'h/history-mode major-mode))))
     :description (lambda ()
-                   (if-let ((entry (h/menu--scope)))
-                       (concat (propertize "Version: "
-                                           'face 'transient-heading)
-                               (propertize (format "%s"
-                                                   (or (he/version entry)
-                                                       "latest"))
-                                           'face 'transient-value))
-                     "Version"))
+                   (let ((entry (h/menu--scope)))
+                     (concat (propertize "Version: "
+                                         'face 'transient-heading)
+                             (propertize (format "%s"
+                                                 (or (he/version entry)
+                                                     "latest"))
+                                         'face 'transient-value))))
     ("V p" "Previous" h/open-previous-version
      :inapt-if-not (lambda ()
                      (he/previous (h/menu--scope) :cache-only t))
