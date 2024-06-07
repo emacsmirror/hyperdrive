@@ -430,7 +430,11 @@ be \\+`unknown'."
              (he/create :hyperdrive hyperdrive
                         :path path
                         :version (1- version))))
-    (let ((previous-version (1- (car (he/version-range entry)))))
+    (let ((previous-version
+           (1- (or (car (he/version-range entry))
+                   ;; In the edge Entry has no version range: check entry
+                   (he/version entry)
+                   (h/latest-version (he/hyperdrive entry))))))
       (pcase-exhaustive (he/version-range entry :version previous-version)
         (`(,range-start . ,(map :existsp))
          (if existsp
