@@ -19,6 +19,16 @@ So, e.g. ~makem~'s ~lint-declare~ rule, which uses ~check-declare~, gives false 
 - State "TODO"       from              [2023-11-28 Tue 16:31]
 :END:
 
+* Depending on Org
+
+** DECISION We will depend on a minimum version of Org.
+
+We need to depend on a certain minimum version so we can effectively provide functionality related to remote files in a safe way without covering multiple versions of Org that each do so in a slightly different way.
+
+** DECISION We will require Org, period. 
+
+Our vision for hyperdrive involves Org and its functionality being a core part (while not necessarily requiring users to use Org files).  So we will not try to factor Org-related functionality into a separate package.
+
 * Gateway version automatic installation/upgrading
 
 + Design :: As simple as possible.
