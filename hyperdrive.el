@@ -1263,7 +1263,7 @@ Intended for relative (i.e. non-full) URLs."
 (with-eval-after-load 'ffap
   (setf ffap-url-regexp
         (if ffap-url-regexp
-            (rx-to-string `(or ,ffap-url-regexp (seq bos "hyper://")))
+            (rx-to-string `(or (regexp ,ffap-url-regexp) (seq bos "hyper://")))
           (rx bos "hyper://"))))
 
 ;;;;; Embark integration
