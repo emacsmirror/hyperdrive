@@ -399,6 +399,15 @@ How to tell which extension caused a peer-open or peer-remove event?
 
 + Because hyperdrive buffers are not considered file-backed by Emacs, and Org refuses to follow ~ID~-based links in non-file-backed buffers, in a hyperdrive-backed Org buffer, ~ID~-based links /will not/ be followable.  This is a limitation of ~org-id.el~, and it seems unlikely that we would be able to overcome it (unless and until we support hyperdrive using TRAMP's infrastructure).
 
+**** Org does not distinguish between ~file://~-prefixed and non-prefixed paths/URLs
+
+In Org, these two paths/URLs are equivalent:
+
+- ~file://./tmp/setupfile.org~
+- ~./tmp/setupfile.org~
+
+Therefore, we should treat them the same way: as both pointing to files on the same filesystem as the document in which they are written, i.e. ~file:~ and protocol-prefix-less links within a hyperdrive file should be treated as links to files within that hyperdrive--never as links to files on the local filesystem.  (This is akin to connecting to a remote system via TRAMP and viewing Org files that way.)
+
 *** Use cases
 
 + We want users to be able to take one or more Org files and have links between them continue working regardless of whether the files are on a hyperdrive or not.
