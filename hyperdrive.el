@@ -377,12 +377,9 @@ directory.  Otherwise, or with universal prefix argument
             (pcase-let* (((cl-struct plz-response headers) response)
                          ((map etag) headers)
                          (nonexistent-entry (h/copy-tree entry t)))
-              (unless (h//entry-directory-p entry)
-                ;; FIXME: hypercore-fetch bug doesn't update version
-                ;; number when deleting a directory.
-                (setf (he/version nonexistent-entry) (string-to-number etag))
-                (h//fill-latest-version (he/hyperdrive entry) headers)
-                (h/update-nonexistent-version-range nonexistent-entry))
+              (setf (he/version nonexistent-entry) (string-to-number etag))
+              (h//fill-latest-version (he/hyperdrive entry) headers)
+              (h/update-nonexistent-version-range nonexistent-entry)
               ;; Since there's no way for `h//write-contents' to run when
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
               ;; `save-buffer' re-saves files after they've been deleted.
