@@ -1289,6 +1289,8 @@ world of p2p as well as the development of ~hyper-gateway~.
 
 [[https://protesilaos.com][Protesilaos Stavrou]] for design input and user-testing ~hyperdrive.el~.
 
+[[https://emacs.ch/@yantar92][Ihor Radchenko]] for guidance about security and Org mode integration.
+
 [[https://karl-voit.at/][Karl Voit]] for his feedback which inspired the design of ~hyperdrive-mirror~.
 
 [[https://www.sanityinc.com/][Steve Purcell]] and [[https://github.com/akirak][Akira Komamura]] for suggestions to improve our CI
