@@ -276,6 +276,7 @@
    ("p" h/menu-set-petname  :transient t)
    ("n" h/menu-set-nickname :transient t
     :inapt-if-not (lambda () (h/writablep (h/menu--scope))))
+   ("S" h/menu-mark-as-safe :transient t)
    ( :info (lambda () (h//format (h/menu--scope) "Domain: %D" h/raw-formats))
      :if (lambda () (h/domains (h/menu--scope))))
    (:info (lambda () (format "Latest version: %s" (h/latest-version (h/menu--scope)))))
@@ -459,6 +460,17 @@
           :initial-input (alist-get 'name (h/metadata (h/menu--scope))))
          (h/menu--scope)))
   (h/set-nickname nickname hyperdrive))
+
+(transient-define-suffix h/menu-mark-as-safe (hyperdrive safep)
+  :description
+  (lambda ()
+    (format "Safe: %s"
+            (if (alist-get 'safep (h/etc (h/menu--scope)))
+                (propertize "Yes" 'face 'success)
+              (propertize "No" 'face 'error))))
+  (interactive
+   (list (h/menu--scope) (not (alist-get 'safep (h/etc (h/menu--scope))))))
+  (h/mark-as-safe hyperdrive safep))
 
 ;;;; Menu Utilities
 

@@ -152,6 +152,40 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
       (h/open (h/url-entry url)))))
 
 ;;;###autoload
+(defun hyperdrive-mark-as-safe (hyperdrive safep)
+  "Mark HYPERDRIVE as safe according to SAFEP.
+Interactively, prompt for hyperdrive and action."
+  (interactive
+   (pcase-let* ((hyperdrive (h/complete-hyperdrive :force-prompt t))
+                ((cl-struct hyperdrive (etc (map safep))) hyperdrive)
+                (mark-safe-p
+                 (pcase (read-answer
+                         (format "Mark hyperdrive `%s' as: (currently: %s) "
+                                 (h//format-hyperdrive hyperdrive)
+                                 (if safep
+                                     (propertize "safe" 'face 'success)
+                                   (propertize "unsafe" 'face 'error)))
+                         '(("safe" ?S "Mark as safe")
+                           ("unsafe" ?u "Mark as unsafe")
+                           ("info" ?i "show Info manual section about safety")
+                           ("quit" ?q "quit")))
+                   ((or ?S "safe") t)
+                   ((or ?u "unsafe") nil)
+                   ((or ?i "info") :info)
+                   (_ :quit))))
+     (list hyperdrive mark-safe-p)))
+  (pcase safep
+    (:info (info "(hyperdrive) Mark a hyperdrive as safe"))
+    (:quit nil)
+    (_ (setf (map-elt (h/etc hyperdrive) 'safep) safep)
+       (h/persist hyperdrive)
+       (message "Marked hyperdrive `%s' as %s."
+                (h//format-hyperdrive hyperdrive)
+                (if safep
+                    (propertize "safe" 'face 'success)
+                  (propertize "unsafe" 'face 'error))))))
+
+;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
   "Purge all data corresponding to HYPERDRIVE."
   (interactive (list (h/complete-hyperdrive :force-prompt t)))
@@ -926,6 +960,17 @@ The return value of this function is the retrieval buffer."
                                                                             (pcase (alist-get 'name (h/metadata drive))
                                                                               (`nil "none")
                                                                               (it it))))
+                                                    (vector "Mark as Safe"
+                                                            `(lambda ()
+                                                               (interactive)
+                                                               (let ((h/current-entry ,entry))
+                                                                 (call-interactively #'h/mark-as-safe)))
+                                                            :help "Mark hyperdrive as safe or not"
+                                                            :label
+                                                            (format-message "Mark as Safe: `%s'"
+                                                                            (if (alist-get 'safep (h/etc drive))
+                                                                                "safe"
+                                                                              "unsafe")))
                                                     "---"
                                                     (vector "Purge"
                                                             `(lambda ()

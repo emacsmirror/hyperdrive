@@ -85,7 +85,8 @@ Passes ARGS to `format-message'."
   (metadata nil :documentation "Public metadata alist.")
   (latest-version nil :documentation "Latest known version of hyperdrive.")
   (etc nil :documentation "Alist of extra data.
-- disk-usage :: Number of bytes occupied locally by the drive."))
+- disk-usage :: Number of bytes occupied locally by the drive.
+- safep :: Whether or not to treat this hyperdrive as safe."))
 
 (defun h/url (hyperdrive)
   "Return a \"hyper://\"-prefixed URL from a HYPERDRIVE struct.
@@ -1352,8 +1353,7 @@ If then, then call THEN with no arguments.  Default handler."
                         (or (not (h/writablep hyperdrive)) version))
                   (set-buffer-modified-p nil)
                   (set-visited-file-modtime (current-time))))
-              (when (member (hyperdrive-public-key hyperdrive)
-                            h/safe-hyperdrives)
+              (when (map-elt (hyperdrive-etc hyperdrive) 'safep)
                 (let ((buffer-file-name (he/name entry)))
                   (set-auto-mode)))
               (when target

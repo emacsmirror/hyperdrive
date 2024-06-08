@@ -13,7 +13,8 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
 
 - By default, don't automatically load major mode when browsing
   hyperdrive files.  To enable this behavior for certain trusted
-  hyperdrives, see user option ~h/safe-hyperdrives~.
+  hyperdrives, mark them as "safe" with ~M-x hyperdrive-mark-as-safe~,
+  which is also bound in ~hyperdrive-menu~ and the hyperdrive menu bar.
 
 ** Added
 
