@@ -154,21 +154,36 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
 ;;;###autoload
 (defun hyperdrive-mark-as-safe (hyperdrive safep)
   "Mark HYPERDRIVE as safe according to SAFEP.
-Interactively, prompt to toggle safety.  With universal prefix
-argument \\[universal-argument], toggle without prompting."
+Interactively, prompt for hyperdrive and action."
   (interactive
    (pcase-let* ((hyperdrive (h/complete-hyperdrive :force-prompt t))
                 ((cl-struct hyperdrive (etc (map safep))) hyperdrive)
                 (mark-safe-p
-                 (yes-or-no-p
-                  (format "Mark `%s' as safe (currently: %s)?"
-                          (h//format-hyperdrive hyperdrive)
-                          (if safep
-                              (propertize "safe" 'face 'success)
-                            (propertize "not safe" 'face 'error))))))
+                 (pcase (read-answer
+                         (format "Mark hyperdrive `%s' as: (currently: %s) "
+                                 (h//format-hyperdrive hyperdrive)
+                                 (if safep
+                                     (propertize "safe" 'face 'success)
+                                   (propertize "unsafe" 'face 'error)))
+                         '(("safe" ?S "Mark as safe")
+                           ("unsafe" ?u "Mark as unsafe")
+                           ("info" ?i "show Info manual section about safety")
+                           ("quit" ?q "quit")))
+                   ((or ?S "safe") t)
+                   ((or ?u "unsafe") nil)
+                   ((or ?i "info") :info)
+                   (_ :quit))))
      (list hyperdrive mark-safe-p)))
-  (setf (map-elt (h/etc hyperdrive) 'safep) safep)
-  (h/persist hyperdrive))
+  (pcase safep
+    (:info (info "(hyperdrive) Mark a hyperdrive as safe"))
+    (:quit nil)
+    (_ (setf (map-elt (h/etc hyperdrive) 'safep) safep)
+       (h/persist hyperdrive)
+       (message "Marked hyperdrive `%s' as %s."
+                (h//format-hyperdrive hyperdrive)
+                (if safep
+                    (propertize "safe" 'face 'success)
+                  (propertize "unsafe" 'face 'error))))))
 
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
@@ -955,7 +970,7 @@ The return value of this function is the retrieval buffer."
                                                             (format-message "Mark as Safe: `%s'"
                                                                             (if (alist-get 'safep (h/etc drive))
                                                                                 "safe"
-                                                                              "not safe")))
+                                                                              "unsafe")))
                                                     "---"
                                                     (vector "Purge"
                                                             `(lambda ()
