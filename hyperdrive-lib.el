@@ -1585,8 +1585,7 @@ version."
   ;; If `match-buffers' returns more than one buffer, we ignore the others.
   (car (match-buffers
         (lambda (buffer)
-          (and-let* ((local-entry
-                      (buffer-local-value 'hyperdrive-current-entry buffer)))
+          (and-let* ((local-entry (buffer-local-value 'h/current-entry buffer)))
             (he/equal-p entry local-entry any-version-p))))))
 
 (defun h//format-entry (entry &optional format formats)
