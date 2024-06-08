@@ -383,12 +383,8 @@ directory.  Otherwise, or with universal prefix argument
               ;; Since there's no way for `h//write-contents' to run when
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
               ;; `save-buffer' re-saves files after they've been deleted.
-              (dolist (buf (match-buffers (lambda (buf deleted-entry)
-                                            (and-let* ((current-entry (buffer-local-value 'h/current-entry buf)))
-                                              (he/equal-p current-entry deleted-entry)))
-                                          nil entry))
-                (with-current-buffer buf
-                  (set-buffer-modified-p t)))
+              (with-current-buffer (h//find-buffer-visiting entry)
+                (set-buffer-modified-p t))
               (funcall then response)))
     :else else))
 
