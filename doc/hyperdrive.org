@@ -705,7 +705,7 @@ on file extension unless the hyperdrive has been marked as "safe."
 
   Mark a hyperdrive as "safe," which will cause major modes to be
   automatically be enabled based on file extension when opening files
-  within that hyperdrive.  Files in hyperdrives which are "not safe"
+  within that hyperdrive.  Files in hyperdrives which are "unsafe"
   (the default) are opened in ~fundamental-mode~.
 
 ** Purge a hyperdrive
