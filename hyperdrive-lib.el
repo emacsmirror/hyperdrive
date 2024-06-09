@@ -503,7 +503,8 @@ Sends a request to the gateway for hyperdrive's latest version."
     ;; ENTRY is a file...
     (pcase-let* ((`(,_range-start . ,(map :range-end))
                   (he/version-range entry))
-                 (next-range-start (1+ range-end))
+                 (next-range-start (1+ (or range-end
+                                           (h/error "Missing version range data"))))
                  ((map (:existsp next-range-existsp)
                        (:range-end next-range-end))
                   ;; TODO: If cl struct copiers are extended like this:
