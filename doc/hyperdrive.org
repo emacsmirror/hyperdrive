@@ -420,7 +420,7 @@ link to the hyperdrive file.  If point is inside a heading, a
 URL-encoded search option containing its ~CUSTOM_ID~, ~ID~, or heading
 text will be appended as the stored URL's link fragment.
 
-Linking by path alone to other files within the same hyperdrive are
+Linking by path alone to other files within the same hyperdrive is
 supported; within ~hyper://PUBLIC-KEY/foo.org~, links to ~bar.org~,
 ~./bar.org~, and ~/bar.org~ will all point to ~hyper://PUBLIC-KEY/bar.org~.
 Links within a hyperdrive may also begin with the explicit ~file:~
