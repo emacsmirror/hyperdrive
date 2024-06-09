@@ -816,6 +816,8 @@ Returns the ranges cons cell for ENTRY."
               ;; `h/version-ranges', there's nothing to do.
               (he/version-range entry)
               ;; Don't store ranges for entries which have never existed.
+              ;; NOTE: This check may incorrectly skip the body if
+              ;; `hyperdrive-version-ranges' has been cleared.
               (not (he/version-ranges entry)))
     (pcase-let*
         ((ranges (he/version-ranges entry))
