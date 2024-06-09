@@ -880,7 +880,13 @@ Once all requests return, call FINALLY with no arguments."
                                     ('t (fill-existent-at last-requested-version))
                                     ('nil (fill-nonexistent-at last-requested-version))
                                     ('unknown
-                                     (h/error "Entry should have been filled at version: %s" last-requested-version))))))))
+                                     ;; This clause may run when attempting to
+                                     ;; fill version ranges for an entry which
+                                     ;; has never been saved: Say message and
+                                     ;; call `finally' so callers can clean up.
+                                     (h/message "Entry should have been filled at version: %s"
+                                                last-requested-version)
+                                     (funcall finally))))))))
                  ;; Make a copy of the version ranges for use in the HEAD request callback.
                  (copy-entry-version-ranges (copy-sequence (he/version-ranges entry))))
              ;; For nonexistent entries, send requests in parallel.
