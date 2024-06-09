@@ -152,9 +152,7 @@ and ENTRY's version are nil."
     ;; TODO: Add more to lighter, e.g. URL.
     )
   "Major mode for Hyperdrive history buffers."
-  ;; TODO: Add revert buffer function. This will likely require
-  ;; binding h/current-entry in this mode. Consider keeping
-  ;; the version around so that we can highlight the line
+  ;; TODO: Consider keeping the version around so that we can highlight the line
   ;; corresponding to version currently open in another buffer.
   :group 'hyperdrive
   :interactive nil
