@@ -1,4 +1,4 @@
-;;; hyperdrive-diff.el --- Shared (persist-)defvars, deffaces, defcustoms  -*- lexical-binding: t; -*-
+;;; hyperdrive-diff.el --- Diffing hyperdrive entries -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023, 2024  USHIN, Inc.
 
