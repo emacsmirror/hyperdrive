@@ -474,9 +474,9 @@ When VERSION is nil, return latest version of ENTRY."
 (cl-defun he/next (entry)
   "Return unfilled ENTRY at its hyperdrive's next version.
 
-If next version is known nonexistent, return nil.
-If next version's existence is unknown, return \\+`unknown'.
 If ENTRY's version is nil, return value is `eq' to ENTRY.
+Else, if next version is known nonexistent, return nil.
+Else, if current or next version's existence is unknown, return \\+`unknown'.
 
 Sends a request to the gateway for hyperdrive's latest version."
   (unless (he/version entry)
@@ -504,7 +504,9 @@ Sends a request to the gateway for hyperdrive's latest version."
     (pcase-let* ((`(,_range-start . ,(map :range-end))
                   (he/version-range entry))
                  (next-range-start (1+ (or range-end
-                                           (h/error "Missing version range data"))))
+                                           ;; Version range data is missing for
+                                           ;; ENTRY: return `unknown'.
+                                           (cl-return-from he/next 'unknown))))
                  ((map (:existsp next-range-existsp)
                        (:range-end next-range-end))
                   ;; TODO: If cl struct copiers are extended like this:
