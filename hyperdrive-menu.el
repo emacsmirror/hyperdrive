@@ -81,11 +81,13 @@
     (lambda ()
       (let* ((entry (h/menu--scope))
              (version (he/version entry))
-             (existsp (he/exists-p entry)))
+             (existsp (he/exists-p entry))
+             (directoryp (hyperdrive--entry-directory-p entry)))
         (concat
          (propertize "Version: " 'face 'transient-heading)
          (propertize (format "%s"
-                             (cond ((null existsp) "nonexistent")
+                             (cond (directoryp (or version "latest"))
+                                   ((null existsp) "nonexistent")
                                    ((eq 'unknown existsp) "unknown")
                                    (version version)
                                    (t "latest")))
