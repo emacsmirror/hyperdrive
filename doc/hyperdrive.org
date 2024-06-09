@@ -420,15 +420,12 @@ link to the hyperdrive file.  If point is inside a heading, a
 URL-encoded search option containing its ~CUSTOM_ID~, ~ID~, or heading
 text will be appended as the stored URL's link fragment.
 
-Relative links are supported; within ~hyper://PUBLIC-KEY/foo.org~, links
-to ~bar.org~, ~./bar.org~, and ~/bar.org~ will all point to
-~hyper://PUBLIC-KEY/bar.org~. A version number can also be specified;
-~/$/version/42/bar.org~ will point to
-~hyper://PUBLIC-KEY/$/version/42/bar.org~.
-
-To link from a hyperdrive-mode org buffer to a file on the local
-filesystem, explicitly add the ~file:~ link type prefix:
-~file:~/.emacs.d/init.el~.
+Linking by path alone to other files within the same hyperdrive are
+supported; within ~hyper://PUBLIC-KEY/foo.org~, links to ~bar.org~,
+~./bar.org~, and ~/bar.org~ will all point to ~hyper://PUBLIC-KEY/bar.org~.
+Links within a hyperdrive may also begin with the explicit ~file:~
+prefix.  A version number can also be specified; ~/$/version/42/bar.org~
+will point to ~hyper://PUBLIC-KEY/$/version/42/bar.org~.
 
 Org-mode hyperdrive link completion allows you to interactively link
 to a hyperdrive file/folder by running ~M-x org-insert-link~ (or ~C-c C-l~
