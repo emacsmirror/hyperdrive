@@ -63,10 +63,13 @@ Here are various link types which we want to test.
 
 ***** Links to hyperdrive files
 
-/Note the lack of ~file:~ prefix, which would indicate a link to a local file./
-
 + [[./links test.org]]
 + [[/links test.org]] :: For non-hyperdrive files, this actually links to a file in the root directory of the filesystem.  For hyperdrives, we want this to point to a file in the hyperdrive's root.
+
+  As of ee6b4b69 (in v0.4.0), the following ~file:~-prefixed links also point to a file in the hyperdrive's root (just like the above prefix-less paths):
+
++ [[file:./links test.org]]
++ [[file:links test.org]]
 
 ****** CANCELED Fix functionality for links like ~[[links test.org]]~
 :LOGBOOK:
@@ -80,10 +83,6 @@ Org doesn't support this for local files (this syntax would point to a heading b
 
 ***** Links to local files
 
-/The ~file:~ prefix indicates that the link points to a local file (not one on a hyperdrive relative to the current hyperdrive file)/.
-
-+ [[file:./links test.org]]
-+ [[file:links test.org]]
 
 **** Links with targets
 
