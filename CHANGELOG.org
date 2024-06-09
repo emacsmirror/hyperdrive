@@ -63,6 +63,8 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
 - Include the first file in a directory as an ~imenu~ candidate.
 - Start gateway subprocess on ~hyperdrive-gateway-port~.
 - Properly quote existing value of ~ffap-url-regexp~ when modifying it.
+- Following explicit ~file:~-prefixed links in hyperdrive Org files now
+  opens hyperdrive files in the same hyperdrive.
 
 ** Internal
 
