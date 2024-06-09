@@ -733,7 +733,8 @@ Returns filled ENTRY."
       ;; File HEAD/GET request ETag header does not retrieve the
       ;; hyperdrive's latest version, so `h/update-existent-version-range'
       ;; will not necessarily fill in the entry's last range.
-      (h/update-existent-version-range entry (string-to-number etag)))
+      (when etag
+        (h/update-existent-version-range entry (string-to-number etag))))
     entry))
 
 (defun h//fill-listing-entries (listing hyperdrive version)
