@@ -423,35 +423,35 @@ If ENTRY is a directory, return a copy with decremented version.
 If CACHE-ONLY, don't send a request to the gateway; only check
 `hyperdrive-version-ranges'.  In this case, return value may also
 be \\+`unknown'."
-  (if (h//entry-directory-p entry)
-      (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
-                   (version (or version (h/latest-version hyperdrive))))
+
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
+               (version (or version (h/latest-version hyperdrive))))
+    (if (h//entry-directory-p entry)
         (and (> version 1)
              (he/create :hyperdrive hyperdrive
                         :path path
-                        :version (1- version))))
-    (let ((previous-version
-           (1- (or (car (he/version-range entry))
-                   ;; In the edge Entry has no version range: check entry
-                   (he/version entry)
-                   (h/latest-version (he/hyperdrive entry))))))
-      (pcase-exhaustive (he/version-range entry :version previous-version)
-        (`(,range-start . ,(map :existsp))
-         (if existsp
-             ;; Return entry if it's known existent.
-             (he/at range-start entry)
-           ;; Return nil if it's known nonexistent.
-           nil))
-        ('nil
-         ;; Entry is not known to exist, optionally send a request.
-         (if cache-only
-             'unknown
-           (and-let* ((previous-entry (he/at previous-version entry)))
-             ;; Entry version is currently its range end,
-             ;; but it should be its version range start.
-             (setf (he/version previous-entry)
-                   (car (he/version-range previous-entry)))
-             previous-entry)))))))
+                        :version (1- version)))
+      (let ((previous-version
+             (1- (or (car (he/version-range entry))
+                     ;; Version range data missing: Decrement version.
+                     version))))
+        (pcase-exhaustive (he/version-range entry :version previous-version)
+          (`(,range-start . ,(map :existsp))
+           (if existsp
+               ;; Return entry if it's known existent.
+               (he/at range-start entry)
+             ;; Return nil if it's known nonexistent.
+             nil))
+          ('nil
+           ;; Entry is not known to exist, optionally send a request.
+           (if cache-only
+               'unknown
+             (and-let* ((previous-entry (he/at previous-version entry)))
+               ;; Entry version is currently its range end,
+               ;; but it should be its version range start.
+               (setf (he/version previous-entry)
+                     (car (he/version-range previous-entry)))
+               previous-entry))))))))
 
 (defun he/at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
