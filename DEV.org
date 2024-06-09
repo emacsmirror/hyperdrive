@@ -359,9 +359,9 @@ How to tell which extension caused a peer-open or peer-remove event?
 
 *** Terminology
 
-+ Hyperdrive Org links :: Links to hyperdrive files/directories that are valid within Org documents.
+**** Hyperdrive Org links :: Links to hyperdrive files/directories that are valid within Org documents.
 
-  - With protocol prefix
+***** With protocol prefix
 
     This link type or may not be surrounded by brackets. It may or may
     not contain a search option. Path and search option must be
@@ -378,7 +378,7 @@ How to tell which extension caused a peer-open or peer-remove event?
       - ~hyper://deadbeef/foo/bar%20quux.org#%3A%3A%2A%20%20Heading%20A~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::*  Heading A~
       - ~hyper://deadbeef/foo/bar%20quux.org#%3A%3AHeading%20A~, which decodes to ~hyper://deadbeef/foo/bar quux.org#::Heading A~
 
-  - Without protocol prefix
+***** Without protocol prefix
 
     This link type must be surrounded by brackets.  It has no
     URL-encoding in any part. It may or may not contain a path:
@@ -416,7 +416,17 @@ In Org, these two paths/URLs are equivalent:
 - ~file://./tmp/setupfile.org~
 - ~./tmp/setupfile.org~
 
-Therefore, we should treat them the same way: as both pointing to files on the same filesystem as the document in which they are written, i.e. ~file:~ and protocol-prefix-less links within a hyperdrive file should be treated as links to files within that hyperdrive--never as links to files on the local filesystem.  (This is akin to connecting to a remote system via TRAMP and viewing Org files that way.)
+Therefore, when opening these two types of links, we should treat them
+the same way: as both pointing to files on the same filesystem as the
+document in which they are written, i.e.  ~file:~ and
+protocol-prefix-less links within a hyperdrive file should be treated
+as links to files within that hyperdrive--never as links to files on
+the local filesystem.  (This is akin to connecting to a remote system
+via TRAMP and viewing Org files that way.)
+
+However, as described in [[*Without protocol prefix][Without protocol prefix]], when inserting links
+to files within the same hyperdrive, we optionally insert a
+non-prefixed path, but never a ~file://~-prefixed URL.
 
 *** Use cases
 
