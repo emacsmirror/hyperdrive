@@ -581,7 +581,8 @@ it to `hyperdrive-open'."
       (h/open previous-entry)
     (h/message "%s does not exist at version %s. Try \\[hyperdrive-history]"
                (h//format-entry entry "[%H] %p")
-               (1- (car (he/version-range entry))))))
+               (1- (car (or (he/version-range entry)
+                            (h/error "Missing version range data")))))))
 
 (defun h/open-next-version (entry)
   "Open next version of ENTRY."
