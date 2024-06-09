@@ -66,6 +66,7 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
 - Following explicit ~file:~-prefixed links in hyperdrive Org files now
   opens hyperdrive files in the same hyperdrive.
 - Fix edge cases when loading version history for nonexistent entries.
+- Edge case where revert-buffer popped to the wrong hyperdrive buffer.
 
 ** Internal
 
