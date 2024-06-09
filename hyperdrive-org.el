@@ -135,20 +135,16 @@ the logic for handling links of \"file\" type."
 (defun h/org--element-entry (context)
   "Return the hyperdrive entry for the Org CONTEXT.
 If CONTEXT does not correspond to a hyperdrive entry, return nil."
-  (let* ((element-type (org-element-type context))
-         (link-type (org-element-property :type context)))
-    (and (eq element-type 'link)
-         (equal "file" link-type)
-         (pcase-let*
-             (((cl-struct hyperdrive-entry hyperdrive path) h/current-entry)
-              (entry (he/create
-                      :hyperdrive hyperdrive
-                      :path (expand-file-name
-                             (org-element-property :path context)
-                             (file-name-directory path))
-                      :etc `((target . ,(org-element-property
-                                         :search-option context))))))
-           entry))))
+  (and (equal 'link (org-element-type context))
+       ;; "file" :type also includes prefix-less paths like [[./foo/bar]].
+       (equal "file" (org-element-property :type context))
+       (he/create
+        :hyperdrive (he/hyperdrive h/current-entry)
+        :path (expand-file-name
+               (org-element-property :path context)
+               (file-name-directory (he/path h/current-entry)))
+        :etc `((target . ,(org-element-property
+                           :search-option context))))))
 
 (defun h/org--insert-link-after-advice (&rest _)
   "Modify just-inserted link as appropriate for `hyperdrive-mode' buffers."
