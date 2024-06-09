@@ -31,6 +31,14 @@
 (require 'hyperdrive-lib)
 (require 'hyperdrive-ewoc)
 
+;;;; Variables
+
+(defvar h/history-current-entry nil
+  ;; NOTE: We don't reuse `hyperdrive-current-entry' in history buffers because
+  ;; functions like `hyperdrive--find-buffer-visiting' expect only one buffer to
+  ;; be visiting an entry at a time.
+  "Entry for current history buffer.")
+
 ;;;; Functions
 
 (defun h/history-find-at-point (event)
@@ -122,7 +130,7 @@ and ENTRY's version are nil."
 (defun h/history-revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-history-mode' buffer."
   ;; TODO: Preserve point position in buffer.
-  (h/history h/current-entry))
+  (h/history h/history-current-entry))
 
 ;;;; Mode
 
@@ -195,7 +203,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                                   (h//format-entry entry "[%H] %p")))
       (with-silent-modifications
         (h/history-mode)
-        (setq-local h/current-entry entry)
+        (setq-local h/history-current-entry entry)
         (setf ewoc h/ewoc) ; Bind this for the h/fill lambda.
         (ewoc-filter h/ewoc #'ignore)
         (erase-buffer)
