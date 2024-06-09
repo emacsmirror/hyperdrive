@@ -1208,9 +1208,15 @@ The return value of this function is the retrieval buffer."
                  (not (h//entry-directory-p entry-at-point)))
        :help "View file at point"])
      ("Version"
-      :label (format "Version (%s)"
-                     (or (he/version h/current-entry)
-                         "latest"))
+      :label (let* ((version (he/version h/current-entry))
+                    (existsp (he/exists-p h/current-entry))
+                    (directoryp (hyperdrive--entry-directory-p h/current-entry)))
+               (format "Version (%s)"
+                       (cond (directoryp (or version "latest"))
+                             ((null existsp) "nonexistent")
+                             ((eq 'unknown existsp) "unknown")
+                             (version version)
+                             (t "latest"))))
       ["Previous Version" (lambda ()
                             (interactive)
                             (call-interactively #'h/open-previous-version))
