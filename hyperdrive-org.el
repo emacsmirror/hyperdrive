@@ -136,13 +136,9 @@ the logic for handling links of \"file\" type."
   "Return the hyperdrive entry for the Org CONTEXT.
 If CONTEXT does not correspond to a hyperdrive entry, return nil."
   (let* ((element-type (org-element-type context))
-         (link-type (org-element-property :type context))
-         (raw-link-type (org-element-property :raw-link context)))
+         (link-type (org-element-property :type context)))
     (and (eq element-type 'link)
          (equal "file" link-type)
-         ;; Don't treat link as a relative/absolute path in the
-         ;; hyperdrive if "file:" protocol prefix is explicit.
-         (not (string-prefix-p "file:" raw-link-type))
          (pcase-let*
              (((cl-struct hyperdrive-entry hyperdrive path) h/current-entry)
               (entry (he/create
