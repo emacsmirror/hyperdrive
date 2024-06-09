@@ -314,7 +314,7 @@ Intended to be passed to `buffer-local-restore-state'.")
   :group 'hyperdrive
   :lighter " hyperdrive"
   :keymap '(([remap revert-buffer-quick] . h/revert-buffer-quick)
-            ([remap dired-jump] .  h/up))
+            ([remap dired-jump] . h/up))
   (if h/mode
       (progn
         (setq-local h/mode--state
@@ -879,119 +879,136 @@ The return value of this function is the retrieval buffer."
      :label (if (zerop (hash-table-count h/hyperdrives))
                 "Drives (empty)"
               "Drives")
-     :filter (lambda (_)
-               (cl-labels ((list-drives (drives)
-                             (cl-loop for drive in drives
-                                      for entry = (he/create :hyperdrive drive)
-                                      collect (list (h//format drive)
-                                                    (vector "Describe"
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (let ((h/current-entry ,entry))
-                                                                 (call-interactively #'h/describe-hyperdrive)))
-                                                            :help "Display information about hyperdrive")
-                                                    (vector "Find File"
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (h/open
-                                                                 (h/read-entry
-                                                                  :hyperdrive ,drive
-                                                                  :read-version current-prefix-arg)))
-                                                            :help "Find a file in hyperdrive")
-                                                    (vector "View File"
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (h/view-file
-                                                                (h/read-entry
-                                                                 :hyperdrive ,drive
-                                                                 :read-version current-prefix-arg)))
-                                                            :help "View a file in hyperdrive")
-                                                    "---"
-                                                    (vector "Upload File"
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (let* ((filename (read-file-name "Upload file: "))
-                                                                      (entry (h/read-entry :hyperdrive ,drive
-                                                                                           :default-path (file-name-nondirectory filename)
-                                                                                           :latest-version t)))
-                                                                 (h/upload-file filename entry)))
-                                                            :active `(h/writablep ,drive)
-                                                            :help "Upload a file to hyperdrive")
-                                                    (vector "Upload Files"
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (let* ((files (h/read-files))
-                                                                      (target-dir (h/read-path
-                                                                                   :hyperdrive ,drive
-                                                                                   :prompt "Target directory in `%s'"
-                                                                                   :default "/")))
-                                                                 (h/upload-files files ,drive target-dir)))
-                                                            :active `(h/writablep ,drive)
-                                                            :help "Upload files to hyperdrive")
-                                                    (vector "Mirror" #'h/mirror
-                                                            ;; TODO: `h/mirror''s interactive form will also prompt
-                                                            ;; for a drive. After changing `h/mirror' to use
-                                                            ;; Transient.el, we should pass in the default drive argument.
-                                                            :active `(h/writablep ,drive)
-                                                            :help "Mirror a directory to hyperdrive")
-                                                    "---"
-                                                    (vector "Petname"
-                                                            ;; HACK: We have to unquote the value of the entry because it seems that the filter
-                                                            ;; function is called in an environment that doesn't use lexical-binding...?
-                                                            ;; TODO: Ask about this and/or file a bug report.
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (let ((h/current-entry ,entry))
-                                                                 (call-interactively #'h/set-petname)))
-                                                            :help "Set petname for hyperdrive"
-                                                            :label
-                                                            (format-message "Set Petname: `%s'"
-                                                                            (pcase (h/petname drive)
-                                                                              (`nil "none")
-                                                                              (it it))))
-                                                    (vector "Nickname"
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (let ((h/current-entry ,entry))
-                                                                 (call-interactively #'h/set-nickname)))
-                                                            :help "Set nickname for hyperdrive"
-                                                            :active (h/writablep drive)
-                                                            :label
-                                                            (format-message "Set Nickname: `%s'"
-                                                                            (pcase (alist-get 'name (h/metadata drive))
-                                                                              (`nil "none")
-                                                                              (it it))))
-                                                    (vector "Mark as Safe"
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (let ((h/current-entry ,entry))
-                                                                 (call-interactively #'h/mark-as-safe)))
-                                                            :help "Mark hyperdrive as safe or not"
-                                                            :label
-                                                            (format-message "Mark as Safe: `%s'"
-                                                                            (if (alist-get 'safep (h/etc drive))
-                                                                                "safe"
-                                                                              "unsafe")))
-                                                    "---"
-                                                    (vector "Purge"
-                                                            `(lambda ()
-                                                               (interactive)
-                                                               (let ((h/current-entry ,entry))
-                                                                 (call-interactively #'h/purge)))
-                                                            :help "Purge all local data about hyperdrive")))))
-                 (append (list ["Writable" :active nil])
-                         (or (list-drives (sort (cl-remove-if-not #'h/writablep (hash-table-values h/hyperdrives))
-                                                (lambda (a b)
-                                                  (string< (h//format a)
-                                                           (h//format b)))))
-                             (list ["none" :active nil]))
-                         (list "---")
-                         (list ["Read-only" :active nil])
-                         (or (list-drives (sort (cl-remove-if #'h/writablep (hash-table-values h/hyperdrives))
-                                                (lambda (a b)
-                                                  (string< (h//format a)
-                                                           (h//format b)))))
-                             (list ["none" :active nil]))))))
+     :filter
+     (lambda (_)
+       (cl-labels
+           ((list-drives (drives)
+              (cl-loop
+               for drive in drives
+               for entry = (he/create :hyperdrive drive)
+               collect
+               (list
+                (h//format drive)
+                (vector "Describe"
+                        `(lambda ()
+                           (interactive)
+                           (let ((h/current-entry ,entry))
+                             (call-interactively #'h/describe-hyperdrive)))
+                        :help "Display information about hyperdrive")
+                (vector "Find File"
+                        `(lambda ()
+                           (interactive)
+                           (h/open
+                             (h/read-entry
+                              :hyperdrive ,drive
+                              :read-version current-prefix-arg)))
+                        :help "Find a file in hyperdrive")
+                (vector "View File"
+                        `(lambda ()
+                           (interactive)
+                           (h/view-file
+                            (h/read-entry
+                             :hyperdrive ,drive
+                             :read-version current-prefix-arg)))
+                        :help "View a file in hyperdrive")
+                "---"
+                (vector
+                 "Upload File"
+                 `(lambda ()
+                    (interactive)
+                    (let* ((filename (read-file-name "Upload file: "))
+                           (entry
+                            (h/read-entry
+                             :hyperdrive ,drive
+                             :default-path (file-name-nondirectory filename)
+                             :latest-version t)))
+                      (h/upload-file filename entry)))
+                 :active `(h/writablep ,drive)
+                 :help "Upload a file to hyperdrive")
+                (vector "Upload Files"
+                        `(lambda ()
+                           (interactive)
+                           (let* ((files (h/read-files))
+                                  (target-dir
+                                   (h/read-path
+                                    :hyperdrive ,drive
+                                    :prompt "Target directory in `%s'"
+                                    :default "/")))
+                             (h/upload-files files ,drive target-dir)))
+                        :active `(h/writablep ,drive)
+                        :help "Upload files to hyperdrive")
+                (vector "Mirror" #'h/mirror
+                        ;; TODO: `h/mirror''s interactive form will also prompt
+                        ;; for a drive.  After changing `h/mirror' to use
+                        ;; Transient.el, we should pass in the default drive
+                        ;; argument.
+                        :active `(h/writablep ,drive)
+                        :help "Mirror a directory to hyperdrive")
+                "---"
+                (vector "Petname"
+                        ;; HACK: We have to unquote the value of the entry
+                        ;; because it seems that the filter function is called
+                        ;; in an environment that doesn't use
+                        ;; lexical-binding...?
+                        ;; TODO: Ask about this and/or file a bug report.
+                        `(lambda ()
+                           (interactive)
+                           (let ((h/current-entry ,entry))
+                             (call-interactively #'h/set-petname)))
+                        :help "Set petname for hyperdrive"
+                        :label
+                        (format-message "Set Petname: `%s'"
+                                        (pcase (h/petname drive)
+                                          (`nil "none")
+                                          (it it))))
+                (vector
+                 "Nickname"
+                 `(lambda ()
+                    (interactive)
+                    (let ((h/current-entry ,entry))
+                      (call-interactively #'h/set-nickname)))
+                 :help "Set nickname for hyperdrive"
+                 :active (h/writablep drive)
+                 :label
+                 (format-message "Set Nickname: `%s'"
+                                 (pcase (alist-get 'name (h/metadata drive))
+                                   (`nil "none")
+                                   (it it))))
+                (vector "Mark as Safe"
+                        `(lambda ()
+                           (interactive)
+                           (let ((h/current-entry ,entry))
+                             (call-interactively #'h/mark-as-safe)))
+                        :help "Mark hyperdrive as safe or not"
+                        :label
+                        (format-message "Mark as Safe: `%s'"
+                                        (if (alist-get 'safep (h/etc drive))
+                                            "safe"
+                                          "unsafe")))
+                "---"
+                (vector "Purge"
+                        `(lambda ()
+                           (interactive)
+                           (let ((h/current-entry ,entry))
+                             (call-interactively #'h/purge)))
+                        :help "Purge all local data about hyperdrive")))))
+         (append (list ["Writable" :active nil])
+                 (or (list-drives
+                      (sort (cl-remove-if-not #'h/writablep
+                                              (hash-table-values h/hyperdrives))
+                            (lambda (a b)
+                              (string< (h//format a)
+                                       (h//format b)))))
+                     (list ["none" :active nil]))
+                 (list "---")
+                 (list ["Read-only" :active nil])
+                 (or (list-drives
+                      (sort (cl-remove-if #'h/writablep
+                                          (hash-table-values h/hyperdrives))
+                            (lambda (a b)
+                              (string< (h//format a)
+                                       (h//format b)))))
+                     (list ["none" :active nil]))))))
     ("Current"
      :active h/current-entry
      :label (if-let* ((entry h/current-entry))
@@ -1025,9 +1042,10 @@ The return value of this function is the retrieval buffer."
        (lambda ()
          (interactive)
          (let* ((filename (read-file-name "Upload file: "))
-                (entry (h/read-entry :hyperdrive (he/hyperdrive h/current-entry)
-                                     :default-path (file-name-nondirectory filename)
-                                     :latest-version t)))
+                (entry (h/read-entry
+                        :hyperdrive (he/hyperdrive h/current-entry)
+                        :default-path (file-name-nondirectory filename)
+                        :latest-version t)))
            (h/upload-file filename entry)))
        :active (h/writablep (he/hyperdrive h/current-entry))
        :help "Upload a file to hyperdrive"]
@@ -1048,8 +1066,9 @@ The return value of this function is the retrieval buffer."
        :help "Mirror a directory to hyperdrive"]
       "---"
       ["Petname"
-       ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when fixed.
-       ;;       This workaround prevents keybindings from displaying in the menu bar.
+       ;; TODO: Remove this and following workarounds for [INSERT-BUG-HERE] when
+       ;; fixed.  This workaround prevents keybindings from displaying in the
+       ;; menu bar.
        (lambda ()
          (interactive)
          (call-interactively #'h/set-petname))
@@ -1133,7 +1152,8 @@ The return value of this function is the retrieval buffer."
       ["Delete" (lambda ()
                   (interactive)
                   (call-interactively #'h/delete))
-       :active (pcase-let (((cl-struct hyperdrive-entry hyperdrive version) h/current-entry))
+       :active (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
+                            h/current-entry))
                  (and (not (eq major-mode 'h/dir-mode))
                       (not version)
                       (h/writablep hyperdrive)))
@@ -1158,18 +1178,20 @@ The return value of this function is the retrieval buffer."
                     (call-interactively #'h/download))
        :active (and-let* ((entry-at-point (h/dir--entry-at-point)))
                  (not (h//entry-directory-p entry-at-point)))
-       ;; TODO: Change to "file/directory" when it's possible to download a whole directory
+       ;; TODO: Change to "file/directory" when it's possible to download a
+       ;; whole directory
        :help "Download file at point"]
       ["Delete" (lambda ()
                   (interactive)
                   (call-interactively #'h/delete))
-       :active (let ((selected-entry (h/dir--entry-at-point)))
-                 (and (h/writablep
-                       (he/hyperdrive h/current-entry))
-                      (not (eq selected-entry h/current-entry))
-                      ;; TODO: Add `hyperdrive--parent-entry-p'
-                      (not (string= ".." (alist-get 'display-name
-                                                    (he/etc selected-entry))))))
+       :active
+       (let ((selected-entry (h/dir--entry-at-point)))
+         (and (h/writablep
+               (he/hyperdrive h/current-entry))
+              (not (eq selected-entry h/current-entry))
+              ;; TODO: Add `hyperdrive--parent-entry-p'
+              (not (string= ".."  (alist-get 'display-name
+                                             (he/etc selected-entry))))))
        :help "Delete file/directory at point"]
       ["Copy URL" (lambda ()
                     (interactive)
@@ -1193,27 +1215,31 @@ The return value of this function is the retrieval buffer."
                             (interactive)
                             (call-interactively #'h/open-previous-version))
        :active (he/previous h/current-entry :cache-only t)
-       :label (concat "Previous Version"
-                      (pcase-exhaustive (he/previous h/current-entry :cache-only t)
-                        ('unknown (format " (?)"))
-                        ('nil nil)
-                        ((cl-struct hyperdrive-entry version)
-                         (format " (%s)" version))))
+       :label
+       (concat "Previous Version"
+               (pcase-exhaustive (he/previous h/current-entry :cache-only t)
+                 ('unknown (format " (?)"))
+                 ('nil nil)
+                 ((cl-struct hyperdrive-entry version)
+                  (format " (%s)" version))))
        :help "Open previous version"]
       ["Next Version" (lambda ()
                         (interactive)
                         (call-interactively #'h/open-next-version))
        :active (and (he/version h/current-entry)
                     (he/next h/current-entry))
-       :label (concat "Next Version"
-                      (and-let* ((entry h/current-entry)
-                                 (next-entry (he/next entry))
-                                 ;; Don't add ": latest" if we're already at the latest version
-                                 ((not (eq entry next-entry)))
-                                 (display-version (if-let ((next-version (he/version next-entry)))
-                                                      (number-to-string next-version)
-                                                    "latest")))
-                        (format " (%s)" display-version)))
+       :label
+       (concat
+        "Next Version"
+        (and-let*
+            ((entry h/current-entry)
+             (next-entry (he/next entry))
+             ;; Don't add ": latest" if we're already at the latest version
+             ((not (eq entry next-entry)))
+             (display-version (if-let ((next-version (he/version next-entry)))
+                                  (number-to-string next-version)
+                                "latest")))
+          (format " (%s)" display-version)))
        :help "Open next version"]
       ["Open Specific Version" (lambda ()
                                  (interactive)
@@ -1394,7 +1420,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                              (check filename sha256 url))
                      :else (lambda (plz-error)
                              (pcase (plz-error-curl-error plz-error)
-                               (`(2 .  ,_)
+                               (`(2 . ,_)
                                 ;; "Failed to initialize", likely due to
                                 ;; `interrupt-process' in `h/cancel-install'.
                                 (h/message "Canceled install"))
