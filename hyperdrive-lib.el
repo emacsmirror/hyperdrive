@@ -599,7 +599,7 @@ echo area when the request for the file is made."
                          ;; exists.
                          (progn
                            (switch-to-buffer buffer)
-                           (h/message "Entry no longer exists!  %s"
+                           (h/message "Entry does not exist!  %s"
                                       (h//format-entry entry)))
                        ;; Make and switch to new buffer.
                        (switch-to-buffer (h//get-buffer-create entry))))
