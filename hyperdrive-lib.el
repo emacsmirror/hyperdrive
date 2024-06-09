@@ -770,13 +770,13 @@ Returns the latest version number."
 (defun h//fill-latest-version (hyperdrive headers)
   "Fill the latest version slot in HYPERDRIVE from HEADERS.
 HEADERS must from a HEAD/GET request to a directory or a
-PUT/DELETE request to a file, as only those requests return the
-correct ETag header.  Returns the latest version number."
+PUT/DELETE request to a file or directory, as only those requests
+return the correct ETag header.  Returns latest version number."
   ;; TODO: Update relevant buffers when hyperdrive latest version
   ;; updates, at the least describe-hyperdrive buffers.
-  ;; TODO: Consider updating version range here. First check all the
-  ;; places where this function is called. Better yet, update
-  ;; `h/version-ranges' (and `h/hyperdrives'?) in a
+  ;; TODO: Consider updating version range here.  First check all the
+  ;; places where this function is called.  Better yet, update
+  ;; `h/version-ranges' (and `h/hyperdrives'?)  in a
   ;; lower-level function, perhaps a wrapper for `h/api'?
   (setf (h/latest-version hyperdrive)
         (string-to-number (map-elt headers 'etag))))
