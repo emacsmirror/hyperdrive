@@ -77,9 +77,9 @@ These checklists should be followed when releasing new versions:
 + [ ] [[file:hyperdrive.el::(defvar h/gateway-urls-and-hashes][h/gateway-urls-and-hashes variable]]
 + [ ] [[file:hyperdrive-vars.el::defvar h/gateway-version-expected "3.7.0"][h/gateway-version-expected variable]]
 
-*** Getting ~sha256sum~ for each release
+*** Getting ~sha256sum~ for each release of ~hyper-gateway-ushin~
 
-- [[https://ci.codeberg.org/repos/13334/pipeline/27/6][Codeberg Woodpecker CI output]]
+- [[https://ci.codeberg.org/repos/13334][Codeberg Woodpecker CI]]
 - [[https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/][SourceHut refs page]]
 
 * Git hooks
