@@ -971,6 +971,7 @@ HYPERDRIVE's public metadata file."
                      (pcase-let
                          (((cl-struct plz-response headers body)
                            (h/api 'get (he/url entry) :as 'response :noquery t)))
+                       (h//fill entry headers)
                        (with-temp-buffer
                          (insert body)
                          (goto-char (point-min))
