@@ -166,11 +166,13 @@ REST may include the argument `:queue', a `plz-queue' in which to
 make the request."
   ;; TODO: Document that the request/queue is returned.
   ;; TODO: Should we create a wrapper for `h/api' which calls
-  ;;  `h//fill-latest-version' for requests to
-  ;;  directories/requests which modify the drive (and therefore
-  ;;  always return the latest version number). If we did this, we
-  ;;  could remove redundant calls to
-  ;;  `h//fill-latest-version' everywhere else.
+  ;; `h//fill-latest-version' for requests to directories/requests which modify
+  ;; the drive (and therefore always return the latest version number).  If we
+  ;; did this, we could remove redundant calls to `h//fill-latest-version'
+  ;; everywhere else.  X-Drive-Size is returned by many types of requests, and it
+  ;; would simplify the code to handle updating the hyperdrive disk-usage in one
+  ;; place.  Once implemented, go through each call to `h/api' to verify that
+  ;; disk-usage is updated correctly.
   (declare (indent defun))
   (pcase method
     ((and (or 'get 'head)
