@@ -1539,13 +1539,11 @@ Or if gateway isn't ready within timeout, show an error."
                                   (eval (car (get 'h/gateway-start-function
                                                   'standard-value)))))
                           (process-buffer (process-buffer h/gateway-process)))
-                     (progn
-                       ;; User has not customized the start function: show the
-                       ;; process buffer.
-                       (pop-to-buffer process-buffer)
-                       (h/error "Gateway failed to start (see process buffer for errors)"))
-                   ;; User appears to have customized the start function: don't
-                   ;; show the process buffer.
+                     ;; User has not customized the start function: suggest
+                     ;; opening the process buffer.
+                     (h/error "Gateway failed to start (see %S for errors)"
+                              process-buffer)
+                   ;; User appears to have customized the start function.
                    (h/error "Gateway failed to start")))
                 (t
                  (setf h//gateway-starting-timer (run-at-time 0.1 nil check)))))))
