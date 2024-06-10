@@ -143,6 +143,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
     (setf (h/writablep hyperdrive) t)
     (unwind-protect
         (h/set-petname seed hyperdrive)
+      ;; TODO: Hyperdrive disk usage should be set here.
       (h/persist hyperdrive)
       (h/open (h/url-entry url)))))
 
@@ -693,6 +694,7 @@ After successful upload, call THEN.  When QUEUE, use it."
       :body `(file ,filename)
       :headers `(("Last-Modified" . ,last-modified))
       :then then)
+    ;; TODO: Hyperdrive disk usage should be set here.
     (unless queue
       (h/message "Uploading to \"%s\"..." url))))
 
