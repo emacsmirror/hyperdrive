@@ -1390,8 +1390,10 @@ If then, then call THEN with no arguments.  Default handler."
 (cl-defun h/handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
   "Stream ENTRY."
-  (h/message "Streaming %s..." (h//format-entry-url entry))
-  (pcase-let ((`(,command . ,args) (split-string h/stream-player-command)))
+  ;; NOTE: Since data is streamed to an external process, disk usage will not be
+  ;; updated until a later request.
+  (h/message "Streaming %s..."  (h//format-entry-url entry))
+  (pcase-let ((`(,command .  ,args) (split-string h/stream-player-command)))
     (apply #'start-process "hyperdrive-stream-player"
            nil command (cl-substitute (h//httpify-url
                                        (he/url entry))
