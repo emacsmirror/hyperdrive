@@ -1319,13 +1319,15 @@ With PURGE, delete hash table entry for HYPERDRIVE."
 That is, if the SEED has been used to create a local
 hyperdrive."
   (condition-case err
-      (pcase (h/api 'get (format "hyper://localhost/?key=%s"
-                                 (url-hexify-string seed))
-               :as 'response :noquery t)
-        ((and (pred plz-response-p)
-              response
-              (guard (= 200 (plz-response-status response))))
-         (plz-response-body response)))
+      (pcase-let
+          (((cl-struct plz-response (body url))
+            (h/api 'get (format "hyper://localhost/?key=%s"
+                                (url-hexify-string seed))
+              :as 'response :noquery t)))
+        ;; TODO: Update hyperdrive disk-usage.  The following doesn't work
+        ;; because the response doesn't have the proper ETag header:
+        ;; (h//fill (h/url-entry url) headers)
+        url)
     (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
                    ;; FIXME: If plz-error is a curl-error, this block will fail.
                    nil
