@@ -67,6 +67,7 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
   opens hyperdrive files in the same hyperdrive.
 - Fix edge cases when loading version history for nonexistent entries.
 - Edge case where revert-buffer popped to the wrong hyperdrive buffer.
+- Improved reading of hyperdrive URLs.
 
 ** Internal
 
