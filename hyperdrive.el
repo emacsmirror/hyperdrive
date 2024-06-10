@@ -449,7 +449,9 @@ in a directory.  Otherwise, or with universal prefix argument
     (when (file-exists-p filename)
       ;; plz.el will not overwrite existing files: ensure there's no file there.
       (delete-file filename))
-    (h/api 'get url :as `(file ,filename))))
+    (h/api 'get url :as `(file ,filename))
+    ;; Filling entry is necessary in order to update hyperdrive disk-usage.
+    (h/fill (h/url-entry url) :then 'sync)))
 
 ;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)
