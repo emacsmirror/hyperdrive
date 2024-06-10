@@ -106,10 +106,12 @@ This function is intended to diff files, not directories."
     (h/api 'get (he/url old-entry)
       :queue queue :as 'response :else #'ignore
       :then (lambda (response)
+              (h//fill old-entry (plz-response-headers response))
               (setf old-response response)))
     (h/api 'get (he/url new-entry)
       :queue queue :as 'response :else #'ignore
       :then (lambda (response)
+              (h//fill new-entry (plz-response-headers response))
               (setf new-response response)))))
 
 ;;;; Mode
