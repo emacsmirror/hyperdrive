@@ -33,7 +33,7 @@
 
 ;;;; Variables
 
-(defvar h/history-current-entry nil
+(defvar-local h/history-current-entry nil
   ;; NOTE: We don't reuse `hyperdrive-current-entry' in history buffers because
   ;; functions like `hyperdrive--find-buffer-visiting' expect only one buffer to
   ;; be visiting an entry at a time.
