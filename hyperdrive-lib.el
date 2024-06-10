@@ -1349,41 +1349,43 @@ Otherwise, return nil.  SLOT may be one of
 (cl-defun h/handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
-  (h/api 'get (he/url entry)
-    :noquery t
-    :as (lambda ()
-          (pcase-let*
-              (((cl-struct hyperdrive-entry hyperdrive version etc) entry)
-               ((map target) etc)
-               (response-buffer (current-buffer)))
-            (with-current-buffer (h//get-buffer-create entry)
-              ;; TODO: Don't reload if we're jumping to a link on the
-              ;; same page (but ensure that reverting still works).
-              (if (buffer-modified-p)
-                  (h/message "Buffer modified: %S" (current-buffer))
-                (save-excursion
-                  (with-silent-modifications
-                    (erase-buffer)
-                    (insert-buffer-substring response-buffer))
-                  (setf buffer-undo-list nil)
-                  (setf buffer-read-only
-                        (or (not (h/writablep hyperdrive)) version))
-                  (set-buffer-modified-p nil)
-                  (set-visited-file-modtime (current-time))))
-              (when (map-elt (hyperdrive-etc hyperdrive) 'safep)
-                (let ((buffer-file-name (he/name entry)))
-                  (set-auto-mode)))
-              (when target
-                (pcase major-mode
-                  ('org-mode
-                   (require 'hyperdrive-org)
-                   (h/org--link-goto target))
-                  ('markdown-mode
-                   ;; TODO: Handle markdown link
-                   )))
-              (h/blob-mode (if version +1 -1))
-              (when then
-                (funcall then)))))))
+  (pcase-let*
+      (((cl-struct plz-response headers body)
+        ;; TODO: Handle errors
+        ;; TODO: When plz adds :as 'response-with-buffer, use that.
+        (h/api 'get (he/url entry) :noquery t :as 'response))
+       ;; Filling entry is necessary in order to update hyperdrive disk-usage.
+       (_ (h//fill entry headers))
+       ((cl-struct hyperdrive-entry hyperdrive version etc) entry)
+       ((map target) etc))
+    (with-current-buffer (h//get-buffer-create entry)
+      ;; TODO: Don't reload if we're jumping to a link on the
+      ;; same page (but ensure that reverting still works).
+      (if (buffer-modified-p)
+          (h/message "Buffer modified: %S" (current-buffer))
+        (save-excursion
+          (with-silent-modifications
+            (erase-buffer)
+            (insert body))
+          (setf buffer-undo-list nil)
+          (setf buffer-read-only
+                (or (not (h/writablep hyperdrive)) version))
+          (set-buffer-modified-p nil)
+          (set-visited-file-modtime (current-time))))
+      (when (map-elt (hyperdrive-etc hyperdrive) 'safep)
+        (let ((buffer-file-name (he/name entry)))
+          (set-auto-mode)))
+      (when target
+        (pcase major-mode
+          ('org-mode
+           (require 'hyperdrive-org)
+           (h/org--link-goto target))
+          ('markdown-mode
+           ;; TODO: Handle markdown link
+           )))
+      (h/blob-mode (if version +1 -1))
+      (when then
+        (funcall then)))))
 
 (cl-defun h/handler-streamable (entry &key _then)
   ;; TODO: Is there any reason to not pass THEN through?
