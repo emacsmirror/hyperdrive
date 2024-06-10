@@ -783,12 +783,17 @@ PARSED-URL must be a URL-struct like the output of
 
 The return value of this function is the retrieval buffer."
   (cl-check-type parsed-url url "Need a pre-parsed URL.")
-  (let* ((url (url-recreate-url parsed-url))
-         ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
-         (response-buffer (h/api 'get url :as 'buffer)))
-    (with-current-buffer response-buffer
+  (pcase-let* ((url (url-recreate-url parsed-url))
+               ;; TODO: When `plz.el' adds :as 'response-with-buffer, use that.
+               ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
+               ((cl-struct plz-response headers body)
+                (h/api 'get url :as 'response)))
+    ;; Filling entry is necessary in order to update hyperdrive disk-usage.
+    (h//fill (h/url-entry url) headers)
+    (with-current-buffer (generate-new-buffer " *hyperdrive-eww*")
       (widen)
       (goto-char (point-min))
+      (insert body)
       (while (search-forward (string ?\C-m) nil t)
         ;; Strip CRLF from headers so that `eww-parse-headers' works correctly.
         ;; MAYBE: As an alternative, look at buffer coding systems to
