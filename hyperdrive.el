@@ -775,6 +775,8 @@ Universal prefix argument \\[universal-argument] forces
 
 (require 'url)
 
+;; TODO: EWW buffers end up being marked as modified, and Emacs prompts to save
+;; them before exiting.  Emacs should not prompt to save *eww* buffers.
 (defun h/url-loader (parsed-url)
   "Retrieve URL synchronously.
 PARSED-URL must be a URL-struct like the output of
