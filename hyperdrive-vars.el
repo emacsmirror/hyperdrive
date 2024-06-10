@@ -380,7 +380,7 @@ values are alists mapping version range starts to plists with
 ;;;;; Internals
 
 (defvar h/gateway-version-expected
-  '(:name "hyper-gateway-ushin" :version "3.9.0"))
+  '(:name "hyper-gateway-ushin" :version "3.9.1"))
 
 (defvar h/gateway-version-checked-p nil
   "Non-nil if the gateway's version has been checked.
