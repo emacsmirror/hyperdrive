@@ -967,14 +967,17 @@ HYPERDRIVE's public metadata file."
                ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
                :version nil))
        (metadata (condition-case err
-                     (h/api 'get (he/url entry)
-                       :as (lambda ()
-                             (condition-case nil
-                                 (json-read)
-                               (json-error
-                                (h/message "Error parsing JSON metadata file: %s"
-                                           (he/url entry)))))
-                       :noquery t)
+                     ;; TODO: Refactor to use :as 'response-with-buffer and call h/fill
+                     (pcase-let
+                         (((cl-struct plz-response headers body)
+                           (h/api 'get (he/url entry) :as 'response :noquery t)))
+                       (with-temp-buffer
+                         (insert body)
+                         (goto-char (point-min))
+                         (json-read)))
+                   (json-error
+                    (h/message "Error parsing JSON metadata file: %s"
+                               (he/url entry)))
                    (plz-error
                     (pcase (plz-response-status (plz-error-response (caddr err)))
                       ;; FIXME: If plz-error is a curl-error, this block will fail.
