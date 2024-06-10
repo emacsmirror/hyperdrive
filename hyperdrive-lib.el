@@ -725,17 +725,17 @@ Returns filled ENTRY."
             ;; but no public-key.
             (cl-pushnew domain (h/domains (he/hyperdrive entry)) :test #'equal)))
       (setf (h/public-key hyperdrive) public-key))
-    (if (and (h//entry-directory-p entry)
-             (null (he/version entry)))
-        ;; Version-less directory HEAD/GET request ETag header always have the
-        ;; hyperdrive's latest version. We don't currently store
-        ;; version ranges for directories (since they don't
-        ;; technically have versions in hyperdrive).
-        (h//fill-latest-version hyperdrive headers)
-      ;; File HEAD/GET request ETag header does not retrieve the
-      ;; hyperdrive's latest version, so `h/update-existent-version-range'
-      ;; will not necessarily fill in the entry's last range.
-      (when etag
+    (when etag
+      (if (and (h//entry-directory-p entry)
+               (null (he/version entry)))
+          ;; Version-less directory HEAD/GET request ETag header always have the
+          ;; hyperdrive's latest version. We don't currently store
+          ;; version ranges for directories (since they don't
+          ;; technically have versions in hyperdrive).
+          (h//fill-latest-version hyperdrive headers)
+        ;; File HEAD/GET request ETag header does not retrieve the
+        ;; hyperdrive's latest version, so `h/update-existent-version-range'
+        ;; will not necessarily fill in the entry's last range.
         (h/update-existent-version-range entry (string-to-number etag))))
     entry))
 
