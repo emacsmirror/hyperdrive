@@ -466,7 +466,7 @@ When VERSION is nil, return latest version of ENTRY."
     (setf (he/version entry) version)
     (condition-case err
         ;; FIXME: Requests to out of range version currently hang.
-        (h/fill entry :then 'sync)
+        (h/fill entry)
       (plz-error
        (pcase (plz-response-status (plz-error-response (caddr err)))
          ;; FIXME: If plz-error is a curl-error, this block will fail.
@@ -620,7 +620,7 @@ echo area when the request for the file is made."
     (when messagep
       (h/message "Opening <%s>..." (he/url entry)))))
 
-(cl-defun h/fill (entry &key queue then else)
+(cl-defun h/fill (entry &key queue (then 'sync) else)
   "Fill ENTRY's metadata and call THEN.
 If THEN is `sync', return the filled entry and ignore ELSE.
 Otherwise, make request asynchronously and call THEN with the

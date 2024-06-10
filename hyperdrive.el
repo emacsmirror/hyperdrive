@@ -451,7 +451,7 @@ in a directory.  Otherwise, or with universal prefix argument
       (delete-file filename))
     (h/api 'get url :as `(file ,filename))
     ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-    (h/fill (h/url-entry url) :then 'sync)))
+    (h/fill (h/url-entry url))))
 
 ;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)
