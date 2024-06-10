@@ -135,15 +135,10 @@ Return version if gateway is running; otherwise signal an error."
 If SEED is not currently used as the petname for another
 hyperdrive, the new hyperdrive's petname will be set to SEED."
   (interactive (list (h/read-name :prompt "New hyperdrive seed")))
-  (let* ((response (h/api 'post (concat "hyper://localhost/?key=" (url-hexify-string seed))))
-         (url (progn
-                ;; NOTE: Working around issue in plz whereby the
-                ;; stderr process sentinel sometimes leaves "stderr
-                ;; finished" garbage in the response body in older
-                ;; Emacs versions.  See: <https://github.com/alphapapa/plz.el/issues/23>.
-                (string-match (rx bos (group "hyper://" (1+ nonl))) response)
-                (match-string 1 response)))
-         (hyperdrive (he/hyperdrive (h/url-entry url))))
+  (pcase-let* (((cl-struct plz-response (body url))
+                (h/api 'post (concat "hyper://localhost/?key="
+                                     (url-hexify-string seed))))
+               (hyperdrive (he/hyperdrive (h/url-entry url))))
     (setf (h/seed hyperdrive) seed)
     (setf (h/writablep hyperdrive) t)
     (unwind-protect
