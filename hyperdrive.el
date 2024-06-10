@@ -466,6 +466,8 @@ in a directory.  Otherwise, or with universal prefix argument
       ;; plz.el will not overwrite existing files: ensure there's no file there.
       (delete-file filename))
     (h/api 'get url :as `(file ,filename))
+    ;; TODO: If plz adds support for getting response headers when downloading
+    ;; as a file, use it here.
     ;; Filling entry is necessary in order to update hyperdrive disk-usage.
     (h/fill (h/url-entry url))))
 
