@@ -28,6 +28,8 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
 - When visiting an old version of a hyperdrive file, press ~n~ and ~p~ to
   traverse the version history.  Press ~q~ to kill the current buffer.
 - View hyperdrive disk usage with ~hyperdrive-describe~ and ~hyperdrive-menu~.
+- Clear local copy of a file or directory with ~hyperdrive-clear-cache~,
+  also bound in ~hyperdrive-menu~ and menu bar.
 
 ** Changed
 
