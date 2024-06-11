@@ -1117,7 +1117,7 @@ The return value of this function is the retrieval buffer."
        :active (h/parent h/current-entry)
        :help "Open parent directory"]
       ("Sort Directory"
-       :active (eq major-mode 'h/dir-mode)
+       :visible (eq major-mode 'h/dir-mode)
        ["By Name" (lambda ()
                     (interactive)
                     (h/dir-sort
@@ -1149,7 +1149,7 @@ The return value of this function is the retrieval buffer."
       ["Download" (lambda ()
                     (interactive)
                     (call-interactively #'h/download))
-       :active (not (eq major-mode 'h/dir-mode))
+       :visible (not (eq major-mode 'h/dir-mode))
        :help "Download current file"]
       ["Copy URL" (lambda ()
                     (interactive)
@@ -1158,12 +1158,11 @@ The return value of this function is the retrieval buffer."
       ["Delete" (lambda ()
                   (interactive)
                   (call-interactively #'h/delete))
+       :visible (not (eq major-mode 'h/dir-mode))
        :active (pcase-let (((cl-struct hyperdrive-entry hyperdrive version)
                             h/current-entry))
-                 (and (not (eq major-mode 'h/dir-mode))
-                      (not version)
-                      (h/writablep hyperdrive)))
-       :help "Delete current file/directory"])
+                 (and (not version) (h/writablep hyperdrive)))
+       :help "Delete current file"])
      ("Selected"
       :label (let ((entry-at-point (h/dir--entry-at-point)))
                (format-message "Selected %s: `%s'"
