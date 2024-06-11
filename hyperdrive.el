@@ -1233,7 +1233,12 @@ The return value of this function is the retrieval buffer."
               ;; TODO: Add `hyperdrive--parent-entry-p'
               (not (string= ".."  (alist-get 'display-name
                                              (he/etc selected-entry))))))
-       :help "Delete file/directory at point"])
+       :help "Delete file/directory at point"]
+      ["Clear Cache" (lambda ()
+                       (interactive)
+                       (call-interactively #'h/clear-cache))
+       :help "Clear local cache for file/directory at point"]
+      )
      ("Version"
       :label (let* ((version (he/version h/current-entry))
                     (existsp (he/exists-p h/current-entry))
