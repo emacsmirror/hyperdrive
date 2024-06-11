@@ -186,20 +186,25 @@ Interactively, prompt for hyperdrive and action."
   "Clear local cache for file or directory ENTRY.
 Only clears the cache for the file or directory at ENTRY's
 version; other versions of the file or directory are not cleared."
-  ;; TODO: Considering support an :all-versions key for clearing the cache for
+  ;; TODO: Consider supporting an :all-versions key for clearing the cache for
   ;; all versions of the file/directory.
-  (interactive (list (hyperdrive--context-entry)))
-  (let ((url (he/url entry)))
-    (h/api 'post url
-      :headers '(("Cache-Control" . "no-store"))
-      :as 'response
-      :else (lambda (err)
-              (h/error "Unable to clear cache for `%s': %S" url err))
-      :then (lambda (response)
-              (h//fill entry (plz-response-headers response))
-              ;; TODO: When file sizes in hyperdrive-dir-mode are colorized
-              ;; based locally downloaded sizes, refresh ewoc entry here.
-              ))))
+  (interactive (list (h//context-entry)))
+  (when (yes-or-no-p
+         (format-message
+          "Clear local copy of entry (data will likely not be recoverable—see manual): `%s'? "
+          (h//format-entry entry)))
+    (let ((url (he/url entry)))
+      (h/api 'post url
+        :headers '(("Cache-Control" . "no-store"))
+        :as 'response
+        :else (lambda (err)
+                (h/error "Unable to clear cache for `%s': %S" url err))
+        :then (lambda (response)
+                (h//fill entry (plz-response-headers response))
+                (h/message "Cleared `%s'" (h//format-entry entry))
+                ;; TODO: When file sizes in hyperdrive-dir-mode are colorized
+                ;; based locally downloaded sizes, refresh ewoc entry here.
+                )))))
 
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
