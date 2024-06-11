@@ -68,6 +68,7 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
 - Fix edge cases when loading version history for nonexistent entries.
 - Edge case where revert-buffer popped to the wrong hyperdrive buffer.
 - Improved reading of hyperdrive URLs.
+- Improved visible buttons in ~hyperdrive-menu-bar-mode~.
 
 ** Internal
 
