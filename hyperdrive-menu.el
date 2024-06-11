@@ -166,7 +166,9 @@
                                   (h/menu--scope)))
                        (or version (not (h/writablep hyperdrive))))))
         ("d" "Download" h/download
-         :if-not-mode h/dir-mode)]
+         :if-not-mode h/dir-mode)
+        ("C" "Clear cache" h/clear-cache
+         :transient t)]
        ;; TODO: Consider adding a defcustom to hide the "Selected" and
        ;; "Current" groups when in a directory buffer.
        [;; Selected
