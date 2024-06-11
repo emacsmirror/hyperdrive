@@ -190,7 +190,7 @@ Indices
 @node Freedom to copy
 @chapter Freedom to copy
 
-Copyright @copyright{} 2023 USHIN, Inc.
+Copyright @copyright{} 2023, 2024 USHIN, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
