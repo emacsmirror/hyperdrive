@@ -1145,6 +1145,12 @@ The return value of this function is the retrieval buffer."
                   (and (string= 'mtime column)
                        (format " (%s)" (if (eq 'ascending direction) "v" "^"))))
         :help "Sort directory by last modified time"])
+      ;; TODO: Add command to download whole directories
+      ["Download" (lambda ()
+                    (interactive)
+                    (call-interactively #'h/download))
+       :active (not (eq major-mode 'h/dir-mode))
+       :help "Download current file"]
       ["Copy URL" (lambda ()
                     (interactive)
                     (call-interactively #'h/copy-url))
@@ -1157,13 +1163,7 @@ The return value of this function is the retrieval buffer."
                  (and (not (eq major-mode 'h/dir-mode))
                       (not version)
                       (h/writablep hyperdrive)))
-       :help "Delete current file/directory"]
-      ;; TODO: Add command to download whole directories
-      ["Download" (lambda ()
-                    (interactive)
-                    (call-interactively #'h/download))
-       :active (not (eq major-mode 'h/dir-mode))
-       :help "Download current file"])
+       :help "Delete current file/directory"])
      ("Selected"
       :label (let ((entry-at-point (h/dir--entry-at-point)))
                (format-message "Selected %s: `%s'"
