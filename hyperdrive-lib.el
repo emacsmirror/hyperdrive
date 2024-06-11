@@ -71,7 +71,9 @@ Passes ARGS to `format-message'."
   (size nil :documentation "Size of file.")
   (version nil :documentation "Hyperdrive version specified in entry's URL.")
   (type nil :documentation "MIME type of the entry.")
-  (etc nil :documentation "Alist for extra data about the entry."))
+  (etc nil :documentation "Alist for extra data about the entry.
+- display-name :: Displayed in directory view instead of name.
+- target :: Link fragment to jump to."))
 
 (cl-defstruct (hyperdrive (:constructor h/create)
                           (:copier nil))
