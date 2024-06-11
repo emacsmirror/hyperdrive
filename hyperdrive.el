@@ -190,7 +190,7 @@ version; other versions of the file or directory are not cleared."
   ;; all versions of the file/directory.
   (interactive (list (hyperdrive--context-entry)))
   (let ((url (he/url entry)))
-    (h/api 'delete url
+    (h/api 'post url
       :headers '(("Cache-Control" . "no-store"))
       :as 'response
       :else (lambda (err)
