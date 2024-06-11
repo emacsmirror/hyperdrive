@@ -71,7 +71,7 @@
         "Hyperdrive"))
     ("h" "Hyperdrive" h/menu-hyperdrive)
     ("N" "New drive" h/new)
-    ("L" "Open Link" h/open-url)]
+    ("L" "Open link" h/open-url)]
    ["Version"
     :if (lambda ()
           (and (h/menu--scope)
