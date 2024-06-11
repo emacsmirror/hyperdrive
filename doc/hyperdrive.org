@@ -840,28 +840,30 @@ other peers can pull files out of (if they have the link).
 
 Anyone with the link to your hyperdrive can download its contents
 directly from your computer.  There's no need to make an account or
-rely on a third party to pass the data along.  What's more, anyone who
-has a copy of the content in your hyperdrive can serve it to others.
-This means that your hyperdrive can circulate on the ~hyper~ network
-even when you're offline.
+rely on a third party to pass the data along.  Anyone who has a copy
+of the content in your hyperdrive can serve it to others.  This means
+that your hyperdrive can circulate on the ~hyper~ network even when
+you're offline.
 
 Hyperdrive is single-writer, meaning that you are the only one who
 change a hyperdrive that you've created.  Files in a hyperdrive are
-cryptographically signed to ensure their integrity and authenticity.
+cryptographically signed to ensure that the files you share aren't
+tampered with.
 
 You can make as many hyperdrives as you like; the only limitation is
 your own disk space.
 
-Hyperdrive is offline-first, since you can view files which
-were previously downloaded even when disconnected from the rest of the
-network.  It's also local-first, since you can connect with peers on a
-LAN even without an internet connection.
+Hyperdrive is offline-first since you can view files which were
+previously downloaded even when your machine is disconnected from the
+rest of the network.  It's also local-first, since you can connect
+with peers on a local network even without an internet connection.
 
-Unlike BitTorrent, another protocol for sharing files, hyperdrives are
-mutable.  You can add, update, or delete files inside a hyperdrive,
-and peers will be able to access the latest version of the hyperdrive
-at the same link.  However, old versions of your hyperdrive can still
-be accessed.  See [[*Versioning]] for more information.
+Unlike BitTorrent, another P2P protocol for sharing files, hyperdrives
+are mutable.  If you share a link to your hyperdrive and then later
+add, update, or delete files inside it, peers will be able to access
+your latest changes at the same link.  When you make revisions to a
+hyperdrive, the old versions of your files can still be accessed by
+peers on the network.  See [[*Versioning]] for more information.
 
 *** Sparse replication
 #+cindex: Sparse replication
