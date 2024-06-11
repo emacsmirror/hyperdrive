@@ -1173,6 +1173,16 @@ The return value of this function is the retrieval buffer."
                                (he/name entry-at-point)))
       :visible (and (eq major-mode 'h/dir-mode)
                     (h/dir--entry-at-point))
+      ["Open" (lambda ()
+                (interactive)
+                (call-interactively #'h/dir-find-file))
+       :help "Open file/directory at point"]
+      ["View" (lambda ()
+                (interactive)
+                (call-interactively #'h/dir-view-file))
+       :active (and-let* ((entry-at-point (h/dir--entry-at-point)))
+                 (not (h//entry-directory-p entry-at-point)))
+       :help "View file at point"]
       ["Download" (lambda ()
                     (interactive)
                     (call-interactively #'h/download))
@@ -1181,6 +1191,10 @@ The return value of this function is the retrieval buffer."
        ;; TODO: Change to "file/directory" when it's possible to download a
        ;; whole directory
        :help "Download file at point"]
+      ["Copy URL" (lambda ()
+                    (interactive)
+                    (call-interactively #'h/dir-copy-url))
+       :help "Copy URL of file/directory at point"]
       ["Delete" (lambda ()
                   (interactive)
                   (call-interactively #'h/delete))
@@ -1192,21 +1206,7 @@ The return value of this function is the retrieval buffer."
               ;; TODO: Add `hyperdrive--parent-entry-p'
               (not (string= ".."  (alist-get 'display-name
                                              (he/etc selected-entry))))))
-       :help "Delete file/directory at point"]
-      ["Copy URL" (lambda ()
-                    (interactive)
-                    (call-interactively #'h/dir-copy-url))
-       :help "Copy URL of file/directory at point"]
-      ["Open" (lambda ()
-                (interactive)
-                (call-interactively #'h/dir-find-file))
-       :help "Open file/directory at point"]
-      ["View" (lambda ()
-                (interactive)
-                (call-interactively #'h/dir-view-file))
-       :active (and-let* ((entry-at-point (h/dir--entry-at-point)))
-                 (not (h//entry-directory-p entry-at-point)))
-       :help "View file at point"])
+       :help "Delete file/directory at point"])
      ("Version"
       :label (let* ((version (he/version h/current-entry))
                     (existsp (he/exists-p h/current-entry))
