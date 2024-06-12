@@ -208,7 +208,26 @@ make the request."
   "Make hyperdrive API request by METHOD for ENTRY.
 REST is passed to `h/api', which see."
   (declare (indent defun))
-  (apply #'h/api method (he/url entry) rest))
+  (cl-assert (eq 'response (plist-get rest :as)))
+  (pcase-let* (((map :then) rest)
+               (then* (lambda (response)
+                        (he//api-then entry response)
+                        (funcall then response))))
+    (plist-put rest :then then*)
+    (apply #'h/api method (he/url entry) rest)))
+
+(defun he//api-then (entry response)
+  "Update ENTRY's metadata according to RESPONSE.
+Updates ENTRY's hyperdrive's disk usage."
+  (pcase-let* (((cl-struct plz-response (headers (map x-drive-size)))
+                response)
+               ((cl-struct h/entry hyperdrive) entry)
+               ((cl-struct hyperdrive etc) hyperdrive))
+    (when x-drive-size
+      (setf (map-elt etc 'disk-usage) (cl-parse-integer x-drive-size)
+            (h/etc hyperdrive) etc)
+      ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
+      (h/persist hyperdrive))))
 
 (defun h/gateway-needs-upgrade-p ()
   "Return non-nil if the gateway is responsive and needs upgraded."
