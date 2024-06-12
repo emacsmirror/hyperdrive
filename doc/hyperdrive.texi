@@ -84,6 +84,7 @@ Usage
 * Write to a hyperdrive::
 * Link to a hyperdrive::
 * Delete a hyperdrive file::
+* Forget a hyperdrive file::
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Name a hyperdrive::
@@ -286,6 +287,7 @@ On the network it still may be there.
 * Write to a hyperdrive::
 * Link to a hyperdrive::
 * Delete a hyperdrive file::
+* Forget a hyperdrive file::
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Name a hyperdrive::
@@ -501,6 +503,11 @@ Download the file at point to disk.
 @kindex D
 @findex hyperdrive-delete
 Delete the file or directory (recursively) at point.
+
+@item @kbd{F} (@code{hyperdrive-forget-file})
+@kindex F
+@findex hyperdrive-forget-file
+Delete your local copy of the file for the current buffer.
 
 @item @kbd{H} (@code{hyperdrive-dir-history})
 @kindex H
@@ -723,6 +730,21 @@ version of the hyperdrive (see @ref{View the hyperdrive version history}).}
 
 @deffn Command hyperdrive-delete
 Delete the hyperdrive file in the current buffer.
+@end deffn
+
+This command also has a keybinding in the directory view (see
+@ref{Directory view}).
+
+@node Forget a hyperdrive file
+@section Forget a hyperdrive file
+
+It is possible to ``forget'' your local copy of a hyperdrive file in
+order to save disk space.  ``Forgetting'' a file does not delete the
+file from the hyperdrive and does not increment the hyperdrive's
+version number.
+
+@deffn Command hyperdrive-forget-file
+Delete your local copy of the file for the current buffer.
 @end deffn
 
 This command also has a keybinding in the directory view (see

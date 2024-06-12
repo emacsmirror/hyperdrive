@@ -71,7 +71,7 @@
         "Hyperdrive"))
     ("h" "Hyperdrive" h/menu-hyperdrive)
     ("N" "New drive" h/new)
-    ("L" "Open Link" h/open-url)]
+    ("L" "Open link" h/open-url)]
    ["Version"
     :if (lambda ()
           (and (h/menu--scope)
@@ -166,7 +166,9 @@
                                   (h/menu--scope)))
                        (or version (not (h/writablep hyperdrive))))))
         ("d" "Download" h/download
-         :if-not-mode h/dir-mode)]
+         :if-not-mode h/dir-mode)
+        ("F" "Forget file" h/forget-file
+         :transient t)]
        ;; TODO: Consider adding a defcustom to hide the "Selected" and
        ;; "Current" groups when in a directory buffer.
        [;; Selected

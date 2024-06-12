@@ -267,6 +267,10 @@ available inside the directory view by default:
 
   Delete the file or directory (recursively) at point.
 
+- Key: F (hyperdrive-forget-file) ::
+
+  Delete your local copy of the file for the current buffer.
+
 - Key: H (hyperdrive-dir-history) ::
 
   Open the version history (see [[*View the hyperdrive version history]])
@@ -453,6 +457,20 @@ version of the hyperdrive (see [[*View the hyperdrive version history]]).*
 - Command: hyperdrive-delete ::
 
   Delete the hyperdrive file in the current buffer.
+
+This command also has a keybinding in the directory view (see
+[[*Directory view]]).
+
+** Forget a hyperdrive file
+
+It is possible to "forget" your local copy of a hyperdrive file in
+order to save disk space.  "Forgetting" a file does not delete the
+file from the hyperdrive and does not increment the hyperdrive's
+version number.
+
+- Command: hyperdrive-forget-file ::
+
+  Delete your local copy of the file for the current buffer.
 
 This command also has a keybinding in the directory view (see
 [[*Directory view]]).

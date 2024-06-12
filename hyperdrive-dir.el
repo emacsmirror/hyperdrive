@@ -217,6 +217,7 @@ With point on header, returns directory entry."
   "d"   #'h/download
   "^"   #'h/up
   "D"   #'h/delete
+  "F"   #'h/forget-file
   "H"   #'h/dir-history
   "s"   #'h/dir-sort
   "?"   #'h/menu
