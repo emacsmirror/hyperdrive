@@ -206,9 +206,14 @@ make the request."
 
 (defun he/api (method entry &rest rest)
   "Make hyperdrive API request by METHOD for ENTRY.
-REST is passed to `h/api', which see."
+REST is passed to `h/api', which see.
+`:as' keyword argument of `hyperdrive-api' is always `response'.
+"
   (declare (indent defun))
-  (cl-assert (eq 'response (plist-get rest :as)))
+  ;; Always use :as 'response
+  (cl-assert (null (plist-get rest :as)))
+  (plist-put rest :as 'response)
+
   (pcase-let* (((map :then) rest)
                (then* (lambda (response)
                         (he//api-then entry response)
