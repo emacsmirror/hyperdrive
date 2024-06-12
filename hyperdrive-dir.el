@@ -40,7 +40,6 @@ If THEN, call it in the directory buffer with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive version) directory-entry)
-       (url (he/url directory-entry))
        (header (progn
                  ;; Fill metadata first to get the current nickname.
                  ;; TODO: Consider filling metadata earlier, outside
@@ -63,7 +62,7 @@ If THEN, call it in the directory buffer with no arguments."
                   (when-let ((node (h/ewoc-find-node ewoc entry
                                      :predicate #'he/equal-p)))
                     (goto-char (ewoc-location node)))))
-      (h/api 'get url :as 'response :noquery t
+      (he/api 'get directory-entry :as 'response :noquery t
         ;; Get "full" listing with metadata
         :headers `(("Accept" . "application/json; metadata=full"))
         :then (lambda (response)
@@ -350,7 +349,7 @@ see Info node `(elisp)Yanking Media'."
                                                        hyperdrive)
                                       :predicate #'h/writablep
                                       :default-path path :latest-version t)))
-      (h/api 'put (he/url entry)
+      (he/api 'put entry
         :body-type 'binary
         ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
         :body image :as 'response

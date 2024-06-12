@@ -196,18 +196,17 @@ modified; file blobs may be recoverable from other peers."
          (format-message
           "Clear local copy of entry (data may not be recoverable—see manual):`%s'?  "
           (h//format-entry entry)))
-    (let ((url (he/url entry)))
-      (h/api 'post url
-        :headers '(("Cache-Control" . "no-store"))
-        :as 'response
-        :else (lambda (err)
-                (h/error "Unable to clear cache for `%s': %S" url err))
-        :then (lambda (response)
-                (h//fill entry (plz-response-headers response))
-                (h/message "Cleared `%s'" (h//format-entry entry))
-                ;; TODO: When file sizes in hyperdrive-dir-mode are colorized
-                ;; based locally downloaded sizes, refresh ewoc entry here.
-                )))))
+    (he/api 'post entry
+      :headers '(("Cache-Control" . "no-store"))
+      :as 'response
+      :else (lambda (err)
+              (h/error "Unable to clear cache for `%s': %S" (he/url entry) err))
+      :then (lambda (response)
+              (h//fill entry (plz-response-headers response))
+              (h/message "Cleared `%s'" (h//format-entry entry))
+              ;; TODO: When file sizes in hyperdrive-dir-mode are colorized
+              ;; based locally downloaded sizes, refresh ewoc entry here.
+              ))))
 
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
@@ -429,7 +428,7 @@ directory.  Otherwise, or with universal prefix argument
                      (h/message "Deleted: `%s' (Deleted files can be accessed from prior versions of the hyperdrive.)" description))
              :else (lambda (plz-error)
                      (h/message "Unable to delete `%s': %S" description plz-error))))))
-  (h/api 'delete (he/url entry)
+  (he/api 'delete entry
     :as 'response
     :then (lambda (response)
             (pcase-let* (((cl-struct plz-response headers) response)
@@ -462,6 +461,7 @@ in a directory.  Otherwise, or with universal prefix argument
 ;;;###autoload
 (defun hyperdrive-download-url (url filename)
   "Load contents at URL as a file to store on disk at FILENAME."
+  ;; TODO: Implement entry-based version of this function, or change callers to use entries.
   ;; TODO: Handle directory URLs (recursively download contents?)
   (interactive
    (let* ((read-url (h/read-url :prompt "Download hyperdrive URL"))
@@ -714,19 +714,18 @@ After successful upload, call THEN.  When QUEUE, use it."
                        (h/read-entry :predicate #'h/writablep
                                      :default-path (file-name-nondirectory filename)
                                      :latest-version t))))
-  (let ((url (he/url entry))
-        (last-modified (let ((system-time-locale "C"))
+  (let ((last-modified (let ((system-time-locale "C"))
                          (format-time-string "%Y-%m-%dT%T.%3NZ"
                                              ;; "%a, %-d %b %Y %T %Z"
                                              (file-attribute-modification-time
                                               (file-attributes filename)) t))))
-    (h/api 'put url :queue queue
+    (he/api 'put entry :queue queue
       :body `(file ,filename)
       :headers `(("Last-Modified" . ,last-modified))
       :then then)
     ;; TODO: Hyperdrive disk usage should be set here.
     (unless queue
-      (h/message "Uploading to \"%s\"..." url))))
+      (h/message "Uploading to \"%s\"..." (he/url entry)))))
 
 (defun h/read-files ()
   "Return list of files read from the user."
@@ -820,6 +819,7 @@ The return value of this function is the retrieval buffer."
                ((cl-struct plz-response headers body)
                 (h/api 'get url :as 'response)))
     ;; Filling entry is necessary in order to update hyperdrive disk-usage.
+    ;; TODO: Use he/api and update disk usage automatically.
     (h//fill (h/url-entry url) headers)
     (with-current-buffer (generate-new-buffer " *hyperdrive-eww*")
       (widen)
