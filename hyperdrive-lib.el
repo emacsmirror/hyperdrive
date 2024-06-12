@@ -722,6 +722,9 @@ The following ENTRY hyperdrive slots are filled:
 - \\+`etc' (disk-usage)
 
 Returns filled ENTRY."
+  ;; TODO: Consider factoring out parts of this that should be done for every
+  ;; API entry response (i.e. in `he//api-then'; e.g. drive-size, version-range,
+  ;; latest-version).
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive) entry)
        ((cl-struct hyperdrive writablep domains etc) hyperdrive)
