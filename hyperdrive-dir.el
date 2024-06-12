@@ -204,6 +204,7 @@ With point on header, returns directory entry."
 ;; `h/menu' is defined with `transient-define-prefix', which
 ;; `check-declare' doesn't recognize.
 (declare-function h/menu "hyperdrive-menu" nil t)
+(declare-function h/forget-file "hyperdrive")
 
 (defvar-keymap h/dir-mode-map
   :parent h/ewoc-mode-map

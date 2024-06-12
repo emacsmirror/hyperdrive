@@ -194,7 +194,7 @@ modified; file blobs may be recoverable from other peers."
   (interactive (list (h//context-entry)))
   (when (yes-or-no-p
          (format-message
-          "Clear local copy of entry (data may not be recoverable—see manual):`%s'?  "
+          "Clear local copy of entry (data may not be recoverable—see manual):`%s'? "
           (h//format-entry entry)))
     (he/api 'post entry
       :headers '(("Cache-Control" . "no-store"))
