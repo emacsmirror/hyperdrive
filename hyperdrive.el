@@ -138,7 +138,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
   (pcase-let* (((cl-struct plz-response (body url))
                 (h/api 'post (concat "hyper://localhost/?key="
                                      (url-hexify-string seed))
-                       :as 'response))
+                  :as 'response))
                (hyperdrive (he/hyperdrive (h/url-entry url))))
     (setf (h/seed hyperdrive) seed)
     (setf (h/writablep hyperdrive) t)
