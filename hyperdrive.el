@@ -182,16 +182,19 @@ Interactively, prompt for hyperdrive and action."
                     (propertize "safe" 'face 'success)
                   (propertize "unsafe" 'face 'error))))))
 
-(defun h/clear-cache (entry)
-  "Clear local cache for file or directory ENTRY.
-Only clears the cache for the file or directory at ENTRY's
-version; other versions of the file or directory are not cleared."
+(defun h/forget-file (entry)
+  "Delete local copy of the file or directory contents of ENTRY.
+Only delete the blob(s) for the file or directory at ENTRY's
+version; other versions of the file or directory are not cleared.
+If ENTRY is a directory, recursively delete blobs for all files
+within the directory.  Hyperdrive directory contents are not
+modified; file blobs may be recoverable from other peers."
   ;; TODO: Consider supporting an :all-versions key for clearing the cache for
   ;; all versions of the file/directory.
   (interactive (list (h//context-entry)))
   (when (yes-or-no-p
          (format-message
-          "Clear local copy of entry (data will likely not be recoverable—see manual): `%s'? "
+          "Clear local copy of entry (data may not be recoverable—see manual):`%s'?  "
           (h//format-entry entry)))
     (let ((url (he/url entry)))
       (h/api 'post url
@@ -1239,10 +1242,10 @@ The return value of this function is the retrieval buffer."
               (not (string= ".."  (alist-get 'display-name
                                              (he/etc selected-entry))))))
        :help "Delete file/directory at point"]
-      ["Clear Cache" (lambda ()
+      ["Forget file" (lambda ()
                        (interactive)
-                       (call-interactively #'h/clear-cache))
-       :help "Clear local cache for file/directory at point"]
+                       (call-interactively #'h/forget-file))
+       :help "Delete local copy of file/directory contents at point"]
       )
      ("Version"
       :label (let* ((version (he/version h/current-entry))

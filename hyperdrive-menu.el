@@ -167,7 +167,7 @@
                        (or version (not (h/writablep hyperdrive))))))
         ("d" "Download" h/download
          :if-not-mode h/dir-mode)
-        ("C" "Clear cache" h/clear-cache
+        ("F" "Forget file" h/forget-file
          :transient t)]
        ;; TODO: Consider adding a defcustom to hide the "Selected" and
        ;; "Current" groups when in a directory buffer.
