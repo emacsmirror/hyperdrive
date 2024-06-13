@@ -176,7 +176,6 @@ Tips
 Troubleshooting
 
 * Reinstall/upgrade the gateway::
-* Reset bad persist variables::
 
 Indices
 
@@ -1709,7 +1708,6 @@ to the relevant section in the @code{hyperdrive.el} manual.
 
 @menu
 * Reinstall/upgrade the gateway::
-* Reset bad persist variables::
 @end menu
 
 @node Reinstall/upgrade the gateway
@@ -1717,20 +1715,6 @@ to the relevant section in the @code{hyperdrive.el} manual.
 
 Please ensure that you have the expected version of the gateway by
 running @code{M-x hyperdrive-install}.
-
-@node Reset bad persist variables
-@section Reset bad persist variables
-
-It is possible that the persisted values of @code{hyperdrive-hyperdrives}
-and/or @code{hyperdrive-version-ranges} are wrong.  Reset them by evaluating:
-
-@lisp
-(progn
-  (persist-reset 'hyperdrive-hyperdrives)
-  (persist-save 'hyperdrive-hyperdrives)
-  (persist-reset 'hyperdrive-version-ranges)
-  (persist-save 'hyperdrive-version-ranges))
-@end lisp
 
 @node Contributing/Getting help
 @chapter Contributing/Getting help
