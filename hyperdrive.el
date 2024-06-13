@@ -814,10 +814,7 @@ The return value of this function is the retrieval buffer."
                ;; TODO: When `plz.el' adds :as 'response-with-buffer, use that.
                ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
                ((cl-struct plz-response headers body)
-                (h/api 'get url :as 'response)))
-    ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-    ;; TODO: Use he/api and update disk usage automatically.
-    (h//fill (h/url-entry url) headers)
+                (he/api 'get (h/url-entry url) :as 'response)))
     (with-current-buffer (generate-new-buffer " *hyperdrive-eww*")
       (widen)
       (goto-char (point-min))
