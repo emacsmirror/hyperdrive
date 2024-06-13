@@ -163,7 +163,11 @@ with `hyperdrive--hyper-prefix' to a URL starting with
 REST is passed to `plz', which see.
 
 REST may include the argument `:queue', a `plz-queue' in which to
-make the request."
+make the request.
+
+This low-level function should only be used when sending requests
+to the gateway which do not involve an entry.  Otherwise, use
+`hyperdrive-entry-api', which automatically fills metadata."
   ;; TODO: Document that the request/queue is returned.
   ;; TODO: Should we create a wrapper for `h/api' which calls
   ;; `h//fill-latest-version' for requests to directories/requests which modify
