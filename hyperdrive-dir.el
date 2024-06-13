@@ -62,7 +62,7 @@ If THEN, call it in the directory buffer with no arguments."
                   (when-let ((node (h/ewoc-find-node ewoc entry
                                      :predicate #'he/equal-p)))
                     (goto-char (ewoc-location node)))))
-      (he/api 'get directory-entry :as 'response :noquery t
+      (he/api 'get directory-entry :noquery t
         ;; Get "full" listing with metadata
         :headers `(("Accept" . "application/json; metadata=full"))
         :then (lambda (response)
@@ -350,10 +350,8 @@ see Info node `(elisp)Yanking Media'."
                                                        hyperdrive)
                                       :predicate #'h/writablep
                                       :default-path path :latest-version t)))
-      (he/api 'put entry
-        :body-type 'binary
+      (he/api 'put entry :body image :body-type 'binary
         ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
-        :body image :as 'response
         :then (lambda (_res) (h/open entry))
         :else (lambda (plz-error)
                 (h/message "Unable to yank media: %S" plz-error)))))

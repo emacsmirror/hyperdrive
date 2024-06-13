@@ -198,7 +198,6 @@ modified; file blobs may be recoverable from other peers."
           (h//format-entry entry)))
     (he/api 'post entry
       :headers '(("Cache-Control" . "no-store"))
-      :as 'response
       :else (lambda (err)
               (h/error "Unable to clear cache for `%s': %S" (he/url entry) err))
       :then (lambda (response)
@@ -429,7 +428,6 @@ directory.  Otherwise, or with universal prefix argument
              :else (lambda (plz-error)
                      (h/message "Unable to delete `%s': %S" description plz-error))))))
   (he/api 'delete entry
-    :as 'response
     :then (lambda (response)
             (pcase-let* (((cl-struct plz-response headers) response)
                          ((map etag) headers)

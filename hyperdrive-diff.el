@@ -103,13 +103,11 @@ This function is intended to diff files, not directories."
                          (kill-buffer old-buffer))
                        (when (buffer-live-p new-buffer)
                          (kill-buffer new-buffer))))))))
-    (he/api 'get old-entry
-      :queue queue :as 'response :else #'ignore
+    (he/api 'get old-entry :queue queue :else #'ignore
       :then (lambda (response)
               (h//fill old-entry (plz-response-headers response))
               (setf old-response response)))
-    (he/api 'get new-entry
-      :queue queue :as 'response :else #'ignore
+    (he/api 'get new-entry :queue queue :else #'ignore
       :then (lambda (response)
               (h//fill new-entry (plz-response-headers response))
               (setf new-response response)))))
