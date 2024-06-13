@@ -284,26 +284,6 @@ PLZ-ERR should be a `plz-error' struct."
           h/gateway-port
           (substring url (length h//hyper-prefix))))
 
-(cl-defun he//write (entry &key body then else queue)
-  "Save BODY (a string) to hyperdrive ENTRY.
-THEN and ELSE are passed to `hyperdrive-api', which see."
-  (declare (indent defun))
-  (he/api 'put entry
-    ;; TODO: Investigate whether we should use 'text body type for text buffers.
-    :body-type 'binary
-    ;; TODO: plz accepts buffer as a body, we should refactor calls to h//write to pass in a buffer instead of a buffer-string.
-    :body body :then then :else else :queue queue))
-
-(cl-defun h//write (url &key body then else queue)
-  "Save BODY (a string) to hyperdrive URL.
-THEN and ELSE are passed to `hyperdrive-api', which see."
-  (declare (indent defun))
-  (h/api 'put url
-    ;; TODO: Investigate whether we should use 'text body type for text buffers.
-    :body-type 'binary
-    ;; TODO: plz accepts buffer as a body, we should refactor calls to h//write to pass in a buffer instead of a buffer-string.
-    :body body :as 'response :then then :else else :queue queue))
-
 (defun h/parent (entry)
   "Return parent entry for ENTRY.
 If already at top-level directory, return nil."
