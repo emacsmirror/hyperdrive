@@ -1038,9 +1038,14 @@ Call ELSE if request fails."
     :else else))
 
 (cl-defun h/write (entry &key body then else queue)
-  "Write BODY to hyperdrive ENTRY's URL."
+  "Write BODY to hyperdrive ENTRY's URL.
+THEN and ELSE are passed to `hyperdrive-entry-api', which see."
   (declare (indent defun))
-  (h//write (he/url entry)
+  (he/api 'put entry
+    ;; TODO: Investigate whether we should use 'text body type for text buffers.
+    :body-type 'binary
+    ;; TODO: plz accepts buffer as a body, we should refactor calls to h/write
+    ;; to pass in a buffer instead of a buffer-string.
     :body body :then then :else else :queue queue))
 
 (cl-defun h//format-entry-url
