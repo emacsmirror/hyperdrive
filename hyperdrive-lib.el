@@ -1005,7 +1005,6 @@ HYPERDRIVE's public metadata file."
                      (pcase-let
                          (((cl-struct plz-response headers body)
                            (he/api 'get entry :noquery t)))
-                       (h//fill entry headers)
                        (with-temp-buffer
                          (insert body)
                          (goto-char (point-min))
@@ -1396,8 +1395,6 @@ If then, then call THEN with no arguments.  Default handler."
         ;; TODO: Handle errors
         ;; TODO: When plz adds :as 'response-with-buffer, use that.
         (he/api 'get entry :noquery t))
-       ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-       (_ (h//fill entry headers))
        ((cl-struct hyperdrive-entry hyperdrive version etc) entry)
        ((map target) etc))
     (with-current-buffer (h//get-buffer-create entry)
