@@ -993,7 +993,7 @@ HYPERDRIVE's public metadata file."
        (metadata (condition-case err
                      ;; TODO: Refactor to use :as 'response-with-buffer and call he/fill
                      (pcase-let
-                         (((cl-struct plz-response headers body)
+                         (((cl-struct plz-response body)
                            (he/api 'get entry :noquery t)))
                        (with-temp-buffer
                          (insert body)
@@ -1386,7 +1386,7 @@ Otherwise, return nil.  SLOT may be one of
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
   (pcase-let*
-      (((cl-struct plz-response headers body)
+      (((cl-struct plz-response body)
         ;; TODO: Handle errors
         ;; TODO: When plz adds :as 'response-with-buffer, use that.
         (he/api 'get entry :noquery t))

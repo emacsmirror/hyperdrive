@@ -200,7 +200,7 @@ modified; file blobs may be recoverable from other peers."
       :headers '(("Cache-Control" . "no-store"))
       :else (lambda (err)
               (h/error "Unable to clear cache for `%s': %S" (he/url entry) err))
-      :then (lambda (response)
+      :then (lambda (_response)
               (h/message "Cleared `%s'" (h//format-entry entry))
               ;; TODO: When file sizes in hyperdrive-dir-mode are colorized
               ;; based locally downloaded sizes, refresh ewoc entry here.
@@ -819,7 +819,7 @@ The return value of this function is the retrieval buffer."
   (pcase-let* ((url (url-recreate-url parsed-url))
                ;; TODO: When `plz.el' adds :as 'response-with-buffer, use that.
                ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
-               ((cl-struct plz-response headers body)
+               ((cl-struct plz-response body)
                 (he/api 'get (h/url-entry url) :as 'response)))
     (with-current-buffer (generate-new-buffer " *hyperdrive-eww*")
       (widen)
