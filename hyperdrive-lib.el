@@ -153,8 +153,6 @@ See `hyperdrive-directory-sort' for the type of DIRECTION."
 
 ;;;; API
 
-;; These functions take a URL argument, not a hyperdrive-entry struct.
-
 (cl-defun h/api (method url &rest rest)
   "Make hyperdrive API request by METHOD to URL.
 Calls `hyperdrive--httpify-url' to convert HYPER-URL starting
