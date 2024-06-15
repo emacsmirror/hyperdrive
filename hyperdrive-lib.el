@@ -172,9 +172,9 @@ to the gateway which do not involve an entry.  Otherwise, use
 `hyperdrive-entry-api', which automatically fills metadata."
   ;; TODO: Document that the request/queue is returned.
   ;; TODO: Should we create a wrapper for `h/api' which calls
-  ;; `h//fill-latest-version' for requests to directories/requests which modify
+  ;; `h//fill' for requests to directories/requests which modify
   ;; the drive (and therefore always return the latest version number).  If we
-  ;; did this, we could remove redundant calls to `h//fill-latest-version'
+  ;; did this, we could remove redundant calls to `h//fill'
   ;; everywhere else.  X-Drive-Size is returned by many types of requests, and it
   ;; would simplify the code to handle updating the hyperdrive disk-usage in one
   ;; place.  Once implemented, go through each call to `h/api' to verify that
@@ -518,7 +518,7 @@ Sends a request to the gateway for hyperdrive's latest version."
 
   ;; ENTRY's version is not nil.
   (let ((next-entry (h/copy-tree entry t))
-        (latest-version (h/fill-latest-version (he/hyperdrive entry))))
+        (latest-version (h/fill (he/hyperdrive entry))))
 
     ;; ENTRY version is the latest version: return ENTRY with nil version.
     (when (eq latest-version (he/version entry))
@@ -591,7 +591,7 @@ echo area when the request for the file is made."
                 (unless (h//entry-directory-p entry)
                   ;; No need to fill latest version for directories,
                   ;; since we do it in `he//fill' already.
-                  (h/fill-latest-version hyperdrive))
+                  (h/fill hyperdrive))
                 (h/persist hyperdrive)
                 (funcall (or handler #'h/handler-default) entry :then then)))
       :else (lambda (err)
@@ -744,7 +744,7 @@ Returns filled ENTRY."
           ;; Ensure that entry's hyperdrive is the persisted
           ;; hyperdrive, since it may be used later as part of a
           ;; `h/version-ranges' key and compared using `eq'.
-          ;; Also, we want the call to `h//fill-latest-version'
+          ;; Also, we want the call to `h//fill'
           ;; below to update the persisted hyperdrive.
           (setf (he/hyperdrive entry) persisted-hyperdrive)
           (when domain
@@ -760,7 +760,7 @@ Returns filled ENTRY."
           ;; hyperdrive's latest version. We don't currently store
           ;; version ranges for directories (since they don't
           ;; technically have versions in hyperdrive).
-          (h//fill-latest-version hyperdrive headers)
+          (h//fill hyperdrive headers)
         ;; File HEAD/GET request ETag header does not retrieve the
         ;; hyperdrive's latest version, so `h/update-existent-version-range'
         ;; will not necessarily fill in the entry's last range.
@@ -789,14 +789,14 @@ entry as a side-effect."
        entry))
    listing))
 
-(defun h/fill-latest-version (hyperdrive)
+(defun h/fill (hyperdrive)
   "Synchronously fill the latest version slot in HYPERDRIVE.
 Returns the latest version number."
   (pcase-let (((cl-struct plz-response headers)
                (he/api 'head (he/create :hyperdrive hyperdrive :path "/"))))
-    (h//fill-latest-version hyperdrive headers)))
+    (h//fill hyperdrive headers)))
 
-(defun h//fill-latest-version (hyperdrive headers)
+(defun h//fill (hyperdrive headers)
   "Fill the latest version slot in HYPERDRIVE from HEADERS.
 HEADERS must from a HEAD/GET request to a directory or a
 PUT/DELETE request to a file or directory, as only those requests

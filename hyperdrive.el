@@ -277,13 +277,13 @@ Universal prefix argument \\[universal-argument] forces
           (cl-callf map-delete (h/metadata hyperdrive) 'name)
           (h/put-metadata hyperdrive
             :then (pcase-lambda ((cl-struct plz-response headers))
-                    (h//fill-latest-version hyperdrive headers)
+                    (h//fill hyperdrive headers)
                     (h/persist hyperdrive)
                     (funcall then hyperdrive))))
       (setf (alist-get 'name (h/metadata hyperdrive)) nickname)
       (h/put-metadata hyperdrive
         :then (pcase-lambda ((cl-struct plz-response headers))
-                (h//fill-latest-version hyperdrive headers)
+                (h//fill hyperdrive headers)
                 (h/persist hyperdrive)
                 (funcall then hyperdrive))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
@@ -432,7 +432,7 @@ directory.  Otherwise, or with universal prefix argument
                          ((map etag) headers)
                          (nonexistent-entry (h/copy-tree entry t)))
               (setf (he/version nonexistent-entry) (string-to-number etag))
-              (h//fill-latest-version (he/hyperdrive entry) headers)
+              (h//fill (he/hyperdrive entry) headers)
               (h/update-nonexistent-version-range nonexistent-entry)
               ;; Since there's no way for `h//write-contents' to run when
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
@@ -517,16 +517,16 @@ use, see `hyperdrive-write'."
                       (let ((buffer-file-name (he/name entry)))
                         (set-auto-mode)))
                     (h/mode))
-                  ;; NOTE: `h/fill-latest-version' must come before
+                  ;; NOTE: `h/fill' must come before
                   ;; `he//fill' because the latter calls
                   ;; `h/update-existent-version-range' internally.
 
-                  ;; TODO: Instead of calling `h/fill-latest-version', we should
+                  ;; TODO: Instead of calling `h/fill', we should
                   ;; set the hyperdrive's `latest-version' to the Etag of the
                   ;; PUT response header, since a successful PUT can only happen
                   ;; on the latest version of the hyperdrive.
 
-                  (h/fill-latest-version hyperdrive)
+                  (h/fill hyperdrive)
                   (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
