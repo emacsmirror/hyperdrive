@@ -518,7 +518,7 @@ use, see `hyperdrive-write'."
                         (set-auto-mode)))
                     (h/mode))
                   ;; NOTE: `h/fill-latest-version' must come before
-                  ;; `h//fill' because the latter calls
+                  ;; `he//fill' because the latter calls
                   ;; `h/update-existent-version-range' internally.
 
                   ;; TODO: Instead of calling `h/fill-latest-version', we should
@@ -527,7 +527,7 @@ use, see `hyperdrive-write'."
                   ;; on the latest version of the hyperdrive.
 
                   (h/fill-latest-version hyperdrive)
-                  (h//fill entry (plz-response-headers response))
+                  (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
                   ;; FIXME: For large buffers, `buffer-size' returns a different

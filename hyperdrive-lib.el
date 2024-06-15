@@ -590,7 +590,7 @@ echo area when the request for the file is made."
                                                nil nil #'string-match-p)))
                 (unless (h//entry-directory-p entry)
                   ;; No need to fill latest version for directories,
-                  ;; since we do it in `h//fill' already.
+                  ;; since we do it in `he//fill' already.
                   (h/fill-latest-version hyperdrive))
                 (h/persist hyperdrive)
                 (funcall (or handler #'h/handler-default) entry :then then)))
@@ -674,8 +674,8 @@ the given `plz-queue'"
                     (h/message "hyperdrive-entry-fill: error: %S" plz-error))))))
   (pcase then
     ('sync (condition-case err
-               (h//fill entry (plz-response-headers
-                               (he/api 'head entry :then 'sync :noquery t)))
+               (he//fill entry (plz-response-headers
+                                (he/api 'head entry :then 'sync :noquery t)))
              (plz-error
               (pcase (plz-response-status (plz-error-response (caddr err)))
                 ;; FIXME: If plz-error is a curl-error, this block will fail.
@@ -686,7 +686,7 @@ the given `plz-queue'"
     (_ (he/api 'head entry
          :queue queue
          :then (lambda (response)
-                 (funcall then (h//fill entry (plz-response-headers response))))
+                 (funcall then (he//fill entry (plz-response-headers response))))
          :else (lambda (&rest args)
                  (when (he/version entry)
                    ;; If request is canceled, the entry may not have a version.
@@ -695,7 +695,7 @@ the given `plz-queue'"
                  (apply else args))
          :noquery t))))
 
-(defun h//fill (entry headers)
+(defun he//fill (entry headers)
   "Fill ENTRY and its hyperdrive from HEADERS.
 
 The following ENTRY slots are filled:
@@ -1356,7 +1356,7 @@ hyperdrive."
               :as 'response :noquery t)))
         ;; TODO: Update hyperdrive disk-usage.  The following doesn't work
         ;; because the response doesn't have the proper ETag header:
-        ;; (h//fill (h/url-entry url) headers)
+        ;; (he//fill (h/url-entry url) headers)
         url)
     (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
                    ;; FIXME: If plz-error is a curl-error, this block will fail.
