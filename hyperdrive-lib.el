@@ -229,16 +229,19 @@ REST is passed to `h/api', which see.
 
 (defun he//api-then (entry response)
   "Update ENTRY's metadata according to RESPONSE.
-Updates ENTRY's hyperdrive's disk usage."
-  (pcase-let* (((cl-struct plz-response (headers (map x-drive-size)))
+Updates ENTRY's hyperdrive's disk usage and latest version."
+  (pcase-let* (((cl-struct plz-response (headers (map x-drive-size etag)))
                 response)
                ((cl-struct h/entry hyperdrive) entry)
                ((cl-struct hyperdrive etc) hyperdrive))
     (when x-drive-size
       (setf (map-elt etc 'disk-usage) (cl-parse-integer x-drive-size)
-            (h/etc hyperdrive) etc)
-      ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
-      (h/persist hyperdrive))))
+            (h/etc hyperdrive) etc))
+    (when (and etag (h//entry-directory-p entry))
+      ;; Directory ETag header is always the latest version of the drive.
+      (setf (h/latest-version hyperdrive) (string-to-number etag)))
+    ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
+    (h/persist hyperdrive)))
 
 (defun h/gateway-needs-upgrade-p ()
   "Return non-nil if the gateway is responsive and needs upgraded."
