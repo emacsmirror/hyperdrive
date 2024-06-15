@@ -520,6 +520,12 @@ use, see `hyperdrive-write'."
                   ;; NOTE: `h/fill-latest-version' must come before
                   ;; `h//fill' because the latter calls
                   ;; `h/update-existent-version-range' internally.
+
+                  ;; TODO: Instead of calling `h/fill-latest-version', we should
+                  ;; set the hyperdrive's `latest-version' to the Etag of the
+                  ;; PUT response header, since a successful PUT can only happen
+                  ;; on the latest version of the hyperdrive.
+
                   (h/fill-latest-version hyperdrive)
                   (h//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
