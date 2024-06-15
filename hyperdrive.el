@@ -822,6 +822,9 @@ The return value of this function is the retrieval buffer."
                ((cl-struct plz-response body)
                 (he/api 'get (h/url-entry url) :as 'response)))
     (with-current-buffer (generate-new-buffer " *hyperdrive-eww*")
+      ;; TODO: After refactoring to use :as 'response, this buffer no longer
+      ;; contains HTTP headers.  Confirm that EWW works properly when buffer
+      ;; lacks headers.
       (widen)
       (goto-char (point-min))
       (insert body)
