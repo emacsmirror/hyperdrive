@@ -474,7 +474,7 @@ in a directory.  Otherwise, or with universal prefix argument
     ;; TODO: If plz adds support for getting response headers when downloading
     ;; as a file (<https://github.com/alphapapa/plz.el/issues/61>), use it here.
     ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-    (h/fill (h/url-entry url))))
+    (he/fill (h/url-entry url))))
 
 ;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)

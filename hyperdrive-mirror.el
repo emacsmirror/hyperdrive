@@ -157,7 +157,7 @@ been checked."
       (let ((entry (he/create
                     :hyperdrive hyperdrive
                     :path (expand-file-name (file-relative-name file source) target-dir))))
-        (h/fill entry :queue metadata-queue
+        (he/fill entry :queue metadata-queue
           :then (lambda (entry)
                   (let* ((drive-mtime (floor (float-time (he/mtime entry))))
                          (local-mtime (floor (float-time (file-attribute-modification-time (file-attributes file)))))

@@ -497,7 +497,7 @@ When VERSION is nil, return latest version of ENTRY."
     (setf (he/version entry) version)
     (condition-case err
         ;; FIXME: Requests to out of range version currently hang.
-        (h/fill entry)
+        (he/fill entry)
       (plz-error
        (pcase (plz-response-status (plz-error-response (caddr err)))
          ;; FIXME: If plz-error is a curl-error, this block will fail.
@@ -583,7 +583,7 @@ echo area when the request for the file is made."
   ;; FIXME: Some of the synchronous filling functions we've added now cause this to be blocking,
   ;; which is very noticeable when a file can't be loaded from the gateway and eventually times out.
   (let ((hyperdrive (he/hyperdrive entry)))
-    (h/fill entry
+    (he/fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
                            (handler (alist-get type h/type-handlers
@@ -651,7 +651,7 @@ echo area when the request for the file is made."
     (when messagep
       (h/message "Opening <%s>..." (he/url entry)))))
 
-(cl-defun h/fill (entry &key queue (then 'sync) else)
+(cl-defun he/fill (entry &key queue (then 'sync) else)
   "Fill ENTRY's metadata and call THEN.
 If THEN is `sync', return the filled entry and ignore ELSE.
 Otherwise, make request asynchronously and call THEN with the
@@ -671,7 +671,7 @@ the given `plz-queue'"
                     ;; (e.g. if the user reverted too quickly).
                     nil)
                    (_
-                    (h/message "hyperdrive-fill: error: %S" plz-error))))))
+                    (h/message "hyperdrive-entry-fill: error: %S" plz-error))))))
   (pcase then
     ('sync (condition-case err
                (h//fill entry (plz-response-headers
@@ -991,7 +991,7 @@ HYPERDRIVE's public metadata file."
                ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
                :version nil))
        (metadata (condition-case err
-                     ;; TODO: Refactor to use :as 'response-with-buffer and call h/fill
+                     ;; TODO: Refactor to use :as 'response-with-buffer and call he/fill
                      (pcase-let
                          (((cl-struct plz-response headers body)
                            (he/api 'get entry :noquery t)))
