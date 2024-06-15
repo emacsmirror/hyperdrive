@@ -71,6 +71,7 @@ Passes ARGS to `format-message'."
   (size nil :documentation "Size of file.")
   (version nil :documentation "Hyperdrive version specified in entry's URL.")
   (type nil :documentation "MIME type of the entry.")
+  ;; TODO: Consider adding gv-setters for etc slot keys
   (etc nil :documentation "Alist for extra data about the entry.
 - display-name :: Displayed in directory view instead of name.
 - target :: Link fragment to jump to."))
@@ -86,6 +87,7 @@ Passes ARGS to `format-message'."
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
   (metadata nil :documentation "Public metadata alist.")
   (latest-version nil :documentation "Latest known version of hyperdrive.")
+  ;; TODO: Consider adding gv-setters for etc slot keys
   (etc nil :documentation "Alist of extra data.
 - disk-usage :: Number of bytes occupied locally by the drive.
 - safep :: Whether or not to treat this hyperdrive as safe."))
