@@ -736,6 +736,7 @@ Returns filled ENTRY."
       (setf (map-elt etc 'disk-usage) (cl-parse-integer x-drive-size)))
     (setf (h/etc hyperdrive) etc)
     (if persisted-hyperdrive
+        ;; TODO: Consider moving this block into he/api-then.
         (progn
           ;; Ensure that entry's hyperdrive is the persisted
           ;; hyperdrive, since it may be used later as part of a
