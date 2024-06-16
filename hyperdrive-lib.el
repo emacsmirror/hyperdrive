@@ -1351,9 +1351,7 @@ hyperdrive."
             (h/api 'get (format "hyper://localhost/?key=%s"
                                 (url-hexify-string seed))
               :as 'response :noquery t)))
-        ;; TODO: Update hyperdrive disk-usage.  The following doesn't work
-        ;; because the response doesn't have the proper ETag header:
-        ;; (he//fill (h/url-entry url) headers)
+        (h/fill (h/url-entry url))
         url)
     (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
                    ;; FIXME: If plz-error is a curl-error, this block will fail.
