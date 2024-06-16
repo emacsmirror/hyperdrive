@@ -790,11 +790,8 @@ entry as a side-effect."
    listing))
 
 (defun h/fill (hyperdrive)
-  "Synchronously fill the latest version slot in HYPERDRIVE.
-Returns the latest version number."
-  (pcase-let (((cl-struct plz-response headers)
-               (he/api 'head (he/create :hyperdrive hyperdrive :path "/"))))
-    (h//fill hyperdrive headers)))
+  "Synchronously fill the latest version slot in HYPERDRIVE."
+  (he/api 'head (he/create :hyperdrive hyperdrive :path "/")))
 
 (defun h//fill (hyperdrive headers)
   "Fill the latest version slot in HYPERDRIVE from HEADERS.

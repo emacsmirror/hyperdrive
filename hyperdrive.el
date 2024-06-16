@@ -276,16 +276,10 @@ Universal prefix argument \\[universal-argument] forces
         (progn
           (cl-callf map-delete (h/metadata hyperdrive) 'name)
           (h/put-metadata hyperdrive
-            :then (pcase-lambda ((cl-struct plz-response headers))
-                    (h//fill hyperdrive headers)
-                    (h/persist hyperdrive)
-                    (funcall then hyperdrive))))
+            :then (lambda (_response) (funcall then hyperdrive))))
       (setf (alist-get 'name (h/metadata hyperdrive)) nickname)
       (h/put-metadata hyperdrive
-        :then (pcase-lambda ((cl-struct plz-response headers))
-                (h//fill hyperdrive headers)
-                (h/persist hyperdrive)
-                (funcall then hyperdrive))))
+        :then (lambda (_response) (funcall then hyperdrive))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
     )
   hyperdrive)
@@ -432,7 +426,6 @@ directory.  Otherwise, or with universal prefix argument
                          ((map etag) headers)
                          (nonexistent-entry (h/copy-tree entry t)))
               (setf (he/version nonexistent-entry) (string-to-number etag))
-              (h//fill (he/hyperdrive entry) headers)
               (h/update-nonexistent-version-range nonexistent-entry)
               ;; Since there's no way for `h//write-contents' to run when
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
