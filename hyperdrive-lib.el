@@ -735,9 +735,6 @@ Returns filled ENTRY."
                                  (cl-parse-integer content-length))))
     (setf (he/type entry) content-type)
     (setf (he/mtime entry) last-modified)
-    (when x-drive-size
-      (setf (map-elt etc 'disk-usage) (cl-parse-integer x-drive-size)))
-    (setf (h/etc hyperdrive) etc)
     (if persisted-hyperdrive
         ;; TODO: Consider moving this block into he/api-then.
         (progn
