@@ -1284,10 +1284,12 @@ is passed to `read-string' as its DEFAULT-VALUE argument."
 (cl-defun h/read-url (&key (prompt "Hyperdrive URL"))
   "Return URL trimmed of whitespace.
 Prompts with PROMPT.  Defaults to current entry if it exists."
-  (let ((default (and h/current-entry
-                      (he/url h/current-entry))))
-    (string-trim (read-string (format-prompt prompt default)
-                              nil 'h//url-history default))))
+  (let* ((default-entry
+          (cond ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
+                (h/current-entry h/current-entry)))
+         (default-url (and default-entry (he/url default-entry))))
+    (string-trim (read-string (format-prompt prompt default-url)
+                              nil 'h//url-history default-url))))
 
 (defvar h//name-history nil
   "Minibuffer history of `hyperdrive-read-name'.")
