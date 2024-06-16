@@ -218,12 +218,14 @@ REST is passed to `h/api', which see.
   (cl-assert (null (plist-get rest :as)))
   (plist-put rest :as 'response)
 
-  (pcase-let* (((map :then) rest)
-               (then* (lambda (response)
-                        (he//api-then entry response)
-                        (funcall then response))))
-    (plist-put rest :then then*)
-    (apply #'h/api method (he/url entry) rest)))
+  (pcase-let* (((map :then) rest))
+    (when then
+      (plist-put rest :then (lambda (response)
+                              (he//api-then entry response)
+                              (funcall then response))))
+    (let ((response (apply #'h/api method (he/url entry) rest)))
+      (unless then (funcall 'he//api-then entry response))
+      response)))
 
 (defun he//api-then (entry response)
   "Update ENTRY's metadata according to RESPONSE.
