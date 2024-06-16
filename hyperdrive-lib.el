@@ -232,6 +232,7 @@ Updates ENTRY's hyperdrive's disk usage and latest version."
             (h/etc hyperdrive) etc))
     (when x-drive-version
       (setf (h/latest-version hyperdrive) (string-to-number x-drive-version)))
+    ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
     ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
     (h/persist hyperdrive)))
 
@@ -764,20 +765,6 @@ entry as a side-effect."
 (defun h/fill (hyperdrive)
   "Synchronously fill the latest version slot in HYPERDRIVE."
   (he/api 'head (he/create :hyperdrive hyperdrive :path "/")))
-
-(defun h//fill (hyperdrive headers)
-  "Fill the latest version slot in HYPERDRIVE from HEADERS.
-HEADERS must from a HEAD/GET request to a directory or a
-PUT/DELETE request to a file or directory, as only those requests
-return the correct ETag header.  Returns latest version number."
-  ;; TODO: Update relevant buffers when hyperdrive latest version
-  ;; updates, at the least describe-hyperdrive buffers.
-  ;; TODO: Consider updating version range here.  First check all the
-  ;; places where this function is called.  Better yet, update
-  ;; `h/version-ranges' (and `h/hyperdrives'?)  in a
-  ;; lower-level function, perhaps a wrapper for `h/api'?
-  (setf (h/latest-version hyperdrive)
-        (string-to-number (map-elt headers 'etag))))
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
