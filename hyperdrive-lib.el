@@ -239,10 +239,10 @@ PLZ-ERR should be a `plz-error' struct."
   (pcase plz-err
     ((app plz-error-curl-error `(7 . ,_message))
      ;; Curl error 7 is "Failed to connect to host."
-     (h/user-error "Gateway not running.  Use \\[hyperdrive-start] to start it"))
+     (h/message "Gateway not running.  Use \\[hyperdrive-start] to start it"))
     ((app plz-error-response (cl-struct plz-response (status (or 403 405)) body))
      ;; 403 Forbidden or 405 Method Not Allowed: Display message from gateway.
-     (h/error "%s" body))
+     (h/message "%s" body))
     ((guard else)
      (funcall else plz-err))
     (_
