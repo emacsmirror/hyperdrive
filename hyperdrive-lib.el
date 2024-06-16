@@ -169,14 +169,6 @@ This low-level function should only be used when sending requests
 to the gateway which do not involve an entry.  Otherwise, use
 `hyperdrive-entry-api', which automatically fills metadata."
   ;; TODO: Document that the request/queue is returned.
-  ;; TODO: Should we create a wrapper for `h/api' which calls
-  ;; `h//fill' for requests to directories/requests which modify
-  ;; the drive (and therefore always return the latest version number).  If we
-  ;; did this, we could remove redundant calls to `h//fill'
-  ;; everywhere else.  X-Drive-Size is returned by many types of requests, and it
-  ;; would simplify the code to handle updating the hyperdrive disk-usage in one
-  ;; place.  Once implemented, go through each call to `h/api' to verify that
-  ;; disk-usage is updated correctly.
   (declare (indent defun))
   (pcase method
     ((and (or 'get 'head)
