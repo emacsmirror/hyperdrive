@@ -510,16 +510,6 @@ use, see `hyperdrive-write'."
                       (let ((buffer-file-name (he/name entry)))
                         (set-auto-mode)))
                     (h/mode))
-                  ;; NOTE: `h/fill' must come before
-                  ;; `he//fill' because the latter calls
-                  ;; `h/update-existent-version-range' internally.
-
-                  ;; TODO: Instead of calling `h/fill', we should
-                  ;; set the hyperdrive's `latest-version' to the Etag of the
-                  ;; PUT response header, since a successful PUT can only happen
-                  ;; on the latest version of the hyperdrive.
-
-                  (h/fill hyperdrive)
                   (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.

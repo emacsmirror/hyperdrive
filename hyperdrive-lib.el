@@ -230,16 +230,16 @@ REST is passed to `h/api', which see.
 (defun he//api-then (entry response)
   "Update ENTRY's metadata according to RESPONSE.
 Updates ENTRY's hyperdrive's disk usage and latest version."
-  (pcase-let* (((cl-struct plz-response (headers (map x-drive-size etag)))
-                response)
-               ((cl-struct h/entry hyperdrive) entry)
-               ((cl-struct hyperdrive etc) hyperdrive))
+  (pcase-let*
+      (((cl-struct plz-response (headers (map x-drive-size x-drive-version)))
+        response)
+       ((cl-struct h/entry hyperdrive) entry)
+       ((cl-struct hyperdrive etc) hyperdrive))
     (when x-drive-size
       (setf (map-elt etc 'disk-usage) (cl-parse-integer x-drive-size)
             (h/etc hyperdrive) etc))
-    (when (and etag (h//entry-directory-p entry))
-      ;; Directory ETag header is always the latest version of the drive.
-      (setf (h/latest-version hyperdrive) (string-to-number etag)))
+    (when x-drive-version
+      (setf (h/latest-version hyperdrive) (string-to-number x-drive-version)))
     ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
     (h/persist hyperdrive)))
 
@@ -588,11 +588,6 @@ echo area when the request for the file is made."
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
                            (handler (alist-get type h/type-handlers
                                                nil nil #'string-match-p)))
-                (unless (h//entry-directory-p entry)
-                  ;; No need to fill latest version for directories,
-                  ;; since we do it in `he//fill' already.
-                  (h/fill hyperdrive))
-                (h/persist hyperdrive)
                 (funcall (or handler #'h/handler-default) entry :then then)))
       :else (lambda (err)
               (cl-labels ((not-found-action ()
@@ -708,7 +703,6 @@ The following ENTRY hyperdrive slots are filled:
 - \\+`public-key'
 - \\+`writablep' (when headers include Allow)
 - \\+`domains' (merged with current persisted value)
-- \\+`etc' (disk-usage)
 
 Returns filled ENTRY."
   ;; TODO: Consider factoring out parts of this that should be done for every
@@ -716,10 +710,8 @@ Returns filled ENTRY."
   ;; latest-version).
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive) entry)
-       ((cl-struct hyperdrive writablep domains etc) hyperdrive)
-       ((map link content-length content-type etag
-             last-modified allow x-drive-size)
-        headers)
+       ((cl-struct hyperdrive writablep domains) hyperdrive)
+       ((map link content-length content-type etag last-modified allow) headers)
        ;; If URL hostname was a DNSLink domain,
        ;; entry doesn't yet have a public-key slot.
        (public-key (progn (string-match h//public-key-re link)
@@ -750,18 +742,9 @@ Returns filled ENTRY."
             ;; but no public-key.
             (cl-pushnew domain (h/domains (he/hyperdrive entry)) :test #'equal)))
       (setf (h/public-key hyperdrive) public-key))
-    (when etag
-      (if (and (h//entry-directory-p entry)
-               (null (he/version entry)))
-          ;; Version-less directory HEAD/GET request ETag header always have the
-          ;; hyperdrive's latest version. We don't currently store
-          ;; version ranges for directories (since they don't
-          ;; technically have versions in hyperdrive).
-          (h//fill hyperdrive headers)
-        ;; File HEAD/GET request ETag header does not retrieve the
-        ;; hyperdrive's latest version, so `h/update-existent-version-range'
-        ;; will not necessarily fill in the entry's last range.
-        (h/update-existent-version-range entry (string-to-number etag))))
+    (when (and etag (not (h//entry-directory-p entry)))
+      ;; Directory version ranges are not supported.
+      (h/update-existent-version-range entry (string-to-number etag)))
     entry))
 
 (defun h//fill-listing-entries (listing hyperdrive version)
