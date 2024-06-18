@@ -709,12 +709,13 @@ the given `plz-queue'"
          :noquery t))))
 
 (defun he//fill (entry headers)
-  "Fill ENTRY from HEADERS.
+  "Fill ENTRY slots from HEADERS.
 
-The following ENTRY slots are filled:
 - \\+`type'
 - \\+`mtime'
 - \\+`size'
+
+Also fills existent range in `hyperdrive-version-ranges'.
 
 Returns filled ENTRY."
   (pcase-let*
