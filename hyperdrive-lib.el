@@ -221,20 +221,41 @@ REST is passed to `h/api', which see.
 
 (defun he//api-then (entry response)
   "Update ENTRY's metadata according to RESPONSE.
-Updates ENTRY's hyperdrive's disk usage and latest version."
+Sets ENTRY's hyperdrive to the persisted version of the drive if
+it exists.  Updates ENTRY's hyperdrive's disk usage and latest
+version.  Finally, persists ENTRY's hyperdrive."
   (pcase-let*
-      (((cl-struct plz-response (headers (map x-drive-size x-drive-version)))
+      (((cl-struct plz-response
+                   (headers (map link x-drive-size x-drive-version)))
         response)
-       ((cl-struct h/entry hyperdrive) entry)
-       ((cl-struct hyperdrive etc) hyperdrive))
+       ;; RESPONSE is guaranteed to have a "Link" header with the public key,
+       ;; while ENTRY may have a DNSLink domain but no public key yet.
+       (public-key (progn (string-match h//public-key-re link)
+                          (match-string 1 link)))
+       ;; NOTE: Don't destructure `persisted-hyperdrive' with `pcase' here since it may be nil.
+       (persisted-hyperdrive (gethash public-key h/hyperdrives)))
+
+    (when persisted-hyperdrive
+      ;; ENTRY's hyperdrive already persisted: merge domains into persisted
+      ;; hyperdrive and set ENTRY's hyperdrive slot to the persisted copy.
+      (setf (h/domains persisted-hyperdrive)
+            (delete-dups (append (h/domains persisted-hyperdrive)
+                                 (h/domains (he/hyperdrive entry)))))
+      (setf (he/hyperdrive entry) persisted-hyperdrive))
+
+    ;; Ensure that ENTRY's hyperdrive has a public key.
+    (setf (h/public-key (he/hyperdrive entry)) public-key)
+
+    ;; Fill hyperdrive.
     (when x-drive-size
-      (setf (map-elt etc 'disk-usage) (cl-parse-integer x-drive-size)
-            (h/etc hyperdrive) etc))
+      (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
+            (cl-parse-integer x-drive-size)))
     (when x-drive-version
-      (setf (h/latest-version hyperdrive) (string-to-number x-drive-version)))
+      (setf (h/latest-version (he/hyperdrive entry))
+            (string-to-number x-drive-version)))
     ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
     ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
-    (h/persist hyperdrive)))
+    (h/persist (he/hyperdrive entry))))
 
 (defun h/gateway-needs-upgrade-p ()
   "Return non-nil if the gateway is responsive and needs upgraded."
@@ -693,9 +714,7 @@ The following ENTRY slots are filled:
 - \\+`hyperdrive' (from persisted value if it exists)
 
 The following ENTRY hyperdrive slots are filled:
-- \\+`public-key'
 - \\+`writablep' (when headers include Allow)
-- \\+`domains' (merged with current persisted value)
 
 Returns filled ENTRY."
   ;; TODO: Consider factoring out parts of this that should be done for every
@@ -703,14 +722,8 @@ Returns filled ENTRY."
   ;; latest-version).
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive) entry)
-       ((cl-struct hyperdrive writablep domains) hyperdrive)
-       ((map link content-length content-type etag last-modified allow) headers)
-       ;; If URL hostname was a DNSLink domain,
-       ;; entry doesn't yet have a public-key slot.
-       (public-key (progn (string-match h//public-key-re link)
-                          (match-string 1 link)))
-       (persisted-hyperdrive (gethash public-key h/hyperdrives))
-       (domain (car domains)))
+       ((cl-struct hyperdrive writablep) hyperdrive)
+       ((map content-length content-type etag last-modified allow) headers))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (when (and allow (eq 'unknown writablep))
@@ -720,21 +733,6 @@ Returns filled ENTRY."
                                  (cl-parse-integer content-length))))
     (setf (he/type entry) content-type)
     (setf (he/mtime entry) last-modified)
-    (if persisted-hyperdrive
-        ;; TODO: Consider moving this block into he/api-then.
-        (progn
-          ;; Ensure that entry's hyperdrive is the persisted
-          ;; hyperdrive, since it may be used later as part of a
-          ;; `h/version-ranges' key and compared using `eq'.
-          ;; Also, we want the call to `h//fill'
-          ;; below to update the persisted hyperdrive.
-          (setf (he/hyperdrive entry) persisted-hyperdrive)
-          (when domain
-            ;; The previous call to he/url may not have retrieved
-            ;; the persisted hyperdrive if we had only a domain
-            ;; but no public-key.
-            (cl-pushnew domain (h/domains (he/hyperdrive entry)) :test #'equal)))
-      (setf (h/public-key hyperdrive) public-key))
     (when (and etag (not (h//entry-directory-p entry)))
       ;; Directory version ranges are not supported.
       (h/update-existent-version-range entry (string-to-number etag)))
