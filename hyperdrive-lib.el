@@ -226,7 +226,7 @@ it exists.  Updates ENTRY's hyperdrive's disk usage and latest
 version.  Finally, persists ENTRY's hyperdrive."
   (pcase-let*
       (((cl-struct plz-response
-                   (headers (map link x-drive-size x-drive-version)))
+                   (headers (map link allow x-drive-size x-drive-version)))
         response)
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
        ;; while ENTRY may have a DNSLink domain but no public key yet.
@@ -247,6 +247,10 @@ version.  Finally, persists ENTRY's hyperdrive."
     (setf (h/public-key (he/hyperdrive entry)) public-key)
 
     ;; Fill hyperdrive.
+    (when allow
+      ;; NOTE: "Allow" header is only present on HEAD requests.  We can change
+      ;; this, but it's fine as-is since we only need to check writability once.
+      (setf (h/writablep (he/hyperdrive entry)) (string-match-p "PUT" allow)))
     (when x-drive-size
       (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
             (cl-parse-integer x-drive-size)))
@@ -705,29 +709,21 @@ the given `plz-queue'"
          :noquery t))))
 
 (defun he//fill (entry headers)
-  "Fill ENTRY and its hyperdrive from HEADERS.
+  "Fill ENTRY from HEADERS.
 
 The following ENTRY slots are filled:
 - \\+`type'
 - \\+`mtime'
 - \\+`size'
-- \\+`hyperdrive' (from persisted value if it exists)
-
-The following ENTRY hyperdrive slots are filled:
-- \\+`writablep' (when headers include Allow)
 
 Returns filled ENTRY."
   ;; TODO: Consider factoring out parts of this that should be done for every
   ;; API entry response (i.e. in `he//api-then'; e.g. drive-size, version-range,
   ;; latest-version).
   (pcase-let*
-      (((cl-struct hyperdrive-entry hyperdrive) entry)
-       ((cl-struct hyperdrive writablep) hyperdrive)
-       ((map content-length content-type etag last-modified allow) headers))
+      (((map content-length content-type etag last-modified) headers))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
-    (when (and allow (eq 'unknown writablep))
-      (setf (h/writablep hyperdrive) (string-match-p "PUT" allow)))
     (setf (he/size entry) (and content-length
                                (ignore-errors
                                  (cl-parse-integer content-length))))
