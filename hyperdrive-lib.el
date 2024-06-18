@@ -717,9 +717,6 @@ The following ENTRY slots are filled:
 - \\+`size'
 
 Returns filled ENTRY."
-  ;; TODO: Consider factoring out parts of this that should be done for every
-  ;; API entry response (i.e. in `he//api-then'; e.g. drive-size, version-range,
-  ;; latest-version).
   (pcase-let*
       (((map content-length content-type etag last-modified) headers))
     (when last-modified
