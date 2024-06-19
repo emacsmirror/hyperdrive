@@ -208,13 +208,13 @@ REST is passed to `h/api', which see.
   (declare (indent defun))
   ;; Always use :as 'response
   (cl-assert (null (plist-get rest :as)))
-  (plist-put rest :as 'response)
-
+  (setf (plist-get rest :as) 'response)
   (pcase-let* (((map :then) rest))
     (when then
-      (plist-put rest :then (lambda (response)
-                              (he//api-then entry response)
-                              (funcall then response))))
+      (setf (plist-get rest :then)
+            (lambda (response)
+              (he//api-then entry response)
+              (funcall then response))))
     (let ((response (apply #'h/api method (he/url entry) rest)))
       (unless then (funcall 'he//api-then entry response))
       response)))
