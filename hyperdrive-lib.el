@@ -202,9 +202,10 @@ to the gateway which do not involve an entry.  Otherwise, use
 
 (defun he/api (method entry &rest rest)
   "Make hyperdrive API request by METHOD for ENTRY.
-REST is passed to `h/api', which see.
-`:as' keyword argument of `hyperdrive-api' is always `response'.
-"
+REST is passed to `hyperdrive-api', which see.  AS keyword should
+be nil, because it is always set to `response'.  Automatically
+calls `hyperdrive-entry--api-then' to update metadata from the
+response."
   (declare (indent defun))
   ;; Always use :as 'response
   (cl-assert (null (plist-get rest :as)))
