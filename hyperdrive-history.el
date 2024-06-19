@@ -202,7 +202,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
       (with-silent-modifications
         (h/history-mode)
         (setq-local h/history-current-entry entry)
-        (setf ewoc h/ewoc) ; Bind this for the h/fill lambda.
+        (setf ewoc h/ewoc) ; Bind this for the he/fill lambda.
         (ewoc-filter h/ewoc #'ignore)
         (erase-buffer)
         (ewoc-set-hf h/ewoc header "")
@@ -234,7 +234,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
       (mapc (lambda (range-entry)
               (when (eq t (h/range-entry-exists-p range-entry))
                 ;; TODO: Handle failures?
-                (h/fill (cdr range-entry) :queue queue :then #'ignore)))
+                (he/fill (cdr range-entry) :queue queue :then #'ignore)))
             range-entries)
       (set-buffer-modified-p nil)
       (goto-char (point-min)))))

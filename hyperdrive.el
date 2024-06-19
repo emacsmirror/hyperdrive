@@ -138,7 +138,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
   (pcase-let* (((cl-struct plz-response (body url))
                 (h/api 'post (concat "hyper://localhost/?key="
                                      (url-hexify-string seed))
-                       :as 'response))
+                  :as 'response))
                (hyperdrive (he/hyperdrive (h/url-entry url))))
     (setf (h/seed hyperdrive) seed)
     (setf (h/writablep hyperdrive) t)
@@ -194,20 +194,17 @@ modified; file blobs may be recoverable from other peers."
   (interactive (list (h//context-entry)))
   (when (yes-or-no-p
          (format-message
-          "Clear local copy of entry (data may not be recoverable—see manual):`%s'?  "
+          "Clear local copy of entry (data may not be recoverable—see manual):`%s'? "
           (h//format-entry entry)))
-    (let ((url (he/url entry)))
-      (h/api 'post url
-        :headers '(("Cache-Control" . "no-store"))
-        :as 'response
-        :else (lambda (err)
-                (h/error "Unable to clear cache for `%s': %S" url err))
-        :then (lambda (response)
-                (h//fill entry (plz-response-headers response))
-                (h/message "Cleared `%s'" (h//format-entry entry))
-                ;; TODO: When file sizes in hyperdrive-dir-mode are colorized
-                ;; based locally downloaded sizes, refresh ewoc entry here.
-                )))))
+    (he/api 'post entry
+      :headers '(("Cache-Control" . "no-store"))
+      :else (lambda (err)
+              (h/error "Unable to clear cache for `%s': %S" (he/url entry) err))
+      :then (lambda (_response)
+              (h/message "Cleared `%s'" (h//format-entry entry))
+              ;; TODO: When file sizes in hyperdrive-dir-mode are colorized
+              ;; based locally downloaded sizes, refresh ewoc entry here.
+              ))))
 
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
@@ -279,16 +276,10 @@ Universal prefix argument \\[universal-argument] forces
         (progn
           (cl-callf map-delete (h/metadata hyperdrive) 'name)
           (h/put-metadata hyperdrive
-            :then (pcase-lambda ((cl-struct plz-response headers))
-                    (h//fill-latest-version hyperdrive headers)
-                    (h/persist hyperdrive)
-                    (funcall then hyperdrive))))
+            :then (lambda (_response) (funcall then hyperdrive))))
       (setf (alist-get 'name (h/metadata hyperdrive)) nickname)
       (h/put-metadata hyperdrive
-        :then (pcase-lambda ((cl-struct plz-response headers))
-                (h//fill-latest-version hyperdrive headers)
-                (h/persist hyperdrive)
-                (funcall then hyperdrive))))
+        :then (lambda (_response) (funcall then hyperdrive))))
     ;; TODO: Consider refreshing buffer names, directory headers, etc, especially host-meta.json entry buffer.
     )
   hyperdrive)
@@ -429,14 +420,12 @@ directory.  Otherwise, or with universal prefix argument
                      (h/message "Deleted: `%s' (Deleted files can be accessed from prior versions of the hyperdrive.)" description))
              :else (lambda (plz-error)
                      (h/message "Unable to delete `%s': %S" description plz-error))))))
-  (h/api 'delete (he/url entry)
-    :as 'response
+  (he/api 'delete entry
     :then (lambda (response)
             (pcase-let* (((cl-struct plz-response headers) response)
                          ((map etag) headers)
                          (nonexistent-entry (h/copy-tree entry t)))
               (setf (he/version nonexistent-entry) (string-to-number etag))
-              (h//fill-latest-version (he/hyperdrive entry) headers)
               (h/update-nonexistent-version-range nonexistent-entry)
               ;; Since there's no way for `h//write-contents' to run when
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
@@ -462,6 +451,7 @@ in a directory.  Otherwise, or with universal prefix argument
 ;;;###autoload
 (defun hyperdrive-download-url (url filename)
   "Load contents at URL as a file to store on disk at FILENAME."
+  ;; TODO: Implement entry-based version of this function, or change callers to use entries.
   ;; TODO: Handle directory URLs (recursively download contents?)
   (interactive
    (let* ((read-url (h/read-url :prompt "Download hyperdrive URL"))
@@ -475,9 +465,9 @@ in a directory.  Otherwise, or with universal prefix argument
       (delete-file filename))
     (h/api 'get url :as `(file ,filename))
     ;; TODO: If plz adds support for getting response headers when downloading
-    ;; as a file, use it here.
+    ;; as a file (<https://github.com/alphapapa/plz.el/issues/61>), use it here.
     ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-    (h/fill (h/url-entry url))))
+    (he/fill (h/url-entry url))))
 
 ;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)
@@ -520,11 +510,7 @@ use, see `hyperdrive-write'."
                       (let ((buffer-file-name (he/name entry)))
                         (set-auto-mode)))
                     (h/mode))
-                  ;; NOTE: `h/fill-latest-version' must come before
-                  ;; `h//fill' because the latter calls
-                  ;; `h/update-existent-version-range' internally.
-                  (h/fill-latest-version hyperdrive)
-                  (h//fill entry (plz-response-headers response))
+                  (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
                   ;; FIXME: For large buffers, `buffer-size' returns a different
@@ -714,19 +700,18 @@ After successful upload, call THEN.  When QUEUE, use it."
                        (h/read-entry :predicate #'h/writablep
                                      :default-path (file-name-nondirectory filename)
                                      :latest-version t))))
-  (let ((url (he/url entry))
-        (last-modified (let ((system-time-locale "C"))
+  (let ((last-modified (let ((system-time-locale "C"))
                          (format-time-string "%Y-%m-%dT%T.%3NZ"
                                              ;; "%a, %-d %b %Y %T %Z"
                                              (file-attribute-modification-time
                                               (file-attributes filename)) t))))
-    (h/api 'put url :queue queue
+    (he/api 'put entry :queue queue
       :body `(file ,filename)
       :headers `(("Last-Modified" . ,last-modified))
       :then then)
     ;; TODO: Hyperdrive disk usage should be set here.
     (unless queue
-      (h/message "Uploading to \"%s\"..." url))))
+      (h/message "Uploading to \"%s\"..." (he/url entry)))))
 
 (defun h/read-files ()
   "Return list of files read from the user."
@@ -818,12 +803,16 @@ The return value of this function is the retrieval buffer."
                ;; TODO: When `plz.el' adds :as 'response-with-buffer, use that.
                ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
                ((cl-struct plz-response headers body)
-                (h/api 'get url :as 'response)))
-    ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-    (h//fill (h/url-entry url) headers)
+                (he/api 'get (h/url-entry url))))
     (with-current-buffer (generate-new-buffer " *hyperdrive-eww*")
       (widen)
       (goto-char (point-min))
+      ;; TODO: When `plz' gains `:as '(response :with buffer)' or whatever, use it instead of this hack.
+      ;; HACK: Insert headers because `eww-render' expects them to be in the buffer.
+      (map-do (lambda (header value)
+                (insert (format "%s: %s\n" header value)))
+              headers)
+      (insert "\n\n")
       (insert body)
       (while (search-forward (string ?\C-m) nil t)
         ;; Strip CRLF from headers so that `eww-parse-headers' works correctly.
@@ -1400,21 +1389,21 @@ Intended for relative (i.e. non-full) URLs."
   ;; TODO: sr.ht build (<https://builds.sr.ht/~ushin/job/1247130#task-setup>)
   ;; fail due to a kernel issue: https://github.com/nodejs/node/issues/53051
   '((gnu/linux
-     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.9.2/hyper-gateway-ushin-linux"
-       :sha256 "f0cb3e793b3d27ce159e8e034e03b5a14cbdc53d47bd8f0761310792d5b6a7aa")
-     ;; ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.9.2/hyper-gateway-linux-v3.9.2"
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.10.1/hyper-gateway-ushin-linux"
+       :sha256 "6a93dd6f5b023cc2cc2e99aba728cbcccd4c9ed426b506da0a4b24d8c0ea5afa")
+     ;; ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.10.1/hyper-gateway-linux-v3.10.1"
      ;;   :sha256 "331dbc0048decd42d197667f96aabdaf25306ba4e7ba0451dd9a2f31868fa86c")
      )
     (darwin
-     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.9.2/hyper-gateway-ushin-macos"
-       :sha256 "bb472bf7a536eb30bc2443ce90cfca1bf2aa71177afdc1377f4fc9b61414c24c")
-     ;; ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.9.2/hyper-gateway-macos-v3.9.2"
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.10.1/hyper-gateway-ushin-macos"
+       :sha256 "7072e7fd52626affe5a17380845b50ec5116210d70f409c23bcb5415142a4053")
+     ;; ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.10.1/hyper-gateway-macos-v3.10.1"
      ;;   :sha256 "e78d3c1394774fc49212d86827eb615d46ae1a04c82fc0328ac31bbbdb201aa0")
      )
     (windows-nt
-     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.9.2/hyper-gateway-ushin-windows.exe"
-       :sha256 "7a72010cd7bc1b0357673838f5ccb069e58bf3c229bc873bedd0ee9faa805188")
-     ;; ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.9.2/hyper-gateway-windows-v3.9.2.exe"
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.10.1/hyper-gateway-ushin-windows.exe"
+       :sha256 "b87aa17bc92c6f5a1c388f5e352a47b228d33c5f177ab6a11aad0312e891df0d")
+     ;; ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.10.1/hyper-gateway-windows-v3.10.1.exe"
      ;;   :sha256 "d4fa29aca473148e2d13215d042e4be40657080035caa2d3a699b741b6a45845")
      ))
   "Alist mapping `system-type' to URLs where the gateway can be downloaded.")

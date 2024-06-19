@@ -71,6 +71,7 @@ Passes ARGS to `format-message'."
   (size nil :documentation "Size of file.")
   (version nil :documentation "Hyperdrive version specified in entry's URL.")
   (type nil :documentation "MIME type of the entry.")
+  ;; TODO: Consider adding gv-setters for etc slot keys
   (etc nil :documentation "Alist for extra data about the entry.
 - display-name :: Displayed in directory view instead of name.
 - target :: Link fragment to jump to."))
@@ -86,6 +87,7 @@ Passes ARGS to `format-message'."
   (domains nil :documentation "List of DNSLink domains which resolve to the drive's public-key.")
   (metadata nil :documentation "Public metadata alist.")
   (latest-version nil :documentation "Latest known version of hyperdrive.")
+  ;; TODO: Consider adding gv-setters for etc slot keys
   (etc nil :documentation "Alist of extra data.
 - disk-usage :: Number of bytes occupied locally by the drive.
 - safep :: Whether or not to treat this hyperdrive as safe."))
@@ -151,8 +153,6 @@ See `hyperdrive-directory-sort' for the type of DIRECTION."
 
 ;;;; API
 
-;; These functions take a URL argument, not a hyperdrive-entry struct.
-
 (cl-defun h/api (method url &rest rest)
   "Make hyperdrive API request by METHOD to URL.
 Calls `hyperdrive--httpify-url' to convert HYPER-URL starting
@@ -163,16 +163,12 @@ with `hyperdrive--hyper-prefix' to a URL starting with
 REST is passed to `plz', which see.
 
 REST may include the argument `:queue', a `plz-queue' in which to
-make the request."
+make the request.
+
+This low-level function should only be used when sending requests
+to the gateway which do not involve an entry.  Otherwise, use
+`hyperdrive-entry-api', which automatically fills metadata."
   ;; TODO: Document that the request/queue is returned.
-  ;; TODO: Should we create a wrapper for `h/api' which calls
-  ;; `h//fill-latest-version' for requests to directories/requests which modify
-  ;; the drive (and therefore always return the latest version number).  If we
-  ;; did this, we could remove redundant calls to `h//fill-latest-version'
-  ;; everywhere else.  X-Drive-Size is returned by many types of requests, and it
-  ;; would simplify the code to handle updating the hyperdrive disk-usage in one
-  ;; place.  Once implemented, go through each call to `h/api' to verify that
-  ;; disk-usage is updated correctly.
   (declare (indent defun))
   (pcase method
     ((and (or 'get 'head)
@@ -203,6 +199,68 @@ make the request."
       (plz-error
        ;; We pass only the `plz-error' struct to the ELSE* function.
        (funcall else* (caddr err))))))
+
+(defun he/api (method entry &rest rest)
+  "Make hyperdrive API request by METHOD for ENTRY.
+REST is passed to `hyperdrive-api', which see.  AS keyword should
+be nil, because it is always set to `response'.  Automatically
+calls `hyperdrive-entry--api-then' to update metadata from the
+response."
+  (declare (indent defun))
+  ;; Always use :as 'response
+  (cl-assert (null (plist-get rest :as)))
+  (setf (plist-get rest :as) 'response)
+  (pcase-let* (((map :then) rest))
+    (when then
+      (setf (plist-get rest :then)
+            (lambda (response)
+              (he//api-then entry response)
+              (funcall then response))))
+    (let ((response (apply #'h/api method (he/url entry) rest)))
+      (unless then (funcall 'he//api-then entry response))
+      response)))
+
+(defun he//api-then (entry response)
+  "Update ENTRY's metadata according to RESPONSE.
+Sets ENTRY's hyperdrive to the persisted version of the drive if
+it exists.  Updates ENTRY's hyperdrive's disk usage and latest
+version.  Finally, persists ENTRY's hyperdrive."
+  (pcase-let*
+      (((cl-struct plz-response
+                   (headers (map link allow x-drive-size x-drive-version)))
+        response)
+       ;; RESPONSE is guaranteed to have a "Link" header with the public key,
+       ;; while ENTRY may have a DNSLink domain but no public key yet.
+       (public-key (progn (string-match h//public-key-re link)
+                          (match-string 1 link)))
+       ;; NOTE: Don't destructure `persisted-hyperdrive' with `pcase' here since it may be nil.
+       (persisted-hyperdrive (gethash public-key h/hyperdrives)))
+
+    (when persisted-hyperdrive
+      ;; ENTRY's hyperdrive already persisted: merge domains into persisted
+      ;; hyperdrive and set ENTRY's hyperdrive slot to the persisted copy.
+      (setf (h/domains persisted-hyperdrive)
+            (delete-dups (append (h/domains persisted-hyperdrive)
+                                 (h/domains (he/hyperdrive entry)))))
+      (setf (he/hyperdrive entry) persisted-hyperdrive))
+
+    ;; Ensure that ENTRY's hyperdrive has a public key.
+    (setf (h/public-key (he/hyperdrive entry)) public-key)
+
+    ;; Fill hyperdrive.
+    (when allow
+      ;; NOTE: "Allow" header is only present on HEAD requests.  We can change
+      ;; this, but it's fine as-is since we only need to check writability once.
+      (setf (h/writablep (he/hyperdrive entry)) (string-match-p "PUT" allow)))
+    (when x-drive-size
+      (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
+            (cl-parse-integer x-drive-size)))
+    (when x-drive-version
+      (setf (h/latest-version (he/hyperdrive entry))
+            (string-to-number x-drive-version)))
+    ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
+    ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
+    (h/persist (he/hyperdrive entry))))
 
 (defun h/gateway-needs-upgrade-p ()
   "Return non-nil if the gateway is responsive and needs upgraded."
@@ -253,16 +311,6 @@ PLZ-ERR should be a `plz-error' struct."
   (format "http://localhost:%d/hyper/%s"
           h/gateway-port
           (substring url (length h//hyper-prefix))))
-
-(cl-defun h//write (url &key body then else queue)
-  "Save BODY (a string) to hyperdrive URL.
-THEN and ELSE are passed to `hyperdrive-api', which see."
-  (declare (indent defun))
-  (h/api 'put url
-    ;; TODO: Investigate whether we should use 'text body type for text buffers.
-    :body-type 'binary
-    ;; TODO: plz accepts buffer as a body, we should refactor calls to h//write to pass in a buffer instead of a buffer-string.
-    :body body :as 'response :then then :else else :queue queue))
 
 (defun h/parent (entry)
   "Return parent entry for ENTRY.
@@ -468,7 +516,7 @@ When VERSION is nil, return latest version of ENTRY."
     (setf (he/version entry) version)
     (condition-case err
         ;; FIXME: Requests to out of range version currently hang.
-        (h/fill entry)
+        (he/fill entry)
       (plz-error
        (pcase (plz-response-status (plz-error-response (caddr err)))
          ;; FIXME: If plz-error is a curl-error, this block will fail.
@@ -489,7 +537,7 @@ Sends a request to the gateway for hyperdrive's latest version."
 
   ;; ENTRY's version is not nil.
   (let ((next-entry (h/copy-tree entry t))
-        (latest-version (h/fill-latest-version (he/hyperdrive entry))))
+        (latest-version (h/fill (he/hyperdrive entry))))
 
     ;; ENTRY version is the latest version: return ENTRY with nil version.
     (when (eq latest-version (he/version entry))
@@ -554,16 +602,11 @@ echo area when the request for the file is made."
   ;; FIXME: Some of the synchronous filling functions we've added now cause this to be blocking,
   ;; which is very noticeable when a file can't be loaded from the gateway and eventually times out.
   (let ((hyperdrive (he/hyperdrive entry)))
-    (h/fill entry
+    (he/fill entry
       :then (lambda (entry)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
                            (handler (alist-get type h/type-handlers
                                                nil nil #'string-match-p)))
-                (unless (h//entry-directory-p entry)
-                  ;; No need to fill latest version for directories,
-                  ;; since we do it in `h//fill' already.
-                  (h/fill-latest-version hyperdrive))
-                (h/persist hyperdrive)
                 (funcall (or handler #'h/handler-default) entry :then then)))
       :else (lambda (err)
               (cl-labels ((not-found-action ()
@@ -622,7 +665,7 @@ echo area when the request for the file is made."
     (when messagep
       (h/message "Opening <%s>..." (he/url entry)))))
 
-(cl-defun h/fill (entry &key queue (then 'sync) else)
+(cl-defun he/fill (entry &key queue (then 'sync) else)
   "Fill ENTRY's metadata and call THEN.
 If THEN is `sync', return the filled entry and ignore ELSE.
 Otherwise, make request asynchronously and call THEN with the
@@ -642,15 +685,11 @@ the given `plz-queue'"
                     ;; (e.g. if the user reverted too quickly).
                     nil)
                    (_
-                    (h/message "hyperdrive-fill: error: %S" plz-error))))))
+                    (h/message "hyperdrive-entry-fill: error: %S" plz-error))))))
   (pcase then
     ('sync (condition-case err
-               (h//fill entry
-                        (plz-response-headers
-                         (h/api 'head (he/url entry)
-                           :as 'response
-                           :then 'sync
-                           :noquery t)))
+               (he//fill entry (plz-response-headers
+                                (he/api 'head entry :then 'sync :noquery t)))
              (plz-error
               (pcase (plz-response-status (plz-error-response (caddr err)))
                 ;; FIXME: If plz-error is a curl-error, this block will fail.
@@ -658,11 +697,10 @@ the given `plz-queue'"
                  (h/update-nonexistent-version-range entry)))
               ;; Re-signal error for, e.g. `he/at'.
               (signal (car err) (cdr err)))))
-    (_ (h/api 'head (he/url entry)
+    (_ (he/api 'head entry
          :queue queue
-         :as 'response
          :then (lambda (response)
-                 (funcall then (h//fill entry (plz-response-headers response))))
+                 (funcall then (he//fill entry (plz-response-headers response))))
          :else (lambda (&rest args)
                  (when (he/version entry)
                    ;; If request is canceled, the entry may not have a version.
@@ -671,72 +709,28 @@ the given `plz-queue'"
                  (apply else args))
          :noquery t))))
 
-(defun h//fill (entry headers)
-  "Fill ENTRY and its hyperdrive from HEADERS.
+(defun he//fill (entry headers)
+  "Fill ENTRY slots from HEADERS.
 
-The following ENTRY slots are filled:
 - \\+`type'
 - \\+`mtime'
 - \\+`size'
-- \\+`hyperdrive' (from persisted value if it exists)
 
-The following ENTRY hyperdrive slots are filled:
-- \\+`public-key'
-- \\+`writablep' (when headers include Allow)
-- \\+`domains' (merged with current persisted value)
-- \\+`etc' (disk-usage)
+Also fills existent range in `hyperdrive-version-ranges'.
 
 Returns filled ENTRY."
   (pcase-let*
-      (((cl-struct hyperdrive-entry hyperdrive) entry)
-       ((cl-struct hyperdrive writablep domains etc) hyperdrive)
-       ((map link content-length content-type etag
-             last-modified allow x-drive-size)
-        headers)
-       ;; If URL hostname was a DNSLink domain,
-       ;; entry doesn't yet have a public-key slot.
-       (public-key (progn (string-match h//public-key-re link)
-                          (match-string 1 link)))
-       (persisted-hyperdrive (gethash public-key h/hyperdrives))
-       (domain (car domains)))
+      (((map content-length content-type etag last-modified) headers))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
-    (when (and allow (eq 'unknown writablep))
-      (setf (h/writablep hyperdrive) (string-match-p "PUT" allow)))
     (setf (he/size entry) (and content-length
                                (ignore-errors
                                  (cl-parse-integer content-length))))
     (setf (he/type entry) content-type)
     (setf (he/mtime entry) last-modified)
-    (when x-drive-size
-      (setf (map-elt etc 'disk-usage) (cl-parse-integer x-drive-size)))
-    (setf (h/etc hyperdrive) etc)
-    (if persisted-hyperdrive
-        (progn
-          ;; Ensure that entry's hyperdrive is the persisted
-          ;; hyperdrive, since it may be used later as part of a
-          ;; `h/version-ranges' key and compared using `eq'.
-          ;; Also, we want the call to `h//fill-latest-version'
-          ;; below to update the persisted hyperdrive.
-          (setf (he/hyperdrive entry) persisted-hyperdrive)
-          (when domain
-            ;; The previous call to he/url may not have retrieved
-            ;; the persisted hyperdrive if we had only a domain
-            ;; but no public-key.
-            (cl-pushnew domain (h/domains (he/hyperdrive entry)) :test #'equal)))
-      (setf (h/public-key hyperdrive) public-key))
-    (when etag
-      (if (and (h//entry-directory-p entry)
-               (null (he/version entry)))
-          ;; Version-less directory HEAD/GET request ETag header always have the
-          ;; hyperdrive's latest version. We don't currently store
-          ;; version ranges for directories (since they don't
-          ;; technically have versions in hyperdrive).
-          (h//fill-latest-version hyperdrive headers)
-        ;; File HEAD/GET request ETag header does not retrieve the
-        ;; hyperdrive's latest version, so `h/update-existent-version-range'
-        ;; will not necessarily fill in the entry's last range.
-        (h/update-existent-version-range entry (string-to-number etag))))
+    (when (and etag (not (h//entry-directory-p entry)))
+      ;; Directory version ranges are not supported.
+      (h/update-existent-version-range entry (string-to-number etag)))
     entry))
 
 (defun h//fill-listing-entries (listing hyperdrive version)
@@ -761,30 +755,9 @@ entry as a side-effect."
        entry))
    listing))
 
-(defun h/fill-latest-version (hyperdrive)
-  "Synchronously fill the latest version slot in HYPERDRIVE.
-Returns the latest version number."
-  (pcase-let (((cl-struct plz-response headers)
-               (h/api
-                 'head (he/url
-                        (he/create
-                         :hyperdrive hyperdrive :path "/"))
-                 :as 'response)))
-    (h//fill-latest-version hyperdrive headers)))
-
-(defun h//fill-latest-version (hyperdrive headers)
-  "Fill the latest version slot in HYPERDRIVE from HEADERS.
-HEADERS must from a HEAD/GET request to a directory or a
-PUT/DELETE request to a file or directory, as only those requests
-return the correct ETag header.  Returns latest version number."
-  ;; TODO: Update relevant buffers when hyperdrive latest version
-  ;; updates, at the least describe-hyperdrive buffers.
-  ;; TODO: Consider updating version range here.  First check all the
-  ;; places where this function is called.  Better yet, update
-  ;; `h/version-ranges' (and `h/hyperdrives'?)  in a
-  ;; lower-level function, perhaps a wrapper for `h/api'?
-  (setf (h/latest-version hyperdrive)
-        (string-to-number (map-elt headers 'etag))))
+(defun h/fill (hyperdrive)
+  "Synchronously fill the latest version slot in HYPERDRIVE."
+  (he/api 'head (he/create :hyperdrive hyperdrive :path "/")))
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
 
@@ -909,9 +882,8 @@ Once all requests return, call FINALLY with no arguments."
                    ;; existent/nonexistent entry, or at the limit.
                    (setf finishedp t)
                    (cl-return))
-                 (h/api 'head (he/url prev-entry)
+                 (he/api 'head prev-entry
                    :queue nonexistent-queue
-                   :as 'response
                    :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
                            (pcase-let* ((range-start (string-to-number etag))
                                         ((map :existsp) (map-elt copy-entry-version-ranges range-start)))
@@ -933,9 +905,8 @@ Once all requests return, call FINALLY with no arguments."
            (let ((copy-entry (h/copy-tree entry t)))
              (setf (he/version copy-entry) version)
              (cl-decf total-requests-limit)
-             (h/api 'head (he/url copy-entry)
+             (he/api 'head copy-entry
                :queue fill-entry-queue
-               :as 'response
                :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
                        (pcase-let* ((range-start (string-to-number etag))
                                     ((map :existsp)
@@ -969,11 +940,10 @@ HYPERDRIVE's public metadata file."
                ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
                :version nil))
        (metadata (condition-case err
-                     ;; TODO: Refactor to use :as 'response-with-buffer and call h/fill
+                     ;; TODO: Refactor to use :as 'response-with-buffer and call he/fill
                      (pcase-let
-                         (((cl-struct plz-response headers body)
-                           (h/api 'get (he/url entry) :as 'response :noquery t)))
-                       (h//fill entry headers)
+                         (((cl-struct plz-response body)
+                           (he/api 'get entry :noquery t)))
                        (with-temp-buffer
                          (insert body)
                          (goto-char (point-min))
@@ -999,8 +969,7 @@ HYPERDRIVE's public metadata file."
 
 Call ELSE if request fails."
   (declare (indent defun))
-  (h/api 'delete (he/url (he/create :hyperdrive hyperdrive))
-    :as 'response
+  (he/api 'delete (he/create :hyperdrive hyperdrive)
     :then (lambda (response)
             (h/persist hyperdrive :purge t)
             (h/purge-version-ranges hyperdrive)
@@ -1008,9 +977,14 @@ Call ELSE if request fails."
     :else else))
 
 (cl-defun h/write (entry &key body then else queue)
-  "Write BODY to hyperdrive ENTRY's URL."
+  "Write BODY to hyperdrive ENTRY's URL.
+THEN and ELSE are passed to `hyperdrive-entry-api', which see."
   (declare (indent defun))
-  (h//write (he/url entry)
+  (he/api 'put entry
+    ;; TODO: Investigate whether we should use 'text body type for text buffers.
+    :body-type 'binary
+    ;; TODO: plz accepts buffer as a body, we should refactor calls to h/write
+    ;; to pass in a buffer instead of a buffer-string.
     :body body :then then :else else :queue queue))
 
 (cl-defun h//format-entry-url
@@ -1329,9 +1303,7 @@ hyperdrive."
             (h/api 'get (format "hyper://localhost/?key=%s"
                                 (url-hexify-string seed))
               :as 'response :noquery t)))
-        ;; TODO: Update hyperdrive disk-usage.  The following doesn't work
-        ;; because the response doesn't have the proper ETag header:
-        ;; (h//fill (h/url-entry url) headers)
+        (h/fill (h/url-entry url))
         url)
     (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
                    ;; FIXME: If plz-error is a curl-error, this block will fail.
@@ -1361,12 +1333,10 @@ Otherwise, return nil.  SLOT may be one of
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
   (pcase-let*
-      (((cl-struct plz-response headers body)
+      (((cl-struct plz-response body)
         ;; TODO: Handle errors
         ;; TODO: When plz adds :as 'response-with-buffer, use that.
-        (h/api 'get (he/url entry) :noquery t :as 'response))
-       ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-       (_ (h//fill entry headers))
+        (he/api 'get entry :noquery t))
        ((cl-struct hyperdrive-entry hyperdrive version etc) entry)
        ((map target) etc))
     (with-current-buffer (h//get-buffer-create entry)
