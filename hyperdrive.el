@@ -803,7 +803,7 @@ The return value of this function is the retrieval buffer."
                ;; TODO: When `plz.el' adds :as 'response-with-buffer, use that.
                ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
                ((cl-struct plz-response body)
-                (he/api 'get (h/url-entry url) :as 'response)))
+                (he/api 'get (h/url-entry url))))
     (with-current-buffer (generate-new-buffer " *hyperdrive-eww*")
       ;; TODO: After refactoring to use :as 'response, this buffer no longer
       ;; contains HTTP headers.  Confirm that EWW works properly when buffer
