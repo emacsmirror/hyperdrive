@@ -802,14 +802,17 @@ The return value of this function is the retrieval buffer."
   (pcase-let* ((url (url-recreate-url parsed-url))
                ;; TODO: When `plz.el' adds :as 'response-with-buffer, use that.
                ;; response-buffer will contain the loaded HTML, and will be deleted at the end of `eww-render'.
-               ((cl-struct plz-response body)
+               ((cl-struct plz-response headers body)
                 (he/api 'get (h/url-entry url))))
     (with-current-buffer (generate-new-buffer " *hyperdrive-eww*")
-      ;; TODO: After refactoring to use :as 'response, this buffer no longer
-      ;; contains HTTP headers.  Confirm that EWW works properly when buffer
-      ;; lacks headers.
       (widen)
       (goto-char (point-min))
+      ;; TODO: When `plz' gains `:as '(response :with buffer)' or whatever, use it instead of this hack.
+      ;; HACK: Insert headers because `eww-render' expects them to be in the buffer.
+      (map-do (lambda (header value)
+                (insert (format "%s: %s\n" header value)))
+              headers)
+      (insert "\n\n")
       (insert body)
       (while (search-forward (string ?\C-m) nil t)
         ;; Strip CRLF from headers so that `eww-parse-headers' works correctly.
