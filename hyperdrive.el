@@ -1446,7 +1446,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                (if urls-and-hashes
                    (try)
                  (setf h/install-process nil)
-                 (hyperdrive-menu-refresh)
+                 (h/menu-refresh)
                  (hyperdrive-error "Downloading failed; no more mirrors available")))))
          (head-size (url)
            (when-let ((response (plz 'head url :as 'response :connect-timeout 5)))
