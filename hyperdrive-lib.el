@@ -1457,17 +1457,17 @@ Default function; see variable `h/gateway-start-function'."
 
 (defun h/menu-refresh ()
   "Refresh `hyperdrive-menu' if it's open."
-  ;; TODO(transient): Doesn't work if hyperdrive-start called outside with M-x,
-  ;; not from menu.  Jonas might add a variable like `transient-active-command'
-  ;; to DTRT.
-  (when (and (eq transient-current-command 'h/menu)
-             ;; Depending on transient-show-popup customization, there
-             ;; might be no popup (yet).
-             transient--showp
-             ;; FIXME(transient): This probably does not detect all cases of a
-             ;; suspended transient, but I think there is no proper way to query
-             ;; that state yet.  I'll look into that.  --Jonas
-	     (not (active-minibuffer-window)))
+  (when (and
+         ;; Depending on transient-show-popup customization, there
+         ;; might be no popup (yet).
+         transient--showp
+         transient--prefix
+         (eq (oref transient--prefix command) 'h/menu)
+         ;; Check that the transient is not suspended.
+         (or (memq 'transient--pre-command pre-command-hook)
+             (and (memq t pre-command-hook)
+                  (memq 'transient--pre-command
+                        (default-value 'pre-command-hook)))))
     (transient--refresh-transient)))
 
 (defun h//gateway-stop-default ()
