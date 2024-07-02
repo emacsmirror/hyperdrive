@@ -1391,15 +1391,13 @@ Intended for relative (i.e. non-full) URLs."
   '((gnu/linux
      ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.10.2/hyper-gateway-ushin-linux"
        :sha256 "4a79a406ab8e6f8f9c4e47bd7f001c6673c81e1357c3977e0dddfac777a57204")
-     ;; ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.10.2/hyper-gateway-linux-v3.10.2"
-     ;;   :sha256 "")
-     )
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.10.2/hyper-gateway-linux-v3.10.2"
+       :sha256 "4a79a406ab8e6f8f9c4e47bd7f001c6673c81e1357c3977e0dddfac777a57204"))
     (darwin
      ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.10.2/hyper-gateway-ushin-macos"
        :sha256 "84ee621756dce98597f43b45942af812c9f3b200f31f769a53d077bf7e8b1156")
-     ;; ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.10.2/hyper-gateway-macos-v3.10.2"
-     ;;   :sha256 "")
-     )
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.10.2/hyper-gateway-macos-v3.10.2"
+       :sha256 "84ee621756dce98597f43b45942af812c9f3b200f31f769a53d077bf7e8b1156"))
     (windows-nt
      ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.10.2/hyper-gateway-ushin-windows.exe"
        :sha256 "691105d1657627d2ac5e56b6b598ce3572beaa601663a55a86135b8cd1c6657d")
