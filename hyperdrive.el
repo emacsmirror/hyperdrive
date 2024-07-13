@@ -505,8 +505,7 @@ use, see `hyperdrive-write'."
                 (with-current-buffer buffer
                   (unless h/mode
                     (h//clean-buffer)
-                    (when (member (hyperdrive-public-key hyperdrive)
-                                  h/safe-hyperdrives)
+                    (when (map-elt (hyperdrive-etc hyperdrive) 'safep)
                       (let ((buffer-file-name (he/name entry)))
                         (set-auto-mode)))
                     (h/mode))
