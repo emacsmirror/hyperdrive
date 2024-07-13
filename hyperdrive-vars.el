@@ -68,14 +68,6 @@ it is added automatically at run-time using the value of
   "Port to use to send requests to the gateway server."
   :type 'natnum)
 
-(defcustom h/safe-hyperdrives nil
-  "List of hyperdrive public keys to be considered safe.
-When a hyperdrive is considered safe, browsing files within it
-will cause a major code to automatically load."
-  ;; TODO: Append these public keys to `org-safe-remote-resources' in a setter?
-  ;; TODO: Use this variable to also load dir- and file-local variables specified in a hyperdrive?
-  :type '(repeat string))
-
 (defcustom h/persist-location nil
   ;; TODO: Consider using XDG locations for this, as well as storing
   ;; -hyperdrives separately from -version-ranges.  (Note that
