@@ -71,6 +71,7 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
 - Edge case where revert-buffer popped to the wrong hyperdrive buffer.
 - Improved reading of hyperdrive URLs.
 - Improved visible buttons in ~hyperdrive-menu-bar-mode~.
+- Avoid unnecessary prompt to save hyperdrive EWW buffers.
 
 ** Internal
 
