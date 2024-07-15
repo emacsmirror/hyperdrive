@@ -210,14 +210,16 @@ response."
   ;; Always use :as 'response
   (cl-assert (null (plist-get rest :as)))
   (setf (plist-get rest :as) 'response)
+  (unless (map-elt rest :then) (setf (map-elt rest :then) 'sync))
   (pcase-let* (((map :then) rest))
-    (when then
+    (unless (eq 'sync then)
       (setf (plist-get rest :then)
             (lambda (response)
               (he//api-then entry response)
               (funcall then response))))
     (let ((response (apply #'h/api method (he/url entry) rest)))
-      (unless then (funcall 'he//api-then entry response))
+      (when (eq 'sync then)
+        (funcall 'he//api-then entry response))
       response)))
 
 (defun he//api-then (entry response)
