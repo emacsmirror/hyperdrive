@@ -861,6 +861,7 @@ The return value of this function is the retrieval buffer."
   "Ask before killing an unsaved hyperdrive file buffer."
   (if (and h/mode
            h/current-entry
+           (not (derived-mode-p 'eww-mode))
            (not (h//entry-directory-p h/current-entry))
            (buffer-modified-p))
       (h//kill-buffer-possibly-save (current-buffer))
