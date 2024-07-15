@@ -1408,6 +1408,11 @@ with `hyperdrive-handler-default'."
           (h/mode)
           (setf buffer (current-buffer)))
         (set-buffer buffer)
+        ;; Since the buffer is modified (by `eww') and
+        ;; `write-contents-functions' is set (by `hyperdrive-mode'), Emacs
+        ;; prompts to save before killing the EWW buffer.  To avoid this, set
+        ;; `buffer-modified-p' flag to nil.
+        (set-buffer-modified-p nil)
         (when then
           (funcall then)))
     (h/handler-default entry :then then)))
