@@ -715,12 +715,17 @@ the given `plz-queue'"
 - \\+`type'
 - \\+`mtime'
 - \\+`size'
+- \\+`etc'
+  - \\+`block-length'
+  - \\+`block-length-downloaded'
 
 Also fills existent range in `hyperdrive-version-ranges'.
 
 Returns filled ENTRY."
   (pcase-let*
-      (((map content-length content-type etag last-modified) headers))
+      (((map content-length content-type etag last-modified
+             x-file-block-length x-file-block-length-downloaded)
+        headers))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
     (setf (he/size entry) (and content-length
@@ -731,6 +736,14 @@ Returns filled ENTRY."
     (when (and etag (not (h//entry-directory-p entry)))
       ;; Directory version ranges are not supported.
       (h/update-existent-version-range entry (string-to-number etag)))
+    (when x-file-block-length
+      (setf (map-elt (he/etc entry) 'block-length)
+            (ignore-errors
+              (cl-parse-integer x-file-block-length))))
+    (when x-file-block-length-downloaded
+      (setf (map-elt (he/etc entry) 'block-length-downloaded)
+            (ignore-errors
+              (cl-parse-integer x-file-block-length-downloaded))))
     entry))
 
 (defun h//fill-listing-entries (listing hyperdrive version)
