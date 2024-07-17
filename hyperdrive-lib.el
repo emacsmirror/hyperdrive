@@ -728,11 +728,13 @@ Returns filled ENTRY."
         headers))
     (when last-modified
       (setf last-modified (encode-time (parse-time-string last-modified))))
-    (setf (he/size entry) (and content-length
-                               (ignore-errors
-                                 (cl-parse-integer content-length))))
-    (setf (he/type entry) content-type)
-    (setf (he/mtime entry) last-modified)
+    (when content-length
+      (setf (he/size entry)
+            (ignore-errors (cl-parse-integer content-length))))
+    (when content-type
+      (setf (he/type entry) content-type))
+    (when last-modified
+      (setf (he/mtime entry) last-modified))
     (when (and etag (not (h//entry-directory-p entry)))
       ;; Directory version ranges are not supported.
       (h/update-existent-version-range entry (string-to-number etag)))
