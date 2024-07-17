@@ -203,20 +203,7 @@ modified; file blobs may be recoverable from other peers."
               (h/error "Unable to clear cache for `%s': %S" (he/url entry) err))
       :then (lambda (response)
               (he//fill entry (plz-response-headers response))
-              ;; Update the face showing the file size in any directory buffer.
-              (when-let* ((buffer (hyperdrive--find-buffer-visiting
-                                   (hyperdrive-parent entry)))
-                          (ewoc (buffer-local-value 'h/ewoc buffer))
-                          (node (h/ewoc-find-node ewoc entry
-                                  :predicate #'he/equal-p)))
-                (ewoc-set-data node entry)
-                ;; NOTE: Ensure that the buffer's window is selected,
-                ;; if it has one.  (Workaround a possible bug in EWOC.)
-                (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                    (with-selected-window buffer-window
-                      (with-silent-modifications (ewoc-invalidate ewoc node)))
-                  (with-current-buffer (ewoc-buffer ewoc)
-                    (with-silent-modifications (ewoc-invalidate ewoc node)))))))))
+              (he//invalidate entry)))))
 
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
