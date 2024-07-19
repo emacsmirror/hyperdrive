@@ -72,7 +72,6 @@ If THEN, call it in the directory buffer with no arguments."
                                        (json-read-from-string body)
                                        hyperdrive version))
                              (parent-entry (h/parent directory-entry)))
-                  (setf directory-entry (he//fill directory-entry headers))
                   (when parent-entry
                     (setf (alist-get 'display-name (he/etc parent-entry)) "../")
                     (push parent-entry entries))
