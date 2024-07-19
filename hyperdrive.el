@@ -201,9 +201,8 @@ modified; file blobs may be recoverable from other peers."
       :headers '(("Cache-Control" . "no-store"))
       :else (lambda (err)
               (h/error "Unable to clear cache for `%s': %S" (he/url entry) err))
-      :then (lambda (response)
-              (he//fill entry (plz-response-headers response))
-              (he//invalidate entry)))))
+      ;; Make async; `he//api-then' will call `he//invalidate'.
+      :then #'ignore)))
 
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)

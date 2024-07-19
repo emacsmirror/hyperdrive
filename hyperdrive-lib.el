@@ -284,7 +284,13 @@ version.  Finally, persists ENTRY's hyperdrive."
     (when x-file-block-length-downloaded
       (setf (map-elt (he/etc entry) 'block-length-downloaded)
             (ignore-errors
-              (cl-parse-integer x-file-block-length-downloaded))))))
+              (cl-parse-integer x-file-block-length-downloaded))))
+
+    ;; Redisplay entry.
+    (unless (h//entry-directory-p entry)
+      ;; There's currently never a reason to redisplay directory entries since
+      ;; they don't have block-length{,-downloaded} metadata.
+      (he//invalidate entry))))
 
 (defun h/gateway-needs-upgrade-p ()
   "Return non-nil if the gateway is responsive and needs upgraded."
