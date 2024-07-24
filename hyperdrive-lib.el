@@ -262,7 +262,9 @@ version.  Finally, persists ENTRY's hyperdrive."
     (when x-drive-size
       (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
             (cl-parse-integer x-drive-size)))
-    (when x-drive-version
+    (when (and x-drive-version
+               ;; If version is specified, x-drive-size will be equal to it.
+               (null (he/version entry)))
       (setf (h/latest-version (he/hyperdrive entry))
             (string-to-number x-drive-version)))
     ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
