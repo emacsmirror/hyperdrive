@@ -133,6 +133,7 @@ header, returns an entry whose RANGE-END and version are nil."
   "+"   #'h/history-fill-version-ranges
   "w"   #'h/history-copy-url
   "d"   #'h/history-download-file
+  "F"   #'h/history-forget-file
   "<mouse-2>" #'h/history-find-at-point
   "<follow-link>" 'mouse-face)
 
@@ -330,6 +331,15 @@ buffer."
     ('t (h/download entry filename))
     ('nil (h/user-error "File does not exist!"))
     ('unknown (h/user-error "File not known to exist!"))))
+
+(declare-function h/forget-file "hyperdrive")
+(defun h/history-forget-file (entry)
+  "Delete local copy of the file contents of ENTRY at point.
+Only delete the blob(s) for the file at ENTRY's version range;
+other blobs are not cleared.  Hyperdrive directory contents are
+not modified; file blobs may be recoverable from other peers."
+  (interactive (list (h/history-entry-at-point)) h/history-mode)
+  (h/forget-file entry))
 
 (provide 'hyperdrive-history)
 
