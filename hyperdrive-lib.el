@@ -1605,6 +1605,15 @@ version."
           (and-let* ((local-entry (buffer-local-value 'h/current-entry buffer)))
             (he/equal-p entry local-entry any-version-p))))))
 
+(defun h/history-find-buffer-visiting (entry)
+  "Return a buffer showing ENTRY's history, or nil if none exists."
+  ;; There should only ever be one buffer showing ENTRY's history, so it's safe
+  ;; to return the first value in the list.
+  (car (match-buffers
+        (lambda (buffer)
+          (and-let* ((local-entry (buffer-local-value 'h/history-current-entry buffer)))
+            (he/equal-p entry local-entry t))))))
+
 (defun h//format-entry (entry &optional format formats)
   "Return ENTRY formatted according to FORMAT.
 FORMAT is a `format-spec' specifier string which maps to specifications
