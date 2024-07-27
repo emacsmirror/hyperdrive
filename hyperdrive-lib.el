@@ -1604,7 +1604,7 @@ both point to the same content."
     (generate-new-buffer-name buffer-name)))
 
 (defun h//find-buffer-visiting (entry &optional any-version-p)
-  "Return a buffer visiting ENTRY, or nil if none exist.
+  "Return a buffer visiting ENTRY, or nil if none exists.
 If ANY-VERSION-P, return the first buffer showing ENTRY at any
 version."
   ;; If `match-buffers' returns more than one buffer, we ignore the others.
