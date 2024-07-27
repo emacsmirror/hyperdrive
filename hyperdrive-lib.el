@@ -294,6 +294,9 @@ version.  Finally, persists ENTRY's hyperdrive."
     (unless (h//entry-directory-p entry)
       ;; There's currently never a reason to redisplay directory entries since
       ;; they don't have block-length{,-downloaded} metadata.
+
+      ;; NOTE: When we send a HEAD and GET request in rapid succession,
+      ;; `he//invalidate' gets called twice.  Consider debouncing.
       (he//invalidate entry))))
 
 (defun h/gateway-needs-upgrade-p ()
