@@ -424,7 +424,7 @@ directory.  Otherwise, or with universal prefix argument
     :then (lambda (response)
             (pcase-let* (((cl-struct plz-response headers) response)
                          ((map etag) headers)
-                         (nonexistent-entry (h/copy-tree entry t)))
+                         (nonexistent-entry (compat-call copy-tree entry t)))
               (setf (he/version nonexistent-entry) (string-to-number etag))
               (h/update-nonexistent-version-range nonexistent-entry)
               ;; Since there's no way for `h//write-contents' to run when

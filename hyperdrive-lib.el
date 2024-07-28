@@ -510,11 +510,7 @@ be \\+`unknown'."
 (defun he/at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
 When VERSION is nil, return latest version of ENTRY."
-  ;; Use `h/copy-tree', because `copy-tree' doesn't work on
-  ;; records/structs, and `copy-hyperdrive-entry' doesn't copy deeply,
-  ;; and we need to be able to modify the `etc' alist of the copied
-  ;; entry separately.
-  (let ((entry (h/copy-tree entry t)))
+  (let ((entry (compat-call copy-tree entry t)))
     (setf (he/version entry) version)
     (condition-case err
         ;; FIXME: Requests to out of range version currently hang.
@@ -538,7 +534,7 @@ Sends a request to the gateway for hyperdrive's latest version."
     (cl-return-from he/next entry))
 
   ;; ENTRY's version is not nil.
-  (let ((next-entry (h/copy-tree entry t))
+  (let ((next-entry (compat-call copy-tree entry t))
         (latest-version (h/fill (he/hyperdrive entry))))
 
     ;; ENTRY version is the latest version: return ENTRY with nil version.
@@ -875,7 +871,7 @@ Once all requests return, call FINALLY with no arguments."
              ;; For nonexistent entries, send requests in parallel.
              (cl-dotimes (i h/queue-limit)
                ;; Send the maximum number of simultaneous requests.
-               (let ((prev-entry (h/copy-tree entry t)))
+               (let ((prev-entry (compat-call copy-tree entry t)))
                  (setf (he/version prev-entry) (- version i 1))
                  (unless (and (cl-plusp (he/version prev-entry))
                               (eq 'unknown (he/exists-p prev-entry))
@@ -904,7 +900,7 @@ Once all requests return, call FINALLY with no arguments."
                    :noquery t)
                  (setf outstanding-nonexistent-requests-p t)))))
          (fill-entry-at (version)
-           (let ((copy-entry (h/copy-tree entry t)))
+           (let ((copy-entry (compat-call copy-tree entry t)))
              (setf (he/version copy-entry) version)
              (cl-decf total-requests-limit)
              (he/api 'head copy-entry
@@ -1643,31 +1639,6 @@ function is a convenience wrapper used by `describe-package-1'."
         (button-face (if (display-graphic-p) 'hyperdrive-button 'link)))
     (apply #'insert-text-button button-text 'face button-face 'follow-link t
            properties)))
-
-(defun h/copy-tree (tree &optional vecp)
-  "Copy TREE like `copy-tree', but with VECP, works for records too."
-  ;; TODO: Now that the new copy-tree behavior has been merged into Emacs,
-  ;; remove this function once compat.el supports the new behavior.
-  (if (consp tree)
-      (let (result)
-	(while (consp tree)
-	  (let ((newcar (car tree)))
-	    (if (or (consp (car tree))
-                    (and vecp (or (vectorp (car tree))
-                                  (recordp (car tree)))))
-		(setf newcar (h/copy-tree (car tree) vecp)))
-	    (push newcar result))
-	  (setf tree (cdr tree)))
-	(nconc (nreverse result)
-               (if (and vecp (or (vectorp tree) (recordp tree)))
-                   (h/copy-tree tree vecp)
-                 tree)))
-    (if (and vecp (or (vectorp tree) (recordp tree)))
-	(let ((i (length (setf tree (copy-sequence tree)))))
-	  (while (>= (setf i (1- i)) 0)
-	    (aset tree i (h/copy-tree (aref tree i) vecp)))
-	  tree)
-      tree)))
 
 (cl-defun h//format-path (path &key directoryp)
   "Return PATH with a leading slash if it lacks one.

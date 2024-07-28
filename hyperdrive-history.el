@@ -106,7 +106,7 @@ and ENTRY's version are nil."
     (cond ((= 1 current-line)
            ;; Point on header: set range-end and entry version to nil
            (pcase-let ((`(,range . ,entry)
-                        (h/copy-tree range-entry-at-point t)))
+                        (compat-call copy-tree range-entry-at-point t)))
              (setf (map-elt (cdr range) :range-end) nil)
              (setf (he/version entry) nil)
              (cons range entry)))
@@ -245,7 +245,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   (interactive (list (h/history-range-entry-at-point)))
   (pcase-let* ((`(,range . ,entry) range-entry)
                (`(,_range-start . ,(map :range-end)) range)
-               (range-end-entry (h/copy-tree entry))
+               (range-end-entry (compat-call copy-tree entry))
                (ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
     (setf (he/version range-end-entry) range-end)
     (overlay-put ov 'display "Loading")
@@ -265,7 +265,7 @@ Interactively, diff range entry at point with previous entry."
   (interactive (let* ((new-entry (cdr (h/history-range-entry-at-point)))
                       (old-entry (he/previous new-entry)))
                  (unless old-entry
-                   (setf old-entry (h/copy-tree new-entry t))
+                   (setf old-entry (compat-call copy-tree new-entry t))
                    (cl-decf (he/version old-entry)))
                  (list old-entry new-entry)) h/history-mode)
   (h/diff-file-entries old-entry new-entry

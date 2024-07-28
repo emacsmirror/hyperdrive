@@ -90,7 +90,7 @@ raw URL, not an Org link."
               (custom-id (org-entry-get (point) "CUSTOM_ID"))
               (fragment (cond (custom-id (concat "#" custom-id))
                               (heading (concat "*" heading))))
-              (entry-copy (h/copy-tree h/current-entry t))
+              (entry-copy (compat-call copy-tree h/current-entry t))
               (_ (setf (alist-get 'target (he/etc entry-copy)) fragment))
               (raw-url (he/url entry-copy)))
          (if raw-url-p
