@@ -245,7 +245,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   (interactive (list (h/history-range-entry-at-point)))
   (pcase-let* ((`(,range . ,entry) range-entry)
                (`(,_range-start . ,(map :range-end)) range)
-               (range-end-entry (compat-call copy-tree entry))
+               (range-end-entry (compat-call copy-tree entry t))
                (ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
     (setf (he/version range-end-entry) range-end)
     (overlay-put ov 'display "Loading")
