@@ -79,6 +79,7 @@ installation with ~M-x hyperdrive-install~, and a faster directory UI!
 - Refactor to accommodate [[https://ushin.org/hyperdrive/hyperdrive-manual.html#Org_002dtransclusion-integration][hyperdrive-org-transclusion]]
 - Update hyperdrive ~latest-version~ metadata when deleting directories
 - Added Org 9.7.6 as a dependency.
+- Update ~compat.el~ dependency to ~30.0.0.0~.
 
 * 0.3 [2023-12-02 Sat]
 
