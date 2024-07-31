@@ -14,7 +14,7 @@ See [[https://ushin.org/hyperdrive/hyperdrive-manual.html#Installation][the manu
 ** Manual
 
 For more information, please see [[https://ushin.org/hyperdrive/hyperdrive-manual.html][the manual]].  For recent changes, see
-the [[file:CHANGELOG.org][changelog]].
+the [[https://ushin.org/hyperdrive/hyperdrive-changelog.html][changelog]].
 
 ** Bugs and Patches
 
