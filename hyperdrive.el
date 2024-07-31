@@ -1425,12 +1425,12 @@ If FORCEP, don't prompt for confirmation before downloading."
                (ignore-errors
                  (h/message "Checking server %S..."
                             (url-host (url-generic-parse-url url)))
-                 (setf size (file-size-human-readable
-                             (head-size url)))))
+                 (setf size (head-size url))))
              (if size
                  (if (or forcep
                          (yes-or-no-p
-                          (format "Download and install gateway (%s)? " size)))
+                          (format "Download and install gateway (%s)? "
+                                  (file-size-human-readable size))))
                      (progn
                        (setf forcep t) ;; Don't prompt again.
                        (download url sha256))
@@ -1473,7 +1473,8 @@ If FORCEP, don't prompt for confirmation before downloading."
                                   :path temp-file
                                   :total-size size
                                   :completed-fn #'kill-buffer-and-window))
-             (h/message "Downloading %s from %S to %S" size url destination)))
+             (h/message "Downloading %s from %S to %S"
+                        (file-size-human-readable size) url destination)))
          (check (file-name sha256 url)
            (if (with-temp-buffer
                  (insert-file-contents-literally file-name)
