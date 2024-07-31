@@ -37,8 +37,12 @@
 ;;;; Functions
 
 (cl-defun h/download-monitor
-    (&key buffer-name path total-size setup-fn completed-fn canceled-fn
-          (update-interval 1))
+    (&key buffer-name path total-size setup-fn canceled-fn
+          (update-interval 1) (completed-fn
+                               (lambda ()
+                                 (let ((buffer (current-buffer)))
+                                   (quit-window)
+                                   (kill-buffer buffer)))))
   "Return buffer that monitors the download to PATH."
   (let* ((buffer (generate-new-buffer buffer-name)))
     (with-current-buffer buffer
@@ -56,19 +60,24 @@
 
 (defun h/download-monitor-update (buffer)
   (with-current-buffer buffer
-    (pcase-let* (((map :path :total-size) h/download-monitor-etc)
-                 (attributes (file-attributes path))
+    (pcase-let* (((map :path :total-size :completed-fn)
+                  h/download-monitor-etc))
+      (if (file-exists-p path)
+          (let* ((attributes (file-attributes path))
                  (current-size (file-attribute-size attributes)))
-      ;; TODO: Check download process status to see whether download was canceled.
-      (if (= current-size total-size)
-          ;; Download complete.
-          (funcall (map-elt h/download-monitor-etc :completed-fn))
-        ;; Download in progress: update buffer.
-        (erase-buffer)
-        (insert "Downloading:\n\n"
-                "File: " path "\n"
-                "Downloaded: " (file-size-human-readable current-size nil " ")
-                " / " (file-size-human-readable total-size) "\n")))))
+            (if (= current-size total-size)
+                ;; Download complete.
+                (funcall (map-elt h/download-monitor-etc :completed-fn))
+              ;; Download in progress: update buffer.
+              (erase-buffer)
+              (insert "Downloading:\n\n"
+                      "File: " path "\n"
+                      "Downloaded: " (file-size-human-readable current-size nil " ")
+                      " / " (file-size-human-readable total-size) "\n")))
+        ;; Download completed or canceled.
+        ;; FIXME: We just assume here that it completed and wasn't canceled.
+        (when completed-fn
+          (funcall completed-fn))))))
 
 (provide 'hyperdrive-download-monitor)
 
