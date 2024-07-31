@@ -1467,6 +1467,12 @@ If FORCEP, don't prompt for confirmation before downloading."
                                 (try)))
                              (when (file-exists-p temp-file)
                                (delete-file temp-file)))))
+             (require 'hyperdrive-download-monitor)
+             (pop-to-buffer
+              (h/download-monitor :buffer-name "*hyperdrive-install*"
+                                  :path temp-file
+                                  :total-size size
+                                  :completed-fn #'kill-buffer-and-window))
              (h/message "Downloading %s from %S to %S" size url destination)))
          (check (file-name sha256 url)
            (if (with-temp-buffer
