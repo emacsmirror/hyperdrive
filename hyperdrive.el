@@ -201,10 +201,7 @@ modified; file blobs may be recoverable from other peers."
       :else (lambda (err)
               (h/error "Unable to clear cache for `%s': %S" (he/url entry) err))
       :then (lambda (_response)
-              (h/message "Cleared `%s'" (h//format-entry entry))
-              ;; TODO: When file sizes in hyperdrive-dir-mode are colorized
-              ;; based locally downloaded sizes, refresh ewoc entry here.
-              ))))
+              (h/message "Cleared `%s'" (h//format-entry entry))))))
 
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
