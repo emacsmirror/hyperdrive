@@ -1468,6 +1468,12 @@ If FORCEP, don't prompt for confirmation before downloading."
                              (when (file-exists-p temp-file)
                                (delete-file temp-file)))))
              (require 'hyperdrive-download-monitor)
+             ;; Wait for download to start before showing monitor.
+             (cl-loop until (file-exists-p temp-file)
+                      do (sleep-for 0.1)
+                      for times below 100
+                      finally (unless (file-exists-p temp-file)
+                                (error "Download not started after 10 seconds")))
              (pop-to-buffer
               (h/download-monitor :buffer-name "*hyperdrive-install*"
                                   :path temp-file
