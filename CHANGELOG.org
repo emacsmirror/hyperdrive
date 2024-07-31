@@ -7,7 +7,8 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 * 0.4-pre
 
 Version ~0.4~ features [[https://ushin.org/hyperdrive/hyperdrive-manual.html#Org_002dtransclusion-integration][org-transclusion integration]], easy gateway
-installation with ~M-x hyperdrive-install~, and a faster directory UI!
+installation with ~M-x hyperdrive-install~, and a command to save disk
+space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 
 ** Security
 
