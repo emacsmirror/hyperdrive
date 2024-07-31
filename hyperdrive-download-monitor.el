@@ -48,7 +48,8 @@
             (map-elt h/download-monitor-etc :canceled-fn) canceled-fn)
       (h/download-monitor-update buffer)
       (setf (map-elt h/download-monitor-etc 'timer)
-            (run-at-time update-interval t #'h/download-monitor-update buffer))
+            (run-at-time update-interval update-interval
+                         #'h/download-monitor-update buffer))
       (when setup-fn
         (funcall setup-fn)))
     buffer))
