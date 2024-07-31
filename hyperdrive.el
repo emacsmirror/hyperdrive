@@ -1448,7 +1448,9 @@ If FORCEP, don't prompt for confirmation before downloading."
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
-           (let ((temp-file (make-temp-name "hyperdrive-gateway-")))
+           (let ((temp-file (make-temp-name
+                             (expand-file-name "hyperdrive-gateway-"
+                                               temporary-file-directory))))
              (setf h/install-process
                    (plz 'get url :as `(file ,temp-file) :timeout nil
                      :then (lambda (filename)
