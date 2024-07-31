@@ -39,11 +39,13 @@
 (cl-defun h/download-monitor
     (&key buffer-name path total-size setup-fn canceled-fn
           (update-interval 1) (completed-fn
-                               (lambda ()
-                                 (let ((buffer (current-buffer)))
-                                   (quit-window)
+                               (lambda (buffer)
+                                 (let ((buffer-window (get-buffer-window buffer)))
+                                   (when buffer-window
+                                     (quit-window nil buffer-window))
                                    (kill-buffer buffer)))))
-  "Return buffer that monitors the download to PATH."
+  "Return buffer that monitors the download to PATH.
+COMPLETED-FN is called with the monitor buffer as its argument."
   (let* ((buffer (generate-new-buffer buffer-name)))
     (with-current-buffer buffer
       (setf (map-elt h/download-monitor-etc :path) path
@@ -59,25 +61,27 @@
     buffer))
 
 (defun h/download-monitor-update (buffer)
-  (with-current-buffer buffer
-    (pcase-let* (((map :path :total-size :completed-fn)
-                  h/download-monitor-etc))
-      (if (file-exists-p path)
-          (let* ((attributes (file-attributes path))
-                 (current-size (file-attribute-size attributes)))
-            (if (= current-size total-size)
-                ;; Download complete.
-                (funcall (map-elt h/download-monitor-etc :completed-fn))
-              ;; Download in progress: update buffer.
-              (erase-buffer)
-              (insert "Downloading:\n\n"
-                      "File: " path "\n"
-                      "Downloaded: " (file-size-human-readable current-size nil " ")
-                      " / " (file-size-human-readable total-size) "\n")))
-        ;; Download completed or canceled.
-        ;; FIXME: We just assume here that it completed and wasn't canceled.
-        (when completed-fn
-          (funcall completed-fn))))))
+  (let (completedp)
+    (with-current-buffer buffer
+      (pcase-let* (((map :path :total-size) h/download-monitor-etc))
+        (if (file-exists-p path)
+            (let* ((attributes (file-attributes path))
+                   (current-size (file-attribute-size attributes)))
+              (if (= current-size total-size)
+                  ;; Download complete.
+                  (setf completedp t)
+                ;; Download in progress: update buffer.
+                (erase-buffer)
+                (insert "Downloading:\n\n"
+                        "File: " path "\n"
+                        "Downloaded: " (file-size-human-readable current-size nil " ")
+                        " / " (file-size-human-readable total-size) "\n")))
+          ;; Download completed or canceled.
+          (setf completedp t))))
+    (when completedp
+      ;; FIXME: We just assume here that it completed and wasn't canceled.
+      (when-let ((completed-fn (map-elt h/download-monitor-etc :completed-fn)))
+        (funcall completed-fn buffer)))))
 
 (provide 'hyperdrive-download-monitor)
 
