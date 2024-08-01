@@ -67,6 +67,7 @@
 
 (require 'hyperdrive-lib)
 (require 'hyperdrive-org)
+(require 'hyperdrive-download-monitor)
 
 ;;;; Links
 
@@ -1425,12 +1426,12 @@ If FORCEP, don't prompt for confirmation before downloading."
                (ignore-errors
                  (h/message "Checking server %S..."
                             (url-host (url-generic-parse-url url)))
-                 (setf size (file-size-human-readable
-                             (head-size url)))))
+                 (setf size (head-size url))))
              (if size
                  (if (or forcep
                          (yes-or-no-p
-                          (format "Download and install gateway (%s)? " size)))
+                          (format "Download and install gateway (%s)? "
+                                  (file-size-human-readable size))))
                      (progn
                        (setf forcep t) ;; Don't prompt again.
                        (download url sha256))
@@ -1448,12 +1449,20 @@ If FORCEP, don't prompt for confirmation before downloading."
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
-           (let ((temp-file (make-temp-name
-                             (expand-file-name "hyperdrive-gateway-"
-                                               temporary-file-directory))))
+           (let* ((temp-file (make-temp-name
+                              (expand-file-name "hyperdrive-gateway-"
+                                                temporary-file-directory)))
+                  (preamble (format "Downloading gateway from:\n\nURL: %s\nTo: %s\n"
+                                    url destination))
+                  (monitor-buffer (h//download-monitor
+                                   :preamble preamble
+                                   :buffer-name "*hyperdrive-install*"
+                                   :path temp-file
+                                   :total-size size)))
              (setf h/install-process
                    (plz 'get url :as `(file ,temp-file) :timeout nil
                      :then (lambda (filename)
+                             (h//download-monitor-close monitor-buffer)
                              (check filename sha256 url))
                      :else (lambda (plz-error)
                              (pcase (plz-error-curl-error plz-error)
@@ -1466,8 +1475,11 @@ If FORCEP, don't prompt for confirmation before downloading."
                                            url plz-error)
                                 (try)))
                              (when (file-exists-p temp-file)
-                               (delete-file temp-file)))))
-             (h/message "Downloading %s from %S to %S" size url destination)))
+                               (delete-file temp-file))
+                             (h//download-monitor-close monitor-buffer))))
+             (pop-to-buffer monitor-buffer)
+             (h/message "Downloading %s from %S to %S"
+                        (file-size-human-readable size) url destination)))
          (check (file-name sha256 url)
            (if (with-temp-buffer
                  (insert-file-contents-literally file-name)
