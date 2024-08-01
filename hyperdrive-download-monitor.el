@@ -62,13 +62,15 @@ UPDATE-INTERVAL seconds."
                  (current-size (or (and attributes
                                         (file-attribute-size attributes))
                                    0))
-                 (elapsed (float-time (time-subtract (current-time) started-at))))
+                 (elapsed (float-time (time-subtract (current-time) started-at)))
+                 (speed (/ current-size elapsed)))
       ;; TODO: Consider using `format-spec'.
       (erase-buffer)
       (insert preamble
               "Downloaded: " (file-size-human-readable current-size nil " ")
               " / " (file-size-human-readable total-size) "\n"
-              "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed)))))
+              "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed) "\n"
+              "Speed: " (file-size-human-readable speed) "/s"))))
 
 (defun h//download-monitor-close (buffer)
   "Close download monitor BUFFER."
