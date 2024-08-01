@@ -1452,8 +1452,10 @@ If FORCEP, don't prompt for confirmation before downloading."
            (let* ((temp-file (make-temp-name
                               (expand-file-name "hyperdrive-gateway-"
                                                 temporary-file-directory)))
+                  (preamble (format "Downloading gateway from:\n\nURL: %s\nTo:\n"
+                                    url destination))
                   (monitor-buffer (h//download-monitor
-                                   :preamble "Downloading gateway..."
+                                   :preamble preamble
                                    :buffer-name "*hyperdrive-install*"
                                    :path temp-file
                                    :total-size size)))
@@ -1475,12 +1477,6 @@ If FORCEP, don't prompt for confirmation before downloading."
                              (when (file-exists-p temp-file)
                                (delete-file temp-file))
                              (h//download-monitor-close monitor-buffer))))
-             ;; Wait for download to start before showing monitor.
-             (cl-loop until (file-exists-p temp-file)
-                      do (sleep-for 0.1)
-                      for times below 100
-                      finally (unless (file-exists-p temp-file)
-                                (error "Download not started after 10 seconds")))
              (pop-to-buffer monitor-buffer)
              (h/message "Downloading %s from %S to %S"
                         (file-size-human-readable size) url destination)))

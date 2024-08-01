@@ -52,17 +52,19 @@ UPDATE-INTERVAL seconds."
     buffer))
 
 (defun h//download-monitor-update (buffer)
+  "Update download monitor in BUFFER."
   (with-current-buffer buffer
-    (pcase-let (((map :preamble :path :total-size) h/download-monitor-etc))
+    (pcase-let* (((map :preamble :path :total-size) h/download-monitor-etc)
+                 (attributes (and (file-exists-p path)
+                                  (file-attributes path)))
+                 (current-size (or (and attributes
+                                        (file-attribute-size attributes))
+                                   0)))
       ;; TODO: Consider using `format-spec'.
-      (when (file-exists-p path)
-        (let* ((attributes (file-attributes path))
-               (current-size (file-attribute-size attributes)))
-          (erase-buffer)
-          (insert preamble "\n\n"
-                  "File: " path "\n"
-                  "Downloaded: " (file-size-human-readable current-size nil " ")
-                  " / " (file-size-human-readable total-size) "\n"))))))
+      (erase-buffer)
+      (insert preamble
+              "Downloaded: " (file-size-human-readable current-size nil " ")
+              " / " (file-size-human-readable total-size) "\n"))))
 
 (defun h//download-monitor-close (buffer)
   "Close download monitor BUFFER."
