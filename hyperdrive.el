@@ -67,6 +67,7 @@
 
 (require 'hyperdrive-lib)
 (require 'hyperdrive-org)
+(require 'hyperdrive-download-monitor)
 
 ;;;; Links
 
@@ -1448,12 +1449,18 @@ If FORCEP, don't prompt for confirmation before downloading."
              (cl-parse-integer
               (alist-get 'content-length (plz-response-headers response)))))
          (download (url sha256)
-           (let ((temp-file (make-temp-name
-                             (expand-file-name "hyperdrive-gateway-"
-                                               temporary-file-directory))))
+           (let* ((temp-file (make-temp-name
+                              (expand-file-name "hyperdrive-gateway-"
+                                                temporary-file-directory)))
+                  (monitor-buffer (h//download-monitor
+                                   :preamble "Downloading gateway..."
+                                   :buffer-name "*hyperdrive-install*"
+                                   :path temp-file
+                                   :total-size size)))
              (setf h/install-process
                    (plz 'get url :as `(file ,temp-file) :timeout nil
                      :then (lambda (filename)
+                             (h//download-monitor-close monitor-buffer)
                              (check filename sha256 url))
                      :else (lambda (plz-error)
                              (pcase (plz-error-curl-error plz-error)
@@ -1466,19 +1473,15 @@ If FORCEP, don't prompt for confirmation before downloading."
                                            url plz-error)
                                 (try)))
                              (when (file-exists-p temp-file)
-                               (delete-file temp-file)))))
-             (require 'hyperdrive-download-monitor)
+                               (delete-file temp-file))
+                             (h//download-monitor-close monitor-buffer))))
              ;; Wait for download to start before showing monitor.
              (cl-loop until (file-exists-p temp-file)
                       do (sleep-for 0.1)
                       for times below 100
                       finally (unless (file-exists-p temp-file)
                                 (error "Download not started after 10 seconds")))
-             (pop-to-buffer
-              (h/download-monitor :buffer-name "*hyperdrive-install*"
-                                  :path temp-file
-                                  :total-size size
-                                  :completed-fn #'kill-buffer-and-window))
+             (pop-to-buffer monitor-buffer)
              (h/message "Downloading %s from %S to %S"
                         (file-size-human-readable size) url destination)))
          (check (file-name sha256 url)
