@@ -53,7 +53,8 @@ UPDATE-INTERVAL seconds."
             (run-at-time nil update-interval #'h//download-monitor-update buffer))
       (setq-local kill-buffer-hook
                   (cons (lambda ()
-                          (cancel-timer (map-elt h/download-monitor-etc :timer)))
+                          (when (timerp (map-elt h/download-monitor-etc :timer))
+                            (cancel-timer (map-elt h/download-monitor-etc :timer))))
                         kill-buffer-hook)))
     buffer))
 
@@ -74,18 +75,20 @@ UPDATE-INTERVAL seconds."
         (erase-buffer)
         (insert preamble
                 "Downloaded: " (file-size-human-readable current-size nil " ")
-                " / " (file-size-human-readable total-size) "\n"
+                " / " (file-size-human-readable total-size nil " ") "\n"
                 "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed) "\n"
                 "Speed: " (file-size-human-readable speed) "/s")))))
 
 (defun h//download-monitor-close (buffer)
   "Close download monitor BUFFER."
-  (with-current-buffer buffer
-    (cancel-timer (map-elt h/download-monitor-etc :timer)))
-  (let ((buffer-window (get-buffer-window buffer)))
-    (when buffer-window
-      (quit-window nil buffer-window)))
-  (kill-buffer buffer))
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      (when (timerp (map-elt h/download-monitor-etc :timer))
+        (cancel-timer (map-elt h/download-monitor-etc :timer))))
+    (let ((buffer-window (get-buffer-window buffer)))
+      (when buffer-window
+        (quit-window nil buffer-window)))
+    (kill-buffer buffer)))
 
 (provide 'hyperdrive-download-monitor)
 

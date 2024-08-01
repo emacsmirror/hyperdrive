@@ -225,7 +225,6 @@
     ("G i" "Install" h/install
      :description
      (lambda () (if (h/gateway-needs-upgrade-p) "Upgrade" "Install"))
-     :transient t
      :if (lambda ()
            (and (not (h/gateway-installing-p))
                 (or (not (h/gateway-installed-p))
