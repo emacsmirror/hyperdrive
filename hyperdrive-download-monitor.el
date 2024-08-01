@@ -47,6 +47,7 @@ UPDATE-INTERVAL seconds."
       (setf (map-elt h/download-monitor-etc :path) path
             (map-elt h/download-monitor-etc :total-size) total-size
             (map-elt h/download-monitor-etc :preamble) preamble
+            (map-elt h/download-monitor-etc :started-at) (current-time)
             (map-elt h/download-monitor-etc :timer)
             (run-at-time nil update-interval #'h//download-monitor-update buffer)))
     buffer))
@@ -54,17 +55,20 @@ UPDATE-INTERVAL seconds."
 (defun h//download-monitor-update (buffer)
   "Update download monitor in BUFFER."
   (with-current-buffer buffer
-    (pcase-let* (((map :preamble :path :total-size) h/download-monitor-etc)
+    (pcase-let* (((map :preamble :path :total-size :started-at)
+                  h/download-monitor-etc)
                  (attributes (and (file-exists-p path)
                                   (file-attributes path)))
                  (current-size (or (and attributes
                                         (file-attribute-size attributes))
-                                   0)))
+                                   0))
+                 (elapsed (float-time (time-subtract (current-time) started-at))))
       ;; TODO: Consider using `format-spec'.
       (erase-buffer)
       (insert preamble
               "Downloaded: " (file-size-human-readable current-size nil " ")
-              " / " (file-size-human-readable total-size) "\n"))))
+              " / " (file-size-human-readable total-size) "\n"
+              "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed)))))
 
 (defun h//download-monitor-close (buffer)
   "Close download monitor BUFFER."

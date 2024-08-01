@@ -1452,7 +1452,7 @@ If FORCEP, don't prompt for confirmation before downloading."
            (let* ((temp-file (make-temp-name
                               (expand-file-name "hyperdrive-gateway-"
                                                 temporary-file-directory)))
-                  (preamble (format "Downloading gateway from:\n\nURL: %s\nTo:\n"
+                  (preamble (format "Downloading gateway from:\n\nURL: %s\nTo: %s\n"
                                     url destination))
                   (monitor-buffer (h//download-monitor
                                    :preamble preamble
