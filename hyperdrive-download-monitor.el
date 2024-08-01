@@ -81,13 +81,14 @@ UPDATE-INTERVAL seconds."
 
 (defun h//download-monitor-close (buffer)
   "Close download monitor BUFFER."
-  (with-current-buffer buffer
-    (when (timerp (map-elt h/download-monitor-etc :timer))
-      (cancel-timer (map-elt h/download-monitor-etc :timer))))
-  (let ((buffer-window (get-buffer-window buffer)))
-    (when buffer-window
-      (quit-window nil buffer-window)))
-  (kill-buffer buffer))
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      (when (timerp (map-elt h/download-monitor-etc :timer))
+        (cancel-timer (map-elt h/download-monitor-etc :timer))))
+    (let ((buffer-window (get-buffer-window buffer)))
+      (when buffer-window
+        (quit-window nil buffer-window)))
+    (kill-buffer buffer)))
 
 (provide 'hyperdrive-download-monitor)
 

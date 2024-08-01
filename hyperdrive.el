@@ -1505,6 +1505,11 @@ If FORCEP, don't prompt for confirmation before downloading."
                           "hyperdrive-restart"
                         "hyperdrive-start")))
          (insert-restart-button (buffer)
+           (letrec ((hook-fn (lambda ()
+                               (ignore-errors
+                                 (h//download-monitor-close buffer))
+                               (remove-hook 'h/gateway-ready-hook hook-fn))))
+             (add-hook 'h/gateway-ready-hook hook-fn))
            (with-current-buffer buffer
              (with-silent-modifications
                (when (timerp (map-elt h/download-monitor-etc :timer))
@@ -1518,8 +1523,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                                   (lambda (_)
                                     (if (h//gateway-ready-p)
                                         (h/restart)
-                                      (h/start))
-                                    (h//download-monitor-close buffer)))
+                                      (h/start))))
                        ;; Prevent button from going to end of the visual line.
                        " ")))))
       (try))))
