@@ -1417,7 +1417,7 @@ If FORCEP, don't prompt for confirmation before downloading."
         (h/user-error "Not downloading; aborted"))))
   (let ((urls-and-hashes (alist-get system-type h/gateway-urls-and-hashes))
         (destination (expand-file-name h/gateway-program h/gateway-directory))
-        size)
+        monitor-buffer size)
     (cl-labels
         ((try ()
            (pcase-let (((map :url :sha256) (pop urls-and-hashes)))
@@ -1453,16 +1453,15 @@ If FORCEP, don't prompt for confirmation before downloading."
                               (expand-file-name "hyperdrive-gateway-"
                                                 temporary-file-directory)))
                   (preamble (format "Downloading gateway from:\n\nURL: %s\nTo: %s\n"
-                                    url destination))
-                  (monitor-buffer (h//download-monitor
+                                    url destination)))
+             (setf monitor-buffer (h//download-monitor
                                    :preamble preamble
                                    :buffer-name "*hyperdrive-install*"
                                    :path temp-file
-                                   :total-size size)))
-             (setf h/install-process
+                                   :total-size size)
+                   h/install-process
                    (plz 'get url :as `(file ,temp-file) :timeout nil
                      :then (lambda (filename)
-                             (h//download-monitor-close monitor-buffer)
                              (check filename sha256 url))
                      :else (lambda (plz-error)
                              (pcase (plz-error-curl-error plz-error)
@@ -1500,10 +1499,29 @@ If FORCEP, don't prompt for confirmation before downloading."
            (chmod destination #o755)
            (setf h/install-process nil)
            (h/menu-refresh)
+           (insert-restart-button monitor-buffer)
            (h/message "Gateway installed.  Try \\[%s]"
                       (if (h//gateway-ready-p)
                           "hyperdrive-restart"
-                        "hyperdrive-start"))))
+                        "hyperdrive-start")))
+         (insert-restart-button (buffer)
+           (with-current-buffer buffer
+             (with-silent-modifications
+               (when (timerp (map-elt h/download-monitor-etc :timer))
+                 (cancel-timer (map-elt h/download-monitor-etc :timer)))
+               (erase-buffer)
+               (insert "Gateway installed!  "
+                       (buttonize (format "Click here to %s the gateway."
+                                          (if (h//gateway-ready-p)
+                                              "restart"
+                                            "start"))
+                                  (lambda (_)
+                                    (if (h//gateway-ready-p)
+                                        (h/restart)
+                                      (h/start))
+                                    (h//download-monitor-close buffer)))
+                       ;; Prevent button from going to end of the visual line.
+                       " ")))))
       (try))))
 
 (defun h/cancel-install ()

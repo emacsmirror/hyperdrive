@@ -74,7 +74,7 @@ UPDATE-INTERVAL seconds."
         (erase-buffer)
         (insert preamble
                 "Downloaded: " (file-size-human-readable current-size nil " ")
-                " / " (file-size-human-readable total-size) "\n"
+                " / " (file-size-human-readable total-size nil " ") "\n"
                 "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed) "\n"
                 "Speed: " (file-size-human-readable speed) "/s")))))
 
