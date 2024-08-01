@@ -44,6 +44,7 @@ the top of the buffer.  Monitor buffer is updated every
 UPDATE-INTERVAL seconds."
   (let ((buffer (generate-new-buffer buffer-name)))
     (with-current-buffer buffer
+      (special-mode)
       (setf (map-elt h/download-monitor-etc :path) path
             (map-elt h/download-monitor-etc :total-size) total-size
             (map-elt h/download-monitor-etc :preamble) preamble
@@ -65,12 +66,13 @@ UPDATE-INTERVAL seconds."
                  (elapsed (float-time (time-subtract (current-time) started-at)))
                  (speed (/ current-size elapsed)))
       ;; TODO: Consider using `format-spec'.
-      (erase-buffer)
-      (insert preamble
-              "Downloaded: " (file-size-human-readable current-size nil " ")
-              " / " (file-size-human-readable total-size) "\n"
-              "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed) "\n"
-              "Speed: " (file-size-human-readable speed) "/s"))))
+      (with-silent-modifications
+        (erase-buffer)
+        (insert preamble
+                "Downloaded: " (file-size-human-readable current-size nil " ")
+                " / " (file-size-human-readable total-size) "\n"
+                "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed) "\n"
+                "Speed: " (file-size-human-readable speed) "/s")))))
 
 (defun h//download-monitor-close (buffer)
   "Close download monitor BUFFER."
