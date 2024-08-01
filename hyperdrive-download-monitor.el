@@ -50,7 +50,11 @@ UPDATE-INTERVAL seconds."
             (map-elt h/download-monitor-etc :preamble) preamble
             (map-elt h/download-monitor-etc :started-at) (current-time)
             (map-elt h/download-monitor-etc :timer)
-            (run-at-time nil update-interval #'h//download-monitor-update buffer)))
+            (run-at-time nil update-interval #'h//download-monitor-update buffer))
+      (setq-local kill-buffer-hook
+                  (cons (lambda ()
+                          (cancel-timer (map-elt h/download-monitor-etc :timer)))
+                        kill-buffer-hook)))
     buffer))
 
 (defun h//download-monitor-update (buffer)
