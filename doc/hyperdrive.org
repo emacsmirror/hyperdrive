@@ -472,6 +472,9 @@ This command also has a keybinding in the directory view (see
 
 ** Forget a hyperdrive file
 
+*Please note that forgetting a file may result in data loss if it
+cannot be loaded from another peer on the network.*
+
 It is possible to "forget" your local copy of a hyperdrive file in
 order to save disk space.  "Forgetting" a file does not delete the
 file from the hyperdrive and does not increment the hyperdrive's
