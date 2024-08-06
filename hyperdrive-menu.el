@@ -122,8 +122,7 @@
                                        (display-version (if-let ((next-version (he/version next-entry)))
                                                             (number-to-string next-version)
                                                           "latest")))
-                              (concat ": " (propertize display-version 'face 'transient-value)))))
-     )
+                              (concat ": " (propertize display-version 'face 'transient-value))))))
     ("V a" "At..." h/open-at-version)
     ("V h" "History" h/history
      :inapt-if (lambda ()
