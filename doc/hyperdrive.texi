@@ -46,6 +46,7 @@ Repository: @uref{https://git.sr.ht/~ushin/hyperdrive.el}
 @end itemize
 
 This manual is for @code{hyperdrive.el} version 0.4-pre.
+
 @end ifnottex
 
 @menu
@@ -444,9 +445,23 @@ Like @code{hyperdrive-find-file}, but open the file in @ref{View Mode,view-mode,
 @node Directory view
 @subsection Directory view
 
-@code{hyperdrive.el} offers a Dired-like (see @ref{Dired,,,emacs,}) interface for
-exploring hyperdrive directories.  The following keybindings are
-available inside the directory view by default:
+@code{hyperdrive.el} offers a Dired-like (see @ref{Dired,,,emacs,}) interface
+for exploring hyperdrive directories.  In the directory view, the file
+size color indicates how much of a file you have already downloaded:
+
+@table @asis
+@item green
+fully downloaded (@code{hyperdrive-size-fully-downloaded})
+@item yellow
+partially downloaded (@code{hyperdrive-size-partially-downloaded})
+@item red
+not downloaded (@code{hyperdrive-size-not-downloaded})
+@end table
+
+Mouse over the file size to see exactly how many blocks make up the
+file and how many of them you have downloaded.
+
+The following bindings are available in the directory view by default:
 
 @table @asis
 @item @kbd{n} (@code{hyperdrive-ewoc-next})
@@ -747,7 +762,9 @@ Delete your local copy of the file for the current buffer.
 @end deffn
 
 This command also has a keybinding in the directory view (see
-@ref{Directory view}).
+@ref{Directory view}).  When you forget a file, the file size of its
+directory listing will turn red, indicating that you no longer have a
+copy of the file.
 
 @node View the hyperdrive version history
 @section View the hyperdrive version history
