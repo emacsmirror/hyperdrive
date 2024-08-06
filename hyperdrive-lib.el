@@ -74,7 +74,9 @@ Passes ARGS to `format-message'."
   ;; TODO: Consider adding gv-setters for etc slot keys
   (etc nil :documentation "Alist for extra data about the entry.
 - display-name :: Displayed in directory view instead of name.
-- target :: Link fragment to jump to."))
+- target :: Link fragment to jump to.
+- block-length :: Number of blocks file blob takes up.
+- block-length-downloaded :: Number of blocks downloaded for file."))
 
 (cl-defstruct (hyperdrive (:constructor h/create)
                           (:copier nil))
@@ -228,8 +230,11 @@ Sets ENTRY's hyperdrive to the persisted version of the drive if
 it exists.  Updates ENTRY's hyperdrive's disk usage and latest
 version.  Finally, persists ENTRY's hyperdrive."
   (pcase-let*
-      (((cl-struct plz-response
-                   (headers (map link allow x-drive-size x-drive-version)))
+      (((cl-struct
+         plz-response
+         (headers (map link allow content-length content-type last-modified
+                       x-drive-size x-drive-version
+                       x-file-block-length x-file-block-length-downloaded)))
         response)
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
        ;; while ENTRY may have a DNSLink domain but no public key yet.
@@ -262,7 +267,30 @@ version.  Finally, persists ENTRY's hyperdrive."
             (string-to-number x-drive-version)))
     ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
     ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
-    (h/persist (he/hyperdrive entry))))
+    (h/persist (he/hyperdrive entry))
+
+    ;; Fill entry.
+    (when content-length
+      (setf (he/size entry)
+            (ignore-errors (cl-parse-integer content-length))))
+    (when content-type
+      (setf (he/type entry) content-type))
+    (when last-modified
+      (setf (he/mtime entry) (encode-time (parse-time-string last-modified))))
+    (when x-file-block-length
+      (setf (map-elt (he/etc entry) 'block-length)
+            (ignore-errors
+              (cl-parse-integer x-file-block-length))))
+    (when x-file-block-length-downloaded
+      (setf (map-elt (he/etc entry) 'block-length-downloaded)
+            (ignore-errors
+              (cl-parse-integer x-file-block-length-downloaded))))
+
+    ;; Redisplay entry.
+    (unless (h//entry-directory-p entry)
+      ;; There's currently never a reason to redisplay directory entries since
+      ;; they don't have block-length{,-downloaded} metadata.
+      (he//invalidate entry))))
 
 (defun h/gateway-needs-upgrade-p ()
   "Return non-nil if the gateway is responsive and needs upgraded."
@@ -708,24 +736,10 @@ the given `plz-queue'"
          :noquery t))))
 
 (defun he//fill (entry headers)
-  "Fill ENTRY slots from HEADERS.
-
-- \\+`type'
-- \\+`mtime'
-- \\+`size'
-
-Also fills existent range in `hyperdrive-version-ranges'.
+  "Fill existent range for ENTRY in `hyperdrive-version-ranges' from HEADERS.
 
 Returns filled ENTRY."
-  (pcase-let*
-      (((map content-length content-type etag last-modified) headers))
-    (when last-modified
-      (setf last-modified (encode-time (parse-time-string last-modified))))
-    (setf (he/size entry) (and content-length
-                               (ignore-errors
-                                 (cl-parse-integer content-length))))
-    (setf (he/type entry) content-type)
-    (setf (he/mtime entry) last-modified)
+  (pcase-let (((map etag) headers))
     (when (and etag (not (h//entry-directory-p entry)))
       ;; Directory version ranges are not supported.
       (h/update-existent-version-range entry (string-to-number etag)))
@@ -738,15 +752,21 @@ LISTING should be an alist based on the JSON retrieved in, e.g.,
 `hyperdrive-dir-handler'.  Fills existent version ranges for each
 entry as a side-effect."
   (mapcar
-   (pcase-lambda ((map seq key value))
+   (pcase-lambda ((map seq key value blockLengthDownloaded))
      (let* ((mtime (map-elt (map-elt value 'metadata) 'mtime))
             (size (map-elt (map-elt value 'blob) 'byteLength))
+            (block-length (map-elt (map-elt value 'blob) 'blockLength))
             (entry (he/create
                     :hyperdrive hyperdrive :path key :version version)))
        (when mtime ; mtime is milliseconds since epoch
          (setf (he/mtime entry) (seconds-to-time (/ mtime 1000.0))))
        (when size
          (setf (he/size entry) size))
+       (when block-length
+         (setf (map-elt (he/etc entry) 'block-length) block-length))
+       (when blockLengthDownloaded
+         (setf (map-elt (he/etc entry) 'block-length-downloaded)
+               blockLengthDownloaded))
        (when seq
          ;; seq is the hyperdrive version *before* the entry was added/modified
          (hyperdrive-update-existent-version-range entry (1+ seq)))

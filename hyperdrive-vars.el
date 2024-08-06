@@ -314,6 +314,15 @@ value (and should only be present once in the string).  Used in
 (defface h/size '((t (:inherit font-lock-doc-face)))
   "File sizes.")
 
+(defface h/size-fully-downloaded '((t (:inherit success)))
+  "File sizes for entries which have been fully downloaded.")
+
+(defface h/size-not-downloaded '((t (:inherit error)))
+  "File sizes for entries which have not been downloaded.")
+
+(defface h/size-partially-downloaded '((t (:inherit warning)))
+  "File sizes for entries which have been partially downloaded.")
+
 (defface h/timestamp '((t (:inherit default)))
   "Entry timestamp.")
 
@@ -372,7 +381,7 @@ values are alists mapping version range starts to plists with
 ;;;;; Internals
 
 (defvar h/gateway-version-expected
-  '(:name "hyper-gateway-ushin" :version "3.10.2"))
+  '(:name "hyper-gateway-ushin" :version "3.11.0"))
 
 (defvar h/gateway-version-checked-p nil
   "Non-nil if the gateway's version has been checked.

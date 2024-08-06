@@ -51,6 +51,24 @@ last node."
            return node
            do (setf node (ewoc-prev ewoc node))))
 
+(defun he//invalidate (entry)
+  "Invalidate the ewoc node for ENTRY in directory buffers."
+  (when-let* ((buffer (hyperdrive--find-buffer-visiting
+                       (hyperdrive-parent entry)))
+              (ewoc (buffer-local-value 'h/ewoc buffer))
+              (node (and ewoc
+                         (h/ewoc-find-node ewoc entry
+                           :predicate #'he/equal-p))))
+    (when node
+      (ewoc-set-data node entry)
+      ;; NOTE: Ensure that the buffer's window is selected,
+      ;; if it has one.  (Workaround a possible bug in EWOC.)
+      (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
+          (with-selected-window buffer-window
+            (with-silent-modifications (ewoc-invalidate ewoc node)))
+        (with-current-buffer (ewoc-buffer ewoc)
+          (with-silent-modifications (ewoc-invalidate ewoc node)))))))
+
 ;;;; Mode
 
 (defvar-keymap h/ewoc-mode-map

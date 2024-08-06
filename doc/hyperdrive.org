@@ -221,9 +221,18 @@ hyperdrives you've already created or visited:
 
 *** Directory view
 
-~hyperdrive.el~ offers a Dired-like (see [[info:emacs#Dired]]) interface for
-exploring hyperdrive directories.  The following keybindings are
-available inside the directory view by default:
+~hyperdrive.el~ offers a Dired-like (see [[info:emacs#Dired]]) interface
+for exploring hyperdrive directories.  In the directory view, the file
+size color indicates how much of a file you have already downloaded:
+
+- green :: fully downloaded (~hyperdrive-size-fully-downloaded~)
+- yellow :: partially downloaded (~hyperdrive-size-partially-downloaded~)
+- red :: not downloaded (~hyperdrive-size-not-downloaded~)
+
+Mouse over the file size to see exactly how many blocks make up the
+file and how many of them you have downloaded.
+
+The following bindings are available in the directory view by default:
 
 #+attr_texinfo: :compact t
 - Key: n (hyperdrive-ewoc-next) ::
@@ -463,6 +472,9 @@ This command also has a keybinding in the directory view (see
 
 ** Forget a hyperdrive file
 
+*Please note that forgetting a file may result in data loss if it
+cannot be loaded from another peer on the network.*
+
 It is possible to "forget" your local copy of a hyperdrive file in
 order to save disk space.  "Forgetting" a file does not delete the
 file from the hyperdrive and does not increment the hyperdrive's
@@ -473,7 +485,9 @@ version number.
   Delete your local copy of the file for the current buffer.
 
 This command also has a keybinding in the directory view (see
-[[*Directory view]]).
+[[*Directory view]]).  When you forget a file, the file size of its
+directory listing will turn red, indicating that you no longer have a
+copy of the file.
 
 ** View the hyperdrive version history
 

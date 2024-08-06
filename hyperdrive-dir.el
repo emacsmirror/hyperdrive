@@ -72,7 +72,6 @@ If THEN, call it in the directory buffer with no arguments."
                                        (json-read-from-string body)
                                        hyperdrive version))
                              (parent-entry (h/parent directory-entry)))
-                  (setf directory-entry (he//fill directory-entry headers))
                   (when parent-entry
                     (setf (alist-get 'display-name (he/etc parent-entry)) "../")
                     (push parent-entry entries))
@@ -160,16 +159,24 @@ To be used as the pretty-printer for `ewoc-create'."
 (defun h/dir--format-entry (entry)
   "Return ENTRY formatted as a string."
   (pcase-let*
-      (((cl-struct hyperdrive-entry size mtime) entry)
+      (((cl-struct hyperdrive-entry size mtime etc) entry)
        (size (and size (file-size-human-readable size)))
        (directoryp (h//entry-directory-p entry))
        (face (if directoryp 'h/directory 'default))
        (timestamp (if mtime
                       (format-time-string h/timestamp-format mtime)
-                    (propertize " " 'display '(space :width h/timestamp-width)))))
+                    (propertize " " 'display '(space :width h/timestamp-width))))
+       ((map block-length block-length-downloaded) etc))
     (format "%6s  %s  %s"
-            (propertize (or size "")
-                        'face 'h/size)
+            (propertize
+             (or size "")
+             'face (and block-length-downloaded block-length
+                        (pcase block-length-downloaded
+                          (0 'h/size-not-downloaded)
+                          ((pred (= block-length)) 'h/size-fully-downloaded)
+                          (_ 'h/size-partially-downloaded)))
+             'help-echo (format "%s of %s blocks downloaded"
+                                block-length-downloaded block-length))
             (propertize timestamp
                         'face 'h/timestamp)
             (propertize (or (alist-get 'display-name (he/etc entry))

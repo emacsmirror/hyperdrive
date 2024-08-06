@@ -61,7 +61,7 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
   (pcase-let*
       ((`(,range . ,entry) range-entry)
        (`(,range-start . ,(map :range-end :existsp)) range)
-       ((cl-struct hyperdrive-entry size mtime) entry)
+       ((cl-struct hyperdrive-entry size mtime etc) entry)
        (formatted-range (if (eq range-start range-end)
                             (format "%d" range-start)
                           (format "%d-%d" range-start range-end)))
@@ -72,7 +72,8 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
        (size (and size (file-size-human-readable size)))
        (timestamp (if mtime
                       (format-time-string h/timestamp-format mtime)
-                    (propertize " " 'display '(space :width h/timestamp-width)))))
+                    (propertize " " 'display '(space :width h/timestamp-width))))
+       ((map block-length block-length-downloaded) etc))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
     (format
@@ -91,7 +92,13 @@ value \\+`unknown', and whose cdr is a hyperdrive entry."
                                       ('unknown "Load history at version %s"))
                                     range-start))
      (propertize (or size "")
-                 'face 'h/size)
+                 'face (and block-length-downloaded block-length
+                            (pcase block-length-downloaded
+                              (0 'h/size-not-downloaded)
+                              ((pred (= block-length)) 'h/size-fully-downloaded)
+                              (_ 'h/size-partially-downloaded)))
+                 'help-echo (format "%s of %s blocks downloaded"
+                                    block-length-downloaded block-length))
      (propertize (or timestamp "")
                  'face 'h/timestamp))))
 
