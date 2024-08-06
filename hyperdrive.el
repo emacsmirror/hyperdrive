@@ -1384,8 +1384,6 @@ Intended for relative (i.e. non-full) URLs."
 ;;;;; Installation
 
 (defvar h/gateway-urls-and-hashes
-  ;; TODO: sr.ht build (<https://builds.sr.ht/~ushin/job/1247130#task-setup>)
-  ;; fail due to a kernel issue: https://github.com/nodejs/node/issues/53051
   '((gnu/linux
      ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.11.0/hyper-gateway-ushin-linux"
        :sha256 "2074ec69c3e699105e132e774996c15ba3d9f14019f0cf5bc1bd15c35f7524c7")
