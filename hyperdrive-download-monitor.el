@@ -78,7 +78,11 @@ UPDATE-INTERVAL seconds."
                 "Downloaded: " (file-size-human-readable current-size nil " ")
                 " / " (file-size-human-readable total-size nil " ") "\n"
                 "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed) "\n"
-                "Speed: " (file-size-human-readable speed) "/s")))))
+                "Speed: " (file-size-human-readable speed) "/s\n\n"
+                (buttonize "Cancel installation"
+                           (lambda (_) (hyperdrive-cancel-install)))
+                ;; Prevent button from going to end of the visual line.
+                " ")))))
 
 (defun h//download-monitor-close (buffer)
   "Close download monitor BUFFER."
