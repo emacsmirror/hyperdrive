@@ -55,7 +55,8 @@ UPDATE-INTERVAL seconds."
                   (cons (lambda ()
                           (when (timerp (map-elt h/download-monitor-etc :timer))
                             (cancel-timer (map-elt h/download-monitor-etc :timer))))
-                        kill-buffer-hook)))
+                        kill-buffer-hook)
+                  cursor-type nil))
     buffer))
 
 (defun h//download-monitor-update (buffer)
