@@ -1512,15 +1512,12 @@ If FORCEP, don't prompt for confirmation before downloading."
                (when (timerp (map-elt h/download-monitor-etc :timer))
                  (cancel-timer (map-elt h/download-monitor-etc :timer)))
                (erase-buffer)
-               (insert "Gateway installed!  "
-                       (buttonize (format "Click here to %s the gateway."
-                                          (if (h//gateway-ready-p)
-                                              "restart"
-                                            "start"))
-                                  (lambda (_)
-                                    (if (h//gateway-ready-p)
-                                        (h/restart)
-                                      (h/start))))
+               (insert "Gateway installed!\n\n"
+                       (if (h//gateway-ready-p)
+                           (buttonize "Restart the gateway"
+                                      (lambda (_) (h/restart)))
+                         (buttonize "Start the gateway"
+                                    (lambda (_) (h/start))))
                        ;; Prevent button from going to end of the visual line.
                        " ")))))
       (try))))
