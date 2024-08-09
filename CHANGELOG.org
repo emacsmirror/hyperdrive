@@ -36,7 +36,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 
 ** Changed
 
-- Switch from `hyper-gateway` to `hyper-gateway-ushin` fork!  Run ~M-x
+- Switch from ~hyper-gateway~ to ~hyper-gateway-ushin~ fork!  Run ~M-x
   hyperdrive-install~ to download and install the new gateway.
 - Directory listings load faster
 - Improve gateway status indicators in ~hyperdrive-menu~ to update
