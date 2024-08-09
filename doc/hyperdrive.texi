@@ -71,6 +71,7 @@ This manual is for @code{hyperdrive.el} version 0.4-pre.
 Installation
 
 * Install Emacs::
+* Install curl::
 * Install hyperdrive.el: Install hyperdriveel. 
 * Install hyper-gateway-ushin::
 
@@ -211,6 +212,7 @@ modify this GNU manual.''
 
 @menu
 * Install Emacs::
+* Install curl::
 * Install hyperdrive.el: Install hyperdriveel. 
 * Install hyper-gateway-ushin::
 @end menu
@@ -219,6 +221,11 @@ modify this GNU manual.''
 @section Install Emacs
 
 @code{hyperdrive.el} requires @uref{https://www.gnu.org/software/emacs/, GNU Emacs} version 28.1 or later.
+
+@node Install curl
+@section Install curl
+
+@code{hyperdrive.el} requires a reasonably up-to-date version of @uref{https://curl.se/download.html, curl}.
 
 @node Install hyperdriveel
 @section Install hyperdrive.el

@@ -43,6 +43,10 @@ modify this GNU manual."
 
 ~hyperdrive.el~ requires [[https://www.gnu.org/software/emacs/][GNU Emacs]] version 28.1 or later.
 
+** Install curl
+
+~hyperdrive.el~ requires a reasonably up-to-date version of [[https://curl.se/download.html][curl]].
+
 ** Install hyperdrive.el
 
 ~hyperdrive.el~ can be installed from [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]] with ~M-x
