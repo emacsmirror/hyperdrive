@@ -1421,34 +1421,33 @@ If FORCEP, don't prompt for confirmation before downloading."
         monitor-buffer size)
     (cl-labels
         ((try ()
+           (unless urls-and-hashes
+             (setf h/install-process nil)
+             (h/menu-refresh)
+             (h/error "Downloading failed; no more mirrors available"))
            (pcase-let (((map :url :sha256) (pop urls-and-hashes)))
-             (unless size
-               ;; Only successfully get size once.
-               (ignore-errors
-                 (h/message "Checking server %S..."
-                            (url-host (url-generic-parse-url url)))
-                 (setf size (head-size url))))
-             (if size
-                 (if (or forcep
-                         (yes-or-no-p
-                          (format "Download and install gateway (%s)? "
-                                  (file-size-human-readable size))))
-                     (progn
-                       (setf forcep t) ;; Don't prompt again.
-                       (download url sha256))
-                   (h/message "Installation canceled."))
-               ;; HEAD request failed: try next URL.
-               (h/message "Server %S unresponsive.  Trying next server..."
-                          (url-host (url-generic-parse-url url)))
-               (if urls-and-hashes
-                   (try)
-                 (setf h/install-process nil)
-                 (h/menu-refresh)
-                 (hyperdrive-error "Downloading failed; no more mirrors available")))))
-         (head-size (url)
-           (when-let ((response (plz 'head url :as 'response :connect-timeout 5)))
-             (cl-parse-integer
-              (alist-get 'content-length (plz-response-headers response)))))
+             (when (or size (ensure-size url))
+               (if (or forcep (yes-or-no-p
+                               (format "Download and install gateway (%s)? "
+                                       (file-size-human-readable size))))
+                   (progn
+                     (setf forcep t) ;; Don't prompt again.
+                     (download url sha256))
+                 (h/message "Installation canceled.")))))
+         (ensure-size (url)
+           (let ((host (url-host (url-generic-parse-url url))))
+             (h/message "Checking server %S..." host)
+             (condition-case err
+                 (pcase-let (((cl-struct plz-response
+                                         (headers (map content-length)))
+                              (plz 'head url :as 'response :connect-timeout 5)))
+                   (setf size (cl-parse-integer content-length)))
+               ;; Likely missing `curl' executable: Signal error.
+               (file-missing (h/error "Please install `curl' program."))
+               ;; Any other error: Try next URL.
+               (t (h/message "%S unresponsive.  Trying next server..." host)
+                  (try)
+                  nil))))
          (download (url sha256)
            (let* ((temp-file (make-temp-name
                               (expand-file-name "hyperdrive-gateway-"
