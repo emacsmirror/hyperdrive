@@ -884,7 +884,8 @@ The return value of this function is the retrieval buffer."
       :help "Say gateway version"
       :active (h//gateway-ready-p)]
      ["Install Gateway" h/install
-      :label (if (h/gateway-needs-upgrade-p) "Upgrade" "Install")
+      :label
+      (if (h/gateway-needs-upgrade-p) "Upgrade Gateway" "Install Gateway")
       :visible (and (not (h/gateway-installing-p))
                     (or (not (h/gateway-installed-p))
                         (h/gateway-needs-upgrade-p)))
