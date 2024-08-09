@@ -56,7 +56,7 @@ Universal prefix argument \\[universal-argument] forces
       (setq-local h/describe-current-hyperdrive hyperdrive)
       (pcase-let*
           (((cl-struct hyperdrive metadata writablep etc) hyperdrive)
-           ((map disk-usage) etc))
+           ((map disk-usage safep) etc))
         (erase-buffer)
         (insert
          (propertize "Hyperdrive: \n" 'face 'bold)
@@ -65,6 +65,7 @@ Universal prefix argument \\[universal-argument] forces
          (h//format hyperdrive "Petname: %P\n" h/raw-formats)
          (h//format hyperdrive "Nickname: %N\n" h/raw-formats)
          (h//format hyperdrive "Domains: %D\n" h/raw-formats)
+         (format "Safe: %s\n" (if safep "yes" "no"))
          (format "Latest version: %s\n" (h/latest-version hyperdrive))
          (format "Writable: %s\n" (if writablep "yes" "no"))
          (format "Disk usage: %s\n"
