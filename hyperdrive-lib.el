@@ -1373,9 +1373,11 @@ If then, then call THEN with no arguments.  Default handler."
                 (or (not (h/writablep hyperdrive)) version))
           (set-buffer-modified-p nil)
           (set-visited-file-modtime (current-time))))
-      (when (map-elt (hyperdrive-etc hyperdrive) 'safep)
-        (let ((buffer-file-name (he/name entry)))
-          (set-auto-mode)))
+      (if (map-elt (hyperdrive-etc hyperdrive) 'safep)
+          (let ((buffer-file-name (he/name entry)))
+            (set-auto-mode))
+        (h/message "Mark hyperdrive `%s' as safe to auto-enable major mode."
+                   (h//format-hyperdrive hyperdrive)))
       (when target
         (pcase major-mode
           ('org-mode

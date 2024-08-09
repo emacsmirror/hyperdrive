@@ -503,9 +503,12 @@ use, see `hyperdrive-write'."
                 (with-current-buffer buffer
                   (unless h/mode
                     (h//clean-buffer)
-                    (when (map-elt (hyperdrive-etc hyperdrive) 'safep)
-                      (let ((buffer-file-name (he/name entry)))
-                        (set-auto-mode)))
+                    (if (map-elt (hyperdrive-etc hyperdrive) 'safep)
+                        (let ((buffer-file-name (he/name entry)))
+                          (set-auto-mode))
+                      (h/message
+                       "Mark hyperdrive `%s' as safe to auto-enable major mode."
+                       (h//format-hyperdrive hyperdrive)))
                     (h/mode))
                   (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
