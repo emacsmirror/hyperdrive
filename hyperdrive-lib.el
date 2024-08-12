@@ -1709,6 +1709,12 @@ Compares their public keys."
   "Return non-nil if entries A and B have the same hyperdrive."
   (h/equal-p (he/hyperdrive a) (he/hyperdrive b)))
 
+(defun he/within-version-range (entry entry-with-range-end)
+  "Return non-nil if ENTRY's is within ENTRY-WITH-RANGE-END's range."
+  (<= (he/version entry-with-range-end)
+      (he/version entry)
+      (map-elt (he/etc entry-with-range-end) 'range-end)))
+
 (defun h//ensure-dot-slash-prefix-path (path)
   "Return PATH, ensuring it begins with the correct prefix.
 Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
