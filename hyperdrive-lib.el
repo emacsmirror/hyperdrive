@@ -76,7 +76,9 @@ Passes ARGS to `format-message'."
 - display-name :: Displayed in directory view instead of name.
 - target :: Link fragment to jump to.
 - block-length :: Number of blocks file blob takes up.
-- block-length-downloaded :: Number of blocks downloaded for file."))
+- block-length-downloaded :: Number of blocks downloaded for file.
+- existsp :: Whether entry exists at its version.
+- range-end :: The last drive version pointing to the same blob."))
 
 (cl-defstruct (hyperdrive (:constructor h/create)
                           (:copier nil))
