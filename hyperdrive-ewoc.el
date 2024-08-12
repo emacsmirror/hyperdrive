@@ -52,7 +52,7 @@ last node."
            do (setf node (ewoc-prev ewoc node))))
 
 (defun he//invalidate (entry)
-  "Invalidate the ewoc node for ENTRY in directory buffers."
+  "Invalidate ENTRY's ewoc node in directory and history buffers."
   (when-let* ((dir-buffer (hyperdrive--find-buffer-visiting
                            (hyperdrive-parent entry)))
               (dir-ewoc (buffer-local-value 'h/ewoc dir-buffer))
@@ -66,7 +66,20 @@ last node."
         (with-selected-window buffer-window
           (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node)))
       (with-current-buffer dir-buffer
-        (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node))))))
+        (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node)))))
+  (when-let* ((history-buffer (h/history-find-buffer-visiting entry))
+              (history-ewoc (buffer-local-value 'h/ewoc history-buffer))
+              (history-node (and history-ewoc
+                                 (h/ewoc-find-node history-ewoc entry
+                                   :predicate #'he/within-version-range))))
+    (ewoc-set-data history-node entry)
+    ;; NOTE: Ensure that the buffer's window is selected,
+    ;; if it has one.  (Workaround a possible bug in EWOC.)
+    (if-let ((buffer-window (get-buffer-window history-buffer)))
+        (with-selected-window buffer-window
+          (with-silent-modifications (ewoc-invalidate history-ewoc history-node)))
+      (with-current-buffer history-buffer
+        (with-silent-modifications (ewoc-invalidate history-ewoc history-node))))))
 
 ;;;; Mode
 
