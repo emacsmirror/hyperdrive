@@ -53,21 +53,20 @@ last node."
 
 (defun he//invalidate (entry)
   "Invalidate the ewoc node for ENTRY in directory buffers."
-  (when-let* ((buffer (hyperdrive--find-buffer-visiting
-                       (hyperdrive-parent entry)))
-              (ewoc (buffer-local-value 'h/ewoc buffer))
-              (node (and ewoc
-                         (h/ewoc-find-node ewoc entry
-                           :predicate #'he/equal-p))))
-    (when node
-      (ewoc-set-data node entry)
-      ;; NOTE: Ensure that the buffer's window is selected,
-      ;; if it has one.  (Workaround a possible bug in EWOC.)
-      (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-          (with-selected-window buffer-window
-            (with-silent-modifications (ewoc-invalidate ewoc node)))
-        (with-current-buffer (ewoc-buffer ewoc)
-          (with-silent-modifications (ewoc-invalidate ewoc node)))))))
+  (when-let* ((dir-buffer (hyperdrive--find-buffer-visiting
+                           (hyperdrive-parent entry)))
+              (dir-ewoc (buffer-local-value 'h/ewoc dir-buffer))
+              (dir-node (and dir-ewoc
+                             (h/ewoc-find-node dir-ewoc entry
+                               :predicate #'he/equal-p))))
+    (ewoc-set-data dir-node entry)
+    ;; NOTE: Ensure that the buffer's window is selected,
+    ;; if it has one.  (Workaround a possible bug in EWOC.)
+    (if-let ((buffer-window (get-buffer-window dir-buffer)))
+        (with-selected-window buffer-window
+          (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node)))
+      (with-current-buffer dir-buffer
+        (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node))))))
 
 ;;;; Mode
 
