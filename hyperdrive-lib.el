@@ -1477,17 +1477,7 @@ Default function; see variable `h/gateway-start-function'."
 
 (defun h/menu-refresh ()
   "Refresh `hyperdrive-menu' if it's open."
-  (when (and
-         ;; Depending on transient-show-popup customization, there
-         ;; might be no popup (yet).
-         transient--showp
-         transient--prefix
-         (eq (oref transient--prefix command) 'h/menu)
-         ;; Check that the transient is not suspended.
-         (or (memq 'transient--pre-command pre-command-hook)
-             (and (memq t pre-command-hook)
-                  (memq 'transient--pre-command
-                        (default-value 'pre-command-hook)))))
+  (when (transient-active-prefix '(h/menu))
     (transient--refresh-transient)))
 
 (defun h//gateway-stop-default ()
