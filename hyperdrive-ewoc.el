@@ -52,14 +52,23 @@ last node."
            do (setf node (ewoc-prev ewoc node))))
 
 (defun he//invalidate (entry)
-  "Invalidate ENTRY's ewoc node in directory and history buffers."
+  "Invalidate ENTRY's ewoc node in directory and history buffers.
+Invalidated ewoc node entries will have these slots updated:
+
+- ETC
+  + BLOCK-LENGTH-DOWNLOADED
+
+All other slots in each ewoc node entry data will be reused."
   (when-let* ((dir-buffer (hyperdrive--find-buffer-visiting
                            (hyperdrive-parent entry)))
               (dir-ewoc (buffer-local-value 'h/ewoc dir-buffer))
               (dir-node (and dir-ewoc
                              (h/ewoc-find-node dir-ewoc entry
-                               :predicate #'he/equal-p))))
-    (ewoc-set-data dir-node entry)
+                               :predicate #'he/equal-p)))
+              (dir-ewoc-entry (ewoc-data dir-node)))
+    (setf (map-elt (he/etc dir-ewoc-entry) 'block-length-downloaded)
+          (map-elt (he/etc entry) 'block-length-downloaded))
+    (ewoc-set-data dir-node dir-ewoc-entry)
     ;; NOTE: Ensure that the buffer's window is selected,
     ;; if it has one.  (Workaround a possible bug in EWOC.)
     (if-let ((buffer-window (get-buffer-window dir-buffer)))
@@ -71,8 +80,11 @@ last node."
               (history-ewoc (buffer-local-value 'h/ewoc history-buffer))
               (history-node (and history-ewoc
                                  (h/ewoc-find-node history-ewoc entry
-                                   :predicate #'he/within-version-range))))
-    (ewoc-set-data history-node entry)
+                                   :predicate #'he/within-version-range)))
+              (history-ewoc-entry (ewoc-data history-node)))
+    (setf (map-elt (he/etc history-ewoc-entry) 'block-length-downloaded)
+          (map-elt (he/etc entry) 'block-length-downloaded))
+    (ewoc-set-data history-node history-ewoc-entry)
     ;; NOTE: Ensure that the buffer's window is selected,
     ;; if it has one.  (Workaround a possible bug in EWOC.)
     (if-let ((buffer-window (get-buffer-window history-buffer)))
