@@ -257,20 +257,17 @@ Interactively, diff entry at point with previous entry."
     :then (lambda ()
             (pop-to-buffer (current-buffer)))))
 
-(cl-defun h/history-find-file
-    (entry &key (then (lambda ()
-                        (pop-to-buffer (current-buffer)
-                                       '(display-buffer-same-window)))))
+(cl-defun h/history-find-file (entry)
   "Visit hyperdrive ENTRY at point.
-Then call THEN.  When entry does not exist, does nothing and
-returns nil.  When entry is not known to exist, attempts to load
-entry at ENTRY's ETC slot's RANGE-END value.
+When entry does not exist, does nothing and returns nil.  When
+entry is not known to exist, attempts to load entry at ENTRY's
+ETC slot's RANGE-END value.
 
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
-    ('t (h/open entry :then then))
+    ('t (h/open entry))
     ('nil (h/user-error "File does not exist!"))
     ('unknown (h/history-fill-version-ranges entry))))
 
@@ -283,8 +280,7 @@ entry at ENTRY's ETC slot's RANGE-END value.
 Interactively, visit entry at point in `hyperdrive-history'
 buffer."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
-  (h/history-find-file
-   entry :then (lambda () (pop-to-buffer (current-buffer) t))))
+  (h/open entry :then (lambda () (pop-to-buffer (current-buffer) t))))
 
 (declare-function h/view-file "hyperdrive")
 (defun h/history-view-file (entry)
