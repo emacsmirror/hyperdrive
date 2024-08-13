@@ -59,6 +59,10 @@ Invalidated ewoc node entries will have these slots updated:
   + BLOCK-LENGTH-DOWNLOADED
 
 All other slots in each ewoc node entry data will be reused."
+  ;; TODO: Invalidate nodes in all buffers showing entry at any version within
+  ;; its version range (where the blob is the same between multiple versions).
+  ;; We don't have the range end for ENTRY, so how can we figure out which
+  ;; versions of directory buffers need to be invalidated?
   (when-let* ((dir-buffer (hyperdrive--find-buffer-visiting
                            (hyperdrive-parent entry)))
               (dir-ewoc (buffer-local-value 'h/ewoc dir-buffer))
