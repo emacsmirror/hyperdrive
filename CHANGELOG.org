@@ -30,7 +30,8 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
   traverse the version history.  Press ~q~ to kill the current buffer.
 - View hyperdrive disk usage with ~hyperdrive-describe~ and ~hyperdrive-menu~.
 - Delete the local copy of a file or directory with
-  ~hyperdrive-forget-file~, also bound in ~hyperdrive-menu~ and menu bar.
+  ~hyperdrive-forget-file~, also bound in ~hyperdrive-menu~ and the
+  menu bar, as well as directory and history buffers.
 - Indicate how much of a file has already been downloaded based on the
   color of its file size in the directory view.
 
