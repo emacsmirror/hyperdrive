@@ -282,7 +282,7 @@ The following bindings are available in the directory view by default:
 
 - Key: F (hyperdrive-forget-file) ::
 
-  Delete your local copy of the file for the current buffer.
+  Delete your local copy of the file at point.
 
 - Key: H (hyperdrive-dir-history) ::
 
@@ -574,6 +574,10 @@ default:
 
   Display the differences between the version at point and the prior
   version.
+
+- Key: F (hyperdrive-history-forget-file) ::
+
+  Delete your local copy of the file for the version range at point.
 
 To act on the latest known version of the file, use these keybindings
 on the header line displaying the file description.

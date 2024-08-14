@@ -76,7 +76,9 @@ Passes ARGS to `format-message'."
 - display-name :: Displayed in directory view instead of name.
 - target :: Link fragment to jump to.
 - block-length :: Number of blocks file blob takes up.
-- block-length-downloaded :: Number of blocks downloaded for file."))
+- block-length-downloaded :: Number of blocks downloaded for file.
+- existsp :: Whether entry exists at its version.
+- range-end :: The last drive version pointing to the same blob."))
 
 (cl-defstruct (hyperdrive (:constructor h/create)
                           (:copier nil))
@@ -292,6 +294,9 @@ version.  Finally, persists ENTRY's hyperdrive."
     (unless (h//entry-directory-p entry)
       ;; There's currently never a reason to redisplay directory entries since
       ;; they don't have block-length{,-downloaded} metadata.
+
+      ;; NOTE: When we send a HEAD and GET request in rapid succession,
+      ;; `he//invalidate' gets called twice.  Consider debouncing.
       (he//invalidate entry))))
 
 (defun h/gateway-needs-upgrade-p ()
@@ -1605,6 +1610,15 @@ version."
           (and-let* ((local-entry (buffer-local-value 'h/current-entry buffer)))
             (he/equal-p entry local-entry any-version-p))))))
 
+(defun h/history-find-buffer-visiting (entry)
+  "Return a buffer showing ENTRY's history, or nil if none exists."
+  ;; There should only ever be one buffer showing ENTRY's history, so it's safe
+  ;; to return the first value in the list.
+  (car (match-buffers
+        (lambda (buffer)
+          (and-let* ((local-entry (buffer-local-value 'h/history-current-entry buffer)))
+            (he/equal-p entry local-entry t))))))
+
 (defun h//format-entry (entry &optional format formats)
   "Return ENTRY formatted according to FORMAT.
 FORMAT is a `format-spec' specifier string which maps to specifications
@@ -1708,6 +1722,12 @@ Compares their public keys."
 (defun he/hyperdrive-equal-p (a b)
   "Return non-nil if entries A and B have the same hyperdrive."
   (h/equal-p (he/hyperdrive a) (he/hyperdrive b)))
+
+(defun he/within-version-range (entry entry-with-range-end)
+  "Return non-nil if ENTRY's is within ENTRY-WITH-RANGE-END's range."
+  (<= (he/version entry-with-range-end)
+      (he/version entry)
+      (map-elt (he/etc entry-with-range-end) 'range-end)))
 
 (defun h//ensure-dot-slash-prefix-path (path)
   "Return PATH, ensuring it begins with the correct prefix.
