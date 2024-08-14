@@ -282,7 +282,7 @@ The following bindings are available in the directory view by default:
 
 - Key: F (hyperdrive-forget-file) ::
 
-  Delete your local copy of the file for the current buffer.
+  Delete your local copy of the file at point.
 
 - Key: H (hyperdrive-dir-history) ::
 

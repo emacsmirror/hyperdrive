@@ -528,7 +528,7 @@ Delete the file or directory (recursively) at point.
 @item @kbd{F} (@code{hyperdrive-forget-file})
 @kindex F
 @findex hyperdrive-forget-file
-Delete your local copy of the file for the current buffer.
+Delete your local copy of the file at point.
 
 @item @kbd{H} (@code{hyperdrive-dir-history})
 @kindex H
