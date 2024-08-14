@@ -881,6 +881,11 @@ Download the file at the start of the version range at point.
 @findex hyperdrive-history-diff
 Display the differences between the version at point and the prior
 version.
+
+@item @kbd{F} (@code{hyperdrive-history-forget-file})
+@kindex F
+@findex hyperdrive-history-forget-file
+Delete your local copy of the file for the version range at point.
 @end table
 
 To act on the latest known version of the file, use these keybindings
