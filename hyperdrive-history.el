@@ -229,10 +229,12 @@ prefix argument \\[universal-argument], prompt for ENTRY."
 (defun h/history-fill-version-ranges (entry)
   "Fill version ranges starting from ENTRY at point."
   (interactive (list (h/history-entry-at-point)))
-  (pcase-let* (((cl-struct hyperdrive-entry (etc (map range-end))) entry)
+  (pcase-let* (((cl-struct h/entry hyperdrive etc) entry)
+               ((cl-struct hyperdrive latest-version) hyperdrive)
+               ((map range-end) etc)
                (range-end-entry (compat-call copy-tree entry t))
                (ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
-    (setf (he/version range-end-entry) range-end)
+    (setf (he/version range-end-entry) (or range-end latest-version))
     (overlay-put ov 'display "Loading")
     (h/fill-version-ranges range-end-entry
       :finally (lambda ()
