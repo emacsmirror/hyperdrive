@@ -51,52 +51,6 @@ last node."
            return node
            do (setf node (ewoc-prev ewoc node))))
 
-(defun he//invalidate (entry)
-  "Invalidate ENTRY's ewoc node in directory and history buffers.
-Invalidated ewoc node entries will have these slots updated:
-
-- ETC
-  + BLOCK-LENGTH-DOWNLOADED
-
-All other slots in each ewoc node entry data will be reused."
-  ;; TODO: Invalidate nodes in all buffers showing entry at any version within
-  ;; its version range (where the blob is the same between multiple versions).
-  ;; We don't have the range end for ENTRY, so how can we figure out which
-  ;; versions of directory buffers need to be invalidated?
-  (when-let* ((dir-buffer (hyperdrive--find-buffer-visiting
-                           (hyperdrive-parent entry)))
-              (dir-ewoc (buffer-local-value 'h/ewoc dir-buffer))
-              (dir-node (and dir-ewoc
-                             (h/ewoc-find-node dir-ewoc entry
-                               :predicate #'he/equal-p)))
-              (dir-ewoc-entry (ewoc-data dir-node)))
-    (setf (map-elt (he/etc dir-ewoc-entry) 'block-length-downloaded)
-          (map-elt (he/etc entry) 'block-length-downloaded))
-    (ewoc-set-data dir-node dir-ewoc-entry)
-    ;; NOTE: Ensure that the buffer's window is selected,
-    ;; if it has one.  (Workaround a possible bug in EWOC.)
-    (if-let ((buffer-window (get-buffer-window dir-buffer)))
-        (with-selected-window buffer-window
-          (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node)))
-      (with-current-buffer dir-buffer
-        (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node)))))
-  (when-let* ((history-buffer (h/history-find-buffer-visiting entry))
-              (history-ewoc (buffer-local-value 'h/ewoc history-buffer))
-              (history-node (and history-ewoc
-                                 (h/ewoc-find-node history-ewoc entry
-                                   :predicate #'he/within-version-range)))
-              (history-ewoc-entry (ewoc-data history-node)))
-    (setf (map-elt (he/etc history-ewoc-entry) 'block-length-downloaded)
-          (map-elt (he/etc entry) 'block-length-downloaded))
-    (ewoc-set-data history-node history-ewoc-entry)
-    ;; NOTE: Ensure that the buffer's window is selected,
-    ;; if it has one.  (Workaround a possible bug in EWOC.)
-    (if-let ((buffer-window (get-buffer-window history-buffer)))
-        (with-selected-window buffer-window
-          (with-silent-modifications (ewoc-invalidate history-ewoc history-node)))
-      (with-current-buffer history-buffer
-        (with-silent-modifications (ewoc-invalidate history-ewoc history-node))))))
-
 ;;;; Mode
 
 (defvar-keymap h/ewoc-mode-map

@@ -299,6 +299,23 @@ version.  Finally, persists ENTRY's hyperdrive."
       ;; `he//invalidate' gets called twice.  Consider debouncing.
       (he//invalidate entry))))
 
+(declare-function h/dir--invalidate-entry "hyperdrive-dir")
+(declare-function h/history--invalidate-entry "hyperdrive-history")
+(defun he//invalidate (entry)
+  "Invalidate ENTRY's ewoc node in directory and history buffers.
+Invalidated ewoc node entries will have these slots updated:
+
+- ETC
+  + BLOCK-LENGTH-DOWNLOADED
+
+All other slots in each ewoc node entry data will be reused."
+  ;; Check `fboundp' to only iterate over directory or history buffers when
+  ;; their respective libraries have been loaded.
+  (when (fboundp #'h/dir--invalidate-entry)
+    (h/dir--invalidate-entry entry))
+  (when (fboundp #'h/history--invalidate-entry)
+    (h/history--invalidate-entry entry)))
+
 (defun h/gateway-needs-upgrade-p ()
   "Return non-nil if the gateway is responsive and needs upgraded."
   (and (h//gateway-ready-p)

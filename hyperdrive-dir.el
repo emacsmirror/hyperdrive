@@ -87,6 +87,36 @@ If THEN, call it in the directory buffer with no arguments."
                     (when then
                       (funcall then)))))))))
 
+(defun hyperdrive-dir--invalidate-entry (entry)
+  "Invalidate ENTRY's ewoc node in directory buffers.
+Invalidated ewoc node entries will have these slots updated:
+
+- ETC
+  + BLOCK-LENGTH-DOWNLOADED
+
+All other slots in each ewoc node entry data will be reused."
+  ;; TODO: Invalidate nodes in all buffers showing entry at any version within
+  ;; its version range (where the blob is the same between multiple versions).
+  ;; We don't have the range end for ENTRY, so how can we figure out which
+  ;; versions of directory buffers need to be invalidated?
+  (when-let* ((dir-buffer (hyperdrive--find-buffer-visiting
+                           (hyperdrive-parent entry)))
+              (dir-ewoc (buffer-local-value 'h/ewoc dir-buffer))
+              (dir-node (and dir-ewoc
+                             (h/ewoc-find-node dir-ewoc entry
+                               :predicate #'he/equal-p)))
+              (dir-ewoc-entry (ewoc-data dir-node)))
+    (setf (map-elt (he/etc dir-ewoc-entry) 'block-length-downloaded)
+          (map-elt (he/etc entry) 'block-length-downloaded))
+    (ewoc-set-data dir-node dir-ewoc-entry)
+    ;; NOTE: Ensure that the buffer's window is selected,
+    ;; if it has one.  (Workaround a possible bug in EWOC.)
+    (if-let ((buffer-window (get-buffer-window dir-buffer)))
+        (with-selected-window buffer-window
+          (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node)))
+      (with-current-buffer dir-buffer
+        (with-silent-modifications (ewoc-invalidate dir-ewoc dir-node))))))
+
 (defun h/dir-column-headers (prefix)
   "Return column headers as a string with PREFIX.
 Columns are suffixed with up/down arrows according to
