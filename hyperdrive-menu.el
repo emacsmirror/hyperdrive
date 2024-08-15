@@ -107,7 +107,7 @@
                                                             'face 'transient-value)))))
                       "Previous")))
     ("V n" "Next" h/open-next-version
-     :inapt-if-not (lambda  ()
+     :inapt-if-not (lambda ()
                      (let ((entry (h/menu--scope)))
                        (and (he/version entry)
                             (he/p (he/next entry)))))
