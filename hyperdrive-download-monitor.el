@@ -37,17 +37,18 @@
 ;;;; Functions
 
 (cl-defun h//download-monitor
-    (&key buffer-name path total-size preamble (update-interval 1))
+    (&key buffer-name path total-size preamble postamble (update-interval 1))
   "Return buffer that monitors the download to PATH expecting it to be TOTAL-SIZE.
-Buffer's name is based on BUFFER-NAME.  PREAMBLE is inserted at
-the top of the buffer.  Monitor buffer is updated every
-UPDATE-INTERVAL seconds."
+Buffer's name is based on BUFFER-NAME.  PREAMBLE and POSTAMBLE
+are inserted at the top and bottom of the buffer, respectively.
+Monitor buffer is updated every UPDATE-INTERVAL seconds."
   (let ((buffer (generate-new-buffer buffer-name)))
     (with-current-buffer buffer
       (special-mode)
       (setf (map-elt h/download-monitor-etc :path) path
             (map-elt h/download-monitor-etc :total-size) total-size
             (map-elt h/download-monitor-etc :preamble) preamble
+            (map-elt h/download-monitor-etc :postamble) postamble
             (map-elt h/download-monitor-etc :started-at) (current-time)
             (map-elt h/download-monitor-etc :timer)
             (run-at-time nil update-interval #'h//download-monitor-update buffer))
@@ -62,7 +63,7 @@ UPDATE-INTERVAL seconds."
 (defun h//download-monitor-update (buffer)
   "Update download monitor in BUFFER."
   (with-current-buffer buffer
-    (pcase-let* (((map :preamble :path :total-size :started-at)
+    (pcase-let* (((map :preamble :postamble :path :total-size :started-at)
                   h/download-monitor-etc)
                  (attributes (and (file-exists-p path)
                                   (file-attributes path)))
@@ -79,10 +80,7 @@ UPDATE-INTERVAL seconds."
                 " / " (file-size-human-readable total-size nil " ") "\n"
                 "Elapsed: " (format-seconds "%hh%mm%ss%z" elapsed) "\n"
                 "Speed: " (file-size-human-readable speed) "/s\n\n"
-                (buttonize "Cancel installation"
-                           (lambda (_) (hyperdrive-cancel-install)))
-                ;; Prevent button from going to end of the visual line.
-                " ")))))
+                postamble)))))
 
 (defun h//download-monitor-close (buffer)
   "Close download monitor BUFFER."

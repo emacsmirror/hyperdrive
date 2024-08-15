@@ -1453,9 +1453,16 @@ If FORCEP, don't prompt for confirmation before downloading."
                               (expand-file-name "hyperdrive-gateway-"
                                                 temporary-file-directory)))
                   (preamble (format "Downloading gateway from:\n\nURL: %s\nTo: %s\n"
-                                    url destination)))
+                                    url destination))
+                  (postamble
+                   (concat
+                    (buttonize "Cancel installation"
+                               (lambda (_) (hyperdrive-cancel-install)))
+                    ;; Prevent button from going to end of the visual line.
+                    " ")))
              (setf monitor-buffer (h//download-monitor
                                    :preamble preamble
+                                   :postamble postamble
                                    :buffer-name "*hyperdrive-install*"
                                    :path temp-file
                                    :total-size size)
