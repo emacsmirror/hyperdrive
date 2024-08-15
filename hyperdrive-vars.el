@@ -401,6 +401,12 @@ If the version was unexpected,
   "Entry for current buffer.")
 (put 'h/current-entry 'permanent-local t)
 
+(defvar-local h/history-current-entry nil
+  ;; NOTE: We don't reuse `hyperdrive-current-entry' in history buffers because
+  ;; functions like `hyperdrive--find-buffer-visiting' expect only one buffer to
+  ;; be visiting an entry at a time.
+  "Entry for current history buffer.")
+
 (defvar h/type-handlers
   `(
     ;; Directories are sent from the gateway as JSON arrays
