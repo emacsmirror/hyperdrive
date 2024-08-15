@@ -1741,7 +1741,8 @@ Compares their public keys."
 (defun he/within-version-range (entry entry-with-range-end)
   "Return non-nil if ENTRY's is within ENTRY-WITH-RANGE-END's range."
   (<= (he/version entry-with-range-end)
-      (he/version entry)
+      (or (he/version entry)
+          (h/latest-version (he/hyperdrive entry)))
       (map-elt (he/etc entry-with-range-end) 'range-end)))
 
 (defun h//ensure-dot-slash-prefix-path (path)
