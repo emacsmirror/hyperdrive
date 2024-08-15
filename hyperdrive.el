@@ -1437,7 +1437,7 @@ If FORCEP, don't prompt for confirmation before downloading."
          (ensure-size (url)
            (let ((host (url-host (url-generic-parse-url url))))
              (h/message "Checking server %S..." host)
-             (condition-case err
+             (condition-case _
                  (pcase-let (((cl-struct plz-response
                                          (headers (map content-length)))
                               (plz 'head url :as 'response :connect-timeout 5)))
