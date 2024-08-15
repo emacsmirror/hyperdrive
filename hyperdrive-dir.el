@@ -66,7 +66,7 @@ If THEN, call it in the directory buffer with no arguments."
         ;; Get "full" listing with metadata
         :headers `(("Accept" . "application/json; metadata=full"))
         :then (lambda (response)
-                (pcase-let* (((cl-struct plz-response headers body) response)
+                (pcase-let* (((cl-struct plz-response body) response)
                              (entries (h//fill-listing-entries
                                        ;; SOMEDAY: Consider updating plz to optionally not stringify the body.
                                        (json-read-from-string body)
