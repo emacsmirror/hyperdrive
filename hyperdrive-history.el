@@ -125,7 +125,7 @@ All other slots in each ewoc node entry data will be reused."
               (history-ewoc (buffer-local-value 'h/ewoc history-buffer))
               (history-node (and history-ewoc
                                  (h/ewoc-find-node history-ewoc entry
-                                   :predicate #'he/within-version-range)))
+                                   :predicate #'he/within-version-range-p)))
               (history-ewoc-entry (ewoc-data history-node)))
     (setf (map-elt (he/etc history-ewoc-entry) 'block-length-downloaded)
           (map-elt (he/etc entry) 'block-length-downloaded))
