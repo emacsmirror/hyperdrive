@@ -31,6 +31,14 @@
 (require 'hyperdrive-lib)
 (require 'hyperdrive-ewoc)
 
+;;;; Variables
+
+(defvar-local h/history-current-entry nil
+  ;; NOTE: We don't reuse `hyperdrive-current-entry' in history buffers because
+  ;; functions like `hyperdrive--find-buffer-visiting' expect only one buffer to
+  ;; be visiting an entry at a time.
+  "Entry for current history buffer.")
+
 ;;;; Functions
 
 (defun h/history-find-at-point (event)
