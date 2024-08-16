@@ -123,9 +123,8 @@ Invalidated ewoc node entries will have these slots updated:
 All other slots in each ewoc node entry data will be reused."
   (when-let* ((history-buffer (h/history-find-buffer-visiting entry))
               (history-ewoc (buffer-local-value 'h/ewoc history-buffer))
-              (history-node (and history-ewoc
-                                 (h/ewoc-find-node history-ewoc entry
-                                   :predicate #'he/within-version-range-p)))
+              (history-node (h/ewoc-find-node history-ewoc entry
+                              :predicate #'he/within-version-range-p))
               (history-ewoc-entry (ewoc-data history-node)))
     (setf (map-elt (he/etc history-ewoc-entry) 'block-length-downloaded)
           (map-elt (he/etc entry) 'block-length-downloaded))
