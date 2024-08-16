@@ -232,12 +232,9 @@ Sets ENTRY's hyperdrive to the persisted version of the drive if
 it exists.  Updates ENTRY's hyperdrive's disk usage and latest
 version.  Finally, persists ENTRY's hyperdrive."
   (pcase-let*
-      (((cl-struct
-         plz-response
-         (headers (map link allow content-length content-type last-modified
-                       x-drive-size x-drive-version
-                       x-file-block-length x-file-block-length-downloaded)))
-        response)
+      (((map link allow content-length content-type last-modified x-drive-size
+             x-drive-version x-file-block-length x-file-block-length-downloaded)
+        (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
        ;; while ENTRY may have a DNSLink domain but no public key yet.
        (public-key (progn (string-match h//public-key-re link)
