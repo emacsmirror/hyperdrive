@@ -276,7 +276,7 @@ Interactively, diff entry at point with previous entry."
     :then (lambda ()
             (pop-to-buffer (current-buffer)))))
 
-(cl-defun h/history-find-file (entry)
+(defun h/history-find-file (entry)
   "Visit hyperdrive ENTRY at point.
 When entry does not exist, does nothing and returns nil.  When
 entry is not known to exist, attempts to load entry at ENTRY's
