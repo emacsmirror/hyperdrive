@@ -528,6 +528,9 @@ of a hyperdrive file (~hyperdrive-blob-mode~):
 The history buffer displays the entire known history of a hyperdrive
 file.  For an explanation of how it works, see [[*Partial version data]].
 
+Like in the [[*Directory view][directory view]], the file size color in the history view
+indicates how much of a file you have already downloaded.
+
 - Command: hyperdrive-history ::
 
   Open the history buffer for the current hyperdrive file.  To open

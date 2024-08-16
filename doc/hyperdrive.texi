@@ -823,6 +823,9 @@ Traverse version history for the current file.
 The history buffer displays the entire known history of a hyperdrive
 file.  For an explanation of how it works, see @ref{Partial version data}.
 
+Like in the @ref{Directory view, , directory view}, the file size color in the history view
+indicates how much of a file you have already downloaded.
+
 @deffn Command hyperdrive-history
 Open the history buffer for the current hyperdrive file.  To open
 the history for a different file, use the universal prefix argument
