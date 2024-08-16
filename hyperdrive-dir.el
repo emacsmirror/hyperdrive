@@ -102,9 +102,8 @@ All other slots in each ewoc node entry data will be reused."
   (when-let* ((dir-buffer (hyperdrive--find-buffer-visiting
                            (hyperdrive-parent entry)))
               (dir-ewoc (buffer-local-value 'h/ewoc dir-buffer))
-              (dir-node (and dir-ewoc
-                             (h/ewoc-find-node dir-ewoc entry
-                               :predicate #'he/equal-p)))
+              (dir-node (h/ewoc-find-node dir-ewoc entry
+                          :predicate #'he/equal-p))
               (dir-ewoc-entry (ewoc-data dir-node)))
     (setf (map-elt (he/etc dir-ewoc-entry) 'block-length-downloaded)
           (map-elt (he/etc entry) 'block-length-downloaded))
