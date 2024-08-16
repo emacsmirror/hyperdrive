@@ -47,6 +47,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
   bar labels cannot be updated while the menu bar is open.
 - Better error message when the gateway is not installed.
   Thanks to ~magnum~ on XMPP for reporting.
+- Make ~hyperdrive-download~ asynchronous.
 - Remove ~hyperdrive-reuse-buffers~ user option to ensure consistent
   behavior when uniquifying buffer names.
 - Remove ~hyperdrive-honor-auto-mode-alist~ user option; hyperdrives
