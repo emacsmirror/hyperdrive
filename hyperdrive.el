@@ -461,6 +461,9 @@ in a directory.  Otherwise, or with universal prefix argument
     (when (file-exists-p filename)
       ;; plz.el will not overwrite existing files: ensure there's no file there.
       (delete-file filename))
+    ;; TODO(plz v0.10.0): In an upcoming version of `plz', nonexistent parent
+    ;; directories will be created for us.  At that point, remove this line.
+    (make-directory (file-name-parent-directory filename) t)
     (h/api 'get url :as `(file ,filename))
     ;; TODO: If plz adds support for getting response headers when downloading
     ;; as a file (<https://github.com/alphapapa/plz.el/issues/61>), use it here.
