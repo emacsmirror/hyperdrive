@@ -227,6 +227,9 @@ modify this GNU manual.''
 
 @code{hyperdrive.el} requires a reasonably up-to-date version of @uref{https://curl.se/download.html, curl}.
 
+Feel free to skip this step.  @code{curl} may already installed on your
+machine, and @code{hyperdrive.el} will warn you otherwise.
+
 @node Install hyperdriveel
 @section Install hyperdrive.el
 

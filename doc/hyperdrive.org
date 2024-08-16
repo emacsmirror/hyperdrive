@@ -47,6 +47,9 @@ modify this GNU manual."
 
 ~hyperdrive.el~ requires a reasonably up-to-date version of [[https://curl.se/download.html][curl]].
 
+Feel free to skip this step.  ~curl~ may already installed on your
+machine, and ~hyperdrive.el~ will warn you otherwise.
+
 ** Install hyperdrive.el
 
 ~hyperdrive.el~ can be installed from [[https://elpa.nongnu.org/nongnu/hyperdrive.html][NonGNU ELPA]] with ~M-x
