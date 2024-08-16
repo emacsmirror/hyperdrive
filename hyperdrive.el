@@ -464,11 +464,15 @@ in a directory.  Otherwise, or with universal prefix argument
     ;; TODO(plz v0.10.0): In an upcoming version of `plz', nonexistent parent
     ;; directories will be created for us.  At that point, remove this line.
     (make-directory (file-name-parent-directory filename) t)
-    (h/api 'get url :as `(file ,filename))
-    ;; TODO: If plz adds support for getting response headers when downloading
-    ;; as a file (<https://github.com/alphapapa/plz.el/issues/61>), use it here.
-    ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-    (he/fill (h/url-entry url))))
+    (h/api 'get url :as `(file ,filename)
+      :then (lambda (_)
+              (h/message "Downloaded `%s' to `%s'." url filename)
+              ;; TODO: If plz adds support for getting response headers when downloading
+              ;; as a file (<https://github.com/alphapapa/plz.el/issues/61>), use it here.
+              ;; Filling entry is necessary in order to update hyperdrive disk-usage.
+              (he/fill (h/url-entry url)))
+      :else (lambda (plz-error)
+              (h/message "Unable to download: %s: %S" url plz-error)))))
 
 ;;;###autoload
 (defun hyperdrive-write-buffer (entry &optional overwritep)
