@@ -468,16 +468,11 @@
          (h/menu--scope)))
   (h/set-nickname nickname hyperdrive))
 
-(transient-define-suffix h/menu-mark-as-safe (hyperdrive safep)
+(transient-define-suffix h/menu-mark-as-safe ()
   :description
-  (lambda ()
-    (format "Safe: %s"
-            (if (alist-get 'safep (h/etc (h/menu--scope)))
-                (propertize "Yes" 'face 'success)
-              (propertize "No" 'face 'error))))
-  (interactive
-   (list (h/menu--scope) (not (alist-get 'safep (h/etc (h/menu--scope))))))
-  (h/mark-as-safe hyperdrive safep))
+  (lambda () (format "Safe: %s" (h/safe-string (h/menu--scope))))
+  (interactive)
+  (call-interactively #'h/mark-as-safe))
 
 ;;;; Menu Utilities
 
