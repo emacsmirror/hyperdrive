@@ -452,6 +452,7 @@ in a directory.  Otherwise, or with universal prefix argument
   "Load contents at URL as a file to store on disk at FILENAME."
   ;; TODO: Implement entry-based version of this function, or change callers to use entries.
   ;; TODO: Handle directory URLs (recursively download contents?)
+  ;; TODO: Hook in download monitor optionally.
   (interactive
    (let* ((read-url (h/read-url :prompt "Download hyperdrive URL"))
           (name (he/name (h/url-entry read-url)))
