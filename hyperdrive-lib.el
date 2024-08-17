@@ -1726,6 +1726,12 @@ Compares their public keys."
           (h/latest-version (he/hyperdrive entry)))
       (map-elt (he/etc entry-with-range-end) 'range-end)))
 
+(defun h/safe-p (hyperdrive)
+  "Return whether HYPERDRIVE is safe or not.
+Potential return values are t, nil, or \\+`unknown'.  If ETC slot
+has no value for \\+`safep', return \\+`unknown'."
+  (map-elt (h/etc hyperdrive) 'safep 'unknown))
+
 (defun h//ensure-dot-slash-prefix-path (path)
   "Return PATH, ensuring it begins with the correct prefix.
 Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
