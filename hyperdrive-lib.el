@@ -1734,6 +1734,13 @@ Potential return values are t, nil, or \\+`unknown'.  If ETC slot
 has no value for \\+`safep', return \\+`unknown'."
   (map-elt (h/etc hyperdrive) 'safep 'unknown))
 
+(defun h/safe-string (hyperdrive)
+  "Return propertized string describing HYPERDRIVE safety."
+  (pcase-exhaustive (h/safe-p hyperdrive)
+    ('t (propertize "safe" 'face 'success))
+    ('nil (propertize "unsafe" 'face 'error))
+    ('unknown (propertize "unknown" 'face 'warning))))
+
 (defun h//ensure-dot-slash-prefix-path (path)
   "Return PATH, ensuring it begins with the correct prefix.
 Unless PATH starts with \"/\" \"./\" or \"../\", add \"./\"."
