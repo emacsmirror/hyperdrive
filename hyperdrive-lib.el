@@ -1175,11 +1175,16 @@ case, when PREDICATE, only offer hyperdrives matching it."
     (setf predicate #'always))
 
   ;; Return current drive when appropriate.
-  (when-let* (((not force-prompt))
-              (h/current-entry)
-              (current-hyperdrive (he/hyperdrive h/current-entry))
-              ((funcall predicate current-hyperdrive)))
-    (cl-return-from h/complete-hyperdrive current-hyperdrive))
+  (unless force-prompt
+    ;; If transient menu is open, use that as the current hyperdrive.
+    (when-let* ((obj (transient-active-prefix '(h/menu-hyperdrive)))
+                (transient-hyperdrive (oref obj scope))
+                ((funcall predicate transient-hyperdrive)))
+      (cl-return-from h/complete-hyperdrive transient-hyperdrive))
+    (when-let* ((h/current-entry)
+                (current-hyperdrive (he/hyperdrive h/current-entry))
+                ((funcall predicate current-hyperdrive)))
+      (cl-return-from h/complete-hyperdrive current-hyperdrive)))
 
   ;; Otherwise, prompt for drive.
   (let* ((current-hyperdrive (and h/current-entry
