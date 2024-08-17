@@ -1399,7 +1399,7 @@ If then, then call THEN with no arguments.  Default handler."
       ;; Check safe-p again after potential call to `h/mark-as-safe'.
       (when (eq t (h/safe-p hyperdrive))
         (let ((buffer-file-name (he/name entry)))
-          (set-auto-mode)))
+          (set-auto-mode t)))
       (when target
         (pcase major-mode
           ('org-mode

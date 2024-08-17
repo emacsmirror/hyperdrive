@@ -514,7 +514,7 @@ use, see `hyperdrive-write'."
                     ;; Check safe-p again after potential call to `h/mark-as-safe'.
                     (when (eq t (h/safe-p hyperdrive))
                       (let ((buffer-file-name (he/name entry)))
-                        (set-auto-mode)))
+                        (set-auto-mode t)))
                     (h/mode))
                   (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
