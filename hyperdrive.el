@@ -155,7 +155,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
   "Mark HYPERDRIVE as safe according to SAFEP.
 Interactively, prompt for hyperdrive and action."
   (interactive
-   (pcase-let* ((hyperdrive (h/complete-hyperdrive :force-prompt t))
+   (pcase-let* ((hyperdrive (h/complete-hyperdrive))
                 ((cl-struct hyperdrive (etc (map safep))) hyperdrive)
                 (mark-safe-p
                  (pcase (read-answer
