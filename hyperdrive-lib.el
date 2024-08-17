@@ -1369,6 +1369,7 @@ Otherwise, return nil.  SLOT may be one of
 
 (declare-function h/org--link-goto "hyperdrive-org")
 (declare-function h/blob-mode "hyperdrive")
+(declare-function h/mark-as-safe "hyperdrive")
 (cl-defun h/handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
@@ -1393,11 +1394,12 @@ If then, then call THEN with no arguments.  Default handler."
                 (or (not (h/writablep hyperdrive)) version))
           (set-buffer-modified-p nil)
           (set-visited-file-modtime (current-time))))
-      (if (map-elt (hyperdrive-etc hyperdrive) 'safep)
-          (let ((buffer-file-name (he/name entry)))
-            (set-auto-mode))
-        (h/message "Mark hyperdrive `%s' as safe to auto-enable major mode."
-                   (h//format-hyperdrive hyperdrive)))
+      (when (eq 'unknown (h/safe-p hyperdrive))
+        (call-interactively #'h/mark-as-safe))
+      ;; Check safe-p again after potential call to `h/mark-as-safe'.
+      (when (eq t (h/safe-p hyperdrive))
+        (let ((buffer-file-name (he/name entry)))
+          (set-auto-mode)))
       (when target
         (pcase major-mode
           ('org-mode
