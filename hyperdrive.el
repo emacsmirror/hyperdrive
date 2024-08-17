@@ -1022,9 +1022,7 @@ The return value of this function is the retrieval buffer."
                         :help "Mark hyperdrive as safe or not"
                         :label
                         (format-message "Mark as Safe: `%s'"
-                                        (if (alist-get 'safep (h/etc drive))
-                                            "safe"
-                                          "unsafe")))
+                                        (h/safe-string drive)))
                 "---"
                 (vector "Purge"
                         `(lambda ()
