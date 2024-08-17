@@ -164,8 +164,8 @@ Interactively, prompt for hyperdrive and action."
                                  (if safep
                                      (propertize "safe" 'face 'success)
                                    (propertize "unsafe" 'face 'error)))
-                         '(("safe" ?S "Mark as safe")
-                           ("unsafe" ?u "Mark as unsafe")
+                         '(("safe" ?S "mark as safe")
+                           ("unsafe" ?u "mark as unsafe")
                            ("info" ?i "show Info manual section about safety")
                            ("quit" ?q "quit")))
                    ((or ?S "safe") t)
