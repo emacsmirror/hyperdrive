@@ -156,15 +156,11 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
 Interactively, prompt for hyperdrive and action."
   (interactive
    (pcase-let* ((hyperdrive (h/complete-hyperdrive))
-                ((cl-struct hyperdrive (etc (map safep))) hyperdrive)
                 (mark-safe-p
                  (pcase (read-answer
                          (format "Mark hyperdrive `%s' as: (currently: %s) "
                                  (h//format-hyperdrive hyperdrive)
-                                 (pcase-exhaustive safep
-                                   ('t (propertize "safe" 'face 'success))
-                                   ('nil (propertize "unsafe" 'face 'error))
-                                   ('unknown (propertize "unknown" 'face 'warning))))
+                                 (h/safe-string hyperdrive))
                          '(("safe" ?S "mark as safe")
                            ("unsafe" ?U "mark as unsafe")
                            ("unknown" ?u "ask again later")
@@ -183,10 +179,7 @@ Interactively, prompt for hyperdrive and action."
        (h/persist hyperdrive)
        (message "Marked hyperdrive `%s' as %s."
                 (h//format-hyperdrive hyperdrive)
-                (pcase-exhaustive safep
-                  ('t (propertize "safe" 'face 'success))
-                  ('nil (propertize "unsafe" 'face 'error))
-                  ('unknown (propertize "unknown" 'face 'warning)))))))
+                (h/safe-string hyperdrive)))))
 
 (defun h/forget-file (entry)
   "Delete local copy of the file or directory contents of ENTRY.
