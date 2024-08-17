@@ -314,13 +314,13 @@ value (and should only be present once in the string).  Used in
 (defface h/size '((t (:inherit font-lock-doc-face)))
   "File sizes.")
 
-(defface h/size-fully-downloaded '((t (:inherit success)))
+(defface h/size-fully-downloaded '((t (:inherit success :weight normal)))
   "File sizes for entries which have been fully downloaded.")
 
-(defface h/size-not-downloaded '((t (:inherit error)))
+(defface h/size-not-downloaded '((t (:inherit error :weight normal)))
   "File sizes for entries which have not been downloaded.")
 
-(defface h/size-partially-downloaded '((t (:inherit warning)))
+(defface h/size-partially-downloaded '((t (:inherit warning :weight normal)))
   "File sizes for entries which have been partially downloaded.")
 
 (defface h/timestamp '((t (:inherit default)))
