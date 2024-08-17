@@ -143,6 +143,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
                (hyperdrive (he/hyperdrive (h/url-entry url))))
     (setf (h/seed hyperdrive) seed)
     (setf (h/writablep hyperdrive) t)
+    (setf (map-elt (h/etc hyperdrive) 'safep) t)
     (unwind-protect
         (h/set-petname seed hyperdrive)
       ;; TODO: Hyperdrive disk usage should be set here.
