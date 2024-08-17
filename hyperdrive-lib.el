@@ -94,7 +94,10 @@ Passes ARGS to `format-message'."
   ;; TODO: Consider adding gv-setters for etc slot keys
   (etc nil :documentation "Alist of extra data.
 - disk-usage :: Number of bytes occupied locally by the drive.
-- safep :: Whether or not to treat this hyperdrive as safe."))
+- safep :: Whether or not to treat this hyperdrive as safe.
+  + t :: safe
+  + nil :: unsafe
+  + \\+`unknown' (or unset) :: unknown"))
 
 (defun h/url (hyperdrive)
   "Return a \"hyper://\"-prefixed URL from a HYPERDRIVE struct.

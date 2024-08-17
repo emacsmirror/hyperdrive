@@ -161,15 +161,18 @@ Interactively, prompt for hyperdrive and action."
                  (pcase (read-answer
                          (format "Mark hyperdrive `%s' as: (currently: %s) "
                                  (h//format-hyperdrive hyperdrive)
-                                 (if safep
-                                     (propertize "safe" 'face 'success)
-                                   (propertize "unsafe" 'face 'error)))
+                                 (pcase-exhaustive safep
+                                   ('t (propertize "safe" 'face 'success))
+                                   ('nil (propertize "unsafe" 'face 'error))
+                                   ('unknown (propertize "unknown" 'face 'warning))))
                          '(("safe" ?S "mark as safe")
-                           ("unsafe" ?u "mark as unsafe")
+                           ("unsafe" ?U "mark as unsafe")
+                           ("unknown" ?u "ask again later")
                            ("info" ?i "show Info manual section about safety")
                            ("quit" ?q "quit")))
                    ((or ?S "safe") t)
-                   ((or ?u "unsafe") nil)
+                   ((or ?U "unsafe") nil)
+                   ((or ?u "unknown") 'unknown)
                    ((or ?i "info") :info)
                    (_ :quit))))
      (list hyperdrive mark-safe-p)))
@@ -180,9 +183,10 @@ Interactively, prompt for hyperdrive and action."
        (h/persist hyperdrive)
        (message "Marked hyperdrive `%s' as %s."
                 (h//format-hyperdrive hyperdrive)
-                (if safep
-                    (propertize "safe" 'face 'success)
-                  (propertize "unsafe" 'face 'error))))))
+                (pcase-exhaustive safep
+                  ('t (propertize "safe" 'face 'success))
+                  ('nil (propertize "unsafe" 'face 'error))
+                  ('unknown (propertize "unknown" 'face 'warning)))))))
 
 (defun h/forget-file (entry)
   "Delete local copy of the file or directory contents of ENTRY.
