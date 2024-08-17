@@ -1737,9 +1737,9 @@ has no value for \\+`safep', return \\+`unknown'."
 (defun h/safe-string (hyperdrive)
   "Return propertized string describing HYPERDRIVE safety."
   (pcase-exhaustive (h/safe-p hyperdrive)
-    ('t (propertize "safe" 'face 'success))
-    ('nil (propertize "unsafe" 'face 'error))
-    ('unknown (propertize "unknown" 'face 'warning))))
+    ('t (propertize "safe" 'face 'h/safe))
+    ('nil (propertize "unsafe" 'face 'h/unsafe))
+    ('unknown (propertize "unknown" 'face 'h/safe-unknown))))
 
 (defun h//ensure-dot-slash-prefix-path (path)
   "Return PATH, ensuring it begins with the correct prefix.
