@@ -314,6 +314,15 @@ value (and should only be present once in the string).  Used in
 (defface h/size '((t (:inherit font-lock-doc-face)))
   "File sizes.")
 
+(defface h/safe '((t (:inherit success)))
+  "File sizes for entries which have been fully downloaded.")
+
+(defface h/unsafe '((t (:inherit error)))
+  "File sizes for entries which have not been downloaded.")
+
+(defface h/safe-unknown '((t (:inherit warning)))
+  "File sizes for entries which have been partially downloaded.")
+
 (defface h/size-fully-downloaded '((t (:inherit success :weight normal)))
   "File sizes for entries which have been fully downloaded.")
 

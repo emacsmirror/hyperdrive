@@ -94,7 +94,10 @@ Passes ARGS to `format-message'."
   ;; TODO: Consider adding gv-setters for etc slot keys
   (etc nil :documentation "Alist of extra data.
 - disk-usage :: Number of bytes occupied locally by the drive.
-- safep :: Whether or not to treat this hyperdrive as safe."))
+- safep :: Whether or not to treat this hyperdrive as safe.
+  + t :: safe
+  + nil :: unsafe
+  + \\+`unknown' (or unset) :: unknown"))
 
 (defun h/url (hyperdrive)
   "Return a \"hyper://\"-prefixed URL from a HYPERDRIVE struct.
@@ -1366,6 +1369,7 @@ Otherwise, return nil.  SLOT may be one of
 
 (declare-function h/org--link-goto "hyperdrive-org")
 (declare-function h/blob-mode "hyperdrive")
+(declare-function h/mark-as-safe "hyperdrive")
 (cl-defun h/handler-default (entry &key then)
   "Load ENTRY's file into an Emacs buffer.
 If then, then call THEN with no arguments.  Default handler."
@@ -1390,11 +1394,12 @@ If then, then call THEN with no arguments.  Default handler."
                 (or (not (h/writablep hyperdrive)) version))
           (set-buffer-modified-p nil)
           (set-visited-file-modtime (current-time))))
-      (if (map-elt (hyperdrive-etc hyperdrive) 'safep)
-          (let ((buffer-file-name (he/name entry)))
-            (set-auto-mode))
-        (h/message "Mark hyperdrive `%s' as safe to auto-enable major mode."
-                   (h//format-hyperdrive hyperdrive)))
+      (when (eq 'unknown (h/safe-p hyperdrive))
+        (call-interactively #'h/mark-as-safe))
+      ;; Check safe-p again after potential call to `h/mark-as-safe'.
+      (when (eq t (h/safe-p hyperdrive))
+        (let ((buffer-file-name (he/name entry)))
+          (set-auto-mode t)))
       (when target
         (pcase major-mode
           ('org-mode
@@ -1722,6 +1727,19 @@ Compares their public keys."
       (or (he/version entry)
           (h/latest-version (he/hyperdrive entry)))
       (map-elt (he/etc entry-with-range-end) 'range-end)))
+
+(defun h/safe-p (hyperdrive)
+  "Return whether HYPERDRIVE is safe or not.
+Potential return values are t, nil, or \\+`unknown'.  If ETC slot
+has no value for \\+`safep', return \\+`unknown'."
+  (map-elt (h/etc hyperdrive) 'safep 'unknown))
+
+(defun h/safe-string (hyperdrive)
+  "Return propertized string describing HYPERDRIVE safety."
+  (pcase-exhaustive (h/safe-p hyperdrive)
+    ('t (propertize "safe" 'face 'h/safe))
+    ('nil (propertize "unsafe" 'face 'h/unsafe))
+    ('unknown (propertize "unknown" 'face 'h/safe-unknown))))
 
 (defun h//ensure-dot-slash-prefix-path (path)
   "Return PATH, ensuring it begins with the correct prefix.

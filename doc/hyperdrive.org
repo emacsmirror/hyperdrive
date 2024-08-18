@@ -741,15 +741,19 @@ The following keybindings are available in ~hyperdrive-mirror-mode~:
 
 ** Mark a hyperdrive as safe
 
-For security reasons, ~hyperdrive.el~ does not enable major modes based
-on file extension unless the hyperdrive has been marked as "safe."
+For security reasons, ~hyperdrive.el~ does not enable major modes
+based on file extension unless the hyperdrive has been marked as
+"safe."  When opening a file in a hyperdrive marked as "unknown" (the
+default), ~hyperdrive.el~ will prompt you to mark the drive as "safe",
+"unsafe", or "unknown".  Files in hyperdrives which are marked as
+"safe" are always opened in the appropriate major mode with
+~set-auto-mode~.  Files in hyperdrives which are marked as "unsafe"
+are opened in ~fundamental-mode~ (no major mode).
 
 - Command: hyperdrive-mark-as-safe ::
 
-  Mark a hyperdrive as "safe," which will cause major modes to be
-  automatically be enabled based on file extension when opening files
-  within that hyperdrive.  Files in hyperdrives which are "unsafe"
-  (the default) are opened in ~fundamental-mode~.
+  Mark a hyperdrive as "safe", "unsafe", or "unknown".  This command
+  can also be invoked from ~hyperdrive-menu-hyperdrive~ and the menu bar.
 
 ** Purge a hyperdrive
 

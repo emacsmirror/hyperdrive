@@ -1068,14 +1068,18 @@ Fold or unfold the section at point.
 @node Mark a hyperdrive as safe
 @section Mark a hyperdrive as safe
 
-For security reasons, @code{hyperdrive.el} does not enable major modes based
-on file extension unless the hyperdrive has been marked as ``safe.''
+For security reasons, @code{hyperdrive.el} does not enable major modes
+based on file extension unless the hyperdrive has been marked as
+``safe.''  When opening a file in a hyperdrive marked as ``unknown'' (the
+default), @code{hyperdrive.el} will prompt you to mark the drive as ``safe'',
+``unsafe'', or ``unknown''.  Files in hyperdrives which are marked as
+``safe'' are always opened in the appropriate major mode with
+@code{set-auto-mode}.  Files in hyperdrives which are marked as ``unsafe''
+are opened in @code{fundamental-mode} (no major mode).
 
 @deffn Command hyperdrive-mark-as-safe
-Mark a hyperdrive as ``safe,'' which will cause major modes to be
-automatically be enabled based on file extension when opening files
-within that hyperdrive.  Files in hyperdrives which are ``unsafe''
-(the default) are opened in @code{fundamental-mode}.
+Mark a hyperdrive as ``safe'', ``unsafe'', or ``unknown''.  This command
+can also be invoked from @code{hyperdrive-menu-hyperdrive} and the menu bar.
 @end deffn
 
 @node Purge a hyperdrive

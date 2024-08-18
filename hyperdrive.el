@@ -156,20 +156,19 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
 Interactively, prompt for hyperdrive and action."
   (interactive
    (pcase-let* ((hyperdrive (h/complete-hyperdrive))
-                ((cl-struct hyperdrive (etc (map safep))) hyperdrive)
                 (mark-safe-p
                  (pcase (read-answer
                          (format "Mark hyperdrive `%s' as: (currently: %s) "
                                  (h//format-hyperdrive hyperdrive)
-                                 (if safep
-                                     (propertize "safe" 'face 'success)
-                                   (propertize "unsafe" 'face 'error)))
-                         '(("safe" ?S "Mark as safe")
-                           ("unsafe" ?u "Mark as unsafe")
+                                 (h/safe-string hyperdrive))
+                         '(("safe" ?S "mark as safe")
+                           ("unsafe" ?U "mark as unsafe")
+                           ("unknown" ?u "ask again later")
                            ("info" ?i "show Info manual section about safety")
                            ("quit" ?q "quit")))
                    ((or ?S "safe") t)
-                   ((or ?u "unsafe") nil)
+                   ((or ?U "unsafe") nil)
+                   ((or ?u "unknown") 'unknown)
                    ((or ?i "info") :info)
                    (_ :quit))))
      (list hyperdrive mark-safe-p)))
@@ -180,9 +179,7 @@ Interactively, prompt for hyperdrive and action."
        (h/persist hyperdrive)
        (message "Marked hyperdrive `%s' as %s."
                 (h//format-hyperdrive hyperdrive)
-                (if safep
-                    (propertize "safe" 'face 'success)
-                  (propertize "unsafe" 'face 'error))))))
+                (h/safe-string hyperdrive)))))
 
 (defun h/forget-file (entry)
   "Delete local copy of the file or directory contents of ENTRY.
@@ -512,12 +509,12 @@ use, see `hyperdrive-write'."
                 (with-current-buffer buffer
                   (unless h/mode
                     (h//clean-buffer)
-                    (if (map-elt (hyperdrive-etc hyperdrive) 'safep)
-                        (let ((buffer-file-name (he/name entry)))
-                          (set-auto-mode))
-                      (h/message
-                       "Mark hyperdrive `%s' as safe to auto-enable major mode."
-                       (h//format-hyperdrive hyperdrive)))
+                    (when (eq 'unknown (h/safe-p hyperdrive))
+                      (call-interactively #'h/mark-as-safe))
+                    ;; Check safe-p again after potential call to `h/mark-as-safe'.
+                    (when (eq t (h/safe-p hyperdrive))
+                      (let ((buffer-file-name (he/name entry)))
+                        (set-auto-mode t)))
                     (h/mode))
                   (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
@@ -1018,9 +1015,7 @@ The return value of this function is the retrieval buffer."
                         :help "Mark hyperdrive as safe or not"
                         :label
                         (format-message "Mark as Safe: `%s'"
-                                        (if (alist-get 'safep (h/etc drive))
-                                            "safe"
-                                          "unsafe")))
+                                        (h/safe-string drive)))
                 "---"
                 (vector "Purge"
                         `(lambda ()
