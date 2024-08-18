@@ -98,7 +98,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
   ~markdown-mode~ buffers
 - ~find-file-at-point~ integration
 - Added ~hyperdrive~ completion category which affects the
-  ~hyperdrive-complete-hyperdrive~ ~completing-read~ interface
+  ~completing-read~ interface for selecting a hyperdrive.
 - Embark integration: Run ~embark-act~ while interactively selecting a
   hyperdrive to choose an alternative action
 - Add customization options to control how hyperdrives, files, and

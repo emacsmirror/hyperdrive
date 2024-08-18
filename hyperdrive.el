@@ -156,7 +156,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
   "Mark HYPERDRIVE as safe according to SAFEP.
 Interactively, prompt for hyperdrive and action."
   (interactive
-   (pcase-let* ((hyperdrive (h/complete-hyperdrive))
+   (pcase-let* ((hyperdrive (h//context-hyperdrive))
                 (mark-safe-p
                  (pcase (read-answer
                          (format "Mark hyperdrive `%s' as: (currently: %s) "
@@ -206,7 +206,7 @@ modified; file blobs may be recoverable from other peers."
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
   "Purge all data corresponding to HYPERDRIVE."
-  (interactive (list (h/complete-hyperdrive :force-prompt t)))
+  (interactive (list (h//context-hyperdrive :force-prompt t)))
   (when (yes-or-no-p (format-message "Delete local copy of hyperdrive (data will likely not be recoverable—see manual): `%s'? "
                                      (h//format-hyperdrive hyperdrive)))
     (h/purge-no-prompt hyperdrive
@@ -221,10 +221,10 @@ modified; file blobs may be recoverable from other peers."
 Entering an empty or blank string unsets PETNAME.
 Returns HYPERDRIVE.
 
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
+With universal prefix argument \\[universal-argument], always
+prompt for a hyperdrive."
   (interactive
-   (let* ((hyperdrive (h/complete-hyperdrive :force-prompt current-prefix-arg))
+   (let* ((hyperdrive (h//context-hyperdrive :force-prompt current-prefix-arg))
           (petname (h/read-name
                     :prompt (format "Petname for `%s' (leave blank to unset)"
                                     (h//format-hyperdrive hyperdrive))
@@ -254,10 +254,10 @@ Returns HYPERDRIVE.
 Asynchronous callback calls THEN with the updated hyperdrive as
 its only argument.
 
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
+With universal prefix argument \\[universal-argument], always
+prompt for a hyperdrive."
   (interactive
-   (let* ((hyperdrive (h/complete-hyperdrive :predicate #'h/writablep
+   (let* ((hyperdrive (h//context-hyperdrive :predicate #'h/writablep
                                              :force-prompt current-prefix-arg))
           (nickname
            ;; NOTE: Fill metadata first in case the JSON file has been updated manually
@@ -729,11 +729,11 @@ After successful upload, call THEN.  When QUEUE, use it."
 (defun h/upload-files (files hyperdrive target-dir)
   "Upload FILES to TARGET-DIR in HYPERDRIVE.
 
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
+With universal prefix argument \\[universal-argument], always
+prompt for a hyperdrive."
   (interactive
    (let* ((files (h/read-files))
-          (hyperdrive (h/complete-hyperdrive :predicate #'h/writablep
+          (hyperdrive (h//context-hyperdrive :predicate #'h/writablep
                                              :force-prompt current-prefix-arg))
           ;; TODO: Consider offering target dirs in hyperdrive with completion.
           (target-dir (h/read-path :hyperdrive hyperdrive :prompt "Target directory in `%s'" :default "/")))

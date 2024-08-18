@@ -1162,7 +1162,7 @@ With universal prefix argument \\[universal-argument], prompt for entry."
     ('h/dir-mode (h/dir--entry-at-point))
     (_ (or h/current-entry (h/read-entry :latest-version latest-version)))))
 
-(cl-defun h/complete-hyperdrive (&key predicate force-prompt)
+(cl-defun h//context-hyperdrive (&key predicate force-prompt)
   "Return hyperdrive for current entry when it matches PREDICATE.
 
 With FORCE-PROMPT or when current hyperdrive does not match
@@ -1180,11 +1180,11 @@ case, when PREDICATE, only offer hyperdrives matching it."
     (when-let* ((obj (transient-active-prefix '(h/menu-hyperdrive)))
                 (transient-hyperdrive (oref obj scope))
                 ((funcall predicate transient-hyperdrive)))
-      (cl-return-from h/complete-hyperdrive transient-hyperdrive))
+      (cl-return-from h//context-hyperdrive transient-hyperdrive))
     (when-let* ((h/current-entry)
                 (current-hyperdrive (he/hyperdrive h/current-entry))
                 ((funcall predicate current-hyperdrive)))
-      (cl-return-from h/complete-hyperdrive current-hyperdrive)))
+      (cl-return-from h//context-hyperdrive current-hyperdrive)))
 
   ;; Otherwise, prompt for drive.
   (let* ((current-hyperdrive (and h/current-entry
@@ -1223,8 +1223,8 @@ For each of FORMATS, concatenates the value separated by two spaces."
                              (force-prompt-drive t) latest-version read-version)
   "Return new hyperdrive entry in HYPERDRIVE with path read from user.
 
-With nil HYPERDRIVE, prompt for one by passing PREDICATE and
-FORCE-PROMPT-DRIVE to `hyperdrive-complete-hyperdrive'.
+With nil HYPERDRIVE, prompt for one according to PREDICATE and
+FORCE-PROMPT-DRIVE.
 
 If DEFAULT-PATH, offer it as the default entry path.  Otherwise,
 offer the path of `hyperdrive-current-entry' when it is in the
@@ -1237,7 +1237,7 @@ completion, returned entry has the same version.
 Otherwise, prompt for a version number."
   ;; TODO: Consider removing FORCE-PROMPT-DRIVE argument.
   (let* ((hyperdrive (or hyperdrive
-                         (h/complete-hyperdrive :predicate predicate
+                         (h//context-hyperdrive :predicate predicate
                                                 :force-prompt force-prompt-drive)))
          (default-version (and (not latest-version)
                                h/current-entry

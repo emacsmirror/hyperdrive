@@ -44,9 +44,9 @@
 (defun hyperdrive-describe-hyperdrive (hyperdrive)
   "Display various information about HYPERDRIVE.
 
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
-  (interactive (list (h/complete-hyperdrive :force-prompt current-prefix-arg)))
+With universal prefix argument \\[universal-argument], always
+prompt for a hyperdrive."
+  (interactive (list (h//context-hyperdrive :force-prompt current-prefix-arg)))
   ;; TODO: Do we want to asynchronously fill the hyperdrive's latest version?
   (h/fill hyperdrive)
   (with-current-buffer

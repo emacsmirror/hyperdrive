@@ -862,9 +862,9 @@ it and pressing ~C-x C-f~.
 *** Embark integration
 #+findex: embark-act
 
-Embark users can run ~embark-act~ in the ~hyperdrive-complete-hyperdrive~
-~completing-read~ interface in order to select an alternative action for
-the selected hyperdrive.
+Embark users can run ~embark-act~ in the ~completing-read~ interface
+for selecting a hyperdrive in order to select an alternative action
+for the selected hyperdrive.
 
 *** Webjump integration
 #+findex: webjump
@@ -1235,14 +1235,12 @@ besides its own customization options.
 
 *** Completion styles and cycling
 #+vindex: completion-category-overrides
-#+findex: hyperdrive-complete-hyperdrive
 #+findex: completing-read
 
-~hyperdrive-complete-hyperdrive~ offers a ~completing-read~ interface for
-selecting a hyperdrive from a list of known hyperdrive.  You can
-customize the completion styles and cycling behavior of
-~hyperdrive-complete-hyperdrive~ by customizing the ~hyperdrive~ category
-in ~completion-category-overrides~.
+~hyperdrive.el~ offers a ~completing-read~ interface for selecting a
+hyperdrive from a list of known hyperdrive.  You can customize the
+completion styles and cycling behavior by customizing the ~hyperdrive~
+category in ~completion-category-overrides~.
 
 * Known limitations
 

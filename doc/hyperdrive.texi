@@ -1208,9 +1208,9 @@ it and pressing @code{C-x C-f}.
 
 @findex embark-act
 
-Embark users can run @code{embark-act} in the @code{hyperdrive-complete-hyperdrive}
-@code{completing-read} interface in order to select an alternative action for
-the selected hyperdrive.
+Embark users can run @code{embark-act} in the @code{completing-read} interface
+for selecting a hyperdrive in order to select an alternative action
+for the selected hyperdrive.
 
 @node Webjump integration
 @subsection Webjump integration
@@ -1678,14 +1678,12 @@ besides its own customization options.
 @subsection Completion styles and cycling
 
 @vindex completion-category-overrides
-@findex hyperdrive-complete-hyperdrive
 @findex completing-read
 
-@code{hyperdrive-complete-hyperdrive} offers a @code{completing-read} interface for
-selecting a hyperdrive from a list of known hyperdrive.  You can
-customize the completion styles and cycling behavior of
-@code{hyperdrive-complete-hyperdrive} by customizing the @code{hyperdrive} category
-in @code{completion-category-overrides}.
+@code{hyperdrive.el} offers a @code{completing-read} interface for selecting a
+hyperdrive from a list of known hyperdrive.  You can customize the
+completion styles and cycling behavior by customizing the @code{hyperdrive}
+category in @code{completion-category-overrides}.
 
 @node Known limitations
 @chapter Known limitations

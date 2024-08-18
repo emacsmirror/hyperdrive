@@ -308,7 +308,7 @@
     ("m t" "Target"  h/mirror-set-target)
     ("m f" "Filter"  h/mirror-set-filter)
     ("m c" "Confirm" h/mirror-set-confirm)]]
-  (interactive (list (h/complete-hyperdrive :force-prompt current-prefix-arg)))
+  (interactive (list (h//context-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'h/menu-hyperdrive nil nil :scope hyperdrive))
 
 (transient-define-suffix h/mirror-configured ()
