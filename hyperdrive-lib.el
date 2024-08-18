@@ -1661,16 +1661,6 @@ according to FORMATS, by default `hyperdrive-formats', which see."
   (apply #'user-error
          (concat "Hyperdrive: " (substitute-command-keys format)) args))
 
-(defun h/insert-button (text &rest properties)
-  "Insert button labeled TEXT with button PROPERTIES at point.
-PROPERTIES are passed to `insert-text-button', for which this
-function is a convenience wrapper used by `describe-package-1'."
-  ;; Inspired by package.el's `package-make-button'.
-  (let ((button-text (if (display-graphic-p) text (concat "[" text "]")))
-        (button-face (if (display-graphic-p) 'hyperdrive-button 'link)))
-    (apply #'insert-text-button button-text 'face button-face 'follow-link t
-           properties)))
-
 (cl-defun h//format-path (path &key directoryp)
   "Return PATH with a leading slash if it lacks one.
 When DIRECTORYP, also add a trailing slash to PATH if it lacks one.
