@@ -248,8 +248,8 @@ filter and set NO-CONFIRM to t."
     (if no-confirm
         (let ((reporter (make-progress-reporter "Checking files" 0 num-of)))
           (h/mirror--check-items source files hyperdrive target-dir
-                                 :progress-fn (lambda ()
-                                                (progress-reporter-update reporter (cl-incf num-filled)))
+                                 :progress-fun (lambda ()
+                                                 (progress-reporter-update reporter (cl-incf num-filled)))
                                  :then (lambda (items)
                                          (progress-reporter-done reporter)
                                          (h//mirror items parent-entry))))
@@ -271,7 +271,7 @@ filter and set NO-CONFIRM to t."
             ;; TODO: Add command to clear plz queue.
             (h/mirror--check-items
              source files hyperdrive target-dir
-             :progress-fn #'update-progress
+             :progress-fun #'update-progress
              :then (lambda (items)
                      (h/mirror--metadata-finally
                       buffer
