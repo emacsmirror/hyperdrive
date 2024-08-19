@@ -1068,18 +1068,14 @@ The return value of this function is the retrieval buffer."
       ["Find File"
        (lambda ()
          (interactive)
-         (h/open
-           (h/read-entry
-            :hyperdrive (he/hyperdrive h/current-entry)
-            :read-version current-prefix-arg)))
+         (h/open (h/read-entry :hyperdrive (h//context-hyperdrive)
+                               :read-version current-prefix-arg)))
        :help "Find a file in hyperdrive"]
       ["View File"
        (lambda ()
          (interactive)
-         (h/view-file
-          (h/read-entry
-           :hyperdrive (he/hyperdrive h/current-entry)
-           :read-version current-prefix-arg)))
+         (h/view-file (h/read-entry :hyperdrive (h//context-hyperdrive)
+                                    :read-version current-prefix-arg)))
        :help "View a file in hyperdrive"]
       "---"
       ["Upload File"
@@ -1087,7 +1083,7 @@ The return value of this function is the retrieval buffer."
          (interactive)
          (let* ((filename (read-file-name "Upload file: "))
                 (entry (h/read-entry
-                        :hyperdrive (he/hyperdrive h/current-entry)
+                        :hyperdrive (h//context-hyperdrive)
                         :default-path (file-name-nondirectory filename)
                         :latest-version t)))
            (h/upload-file filename entry)))
