@@ -382,7 +382,8 @@ With universal prefix argument \\[universal-argument], prompt for version."
   ;; TODO: Stay in `view-mode' after
   ;; `hyperdrive-previous-version'/`hyperdrive-next-version'. This may
   ;; require another minor mode.
-  (interactive (list (h/read-entry :read-version current-prefix-arg)))
+  (interactive (list (h/read-entry :hyperdrive (h/read-hyperdrive)
+                                   :read-version current-prefix-arg)))
   (h/open entry
     ;; `view-buffer' checks the mode-class symbol property of
     ;; `major-mode' and avoids putting directory buffers in `view-mode'.
