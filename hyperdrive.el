@@ -716,7 +716,7 @@ After successful upload, call THEN.  When QUEUE, use it."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: " nil nil t)))
                  (list filename
-                       (h/read-entry :predicate #'h/writablep
+                       (h/read-entry :hyperdrive (h/read-hyperdrive #'h/writablep)
                                      :default-path (file-name-nondirectory filename)
                                      :latest-version t))))
   (let ((last-modified (let ((system-time-locale "C"))
