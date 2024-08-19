@@ -191,7 +191,7 @@ All other slots in each ewoc node entry data will be reused."
 Interactively, open version history for current file ENTRY or
 ENTRY at point in a directory.  Otherwise, or with universal
 prefix argument \\[universal-argument], prompt for ENTRY."
-  (interactive (list (h//context-entry)))
+  (interactive (list (h//context-entry :force-prompt current-prefix-arg)))
   ;; TODO: Highlight range for ENTRY
   (when (h//entry-directory-p entry)
     (h/user-error "Directory history not implemented"))

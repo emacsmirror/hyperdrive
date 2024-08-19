@@ -1152,11 +1152,11 @@ default to `hyperdrive-formats', which see."
 ;;;; Reading from the user
 
 (declare-function h/dir--entry-at-point "hyperdrive-dir")
-(cl-defun h//context-entry (&key latest-version)
+(cl-defun h//context-entry (&key latest-version force-prompt)
   "Return the current entry in the current context.
-LATEST-VERSION is passed to `hyperdrive-read-entry'.
-With universal prefix argument \\[universal-argument], prompt for entry."
-  (cond (current-prefix-arg
+LATEST-VERSION is passed to `hyperdrive-read-entry'.  With
+FORCE-PROMPT, prompt for entry."
+  (cond (force-prompt
          (h/read-entry :read-version t :latest-version latest-version))
         ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
         (t (or h/current-entry (h/read-entry :latest-version latest-version)))))

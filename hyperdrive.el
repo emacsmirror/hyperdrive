@@ -191,7 +191,7 @@ within the directory.  Hyperdrive directory contents are not
 modified; file blobs may be recoverable from other peers."
   ;; TODO: Consider supporting an :all-versions key for clearing the cache for
   ;; all versions of the file/directory.
-  (interactive (list (h//context-entry)))
+  (interactive (list (h//context-entry :force-prompt current-prefix-arg)))
   (when (yes-or-no-p
          (format-message
           "Clear local copy of entry (data may not be recoverable—see manual):`%s'? "
@@ -397,7 +397,8 @@ directory.  Otherwise, or with universal prefix argument
 \\[universal-argument], prompt for ENTRY."
   (declare (indent defun))
   (interactive
-   (let* ((entry (h//context-entry :latest-version t))
+   (let* ((entry (h//context-entry
+                  :latest-version t :force-prompt current-prefix-arg))
           (description (h//format-entry entry))
           (buffer (current-buffer)))
      (when (and (h//entry-directory-p entry)
@@ -439,7 +440,7 @@ Interactively, download current hyperdrive file or file at point
 in a directory.  Otherwise, or with universal prefix argument
 \\[universal-argument], prompt for ENTRY."
   (interactive
-   (pcase-let* ((entry (h//context-entry))
+   (pcase-let* ((entry (h//context-entry :force-prompt current-prefix-arg))
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-file-name "Filename: " (expand-file-name name h/download-directory))))
      (list entry read-filename)))
