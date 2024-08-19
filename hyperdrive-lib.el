@@ -32,6 +32,7 @@
 (require 'seq)
 (require 'url-util)
 (require 'gv)
+(require 'thunk)
 
 (require 'compat)
 (require 'persist)
@@ -1156,14 +1157,12 @@ default to `hyperdrive-formats', which see."
   "Return the current entry in the current context.
 LATEST-VERSION is passed to `hyperdrive-read-entry'.  With
 FORCE-PROMPT, prompt for entry."
-  (cond (force-prompt
-         (h/read-entry
-          :hyperdrive (h//context-hyperdrive :force-prompt force-prompt)
-          :read-version t :latest-version latest-version))
-        ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
-        (t (or h/current-entry
-               (h/read-entry :hyperdrive (h//context-hyperdrive)
-                             :latest-version latest-version)))))
+  (thunk-let ((read-entry (h/read-entry
+                           :hyperdrive (h//context-hyperdrive :force-prompt force-prompt)
+                           :read-version t :latest-version latest-version)))
+    (cond (force-prompt read-entry)
+          ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
+          (t (or h/current-entry read-entry)))))
 
 (cl-defun h//context-hyperdrive (&key predicate force-prompt)
   "Return hyperdrive for current entry when it matches PREDICATE.
