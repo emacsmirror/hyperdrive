@@ -188,7 +188,11 @@ Only delete the blob(s) for the file or directory at ENTRY's
 version; other versions of the file or directory are not cleared.
 If ENTRY is a directory, recursively delete blobs for all files
 within the directory.  Hyperdrive directory contents are not
-modified; file blobs may be recoverable from other peers."
+modified; file blobs may be recoverable from other peers.
+
+Interactively, forget current file ENTRY or ENTRY at point in a
+directory.  Otherwise, or with universal prefix argument
+\\[universal-argument], prompt for ENTRY."
   ;; TODO: Consider supporting an :all-versions key for clearing the cache for
   ;; all versions of the file/directory.
   (interactive (list (h//context-entry :force-prompt current-prefix-arg)))
