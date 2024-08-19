@@ -1228,12 +1228,8 @@ For each of FORMATS, concatenates the value separated by two spaces."
             when (h//preferred-format hyperdrive format)
             concat (concat it "  "))))
 
-(cl-defun h/read-entry (&key hyperdrive predicate default-path
-                             (force-prompt-drive t) latest-version read-version)
+(cl-defun h/read-entry (&key hyperdrive default-path latest-version read-version)
   "Return new hyperdrive entry in HYPERDRIVE with path read from user.
-
-With nil HYPERDRIVE, prompt for one according to PREDICATE and
-FORCE-PROMPT-DRIVE.
 
 If DEFAULT-PATH, offer it as the default entry path.  Otherwise,
 offer the path of `hyperdrive-current-entry' when it is in the
@@ -1244,10 +1240,7 @@ When LATEST-VERSION is nil, READ-VERSION is non-nil, and
 `hyperdrive-current-entry' is in the hyperdrive chosen with
 completion, returned entry has the same version.
 Otherwise, prompt for a version number."
-  (let* ((hyperdrive (or hyperdrive
-                         (h//context-hyperdrive :predicate predicate
-                                                :force-prompt force-prompt-drive)))
-         (default-version (and (not latest-version)
+  (let* ((default-version (and (not latest-version)
                                h/current-entry
                                (h/equal-p hyperdrive
                                           (he/hyperdrive h/current-entry))
