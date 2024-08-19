@@ -1168,8 +1168,6 @@ With universal prefix argument \\[universal-argument], prompt for entry."
 With FORCE-PROMPT or when current hyperdrive does not match
 PREDICATE, return a hyperdrive selected with completion.  In this
 case, when PREDICATE, only offer hyperdrives matching it."
-  (when (zerop (hash-table-count h/hyperdrives))
-    (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
   (unless predicate
     ;; cl-defun default value doesn't work when nil predicate value is passed in.
     (setf predicate #'always))
@@ -1187,6 +1185,15 @@ case, when PREDICATE, only offer hyperdrives matching it."
       (cl-return-from h//context-hyperdrive current-hyperdrive)))
 
   ;; Otherwise, prompt for drive.
+  (h/read-hyperdrive predicate))
+
+(defun h/read-hyperdrive (&optional predicate)
+  "Read hyperdrive from among those which match PREDICATE."
+  (when (zerop (hash-table-count h/hyperdrives))
+    (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
+  (unless predicate
+    ;; cl-defun default value doesn't work when nil predicate value is passed in.
+    (setf predicate #'always))
   (let* ((current-hyperdrive (and h/current-entry
                                   (he/hyperdrive h/current-entry)))
          (hyperdrives (cl-remove-if-not predicate (hash-table-values h/hyperdrives)))
