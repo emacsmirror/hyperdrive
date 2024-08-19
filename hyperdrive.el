@@ -493,7 +493,7 @@ without prompting.
 
 This function is for interactive use only; for non-interactive
 use, see `hyperdrive-write'."
-  (interactive (list (h/read-entry :predicate #'h/writablep
+  (interactive (list (h/read-entry :hyperdrive (h/read-hyperdrive #'h/writablep)
                                    :default-path (and h/current-entry
                                                       (he/path h/current-entry))
                                    :latest-version t)
