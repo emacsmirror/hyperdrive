@@ -381,8 +381,9 @@ see Info node `(elisp)Yanking Media'."
     ;; TODO: Extend this to other media types?
     (cl-assert (and h/current-entry
                     (h//entry-directory-p h/current-entry)))
-    (let ((entry (h/read-entry :predicate #'h/writablep :latest-version t
-                               :force-prompt-drive nil)))
+    (let ((entry (h/read-entry
+                  :hyperdrive (h//context-hyperdrive :predicate #'h/writablep)
+                  :latest-version t)))
       (he/api 'put entry :body image :body-type 'binary
         ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
         :then (lambda (_res) (h/open entry))
