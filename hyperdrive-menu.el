@@ -395,20 +395,16 @@
 
 (transient-define-suffix h/menu-open-file ()
   (interactive)
-  (h/open (h/read-entry
-           :hyperdrive (h/menu--scope)
-           :read-version current-prefix-arg)))
+  (h/open (h/read-entry (h/menu--scope) :read-version current-prefix-arg)))
 
 (transient-define-suffix h/menu-view-file ()
   (interactive)
-  (h/view-file (h/read-entry
-                :hyperdrive (h/menu--scope)
-                :read-version current-prefix-arg)))
+  (h/view-file (h/read-entry (h/menu--scope) :read-version current-prefix-arg)))
 
 (transient-define-suffix h/menu-upload-file (filename entry)
   (interactive
    (let* ((filename (read-file-name "Upload file: "))
-          (entry (h/read-entry :hyperdrive (h/menu--scope)
+          (entry (h/read-entry (h/menu--scope)
                                :default-path (file-name-nondirectory filename)
                                :latest-version t)))
      (list filename entry)))

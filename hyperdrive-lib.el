@@ -1158,7 +1158,7 @@ default to `hyperdrive-formats', which see."
 LATEST-VERSION is passed to `hyperdrive-read-entry'.  With
 FORCE-PROMPT, prompt for entry."
   (thunk-let ((read-entry (h/read-entry
-                           :hyperdrive (h//context-hyperdrive :force-prompt force-prompt)
+                           (h//context-hyperdrive :force-prompt force-prompt)
                            :read-version t :latest-version latest-version)))
     (cond (force-prompt read-entry)
           ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
@@ -1228,7 +1228,7 @@ For each of FORMATS, concatenates the value separated by two spaces."
             when (h//preferred-format hyperdrive format)
             concat (concat it "  "))))
 
-(cl-defun h/read-entry (&key hyperdrive default-path latest-version read-version)
+(cl-defun h/read-entry (hyperdrive &key default-path latest-version read-version)
   "Return new hyperdrive entry in HYPERDRIVE with path read from user.
 
 If DEFAULT-PATH, offer it as the default entry path.  Otherwise,
