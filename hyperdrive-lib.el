@@ -1156,11 +1156,10 @@ default to `hyperdrive-formats', which see."
   "Return the current entry in the current context.
 LATEST-VERSION is passed to `hyperdrive-read-entry'.
 With universal prefix argument \\[universal-argument], prompt for entry."
-  (pcase major-mode
-    ((guard current-prefix-arg)
-     (h/read-entry :read-version t :latest-version latest-version))
-    ('h/dir-mode (h/dir--entry-at-point))
-    (_ (or h/current-entry (h/read-entry :latest-version latest-version)))))
+  (cond (current-prefix-arg
+         (h/read-entry :read-version t :latest-version latest-version))
+        ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
+        (t (or h/current-entry (h/read-entry :latest-version latest-version)))))
 
 (cl-defun h//context-hyperdrive (&key predicate force-prompt)
   "Return hyperdrive for current entry when it matches PREDICATE.
