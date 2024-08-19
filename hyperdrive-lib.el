@@ -1157,9 +1157,13 @@ default to `hyperdrive-formats', which see."
 LATEST-VERSION is passed to `hyperdrive-read-entry'.  With
 FORCE-PROMPT, prompt for entry."
   (cond (force-prompt
-         (h/read-entry :read-version t :latest-version latest-version))
+         (h/read-entry
+          :hyperdrive (h//context-hyperdrive :force-prompt force-prompt)
+          :read-version t :latest-version latest-version))
         ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
-        (t (or h/current-entry (h/read-entry :latest-version latest-version)))))
+        (t (or h/current-entry
+               (h/read-entry :hyperdrive (h//context-hyperdrive)
+                             :latest-version latest-version)))))
 
 (cl-defun h//context-hyperdrive (&key predicate force-prompt)
   "Return hyperdrive for current entry when it matches PREDICATE.
