@@ -369,7 +369,9 @@ calling `kill-all-local-variables')."
   "Find hyperdrive ENTRY.
 Interactively, prompt for known hyperdrive and path.
 With universal prefix argument \\[universal-argument], prompt for version."
-  (interactive (list (h/read-entry :read-version current-prefix-arg)))
+  (interactive
+   (list (h/read-entry :hyperdrive (h/read-hyperdrive)
+                       :read-version current-prefix-arg)))
   (h/open entry))
 
 ;;;###autoload
