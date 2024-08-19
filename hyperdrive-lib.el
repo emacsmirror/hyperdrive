@@ -1241,7 +1241,6 @@ When LATEST-VERSION is nil, READ-VERSION is non-nil, and
 `hyperdrive-current-entry' is in the hyperdrive chosen with
 completion, returned entry has the same version.
 Otherwise, prompt for a version number."
-  ;; TODO: Consider removing FORCE-PROMPT-DRIVE argument.
   (let* ((hyperdrive (or hyperdrive
                          (h//context-hyperdrive :predicate predicate
                                                 :force-prompt force-prompt-drive)))
