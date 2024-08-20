@@ -1385,7 +1385,8 @@ Intended for relative (i.e. non-full) URLs."
     :parent embark-general-map
     "h" #'h/menu-hyperdrive
     "p" #'h/set-petname
-    "n" #'h/set-nickname)
+    "n" #'h/set-nickname
+    "d" #'h/describe-hyperdrive)
 
   (add-to-list 'embark-keymap-alist '(hyperdrive . h/embark-hyperdrive-map)))
 

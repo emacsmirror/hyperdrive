@@ -50,6 +50,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 - Make ~hyperdrive-download~ asynchronous.
 - Remove ~hyperdrive-reuse-buffers~ user option to ensure consistent
   behavior when uniquifying buffer names.
+- Embark map now has a binding for ~hyperdrive-describe-hyperdrive~.
 - Remove ~hyperdrive-honor-auto-mode-alist~ user option; hyperdrives
   marked as ~safe~ now always enable a major mode.
 - Remove ~hyperdrive-gateway-process-type~ user option. To customize
