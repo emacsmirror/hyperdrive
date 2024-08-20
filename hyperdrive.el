@@ -1379,6 +1379,7 @@ Intended for relative (i.e. non-full) URLs."
 (defvar embark-keymap-alist)
 
 (declare-function h/menu-hyperdrive "hyperdrive-menu" nil t)
+(declare-function h/describe-hyperdrive "hyperdrive-describe")
 
 (with-eval-after-load 'embark
   (defvar-keymap h/embark-hyperdrive-map
