@@ -702,7 +702,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
 Interactively, read FILENAME and ENTRY from the user.
 After successful upload, call THEN.  When QUEUE, use it."
   (declare (indent defun))
-  (interactive (let ((filename (read-file-name "Upload file: ")))
+  (interactive (let ((filename (read-file-name "Upload file: " nil nil t)))
                  (list filename
                        (h/read-entry :predicate #'h/writablep
                                      :default-path (file-name-nondirectory filename)
