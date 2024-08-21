@@ -308,7 +308,7 @@
     ("m t" "Target"  h/mirror-set-target)
     ("m f" "Filter"  h/mirror-set-filter)
     ("m c" "Confirm" h/mirror-set-confirm)]]
-  (interactive (list (h/complete-hyperdrive :force-prompt current-prefix-arg)))
+  (interactive (list (h//context-hyperdrive :force-prompt current-prefix-arg)))
   (transient-setup 'h/menu-hyperdrive nil nil :scope hyperdrive))
 
 (transient-define-suffix h/mirror-configured ()
@@ -395,20 +395,16 @@
 
 (transient-define-suffix h/menu-open-file ()
   (interactive)
-  (h/open (h/read-entry
-           :hyperdrive (h/menu--scope)
-           :read-version current-prefix-arg)))
+  (h/open (h/read-entry (h/menu--scope) :read-version current-prefix-arg)))
 
 (transient-define-suffix h/menu-view-file ()
   (interactive)
-  (h/view-file (h/read-entry
-                :hyperdrive (h/menu--scope)
-                :read-version current-prefix-arg)))
+  (h/view-file (h/read-entry (h/menu--scope) :read-version current-prefix-arg)))
 
 (transient-define-suffix h/menu-upload-file (filename entry)
   (interactive
    (let* ((filename (read-file-name "Upload file: "))
-          (entry (h/read-entry :hyperdrive (h/menu--scope)
+          (entry (h/read-entry (h/menu--scope)
                                :default-path (file-name-nondirectory filename)
                                :latest-version t)))
      (list filename entry)))

@@ -156,7 +156,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
   "Mark HYPERDRIVE as safe according to SAFEP.
 Interactively, prompt for hyperdrive and action."
   (interactive
-   (pcase-let* ((hyperdrive (h/complete-hyperdrive))
+   (pcase-let* ((hyperdrive (h//context-hyperdrive))
                 (mark-safe-p
                  (pcase (read-answer
                          (format "Mark hyperdrive `%s' as: (currently: %s) "
@@ -188,10 +188,14 @@ Only delete the blob(s) for the file or directory at ENTRY's
 version; other versions of the file or directory are not cleared.
 If ENTRY is a directory, recursively delete blobs for all files
 within the directory.  Hyperdrive directory contents are not
-modified; file blobs may be recoverable from other peers."
+modified; file blobs may be recoverable from other peers.
+
+Interactively, forget current file ENTRY or ENTRY at point in a
+directory.  Otherwise, or with universal prefix argument
+\\[universal-argument], prompt for ENTRY."
   ;; TODO: Consider supporting an :all-versions key for clearing the cache for
   ;; all versions of the file/directory.
-  (interactive (list (h//context-entry)))
+  (interactive (list (h//context-entry :force-prompt current-prefix-arg)))
   (when (yes-or-no-p
          (format-message
           "Clear local copy of entry (data may not be recoverable—see manual):`%s'? "
@@ -206,7 +210,7 @@ modified; file blobs may be recoverable from other peers."
 ;;;###autoload
 (defun hyperdrive-purge (hyperdrive)
   "Purge all data corresponding to HYPERDRIVE."
-  (interactive (list (h/complete-hyperdrive :force-prompt t)))
+  (interactive (list (h//context-hyperdrive :force-prompt t)))
   (when (yes-or-no-p (format-message "Delete local copy of hyperdrive (data will likely not be recoverable—see manual): `%s'? "
                                      (h//format-hyperdrive hyperdrive)))
     (h/purge-no-prompt hyperdrive
@@ -221,10 +225,10 @@ modified; file blobs may be recoverable from other peers."
 Entering an empty or blank string unsets PETNAME.
 Returns HYPERDRIVE.
 
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
+With universal prefix argument \\[universal-argument], always
+prompt for a hyperdrive."
   (interactive
-   (let* ((hyperdrive (h/complete-hyperdrive :force-prompt current-prefix-arg))
+   (let* ((hyperdrive (h//context-hyperdrive :force-prompt current-prefix-arg))
           (petname (h/read-name
                     :prompt (format "Petname for `%s' (leave blank to unset)"
                                     (h//format-hyperdrive hyperdrive))
@@ -254,10 +258,10 @@ Returns HYPERDRIVE.
 Asynchronous callback calls THEN with the updated hyperdrive as
 its only argument.
 
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
+With universal prefix argument \\[universal-argument], always
+prompt for a hyperdrive."
   (interactive
-   (let* ((hyperdrive (h/complete-hyperdrive :predicate #'h/writablep
+   (let* ((hyperdrive (h//context-hyperdrive :predicate #'h/writablep
                                              :force-prompt current-prefix-arg))
           (nickname
            ;; NOTE: Fill metadata first in case the JSON file has been updated manually
@@ -365,7 +369,8 @@ calling `kill-all-local-variables')."
   "Find hyperdrive ENTRY.
 Interactively, prompt for known hyperdrive and path.
 With universal prefix argument \\[universal-argument], prompt for version."
-  (interactive (list (h/read-entry :read-version current-prefix-arg)))
+  (interactive
+   (list (h/read-entry (h/read-hyperdrive) :read-version current-prefix-arg)))
   (h/open entry))
 
 ;;;###autoload
@@ -376,7 +381,8 @@ With universal prefix argument \\[universal-argument], prompt for version."
   ;; TODO: Stay in `view-mode' after
   ;; `hyperdrive-previous-version'/`hyperdrive-next-version'. This may
   ;; require another minor mode.
-  (interactive (list (h/read-entry :read-version current-prefix-arg)))
+  (interactive (list (h/read-entry (h/read-hyperdrive)
+                                   :read-version current-prefix-arg)))
   (h/open entry
     ;; `view-buffer' checks the mode-class symbol property of
     ;; `major-mode' and avoids putting directory buffers in `view-mode'.
@@ -397,7 +403,8 @@ directory.  Otherwise, or with universal prefix argument
 \\[universal-argument], prompt for ENTRY."
   (declare (indent defun))
   (interactive
-   (let* ((entry (h//context-entry :latest-version t))
+   (let* ((entry (h//context-entry
+                  :latest-version t :force-prompt current-prefix-arg))
           (description (h//format-entry entry))
           (buffer (current-buffer)))
      (when (and (h//entry-directory-p entry)
@@ -439,7 +446,7 @@ Interactively, download current hyperdrive file or file at point
 in a directory.  Otherwise, or with universal prefix argument
 \\[universal-argument], prompt for ENTRY."
   (interactive
-   (pcase-let* ((entry (h//context-entry))
+   (pcase-let* ((entry (h//context-entry :force-prompt current-prefix-arg))
                 ((cl-struct hyperdrive-entry name) entry)
                 (read-filename (read-file-name "Filename: " (expand-file-name name h/download-directory))))
      (list entry read-filename)))
@@ -485,9 +492,13 @@ without prompting.
 
 This function is for interactive use only; for non-interactive
 use, see `hyperdrive-write'."
-  (interactive (list (h/read-entry :predicate #'h/writablep
-                                   :default-path (and h/current-entry
-                                                      (he/path h/current-entry))
+  (interactive (list (h/read-entry (h/read-hyperdrive #'h/writablep)
+                                   :default-path
+                                   (or (and (buffer-file-name)
+                                            (file-name-nondirectory
+                                             (buffer-file-name)))
+                                       (and h/current-entry
+                                            (he/path h/current-entry)))
                                    :latest-version t)
                      current-prefix-arg))
   (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
@@ -704,7 +715,7 @@ After successful upload, call THEN.  When QUEUE, use it."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: " nil nil t)))
                  (list filename
-                       (h/read-entry :predicate #'h/writablep
+                       (h/read-entry (h/read-hyperdrive #'h/writablep)
                                      :default-path (file-name-nondirectory filename)
                                      :latest-version t))))
   (let ((last-modified (let ((system-time-locale "C"))
@@ -729,11 +740,11 @@ After successful upload, call THEN.  When QUEUE, use it."
 (defun h/upload-files (files hyperdrive target-dir)
   "Upload FILES to TARGET-DIR in HYPERDRIVE.
 
-Universal prefix argument \\[universal-argument] forces
-`hyperdrive-complete-hyperdrive' to prompt for a hyperdrive."
+With universal prefix argument \\[universal-argument], always
+prompt for a hyperdrive."
   (interactive
    (let* ((files (h/read-files))
-          (hyperdrive (h/complete-hyperdrive :predicate #'h/writablep
+          (hyperdrive (h//context-hyperdrive :predicate #'h/writablep
                                              :force-prompt current-prefix-arg))
           ;; TODO: Consider offering target dirs in hyperdrive with completion.
           (target-dir (h/read-path :hyperdrive hyperdrive :prompt "Target directory in `%s'" :default "/")))
@@ -932,18 +943,15 @@ The return value of this function is the retrieval buffer."
                 (vector "Find File"
                         `(lambda ()
                            (interactive)
-                           (h/open
-                             (h/read-entry
-                              :hyperdrive ,drive
-                              :read-version current-prefix-arg)))
+                           (h/open (h/read-entry
+                                    ,drive :read-version current-prefix-arg)))
                         :help "Find a file in hyperdrive")
                 (vector "View File"
                         `(lambda ()
                            (interactive)
                            (h/view-file
-                            (h/read-entry
-                             :hyperdrive ,drive
-                             :read-version current-prefix-arg)))
+                            (h/read-entry ,drive
+                                          :read-version current-prefix-arg)))
                         :help "View a file in hyperdrive")
                 "---"
                 (vector
@@ -953,7 +961,7 @@ The return value of this function is the retrieval buffer."
                     (let* ((filename (read-file-name "Upload file: "))
                            (entry
                             (h/read-entry
-                             :hyperdrive ,drive
+                             ,drive
                              :default-path (file-name-nondirectory filename)
                              :latest-version t)))
                       (h/upload-file filename entry)))
@@ -1056,18 +1064,14 @@ The return value of this function is the retrieval buffer."
       ["Find File"
        (lambda ()
          (interactive)
-         (h/open
-           (h/read-entry
-            :hyperdrive (he/hyperdrive h/current-entry)
-            :read-version current-prefix-arg)))
+         (h/open (h/read-entry (h//context-hyperdrive)
+                               :read-version current-prefix-arg)))
        :help "Find a file in hyperdrive"]
       ["View File"
        (lambda ()
          (interactive)
-         (h/view-file
-          (h/read-entry
-           :hyperdrive (he/hyperdrive h/current-entry)
-           :read-version current-prefix-arg)))
+         (h/view-file (h/read-entry (h//context-hyperdrive)
+                                    :read-version current-prefix-arg)))
        :help "View a file in hyperdrive"]
       "---"
       ["Upload File"
@@ -1075,7 +1079,7 @@ The return value of this function is the retrieval buffer."
          (interactive)
          (let* ((filename (read-file-name "Upload file: "))
                 (entry (h/read-entry
-                        :hyperdrive (he/hyperdrive h/current-entry)
+                        (h//context-hyperdrive)
                         :default-path (file-name-nondirectory filename)
                         :latest-version t)))
            (h/upload-file filename entry)))

@@ -1152,24 +1152,24 @@ default to `hyperdrive-formats', which see."
 ;;;; Reading from the user
 
 (declare-function h/dir--entry-at-point "hyperdrive-dir")
-(cl-defun h//context-entry (&key latest-version)
+(cl-defun h//context-entry (&key latest-version force-prompt)
   "Return the current entry in the current context.
-LATEST-VERSION is passed to `hyperdrive-read-entry'.
-With universal prefix argument \\[universal-argument], prompt for entry."
-  (pcase major-mode
-    ((guard current-prefix-arg)
-     (h/read-entry :read-version t :latest-version latest-version))
-    ('h/dir-mode (h/dir--entry-at-point))
-    (_ (or h/current-entry (h/read-entry :latest-version latest-version)))))
+LATEST-VERSION is passed to `hyperdrive-read-entry'.  With
+FORCE-PROMPT, prompt for entry."
+  (cl-labels ((read-entry ()
+                (h/read-entry
+                 (h//context-hyperdrive :force-prompt force-prompt)
+                 :read-version t :latest-version latest-version)))
+    (cond (force-prompt (read-entry))
+          ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
+          (t (or h/current-entry (read-entry))))))
 
-(cl-defun h/complete-hyperdrive (&key predicate force-prompt)
+(cl-defun h//context-hyperdrive (&key predicate force-prompt)
   "Return hyperdrive for current entry when it matches PREDICATE.
 
 With FORCE-PROMPT or when current hyperdrive does not match
 PREDICATE, return a hyperdrive selected with completion.  In this
 case, when PREDICATE, only offer hyperdrives matching it."
-  (when (zerop (hash-table-count h/hyperdrives))
-    (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
   (unless predicate
     ;; cl-defun default value doesn't work when nil predicate value is passed in.
     (setf predicate #'always))
@@ -1180,13 +1180,22 @@ case, when PREDICATE, only offer hyperdrives matching it."
     (when-let* ((obj (transient-active-prefix '(h/menu-hyperdrive)))
                 (transient-hyperdrive (oref obj scope))
                 ((funcall predicate transient-hyperdrive)))
-      (cl-return-from h/complete-hyperdrive transient-hyperdrive))
+      (cl-return-from h//context-hyperdrive transient-hyperdrive))
     (when-let* ((h/current-entry)
                 (current-hyperdrive (he/hyperdrive h/current-entry))
                 ((funcall predicate current-hyperdrive)))
-      (cl-return-from h/complete-hyperdrive current-hyperdrive)))
+      (cl-return-from h//context-hyperdrive current-hyperdrive)))
 
   ;; Otherwise, prompt for drive.
+  (h/read-hyperdrive predicate))
+
+(defun h/read-hyperdrive (&optional predicate)
+  "Read hyperdrive from among those which match PREDICATE."
+  (when (zerop (hash-table-count h/hyperdrives))
+    (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
+  (unless predicate
+    ;; cl-defun default value doesn't work when nil predicate value is passed in.
+    (setf predicate #'always))
   (let* ((current-hyperdrive (and h/current-entry
                                   (he/hyperdrive h/current-entry)))
          (hyperdrives (cl-remove-if-not predicate (hash-table-values h/hyperdrives)))
@@ -1219,12 +1228,8 @@ For each of FORMATS, concatenates the value separated by two spaces."
             when (h//preferred-format hyperdrive format)
             concat (concat it "  "))))
 
-(cl-defun h/read-entry (&key hyperdrive predicate default-path
-                             (force-prompt-drive t) latest-version read-version)
+(cl-defun h/read-entry (hyperdrive &key default-path latest-version read-version)
   "Return new hyperdrive entry in HYPERDRIVE with path read from user.
-
-With nil HYPERDRIVE, prompt for one by passing PREDICATE and
-FORCE-PROMPT-DRIVE to `hyperdrive-complete-hyperdrive'.
 
 If DEFAULT-PATH, offer it as the default entry path.  Otherwise,
 offer the path of `hyperdrive-current-entry' when it is in the
@@ -1235,11 +1240,7 @@ When LATEST-VERSION is nil, READ-VERSION is non-nil, and
 `hyperdrive-current-entry' is in the hyperdrive chosen with
 completion, returned entry has the same version.
 Otherwise, prompt for a version number."
-  ;; TODO: Consider removing FORCE-PROMPT-DRIVE argument.
-  (let* ((hyperdrive (or hyperdrive
-                         (h/complete-hyperdrive :predicate predicate
-                                                :force-prompt force-prompt-drive)))
-         (default-version (and (not latest-version)
+  (let* ((default-version (and (not latest-version)
                                h/current-entry
                                (h/equal-p hyperdrive
                                           (he/hyperdrive h/current-entry))

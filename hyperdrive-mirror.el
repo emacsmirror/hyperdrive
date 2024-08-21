@@ -219,7 +219,7 @@ all files. With two universal prefix arguments
 filter and set NO-CONFIRM to t."
   (interactive
    (let ((source (read-directory-name "Mirror directory: " nil nil t))
-         (hyperdrive (h/complete-hyperdrive :predicate #'h/writablep
+         (hyperdrive (h//context-hyperdrive :predicate #'h/writablep
                                             :force-prompt t)))
      (list source hyperdrive
            ;; TODO: Get path from any visible hyperdrive-dir buffer and

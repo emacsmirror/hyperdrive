@@ -114,7 +114,7 @@ TARGET may be a CUSTOM_ID or a headline."
 (defun h/org-link-complete ()
   "Create a hyperdrive org link."
   ;; TODO: Support other hyper:// links like diffs when implemented.
-  (he/url (h/read-entry :read-version t)))
+  (he/url (h/read-entry (h/read-hyperdrive) :read-version t)))
 
 (defun h/org--open-at-point ()
   "Handle relative links in hyperdrive-mode org files.
