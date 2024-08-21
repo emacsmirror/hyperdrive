@@ -230,10 +230,9 @@ response."
       response)))
 
 (defun he//api-then (entry response)
-  "Update ENTRY's metadata according to RESPONSE.
+  "Update ENTRY and ENTRY hyperdrive metadata according to RESPONSE.
 Sets ENTRY's hyperdrive to the persisted version of the drive if
-it exists.  Updates ENTRY's hyperdrive's disk usage and latest
-version.  Finally, persists ENTRY's hyperdrive."
+it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
   (pcase-let*
       (((map link allow content-length content-type last-modified x-drive-size
              x-drive-version x-file-block-length x-file-block-length-downloaded)
