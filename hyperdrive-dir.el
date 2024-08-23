@@ -390,7 +390,7 @@ see Info node `(elisp)Yanking Media'."
                     (h//entry-directory-p h/current-entry)))
     (let ((entry (h/read-entry (h//context-hyperdrive :predicate #'h/writablep)
                                :latest-version t)))
-      (he/api 'put entry :body image :body-type 'binary
+      (he/api 'put entry :body image
         ;; TODO: Pass MIME type in a header? hyper-gateway detects it for us.
         :then (lambda (_res) (h/open entry))
         :else (lambda (plz-error)

@@ -210,13 +210,17 @@ to the gateway which do not involve an entry.  Otherwise, use
 (defun he/api (method entry &rest rest)
   "Make hyperdrive API request by METHOD for ENTRY.
 REST is passed to `hyperdrive-api', which see.  AS keyword should
-be nil, because it is always set to `response'.  Automatically
-calls `hyperdrive-entry--api-then' to update metadata from the
-response."
+be nil, because it is always set to `response'.  BODY-TYPE
+keyword should be nil, because it is always set to `binary'.
+Automatically calls `hyperdrive-entry--api-then' to update
+metadata from the response."
   (declare (indent defun))
   ;; Always use :as 'response
   (cl-assert (null (plist-get rest :as)))
   (setf (plist-get rest :as) 'response)
+  ;; Always use :body-type 'binary so curl leaves carriage returns and newlines.
+  (cl-assert (null (plist-get rest :body-type)))
+  (setf (plist-get rest :body-type) 'binary)
   (unless (map-elt rest :then) (setf (map-elt rest :then) 'sync))
   (pcase-let* (((map :then) rest))
     (unless (eq 'sync then)
@@ -1020,8 +1024,6 @@ Call ELSE if request fails."
 THEN and ELSE are passed to `hyperdrive-entry-api', which see."
   (declare (indent defun))
   (he/api 'put entry
-    ;; TODO: Investigate whether we should use 'text body type for text buffers.
-    :body-type 'binary
     ;; TODO: plz accepts buffer as a body, we should refactor calls to h/write
     ;; to pass in a buffer instead of a buffer-string.
     :body body :then then :else else :queue queue))
