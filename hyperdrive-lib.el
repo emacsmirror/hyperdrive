@@ -1021,7 +1021,8 @@ Call ELSE if request fails."
 
 (cl-defun h/write (entry &key body then else queue)
   "Write BODY to hyperdrive ENTRY's URL.
-THEN and ELSE are passed to `hyperdrive-entry-api', which see."
+BODY should be an encoded string or buffer.  THEN and ELSE are
+passed to `hyperdrive-entry-api', which see."
   (declare (indent defun))
   (he/api 'put entry
     :body body :then then :else else :queue queue))
