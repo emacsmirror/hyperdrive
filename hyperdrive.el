@@ -490,8 +490,9 @@ overwrite.
 With universal prefix argument \\[universal-argument], overwrite
 without prompting.
 
-This function is for interactive use only; for non-interactive
-use, see `hyperdrive-write'."
+This function is for interactive use only since it calls
+`select-safe-coding-system', which may prompt for input.
+For non-interactive use, see `hyperdrive-write'."
   (interactive (list (h/read-entry (h/read-hyperdrive #'h/writablep)
                                    :default-path
                                    (or (and (buffer-file-name)
@@ -501,10 +502,22 @@ use, see `hyperdrive-write'."
                                             (he/path h/current-entry)))
                                    :latest-version t)
                      current-prefix-arg))
-  (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
-              (url (he/url entry))
-              (buffer (current-buffer))
-              (buffer-visiting-entry (h//find-buffer-visiting entry)))
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name) entry)
+               (url (he/url entry))
+               (orig-buffer (current-buffer))
+               (coding-system
+                (with-current-buffer orig-buffer
+                  ;; Detect coding in orig buffer so `buffer-file-coding-system'
+                  ;; is prioritized.
+                  (select-safe-coding-system (point-min) (point-max))))
+               (encoded-buffer
+                (with-current-buffer
+                    (generate-new-buffer
+                     (format " *hyperdrive-encoded %s*" orig-buffer) t)
+                  (insert-buffer-substring orig-buffer)
+                  (encode-coding-region (point-min) (point-max) coding-system)
+                  (current-buffer)))
+               (buffer-visiting-entry (h//find-buffer-visiting entry)))
     (unless (or overwritep (not (he/at nil entry)))
       (unless (y-or-n-p
 	       (format "File %s exists; overwrite?" (h//format-entry entry)))
@@ -514,10 +527,10 @@ use, see `hyperdrive-write'."
                                   (h//format-entry entry)))
           (h/user-error "Aborted"))))
     (h/write entry
-      :body (current-buffer)
+      :body encoded-buffer
       :then (lambda (response)
-              (when (buffer-live-p buffer)
-                (with-current-buffer buffer
+              (when (buffer-live-p orig-buffer)
+                (with-current-buffer orig-buffer
                   (unless h/mode
                     (h//clean-buffer)
                     (when (eq 'unknown (h/safe-p hyperdrive))
@@ -538,7 +551,7 @@ use, see `hyperdrive-write'."
                   (setf (he/type entry) "text/plain; charset=utf-8")
                   (setq-local h/current-entry entry)
                   (setf buffer-file-name nil)
-                  (unless (eq buffer buffer-visiting-entry)
+                  (unless (eq orig-buffer buffer-visiting-entry)
                     (when (buffer-live-p buffer-visiting-entry)
                       (kill-buffer buffer-visiting-entry))
                     (rename-buffer (h//generate-new-buffer-name entry)))
