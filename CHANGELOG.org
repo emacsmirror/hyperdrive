@@ -65,6 +65,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 
 ** Fixed
 
+- Fix text encoding when reading and writing hyperdrive files.
 - Fixed link targets/fragments for non-Org documents, like HTML.
 - More reliably kill intermediate buffers when generating a diff.
 - Avoid unnecessarily updating ~hyperdrive-version-ranges~.
