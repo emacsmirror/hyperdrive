@@ -84,6 +84,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 - Refactor to accommodate [[https://ushin.org/hyperdrive/hyperdrive-manual.html#Org_002dtransclusion-integration][hyperdrive-org-transclusion]].
 - History-related functions now accept ~hyperdrive-entry~ structs.
 - Update hyperdrive ~latest-version~ metadata when deleting directories.
+- Reduce memory usage in ~hyperdrive-write-buffer~.
 - Added Org 9.7.6 as a dependency.
 - Bumped package dependencies.
 
