@@ -514,8 +514,7 @@ use, see `hyperdrive-write'."
                                   (h//format-entry entry)))
           (h/user-error "Aborted"))))
     (h/write entry
-      :body (without-restriction
-              (buffer-substring-no-properties (point-min) (point-max)))
+      :body (current-buffer)
       :then (lambda (response)
               (when (buffer-live-p buffer)
                 (with-current-buffer buffer

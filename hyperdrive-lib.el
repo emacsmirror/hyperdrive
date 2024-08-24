@@ -1024,8 +1024,6 @@ Call ELSE if request fails."
 THEN and ELSE are passed to `hyperdrive-entry-api', which see."
   (declare (indent defun))
   (he/api 'put entry
-    ;; TODO: plz accepts buffer as a body, we should refactor calls to h/write
-    ;; to pass in a buffer instead of a buffer-string.
     :body body :then then :else else :queue queue))
 
 (cl-defun h//format-entry-url
