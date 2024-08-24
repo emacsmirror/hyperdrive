@@ -45,7 +45,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 - Improve messages and errors when starting and stopping gateway.
 - Remove gateway status indicator in hyperdrive menu bar since menu
   bar labels cannot be updated while the menu bar is open.
-- Better error message when the gateway is not installed.
+- Improve error message when the gateway is not installed.
   Thanks to ~magnum~ on XMPP for reporting.
 - Make ~hyperdrive-download~ asynchronous.
 - Remove ~hyperdrive-reuse-buffers~ user option to ensure consistent
@@ -66,7 +66,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 ** Fixed
 
 - Fix text encoding when reading and writing hyperdrive files.
-- Fixed link targets/fragments for non-Org documents, like HTML.
+- Fix link targets/fragments for non-Org documents, like HTML.
 - More reliably kill intermediate buffers when generating a diff.
 - Avoid unnecessarily updating ~hyperdrive-version-ranges~.
 - Include the first file in a directory as an ~imenu~ candidate.
@@ -76,8 +76,8 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
   opens hyperdrive files in the same hyperdrive.
 - Fix edge cases when loading version history for nonexistent entries.
 - Edge case where revert-buffer popped to the wrong hyperdrive buffer.
-- Improved reading of hyperdrive URLs.
-- Improved visible buttons in ~hyperdrive-menu-bar-mode~.
+- Improve reading of hyperdrive URLs.
+- Improve visible buttons in ~hyperdrive-menu-bar-mode~.
 - Avoid unnecessary prompt to save hyperdrive EWW buffers.
 - More accurately calculate file size when writing a hyperdrive file.
 
@@ -87,8 +87,8 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 - History-related functions now accept ~hyperdrive-entry~ structs.
 - Update hyperdrive ~latest-version~ metadata when deleting directories.
 - Reduce memory usage in ~hyperdrive-write-buffer~.
-- Added Org 9.7.6 as a dependency.
-- Bumped package dependencies.
+- Add Org 9.7.6 as a dependency.
+- Bump package dependencies.
 
 * 0.3 [2023-12-02 Sat]
 
