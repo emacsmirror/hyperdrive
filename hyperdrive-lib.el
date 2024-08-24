@@ -1325,7 +1325,9 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
   (declare (indent defun))
   (let ((entry (he/create :hyperdrive hyperdrive
                           :path "/.well-known/host-meta.json")))
-    (h/write entry :body (json-encode (h/metadata hyperdrive))
+    ;; TODO: Is it okay to always encode the JSON object as UTF-8?
+    (h/write entry :body (encode-coding-string
+                          (json-encode (h/metadata hyperdrive)) 'utf-8)
       :then then)
     hyperdrive))
 
