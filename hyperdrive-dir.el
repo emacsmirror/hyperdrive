@@ -95,6 +95,13 @@ Invalidated ewoc node entries will have these slots updated:
   + BLOCK-LENGTH-DOWNLOADED
 
 All other slots in each ewoc node entry data will be reused."
+  ;; NOTE: It might make sense to update MTIME and SIZE in addition to
+  ;; BLOCK-LENGTH-DOWNLOADED so that saving changes in an existing entry would
+  ;; appear to immediately refresh its parent directory.  However, to be
+  ;; consistent, we'd want to also insert ewoc entries when saving entries new
+  ;; entries which don't yet exist.  At that point, it might be better to simply
+  ;; refresh version-less parent directories each time an entry is saved.
+
   ;; TODO: Invalidate nodes in all buffers showing entry at any version within
   ;; its version range (where the blob is the same between multiple versions).
   ;; We don't have the range end for ENTRY, so how can we figure out which
