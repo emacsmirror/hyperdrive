@@ -9,7 +9,7 @@
 
 + *Notes*
   + This file should be loaded from a hyperdrive in order to verify that these links work correctly for an Org file loaded from a hyperdrive.
-  + To decode these links with Org, use ~(org-element-context)~ with point on the link.  The resulting element/plist is used in function ~hyperdrive--org-open-at-point~.
+  + To URL-decode these links with Org, use ~(org-element-context)~ with point on the link.  The resulting element/plist is used in function ~hyperdrive--org-open-at-point~.
 
 ** Link types
 
@@ -54,7 +54,7 @@ Here are various link types which we want to test.
 
 + *Notes:*
 
-  + Spaces and such are required to NOT be encoded :: Spaces in bracketed, Org-style links must /not/ have spaces, etc. URL-encoded.
+  + Spaces and such are required to NOT be URL-encoded :: Spaces in bracketed, Org-style links must /not/ have spaces, etc. URL-encoded.
     + We do this so that existing repositories of Org files can be mirrored to a hyperdrive as-is and the relative links between them will still work.
 
 **** Links without targets

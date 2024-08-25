@@ -64,8 +64,8 @@ Passes ARGS to `format-message'."
   ;; the name, we store the name as-is because, for one thing, the name
   ;; could theoretically contain a slash, and `file-name-nondirectory'
   ;; would return the wrong value in that case.
-  (name nil :documentation "Decoded filename of entry (excluding leading slash).")
-  (path nil :documentation "Decoded path (including leading slash).")
+  (name nil :documentation "URL-decoded filename of entry without leading slash.")
+  (path nil :documentation "URL-decoded path with leading slash.")
   (headers nil :documentation "HTTP headers from request.")
   (mtime nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
