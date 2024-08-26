@@ -79,6 +79,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 - Improved reading of hyperdrive URLs.
 - Improved visible buttons in ~hyperdrive-menu-bar-mode~.
 - Avoid unnecessary prompt to save hyperdrive EWW buffers.
+- More accurately calculate file size when writing a hyperdrive file.
 
 ** Internal
 
