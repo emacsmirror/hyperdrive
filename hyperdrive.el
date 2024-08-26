@@ -737,6 +737,7 @@ After successful upload, call THEN.  When QUEUE, use it."
                                              ;; "%a, %-d %b %Y %T %Z"
                                              (file-attribute-modification-time
                                               (file-attributes filename)) t))))
+    (setf (he/size entry) (file-attribute-size (file-attributes filename)))
     (he/api 'put entry :queue queue
       :body `(file ,filename)
       :headers `(("Last-Modified" . ,last-modified))
