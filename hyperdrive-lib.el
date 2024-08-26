@@ -238,7 +238,18 @@ metadata from the response."
 Sets ENTRY's hyperdrive to the persisted version of the drive if
 it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
   (pcase-let*
-      (((map link allow content-length content-type last-modified x-drive-size
+      ((encoding
+        ;; TODO: After the resolution of <https://todo.sr.ht/~ushin/ushin/211>,
+        ;; use the encoding specified in the 'Content-Type' header.  For now, we
+        ;; rely on the guesswork of `detect-coding-region'.
+        (if-let ((filename-encoding (auto-coding-alist-lookup (he/name entry))))
+            filename-encoding
+          (pcase (detect-coding-string (plz-response-body response) t)
+            ((or 'undecided 'undecided-dos 'undecided-mac 'undecided-unix)
+             ;; Default to UTF-8
+             'utf-8)
+            (detected-encoding detected-encoding))))
+       ((map link allow content-length content-type last-modified x-drive-size
              x-drive-version x-file-block-length x-file-block-length-downloaded)
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
@@ -247,6 +258,9 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
                           (match-string 1 link)))
        ;; NOTE: Don't destructure `persisted-hyperdrive' with `pcase' here since it may be nil.
        (persisted-hyperdrive (gethash public-key h/hyperdrives)))
+    ;; Decode response body.
+    (unless (eq 'no-conversion encoding)
+      (cl-callf decode-coding-string (plz-response-body response) encoding))
 
     (when persisted-hyperdrive
       ;; ENTRY's hyperdrive already persisted: merge domains into persisted
