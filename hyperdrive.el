@@ -1454,7 +1454,7 @@ If FORCEP, don't prompt for confirmation before downloading."
                               (plz 'head url :as 'response :connect-timeout 5)))
                    (setf size (cl-parse-integer content-length)))
                ;; Likely missing `curl' executable: Signal error.
-               (file-missing (h/error "Please install `curl' program."))
+               (file-missing (h/error "Please install `curl' program"))
                ;; Any other error: Try next URL.
                (t (h/message "%S unresponsive.  Trying next server..." host)
                   (try)

@@ -1729,7 +1729,7 @@ Compares their public keys."
   (h/equal-p (he/hyperdrive a) (he/hyperdrive b)))
 
 (defun he/within-version-range-p (entry entry-with-range-end)
-  "Return non-nil if ENTRY is within ENTRY-WITH-RANGE-END's range."
+  "Return non-nil if ENTRY is within range of ENTRY-WITH-RANGE-END."
   (<= (he/version entry-with-range-end)
       (or (he/version entry)
           (h/latest-version (he/hyperdrive entry)))
@@ -1742,7 +1742,7 @@ has no value for \\+`safep', return \\+`unknown'."
   (map-elt (h/etc hyperdrive) 'safep 'unknown))
 
 (defun h/safe-string (hyperdrive)
-  "Return propertized string describing HYPERDRIVE safety."
+  "Return string with face property describing HYPERDRIVE safety."
   (pcase-exhaustive (h/safe-p hyperdrive)
     ('t (propertize "safe" 'face 'h/safe))
     ('nil (propertize "unsafe" 'face 'h/unsafe))
