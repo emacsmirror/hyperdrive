@@ -1323,6 +1323,8 @@ world of p2p as well as the development of ~hyper-gateway~.
 
 [[https://protesilaos.com][Protesilaos Stavrou]] for design input and user-testing ~hyperdrive.el~.
 
+[[https://savannah.gnu.org/users/eliz][Eli Zaretskii]] for guidance about text encoding systems.
+
 [[https://emacs.ch/@yantar92][Ihor Radchenko]] for guidance about security and Org mode integration.
 
 [[https://karl-voit.at/][Karl Voit]] for his feedback which inspired the design of ~hyperdrive-mirror~.
