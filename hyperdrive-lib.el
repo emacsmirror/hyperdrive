@@ -295,6 +295,10 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
       (setf (he/size entry)
             (ignore-errors (cl-parse-integer content-length))))
     (when content-type
+      ;; FIXME: `content-type' for 'text/plain' always has 'charset=utf-8',
+      ;; which may not be correct.  Since charset in `hyperdrive-entry-type' is
+      ;; not used anywhere, this should not result in any bugs.  This FIXME can
+      ;; be removed when <https://todo.sr.ht/~ushin/ushin/211> is resolved.
       (setf (he/type entry) content-type))
     (when last-modified
       (setf (he/mtime entry) (encode-time (parse-time-string last-modified))))
