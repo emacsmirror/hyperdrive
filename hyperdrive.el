@@ -550,7 +550,9 @@ For non-interactive use, see `hyperdrive-write'."
                          (point-max) 'approximate coding-system))
                   ;; FIXME: Will entry type ever be anything besides text/plain?
                   ;;        /.well-known/host-meta.json ?
-                  (setf (he/type entry) "text/plain; charset=utf-8")
+                  (setf (he/type entry)
+                        (format "text/plain; charset=%s"
+                                (coding-system-base coding-system)))
                   (setq-local h/current-entry entry)
                   (setf buffer-file-name nil)
                   (unless (eq orig-buffer buffer-visiting-entry)
