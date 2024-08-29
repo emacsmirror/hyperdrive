@@ -1530,6 +1530,10 @@ Default function; see variable `h/gateway-start-function'."
   "Announce that the gateway is ready."
   (h/message "Gateway ready."))
 
+(defun h/announce-gateway-stopped ()
+  "Announce that the gateway is stopped."
+  (h/message "Gateway stopped."))
+
 (defun h/menu-refresh ()
   "Refresh `hyperdrive-menu' if it's open."
   (when (transient-active-prefix '(h/menu))
@@ -1549,6 +1553,33 @@ Default function; see variable `h/gateway-start-function'."
   (when (timerp h//gateway-starting-timer)
     (cancel-timer h//gateway-starting-timer))
   (h/message "Gateway stopped."))
+
+(defun h//gateway-wait-for-dead ()
+  "Run `hyperdrive-gateway-dead-hook' after the gateway is dead.
+Or if gateway isn't dead within timeout, show an error."
+  (letrec
+      ((start-time (current-time))
+       (check
+        (lambda ()
+          (cond ((not (h/gateway-live-p))
+                 (run-hooks 'h/gateway-dead-hook)
+                 (when (timerp h//gateway-starting-timer)
+                   (cancel-timer h//gateway-starting-timer)))
+                ((< 10 (float-time (time-subtract nil start-time)))
+                 ;; Gateway still not responsive: show error.
+                 (if-let (((equal h/gateway-stop-function
+                                  (eval (car (get 'h/gateway-stop-function
+                                                  'standard-value)))))
+                          (process-buffer (process-buffer h/gateway-process)))
+                     ;; User has not customized the start function: suggest
+                     ;; opening the process buffer.
+                     (h/error "Gateway failed to stop (see %S for errors)"
+                              process-buffer)
+                   ;; User appears to have customized the start function.
+                   (h/error "Gateway failed to stop")))
+                (t
+                 (setf h//gateway-stopping-timer (run-at-time 0.1 nil check)))))))
+    (funcall check)))
 
 (defun h/gateway-live-p ()
   "Return non-nil if the gateway process is running.

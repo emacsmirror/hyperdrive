@@ -120,7 +120,8 @@ which see."
 Calls function set in option `hyperdrive-gateway-stop-function',
 which see."
   (interactive)
-  (funcall h/gateway-stop-function))
+  (funcall h/gateway-stop-function)
+  (h//gateway-wait-for-dead))
 
 ;;;###autoload
 (defun hyperdrive-gateway-version ()

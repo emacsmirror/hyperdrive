@@ -406,6 +406,9 @@ If the version was unexpected,
 (defvar h//gateway-starting-timer nil
   "The timer used when the gateway is starting.")
 
+(defvar h//gateway-stopping-timer nil
+  "The timer used when the gateway is stopping.")
+
 (defvar-local h/current-entry nil
   "Entry for current buffer.")
 (put 'h/current-entry 'permanent-local t)
@@ -459,6 +462,14 @@ gateway process."
 (defcustom h/gateway-ready-hook
   '( h/check-gateway-version
      h/announce-gateway-ready
+     h/menu-refresh)
+  "Hook called when gateway is ready after starting it.
+This hook is called by `hyperdrive--gateway-wait-for-ready' after
+`hyperdrive-start'."
+  :type 'hook)
+
+(defcustom h/gateway-dead-hook
+  '( h/announce-gateway-stopped
      h/menu-refresh)
   "Hook called when gateway is ready after starting it.
 This hook is called by `hyperdrive--gateway-wait-for-ready' after
