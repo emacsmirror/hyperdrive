@@ -388,6 +388,7 @@ see Info node `(elisp)Yanking Media'."
     ;; TODO: Extend this to other media types?
     (cl-assert (and h/current-entry
                     (h//entry-directory-p h/current-entry)))
+    (cl-assert (not (multibyte-string-p image)))
     (let ((entry (h/read-entry (h//context-hyperdrive :predicate #'h/writablep)
                                :latest-version t)))
       (setf (he/size entry) (string-bytes image))
