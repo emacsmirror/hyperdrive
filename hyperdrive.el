@@ -566,9 +566,13 @@ For non-interactive use, see `hyperdrive-write'."
                   ;; and lets us avoid making another request for
                   ;; metadata.
                   (set-visited-file-modtime (current-time))))
-              (h/message "Wrote: %S to \"%s\"" name url))
+              (h/message "Wrote: %S to \"%s\"" name url)
+              (when (buffer-live-p encoded-buffer)
+                (kill-buffer encoded-buffer)))
       :else (lambda (plz-error)
-              (h/message "Unable to write: %S: %S" name plz-error)))
+              (h/message "Unable to write: %S: %S" name plz-error)
+              (when (buffer-live-p encoded-buffer)
+                (kill-buffer encoded-buffer))))
     (h/message "Saving to \"%s\"..." url)
     ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display version, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
