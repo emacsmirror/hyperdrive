@@ -261,6 +261,13 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
     ;; Decode response body.
     (unless (eq 'no-conversion encoding)
       (cl-callf decode-coding-string (plz-response-body response) encoding))
+    ;; TODO: Once we can get hyperdrive file contents as a buffer
+    ;; (<https://github.com/alphapapa/plz.el/issues/61>), we should use
+    ;; `decode-coding-region' instead of `decode-coding-string'.
+    ;; `decode-coding-region' will set the buffer-local value of
+    ;; `buffer-file-coding-system' to the correct encoding.  Currently,
+    ;; hyperdrive file buffers always have `buffer-file-coding-system' to the
+    ;; global default, `utf-8' on my machine.
 
     (when persisted-hyperdrive
       ;; ENTRY's hyperdrive already persisted: merge domains into persisted
