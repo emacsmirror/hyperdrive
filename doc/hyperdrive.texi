@@ -170,6 +170,7 @@ Known limitations
 
 * No empty directories::
 * Files and folders can have the same name::
+* Non-UTF-8 encoded text::
 
 Tips
 
@@ -1691,6 +1692,7 @@ category in @code{completion-category-overrides}.
 @menu
 * No empty directories::
 * Files and folders can have the same name::
+* Non-UTF-8 encoded text::
 @end menu
 
 @node No empty directories
@@ -1718,6 +1720,13 @@ entry (folder) and an entry prefix (folder) to have the same name,
 e.g., @code{hyper://PUBLIC-KEY/foo/bar/} and @code{hyper://PUBLIC-KEY/foo/bar}. In
 this case, the folder listing for @code{hyper://PUBLIC-KEY/foo/} would
 display the @code{bar} entry but not the @code{bar/} entry prefix.
+
+@node Non-UTF-8 encoded text
+@section Non-UTF-8 encoded text
+
+We have primarily tested reading and writing files which are UTF-8
+encoded.  If you use other encodings and you notice issues, please let
+us know (see @ref{Contributing/Getting help}).
 
 @node Tips
 @chapter Tips

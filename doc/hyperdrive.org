@@ -1264,6 +1264,12 @@ e.g., ~hyper://PUBLIC-KEY/foo/bar/~ and ~hyper://PUBLIC-KEY/foo/bar~. In
 this case, the folder listing for ~hyper://PUBLIC-KEY/foo/~ would
 display the ~bar~ entry but not the ~bar/~ entry prefix.
 
+** Non-UTF-8 encoded text
+
+We have primarily tested reading and writing files which are UTF-8
+encoded.  If you use other encodings and you notice issues, please let
+us know (see [[*Contributing/Getting help]]).
+
 * Tips
 
 ** Quick documentation access
