@@ -1544,15 +1544,7 @@ Default function; see variable `h/gateway-start-function'."
   (unless (h/gateway-live-p-default)
     ;; NOTE: We do not try to stop the process if we didn't start it ourselves.
     (h/user-error "Gateway not running as subprocess"))
-  (interrupt-process h/gateway-process)
-  (with-timeout (10 (h/error "Gateway still running"))
-    (cl-loop while (h/gateway-live-p)
-             do (sleep-for 0.2)))
-  (kill-buffer (process-buffer h/gateway-process))
-  (setf h/gateway-process nil)
-  (when (timerp h//gateway-starting-timer)
-    (cancel-timer h//gateway-starting-timer))
-  (h/message "Gateway stopped."))
+  (interrupt-process h/gateway-process))
 
 (defun h//gateway-wait-for-dead ()
   "Run `hyperdrive-gateway-dead-hook' after the gateway is dead.
@@ -1562,24 +1554,30 @@ Or if gateway isn't dead within timeout, show an error."
        (check
         (lambda ()
           (cond ((not (h/gateway-live-p))
-                 (run-hooks 'h/gateway-dead-hook)
-                 (when (timerp h//gateway-starting-timer)
-                   (cancel-timer h//gateway-starting-timer)))
+                 (setf h//gateway-stopping-timer nil)
+                 (run-hooks 'h/gateway-dead-hook))
                 ((< 10 (float-time (time-subtract nil start-time)))
-                 ;; Gateway still not responsive: show error.
+                 ;; Gateway process still running: show error.
+                 (setf h//gateway-stopping-timer nil)
                  (if-let (((equal h/gateway-stop-function
                                   (eval (car (get 'h/gateway-stop-function
                                                   'standard-value)))))
                           (process-buffer (process-buffer h/gateway-process)))
-                     ;; User has not customized the start function: suggest
+                     ;; User has not customized the stop function: suggest
                      ;; opening the process buffer.
                      (h/error "Gateway failed to stop (see %S for errors)"
                               process-buffer)
-                   ;; User appears to have customized the start function.
+                   ;; User appears to have customized the stop function.
                    (h/error "Gateway failed to stop")))
                 (t
                  (setf h//gateway-stopping-timer (run-at-time 0.1 nil check)))))))
     (funcall check)))
+
+(defun h//gateway-cleanup-default ()
+  "Clean up gateway process buffers, etc.
+To be called after gateway process dies."
+  (kill-buffer (process-buffer h/gateway-process))
+  (setf h/gateway-process nil))
 
 (defun h/gateway-live-p ()
   "Return non-nil if the gateway process is running.
@@ -1623,9 +1621,11 @@ Or if gateway isn't ready within timeout, show an error."
        (check
         (lambda ()
           (cond ((h//gateway-ready-p)
+                 (setf h//gateway-starting-timer nil)
                  (run-hooks 'h/gateway-ready-hook))
                 ((< 10 (float-time (time-subtract nil start-time)))
                  ;; Gateway still not responsive: show error.
+                 (setf h//gateway-starting-timer nil)
                  (if-let (((equal h/gateway-start-function
                                   (eval (car (get 'h/gateway-start-function
                                                   'standard-value)))))
