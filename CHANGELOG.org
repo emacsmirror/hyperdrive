@@ -65,6 +65,7 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 
 ** Fixed
 
+- Fix text encoding when reading and writing hyperdrive files.
 - Fixed link targets/fragments for non-Org documents, like HTML.
 - More reliably kill intermediate buffers when generating a diff.
 - Avoid unnecessarily updating ~hyperdrive-version-ranges~.
@@ -78,12 +79,14 @@ space by "forgetting" your copy of a file (~hyperdrive-forget-file~)!
 - Improved reading of hyperdrive URLs.
 - Improved visible buttons in ~hyperdrive-menu-bar-mode~.
 - Avoid unnecessary prompt to save hyperdrive EWW buffers.
+- More accurately calculate file size when writing a hyperdrive file.
 
 ** Internal
 
 - Refactor to accommodate [[https://ushin.org/hyperdrive/hyperdrive-manual.html#Org_002dtransclusion-integration][hyperdrive-org-transclusion]].
 - History-related functions now accept ~hyperdrive-entry~ structs.
 - Update hyperdrive ~latest-version~ metadata when deleting directories.
+- Reduce memory usage in ~hyperdrive-write-buffer~.
 - Added Org 9.7.6 as a dependency.
 - Bumped package dependencies.
 

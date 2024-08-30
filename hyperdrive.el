@@ -490,8 +490,9 @@ overwrite.
 With universal prefix argument \\[universal-argument], overwrite
 without prompting.
 
-This function is for interactive use only; for non-interactive
-use, see `hyperdrive-write'."
+This function is for interactive use only since it calls
+`select-safe-coding-system', which may prompt for input.
+For non-interactive use, see `hyperdrive-write'."
   (interactive (list (h/read-entry (h/read-hyperdrive #'h/writablep)
                                    :default-path
                                    (or (and (buffer-file-name)
@@ -501,10 +502,22 @@ use, see `hyperdrive-write'."
                                             (he/path h/current-entry)))
                                    :latest-version t)
                      current-prefix-arg))
-  (pcase-let (((cl-struct hyperdrive-entry hyperdrive name) entry)
-              (url (he/url entry))
-              (buffer (current-buffer))
-              (buffer-visiting-entry (h//find-buffer-visiting entry)))
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name) entry)
+               (url (he/url entry))
+               (orig-buffer (current-buffer))
+               (coding-system
+                (with-current-buffer orig-buffer
+                  ;; Detect coding in orig buffer so `buffer-file-coding-system'
+                  ;; is prioritized.
+                  (select-safe-coding-system (point-min) (point-max))))
+               (encoded-buffer
+                (with-current-buffer
+                    (generate-new-buffer
+                     (format " *hyperdrive-encoded %s*" orig-buffer) t)
+                  (insert-buffer-substring orig-buffer)
+                  (encode-coding-region (point-min) (point-max) coding-system)
+                  (current-buffer)))
+               (buffer-visiting-entry (h//find-buffer-visiting entry)))
     (unless (or overwritep (not (he/at nil entry)))
       (unless (y-or-n-p
 	       (format "File %s exists; overwrite?" (h//format-entry entry)))
@@ -514,11 +527,10 @@ use, see `hyperdrive-write'."
                                   (h//format-entry entry)))
           (h/user-error "Aborted"))))
     (h/write entry
-      :body (without-restriction
-              (buffer-substring-no-properties (point-min) (point-max)))
+      :body encoded-buffer
       :then (lambda (response)
-              (when (buffer-live-p buffer)
-                (with-current-buffer buffer
+              (when (buffer-live-p orig-buffer)
+                (with-current-buffer orig-buffer
                   (unless h/mode
                     (h//clean-buffer)
                     (when (eq 'unknown (h/safe-p hyperdrive))
@@ -531,15 +543,16 @@ use, see `hyperdrive-write'."
                   (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
-                  ;; FIXME: For large buffers, `buffer-size' returns a different
-                  ;; value than the gateway's Content-Length header.
-                  (setf (he/size entry) (buffer-size))
+                  (setf (he/size entry) (with-current-buffer encoded-buffer
+                                          (bufferpos-to-filepos (point-max))))
                   ;; FIXME: Will entry type ever be anything besides text/plain?
                   ;;        /.well-known/host-meta.json ?
-                  (setf (he/type entry) "text/plain; charset=utf-8")
+                  (setf (he/type entry)
+                        (format "text/plain; charset=%s"
+                                (coding-system-base coding-system)))
                   (setq-local h/current-entry entry)
                   (setf buffer-file-name nil)
-                  (unless (eq buffer buffer-visiting-entry)
+                  (unless (eq orig-buffer buffer-visiting-entry)
                     (when (buffer-live-p buffer-visiting-entry)
                       (kill-buffer buffer-visiting-entry))
                     (rename-buffer (h//generate-new-buffer-name entry)))
@@ -550,9 +563,13 @@ use, see `hyperdrive-write'."
                   ;; and lets us avoid making another request for
                   ;; metadata.
                   (set-visited-file-modtime (current-time))))
-              (h/message "Wrote: %S to \"%s\"" name url))
+              (h/message "Wrote: %S to \"%s\"" name url)
+              (when (buffer-live-p encoded-buffer)
+                (kill-buffer encoded-buffer)))
       :else (lambda (plz-error)
-              (h/message "Unable to write: %S: %S" name plz-error)))
+              (h/message "Unable to write: %S: %S" name plz-error)
+              (when (buffer-live-p encoded-buffer)
+                (kill-buffer encoded-buffer))))
     (h/message "Saving to \"%s\"..." url)
     ;; TODO: Reload relevant hyperdrive-dir buffers after writing buffer (if ewoc buffers display version, then possibly all ewoc buffers for a given hyperdrive should be reloaded)
     ))
@@ -723,6 +740,7 @@ After successful upload, call THEN.  When QUEUE, use it."
                                              ;; "%a, %-d %b %Y %T %Z"
                                              (file-attribute-modification-time
                                               (file-attributes filename)) t))))
+    (setf (he/size entry) (file-attribute-size (file-attributes filename)))
     (he/api 'put entry :queue queue
       :body `(file ,filename)
       :headers `(("Last-Modified" . ,last-modified))

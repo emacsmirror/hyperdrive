@@ -64,8 +64,8 @@ Passes ARGS to `format-message'."
   ;; the name, we store the name as-is because, for one thing, the name
   ;; could theoretically contain a slash, and `file-name-nondirectory'
   ;; would return the wrong value in that case.
-  (name nil :documentation "Decoded filename of entry (excluding leading slash).")
-  (path nil :documentation "Decoded path (including leading slash).")
+  (name nil :documentation "URL-decoded filename of entry without leading slash.")
+  (path nil :documentation "URL-decoded path with leading slash.")
   (headers nil :documentation "HTTP headers from request.")
   (mtime nil :documentation "Last modified time.")
   (size nil :documentation "Size of file.")
@@ -238,7 +238,18 @@ metadata from the response."
 Sets ENTRY's hyperdrive to the persisted version of the drive if
 it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
   (pcase-let*
-      (((map link allow content-length content-type last-modified x-drive-size
+      ((encoding
+        ;; TODO: After the resolution of <https://todo.sr.ht/~ushin/ushin/211>,
+        ;; use the encoding specified in the 'Content-Type' header.  For now, we
+        ;; rely on the guesswork of `detect-coding-region'.
+        (if-let ((filename-encoding (auto-coding-alist-lookup (he/name entry))))
+            filename-encoding
+          (pcase (detect-coding-string (plz-response-body response) t)
+            ((or 'undecided 'undecided-dos 'undecided-mac 'undecided-unix)
+             ;; Default to UTF-8
+             'utf-8)
+            (detected-encoding detected-encoding))))
+       ((map link allow content-length content-type last-modified x-drive-size
              x-drive-version x-file-block-length x-file-block-length-downloaded)
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
@@ -247,6 +258,16 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
                           (match-string 1 link)))
        ;; NOTE: Don't destructure `persisted-hyperdrive' with `pcase' here since it may be nil.
        (persisted-hyperdrive (gethash public-key h/hyperdrives)))
+    ;; Decode response body.
+    (unless (eq 'no-conversion encoding)
+      (cl-callf decode-coding-string (plz-response-body response) encoding))
+    ;; TODO: Once we can get hyperdrive file contents as a buffer
+    ;; (<https://github.com/alphapapa/plz.el/issues/61>), we should use
+    ;; `decode-coding-region' instead of `decode-coding-string'.
+    ;; `decode-coding-region' will set the buffer-local value of
+    ;; `buffer-file-coding-system' to the correct encoding.  Currently,
+    ;; hyperdrive file buffers always have `buffer-file-coding-system' to the
+    ;; global default, `utf-8' on my machine.
 
     (when persisted-hyperdrive
       ;; ENTRY's hyperdrive already persisted: merge domains into persisted
@@ -281,6 +302,10 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
       (setf (he/size entry)
             (ignore-errors (cl-parse-integer content-length))))
     (when content-type
+      ;; FIXME: `content-type' for 'text/plain' always has 'charset=utf-8',
+      ;; which may not be correct.  Since charset in `hyperdrive-entry-type' is
+      ;; not used anywhere, this should not result in any bugs.  This FIXME can
+      ;; be removed when <https://todo.sr.ht/~ushin/ushin/211> is resolved.
       (setf (he/type entry) content-type))
     (when last-modified
       (setf (he/mtime entry) (encode-time (parse-time-string last-modified))))
@@ -1021,11 +1046,10 @@ Call ELSE if request fails."
 
 (cl-defun h/write (entry &key body then else queue)
   "Write BODY to hyperdrive ENTRY's URL.
-THEN and ELSE are passed to `hyperdrive-entry-api', which see."
+BODY should be an encoded string or buffer.  THEN and ELSE are
+passed to `hyperdrive-entry-api', which see."
   (declare (indent defun))
   (he/api 'put entry
-    ;; TODO: plz accepts buffer as a body, we should refactor calls to h/write
-    ;; to pass in a buffer instead of a buffer-string.
     :body body :then then :else else :queue queue))
 
 (cl-defun h//format-entry-url
@@ -1327,7 +1351,9 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
   (declare (indent defun))
   (let ((entry (he/create :hyperdrive hyperdrive
                           :path "/.well-known/host-meta.json")))
-    (h/write entry :body (json-encode (h/metadata hyperdrive))
+    ;; TODO: Is it okay to always encode the JSON object as UTF-8?
+    (h/write entry :body (encode-coding-string
+                          (json-encode (h/metadata hyperdrive)) 'utf-8)
       :then then)
     hyperdrive))
 
