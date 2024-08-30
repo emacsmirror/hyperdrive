@@ -543,11 +543,8 @@ For non-interactive use, see `hyperdrive-write'."
                   (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
-                  (setf (he/size entry)
-                        (bufferpos-to-filepos
-                         ;; Use `approximate' as `select-safe-coding-system' may
-                         ;; return a coding system without EOL conversion.
-                         (point-max) 'approximate coding-system))
+                  (setf (he/size entry) (with-current-buffer encoded-buffer
+                                          (bufferpos-to-filepos (point-max))))
                   ;; FIXME: Will entry type ever be anything besides text/plain?
                   ;;        /.well-known/host-meta.json ?
                   (setf (he/type entry)
