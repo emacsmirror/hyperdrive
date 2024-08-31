@@ -1586,8 +1586,7 @@ If FORCEP, don't prompt for confirmation before downloading."
   "Restart the gateway."
   (interactive)
   (h/message "Restarting gateway...")
-  (when (or (h/gateway-live-p) (h//gateway-ready-p))
-    (h/stop))
+  (with-demoted-errors (h/stop))
   (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
     (cl-loop while (h/gateway-live-p)
              do (sleep-for 0.2)))
