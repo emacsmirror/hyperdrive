@@ -132,7 +132,8 @@ which see."
   ;; Cancel starting timer after calling h/gateway-stop-function since
   ;; h/gateway-ready-hook should still run if h/gateway-stop-function fails.
   (when (timerp h//gateway-starting-timer)
-    (cancel-timer h//gateway-starting-timer))
+    (cancel-timer h//gateway-starting-timer)
+    (setf h//gateway-starting-timer nil))
   (h//gateway-wait-for-dead))
 
 ;;;###autoload
