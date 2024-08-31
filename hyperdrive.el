@@ -129,6 +129,8 @@ which see."
     (h/user-error "Gateway already stopping"))
    (t
     (funcall h/gateway-stop-function)))
+  ;; Cancel starting timer after calling h/gateway-stop-function since
+  ;; h/gateway-ready-hook should still run if h/gateway-stop-function fails.
   (when (timerp h//gateway-starting-timer)
     (cancel-timer h//gateway-starting-timer))
   (h//gateway-wait-for-dead))
