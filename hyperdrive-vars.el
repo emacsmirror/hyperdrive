@@ -439,6 +439,12 @@ Keys are regexps matched against MIME types.")
            :desc "Name"))
   "Fields for sorting hyperdrive directory buffer columns.")
 
+;;;;;; Gateway configuration
+
+(defgroup hyperdrive-gateway nil
+  "Starting and stopping the gateway."
+  :group 'hyperdrive)
+
 (declare-function h//gateway-start-default "hyperdrive-lib")
 (defcustom h/gateway-start-function #'h//gateway-start-default
   "Function called to start the gateway.
