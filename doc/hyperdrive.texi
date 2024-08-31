@@ -392,6 +392,10 @@ warn you if you're running an outdated version of the gateway.
 Stop the gateway.
 @end deffn
 
+@defopt hyperdrive-gateway-dead-hook
+Hook run when the gateway is no longer live after @code{hyperdrive-stop}.
+@end defopt
+
 @deffn Command hyperdrive-restart
 Restart the gateway.
 @end deffn

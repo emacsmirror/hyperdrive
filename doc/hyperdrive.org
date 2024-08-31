@@ -177,6 +177,10 @@ and in the "Hyperdrive" menu bar (see [[*Menu bar support]]).
 
   Stop the gateway.
 
+- User Option: hyperdrive-gateway-dead-hook ::
+
+  Hook run when the gateway is no longer live after ~hyperdrive-stop~.
+
 - Command: hyperdrive-restart ::
 
   Restart the gateway.
