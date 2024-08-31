@@ -120,7 +120,11 @@ which see."
 Calls function set in option `hyperdrive-gateway-stop-function',
 which see."
   (interactive)
-  (funcall h/gateway-stop-function)
+  (cond
+   ((and (not (h//gateway-ready-p)) (not (h/gateway-live-p)))
+    (h/user-error "Gateway already stopped"))
+   (t
+    (funcall h/gateway-stop-function)))
   (when (timerp h//gateway-starting-timer)
     (cancel-timer h//gateway-starting-timer))
   (h//gateway-wait-for-dead))
