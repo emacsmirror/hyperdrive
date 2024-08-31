@@ -472,9 +472,9 @@ This hook is called by `hyperdrive--gateway-wait-for-ready' after
   '( h//gateway-cleanup-default
      h/announce-gateway-stopped
      h/menu-refresh)
-  "Hook called when gateway is ready after starting it.
-This hook is called by `hyperdrive--gateway-wait-for-ready' after
-`hyperdrive-start'."
+  "Hook called when gateway is ready after stopping it.
+This hook is called by `hyperdrive--gateway-wait-for-dead' after
+`hyperdrive-stop'."
   :type 'hook)
 
 ;;;; Footer
