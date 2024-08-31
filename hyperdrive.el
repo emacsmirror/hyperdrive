@@ -101,7 +101,7 @@ which see."
           ((h//gateway-ready-p)
            (h/user-error "Gateway already running outside of Emacs."))
           (h//gateway-stopping-timer
-           (h/user-error "Wait for gateway to stop before restarting"))
+           (h/user-error "Wait for gateway to stop before starting"))
           (h//gateway-starting-timer
            (h/user-error "Gateway already starting"))
           ((and (not gateway-installed-p) (h/gateway-installing-p))
