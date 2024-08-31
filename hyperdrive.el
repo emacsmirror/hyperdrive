@@ -125,6 +125,8 @@ which see."
   (cond
    ((and (not (h//gateway-ready-p)) (not (h/gateway-live-p)))
     (h/user-error "Gateway already stopped"))
+   (h//gateway-stopping-timer
+    (h/user-error "Gateway already stopping"))
    (t
     (funcall h/gateway-stop-function)))
   (when (timerp h//gateway-starting-timer)
