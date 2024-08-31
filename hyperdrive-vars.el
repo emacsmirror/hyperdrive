@@ -271,6 +271,50 @@ value (and should only be present once in the string).  Used in
                (cons :tag "Hyperdrive domains" (const domains)
                      (string :tag "Format string"))))
 
+;;;;;; Gateway configuration
+
+(defgroup hyperdrive-gateway nil
+  "Starting and stopping the gateway."
+  :group 'hyperdrive)
+
+(declare-function h//gateway-start-default "hyperdrive-lib")
+(defcustom h/gateway-start-function #'h//gateway-start-default
+  "Function called to start the gateway.
+If this function signals an error, the `h/gateway-ready-hook'
+will not be run; otherwise, the hook will be run when the gateway
+appears to be ready."
+  :type 'function)
+
+(declare-function h//gateway-stop-default "hyperdrive-lib")
+(defcustom h/gateway-stop-function #'h//gateway-stop-default
+  "Function called to stop the gateway.
+This function should signal an error if it fails to stop the
+gateway process."
+  :type 'function)
+
+(declare-function h/gateway-live-p-default "hyperdrive-lib")
+(defcustom h/gateway-live-predicate #'h/gateway-live-p-default
+  "Predicate function which returns non-nil if the gateway process is live."
+  :type 'function)
+
+(defcustom h/gateway-ready-hook
+  '( h/check-gateway-version
+     h/announce-gateway-ready
+     h/menu-refresh)
+  "Hook called when gateway is ready after starting it.
+This hook is called by `hyperdrive--gateway-wait-for-ready' after
+`hyperdrive-start'."
+  :type 'hook)
+
+(defcustom h/gateway-dead-hook
+  '( h//gateway-cleanup-default
+     h/announce-gateway-stopped
+     h/menu-refresh)
+  "Hook called when gateway is ready after stopping it.
+This hook is called by `hyperdrive--gateway-wait-for-dead' after
+`hyperdrive-stop'."
+  :type 'hook)
+
 ;;;;; Faces
 
 (defgroup hyperdrive-faces nil
@@ -438,50 +482,6 @@ Keys are regexps matched against MIME types.")
            :descending string>
            :desc "Name"))
   "Fields for sorting hyperdrive directory buffer columns.")
-
-;;;;;; Gateway configuration
-
-(defgroup hyperdrive-gateway nil
-  "Starting and stopping the gateway."
-  :group 'hyperdrive)
-
-(declare-function h//gateway-start-default "hyperdrive-lib")
-(defcustom h/gateway-start-function #'h//gateway-start-default
-  "Function called to start the gateway.
-If this function signals an error, the `h/gateway-ready-hook'
-will not be run; otherwise, the hook will be run when the gateway
-appears to be ready."
-  :type 'function)
-
-(declare-function h//gateway-stop-default "hyperdrive-lib")
-(defcustom h/gateway-stop-function #'h//gateway-stop-default
-  "Function called to stop the gateway.
-This function should signal an error if it fails to stop the
-gateway process."
-  :type 'function)
-
-(declare-function h/gateway-live-p-default "hyperdrive-lib")
-(defcustom h/gateway-live-predicate #'h/gateway-live-p-default
-  "Predicate function which returns non-nil if the gateway process is live."
-  :type 'function)
-
-(defcustom h/gateway-ready-hook
-  '( h/check-gateway-version
-     h/announce-gateway-ready
-     h/menu-refresh)
-  "Hook called when gateway is ready after starting it.
-This hook is called by `hyperdrive--gateway-wait-for-ready' after
-`hyperdrive-start'."
-  :type 'hook)
-
-(defcustom h/gateway-dead-hook
-  '( h//gateway-cleanup-default
-     h/announce-gateway-stopped
-     h/menu-refresh)
-  "Hook called when gateway is ready after stopping it.
-This hook is called by `hyperdrive--gateway-wait-for-dead' after
-`hyperdrive-stop'."
-  :type 'hook)
 
 ;;;; Footer
 
