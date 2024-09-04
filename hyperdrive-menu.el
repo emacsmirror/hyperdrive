@@ -213,8 +213,9 @@
     (lambda ()
       (concat (propertize "Gateway: " 'face 'transient-heading)
               (propertize
-               (cond ((h//gateway-ready-p) "on")
-                     ((h/gateway-live-p) "...")
+               (cond (h//gateway-starting-timer "starting")
+                     (h//gateway-stopping-timer "stopping")
+                     ((h//gateway-ready-p) "on")
                      ((and (h/gateway-installed-p) (h/gateway-installing-p))
                       "upgrading")
                      ((h/gateway-installing-p) "installing")
