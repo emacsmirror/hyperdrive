@@ -138,10 +138,12 @@ which see."
 
 ;;;###autoload
 (defun hyperdrive-gateway-version ()
-  "Say version number of gateway.
+  "Say version number of gateway and copy it to the kill-ring.
 Return version if gateway is running; otherwise signal an error."
   (interactive)
-  (h/message "%S" (h//gateway-version)))
+  (let ((version (format "%S" (h//gateway-version))))
+    (kill-new version)
+    (h/message version)))
 
 ;;;###autoload
 (defun hyperdrive-new (seed)
