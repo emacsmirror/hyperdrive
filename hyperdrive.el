@@ -96,14 +96,16 @@ Calls function set in option `hyperdrive-gateway-start-function',
 which see."
   (interactive)
   (let ((gateway-installed-p (h/gateway-installed-p)))
-    (cond ((and (h//gateway-ready-p) (h/gateway-live-p))
-           (h/user-error "Gateway already running"))
-          ((h//gateway-ready-p)
-           (h/user-error "Gateway already running outside of Emacs."))
-          (h//gateway-stopping-timer
+    (cond (h//gateway-stopping-timer
            (h/user-error "Wait for gateway to stop before starting"))
           (h//gateway-starting-timer
            (h/user-error "Gateway already starting"))
+          ((and (h//gateway-ready-p) (h/gateway-live-p))
+           (h/user-error "Gateway already running"))
+          ((h/gateway-live-p)
+           (h/user-error "Gateway process currently live"))
+          ((h//gateway-ready-p)
+           (h/user-error "Gateway already running outside of Emacs."))
           ((and (not gateway-installed-p) (h/gateway-installing-p))
            (h/user-error "Gateway installation in-progress"))
           ((not gateway-installed-p)
@@ -123,10 +125,10 @@ Calls function set in option `hyperdrive-gateway-stop-function',
 which see."
   (interactive)
   (cond
-   ((and (not (h//gateway-ready-p)) (not (h/gateway-live-p)))
-    (h/user-error "Gateway already stopped"))
    (h//gateway-stopping-timer
     (h/user-error "Gateway already stopping"))
+   ((and (not (h//gateway-ready-p)) (not (h/gateway-live-p)))
+    (h/user-error "Gateway already stopped"))
    (t
     (funcall h/gateway-stop-function)))
   ;; Cancel starting timer after calling h/gateway-stop-function since
