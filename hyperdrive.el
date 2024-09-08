@@ -138,6 +138,16 @@ which see."
     (setf h//gateway-starting-timer nil))
   (h//gateway-wait-for-dead))
 
+(defun h/restart ()
+  "Restart the gateway."
+  (interactive)
+  (h/message "Restarting gateway...")
+  (with-demoted-errors (h/stop))
+  (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
+    (cl-loop while (h/gateway-live-p)
+             do (sleep-for 0.2)))
+  (h/start))
+
 ;;;###autoload
 (defun hyperdrive-gateway-version ()
   "Say version number of gateway and copy it to the kill-ring.
@@ -1585,16 +1595,6 @@ If FORCEP, don't prompt for confirmation before downloading."
   (h/message "Cancelling install")
   (interrupt-process h/install-process)
   (setf h/install-process nil))
-
-(defun h/restart ()
-  "Restart the gateway."
-  (interactive)
-  (h/message "Restarting gateway...")
-  (with-demoted-errors (h/stop))
-  (with-timeout (5 (h/message "Timed out waiting for gateway to stop"))
-    (cl-loop while (h/gateway-live-p)
-             do (sleep-for 0.2)))
-  (h/start))
 
 ;; (defun h//gateway-appears-valid-p ()
 ;;   "Return non-nil if a local installation of the gateway appears valid.
