@@ -1576,7 +1576,10 @@ Or if gateway isn't dead within timeout, show an error."
 (defun h//gateway-cleanup-default ()
   "Clean up gateway process buffers, etc.
 To be called after gateway process dies."
-  (kill-buffer (process-buffer h/gateway-process))
+  (when-let* ((process h/gateway-process)
+              (buffer (process-buffer h/gateway-process))
+              ((buffer-live-p buffer)))
+    (kill-buffer (process-buffer h/gateway-process)))
   (setf h/gateway-process nil))
 
 (defun h/gateway-live-p ()
