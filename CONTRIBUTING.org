@@ -43,7 +43,7 @@ These checklists should be followed when releasing new versions:
    1. [ ] Update package main file header version (removing ~-pre~ suffix).
    2. [ ] Update CHANGELOG (with release date and version).
    3. [ ] Update [[*Version number locations][Version number locations]] if necessary (e.g. if gateway version changes).
-   4. [ ] Rebuild .texi manual (use ~pre-commit~ hook; see below).
+   4. [ ] Rebuild .texi manual.
    5. [ ] Commit changes.
    6. [ ] Merge ~master~ branch into ~stable~ branch.
    7. [ ] Make new git tag for new release (tagging the commit on ~stable~).
