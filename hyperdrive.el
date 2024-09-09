@@ -729,7 +729,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
   "Jump to a Hyperdrive BOOKMARK."
   (interactive
    (progn
-     (bookmark-maybe-load-default-file) ; paranoia
+     (bookmark-maybe-load-default-file)
      (list
       (completing-read "Open Hyperdrive bookmark: " bookmark-alist
                        (pcase-lambda (`(,_name . ,(map handler)))
@@ -740,6 +740,7 @@ Works in `hyperdrive-mode' and `hyperdrive-dir-mode' buffers."
 (defun h/bookmark-list ()
   "List Hyperdrive bookmarks."
   (interactive)
+  (bookmark-maybe-load-default-file)
   (let ((bookmark-alist
          (cl-remove-if-not (pcase-lambda (`(,_name . ,(map handler)))
                              (equal handler #'h/bookmark-handler))
