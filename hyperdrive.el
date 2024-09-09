@@ -193,7 +193,7 @@ Interactively, prompt for hyperdrive and action."
                          '(("safe" ?S "mark as safe")
                            ("unsafe" ?U "mark as unsafe")
                            ("unknown" ?u "ask again later")
-                           ("help" ?h "show Info manual section about safety")
+                           ("help" ?i "show Info manual section about safety")
                            ("quit" ?q "quit")))
                    ("safe" t)
                    ("unsafe" nil)
