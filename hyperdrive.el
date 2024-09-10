@@ -202,6 +202,10 @@ Interactively, prompt for hyperdrive and action."
                    (_ :quit))))
      (list hyperdrive mark-safe-p)))
   (pcase safep
+    ;; FIXME: If "explain" is selected from within a transient, Emacs signals
+    ;; "Error in post-command-hook (transient--post-command): (wrong-type-argument ewoc nil)"
+    ;; since the transient refreshes after the current buffer is the Info
+    ;; manual, which has no ewoc.  The transient menu should instead close.
     (:explain (info "(hyperdrive) Mark a hyperdrive as safe"))
     (:quit nil)
     (_ (setf (map-elt (h/etc hyperdrive) 'safep) safep)
