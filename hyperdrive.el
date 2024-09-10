@@ -143,7 +143,7 @@ which see."
   (interactive)
   (h/message "Restarting gateway...")
   (with-demoted-errors (h/stop))
-  (with-timeout (10 (h/message "Timed out waiting for gateway to stop"))
+  (with-timeout (10 (h/error "Timed out waiting for gateway to stop"))
     (cl-loop while (h/gateway-live-p)
              do (sleep-for 0.2)))
   (h/start))
