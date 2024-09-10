@@ -33,7 +33,7 @@ These checklists should be followed when releasing new versions:
 
    1. [ ] Update package main file header version (adding ~-pre~ suffix).
    2. [ ] Update CHANGELOG.
-   3. [ ] Rebuild .texi manual (use ~pre-commit~ hook; see below).
+   3. [ ] Rebuild .texi manual (see [[*Rebuilding the ~texi~ manual]]).
    4. [ ] Commit changes.
 
 ** Release new feature (or minor) version
@@ -43,7 +43,7 @@ These checklists should be followed when releasing new versions:
    1. [ ] Update package main file header version (removing ~-pre~ suffix).
    2. [ ] Update CHANGELOG (with release date and version).
    3. [ ] Update [[*Version number locations][Version number locations]] if necessary (e.g. if gateway version changes).
-   4. [ ] Rebuild .texi manual.
+   4. [ ] Rebuild .texi manual (see [[*Rebuilding the ~texi~ manual]]).
    5. [ ] Commit changes.
    6. [ ] Merge ~master~ branch into ~stable~ branch.
    7. [ ] Make new git tag for new release (tagging the commit on ~stable~).
@@ -58,7 +58,7 @@ These checklists should be followed when releasing new versions:
    1. [ ] Update package main file header version (increment bugfix number (i.e. the third number), adding ~-pre~ suffix).
    2. [ ] Commit fixes to code.
    3. [ ] Commit update to ~CHANGELOG~.
-   4. [ ] Rebuild manual.
+   4. [ ] Rebuild manual (see [[*Rebuilding the ~texi~ manual]]).
    5. [ ] Commit manual.
    6. [ ] Update package main file header version (removing ~-pre~ suffix).
    7. [ ] Commit changes.
@@ -82,13 +82,26 @@ These checklists should be followed when releasing new versions:
 - [[https://ci.codeberg.org/repos/13334][Codeberg Woodpecker CI]]
 - [[https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/][SourceHut refs page]]
 
+* Rebuilding the ~texi~ manual
+
+If you enable the [[*pre-commit hook][pre-commit hook]], the texi manual will rebuild
+whenever you attempt to commit changes to ~doc/hyperdrive.org~.
+
+To rebuild the texi manual without modifying the contents of
+~doc/hyperdrive.org~ in order to, e.g., update the version number
+listed in the manual when tagging a new release, in the project root,
+run ~touch doc/hyperdrive.org && make doc~.
+
 * Git hooks
 
 Please consider using the following git hooks:
 
-- [[file:tracked-hooks/pre-commit]]
+** pre-commit hook
 
-  This ~pre-commit~ hook helps ensure that the ~hyperdrive.texi~ is
-  rebuilt and committed at the same time as ~hyperdrive.org~. It
-  rebuilds ~.texi~ whenever ~.org~ is about to be committed, and it
-  prevents ~.org~ from being committed while ~.texi~ has unstaged changes.
+[[file:tracked-hooks/pre-commit]]
+
+This ~pre-commit~ hook helps ensure that the ~hyperdrive.texi~ is
+rebuilt and committed at the same time as ~hyperdrive.org~. It
+rebuilds ~.texi~ whenever ~.org~ is about to be committed, and it
+prevents ~.org~ from being committed while ~.texi~ has unstaged
+changes.
