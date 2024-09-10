@@ -365,6 +365,7 @@ exist, ~hyperdrive.el~ will prompt you to take action:
 - ~u~ (up) to open the parent directory containing that file or folder
 - ~r~ (recurse) to go up the directory tree until a directory is found
   or until you get to the root directory.
+- ~e~ (explain) to open this section of the hyperdrive Info manual.
 - ~q~ (exit) to exit,
 - ~?~ (help) to show a help message.
 

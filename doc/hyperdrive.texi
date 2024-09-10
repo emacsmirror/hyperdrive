@@ -630,6 +630,8 @@ works for files, not folders (see @ref{No directory version history})
 @code{r} (recurse) to go up the directory tree until a directory is found
 or until you get to the root directory.
 @item
+@code{e} (explain) to open this section of the hyperdrive Info manual.
+@item
 @code{q} (exit) to exit,
 @item
 @code{?} (help) to show a help message.
