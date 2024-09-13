@@ -1437,13 +1437,14 @@ If then, then call THEN with no arguments.  Default handler."
         (let ((buffer-file-name (he/name entry)))
           (set-auto-mode t)))
       (when target
-        (pcase major-mode
-          ('org-mode
-           (require 'hyperdrive-org)
-           (h/org--link-goto target))
-          ('markdown-mode
-           ;; TODO: Handle markdown link
-           )))
+        (with-demoted-errors "Hyperdrive: %S"
+          (pcase major-mode
+            ('org-mode
+             (require 'hyperdrive-org)
+             (h/org--link-goto target))
+            ('markdown-mode
+             ;; TODO: Handle markdown link
+             ))))
       (h/blob-mode (if version +1 -1))
       (when then
         (funcall then)))))
