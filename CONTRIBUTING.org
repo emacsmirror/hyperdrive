@@ -56,17 +56,19 @@ These checklists should be followed when releasing new versions:
    In ~stable~ branch:
 
    1. [ ] Update package main file header version (increment bugfix number (i.e. the third number), adding ~-pre~ suffix).
-   2. [ ] Commit fixes to code.
-   3. [ ] Commit update to ~CHANGELOG~.
-   4. [ ] Rebuild manual (see [[*Rebuilding the ~texi~ manual]]).
-   5. [ ] Commit manual.
+   2. [ ] Update ~CHANGELOG~ (without release date and with ~-pre~ suffix).
+   3. [ ] Rebuild manual (see [[*Rebuilding the ~texi~ manual]]).
+   4. [ ] Commit changes.
+   5. [ ] Commit code/doc fixes and ~CHANGELOG~ updates.
    6. [ ] Update package main file header version (removing ~-pre~ suffix).
-   7. [ ] Commit changes.
-   8. [ ] Make new git tag for new release.
-   9. [ ] Push ~stable~ branch to remote.
-   10. [ ] Merge ~stable~ branch back to ~master~.
-   11. [ ] Push ~master~ branch to remote.
-   12. [ ] Push git tags.
+   7. [ ] Update ~CHANGELOG~ (with release date and version).
+   8. [ ] Rebuild manual (see [[*Rebuilding the ~texi~ manual]]).
+   9. [ ] Commit changes.
+   10. [ ] Make new git tag for new release.
+   11. [ ] Push ~stable~ branch to remote.
+   12. [ ] Merge ~stable~ branch back to ~master~.
+   13. [ ] Push ~master~ branch to remote.
+   14. [ ] Push git tags.
 
 * Version number locations
 
