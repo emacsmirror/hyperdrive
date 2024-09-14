@@ -145,7 +145,7 @@ which see."
   ;; NOTE: Demote errors to continue execution in case the gateway is
   ;; stopped/stopping.  Don't pass FORMAT to `with-demoted-errors' since the
   ;; errors `h/stop' may signal are already prefixed with "Hyperdrive".
-  (with-demoted-errors (h/stop))
+  (with-demoted-errors "Hyperdrive: %S" (h/stop))
   (with-timeout (10 (h/error "Timed out waiting for gateway to stop"))
     (cl-loop while (h/gateway-live-p)
              do (sleep-for 0.2)))
