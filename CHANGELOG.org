@@ -6,7 +6,9 @@ This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioni
 
 * 0.4.2-pre
 
-Nothing yet...
+** Fixes
+
+- Set major mode in hyperdrive files even before it is saved.
 
 * 0.4.1 [2024-09-13 Fri]
 
