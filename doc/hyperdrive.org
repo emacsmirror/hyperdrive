@@ -120,15 +120,18 @@ Run ~M-x hyperdrive-install~ to download and install the gateway program
 ** Menu bar support
 #+findex: menu-bar-mode
 
-If you enabled ~hyperdrive-menu-bar-mode~, either in your configuration
-(see [[*Example configuration]]) or with ~M-x hyperdrive-menu-bar-mode~, the
-"Hyperdrive" menu should appear after the "Tools" menu at the top of
-the screen.  If you don't see the menu bar, please double check that
-~menu-bar-mode~ is enabled (it is enabled by default).
+If you enable ~hyperdrive-menu-bar-mode~, either in your configuration
+(see [[*Example configuration]]) or with ~M-x hyperdrive-menu-bar-mode~,
+the "Hyperdrive" menu should appear after the "Tools" menu at the top
+of the screen.  If you don't see the menu bar, please double check
+that ~menu-bar-mode~ is enabled (it is enabled by default).
 
 - Command: hyperdrive-menu-bar-mode ::
 
   Enable the "Hyperdrive" menu bar.
+
+If you have disabled ~menu-bar-mode~, you can still use the hyperdrive
+menu bar by pressing ~C-mouse-3~ in a hyperdrive file or directory.
 
 ** Hyperdrive menu command
 
@@ -989,7 +992,7 @@ Since only the current version of a hyperdrive file can be updated,
 is specified in a hyper URL.
 
 **** Partial version data
-
+# TODO: Fixup documentation
 Because hyperdrives are sparsely replicated (see [[*Sparse replication]]),
 ~hyperdrive.el~ might not know the full version history of a file.  When
 the gateway (see [[*hyper-gateway-ushin]]) loads a file from the network, it

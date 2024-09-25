@@ -333,15 +333,18 @@ Cancel installation in progress.
 
 @findex menu-bar-mode
 
-If you enabled @code{hyperdrive-menu-bar-mode}, either in your configuration
-(see @ref{Example configuration}) or with @code{M-x hyperdrive-menu-bar-mode}, the
-``Hyperdrive'' menu should appear after the ``Tools'' menu at the top of
-the screen.  If you don't see the menu bar, please double check that
-@code{menu-bar-mode} is enabled (it is enabled by default).
+If you enable @code{hyperdrive-menu-bar-mode}, either in your configuration
+(see @ref{Example configuration}) or with @code{M-x hyperdrive-menu-bar-mode},
+the ``Hyperdrive'' menu should appear after the ``Tools'' menu at the top
+of the screen.  If you don't see the menu bar, please double check
+that @code{menu-bar-mode} is enabled (it is enabled by default).
 
 @deffn Command hyperdrive-menu-bar-mode
 Enable the ``Hyperdrive'' menu bar.
 @end deffn
+
+If you have disabled @code{menu-bar-mode}, you can still use the hyperdrive
+menu bar by pressing @code{C-mouse-3} in a hyperdrive file or directory.
 
 @node Hyperdrive menu command
 @section Hyperdrive menu command
