@@ -4,7 +4,7 @@
 All notable changes to [[https://ushin.org/hyperdrive/hyperdrive-manual.html][hyperdrive.el]] will be documented in this file.
 This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
-* 0.4.2-pre
+* 0.4.2 [2024-09-24 Tue]
 
 ** Fixes
 
