@@ -568,12 +568,7 @@ For non-interactive use, see `hyperdrive-write'."
                 (with-current-buffer orig-buffer
                   (unless h/mode
                     (h//clean-buffer)
-                    (when (eq 'unknown (h/safe-p hyperdrive))
-                      (call-interactively #'h/mark-as-safe))
-                    ;; Check safe-p again after potential call to `h/mark-as-safe'.
-                    (when (eq t (h/safe-p hyperdrive))
-                      (let ((buffer-file-name (he/name entry)))
-                        (set-auto-mode t)))
+                    (h//set-auto-mode)
                     (h/mode))
                   (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified

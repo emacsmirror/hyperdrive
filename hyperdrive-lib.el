@@ -1430,12 +1430,7 @@ If then, then call THEN with no arguments.  Default handler."
                 (or (not (h/writablep hyperdrive)) version))
           (set-buffer-modified-p nil)
           (set-visited-file-modtime (current-time))))
-      (when (eq 'unknown (h/safe-p hyperdrive))
-        (call-interactively #'h/mark-as-safe))
-      ;; Check safe-p again after potential call to `h/mark-as-safe'.
-      (when (eq t (h/safe-p hyperdrive))
-        (let ((buffer-file-name (he/name entry)))
-          (set-auto-mode t)))
+      (h//set-auto-mode)
       (when target
         (with-demoted-errors "Hyperdrive: %S"
           (pcase major-mode
@@ -1768,6 +1763,17 @@ When BUFFER is nil, act on current buffer."
     (let ((inhibit-read-only t))
       (delete-all-overlays)
       (set-text-properties (point-min) (point-max) nil))))
+
+(defun h//set-auto-mode ()
+  "Set major mode according to file extension, prompting for safety."
+  (let ((entry (h//context-entry))
+        (hyperdrive (h//context-hyperdrive)))
+    (when (eq 'unknown (h/safe-p hyperdrive))
+      (call-interactively #'h/mark-as-safe))
+    ;; Check safe-p again after potential call to `h/mark-as-safe'.
+    (when (eq t (h/safe-p hyperdrive))
+      (let ((buffer-file-name (he/name entry)))
+        (set-auto-mode t)))))
 
 (defun he/equal-p (a b &optional any-version-p)
   "Return non-nil if hyperdrive entries A and B are equal.
