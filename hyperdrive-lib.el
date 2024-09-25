@@ -731,7 +731,8 @@ echo area when the request for the file is made."
                            (h/message "Entry does not exist!  %s"
                                       (h//format-entry entry)))
                        ;; Make and switch to new buffer.
-                       (switch-to-buffer (h//get-buffer-create entry))))
+                       (switch-to-buffer (h//get-buffer-create entry))
+                       (h//set-auto-mode)))
                     (t
                      ;; Hyperdrive entry is not writable: prompt for action.
                      (not-found-action))))
