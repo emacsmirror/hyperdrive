@@ -69,47 +69,48 @@ will implicitly guess the range."
               ;; TODO: Get latest-version from gateway and persist drive
               (funcall then)))))
 
-(cl-defun h/history-get (entry &key start end then)
-  "Get file history for ENTRY then call THEN with a list of entries.
+(cl-defun h/history-get (entry &key start end)
+  "Return list of file history entries for ENTRY.
 START and END may be numbers specifying the history range to get
 from the gateway.  If START and/or END are omitted, the gateway
 will implicitly guess the range."
   (declare (indent defun))
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               ((cl-struct hyperdrive public-key latest-version) hyperdrive))
-    (h/api 'get (h/history-url entry start end)
-      :as 'response
-      :else (lambda (err)
-              (h/error "Unable to get history for `%s': %S" (he/url entry) err))
-      :then (lambda (response)
-              (pcase-let (((cl-struct plz-response body headers) response)
-                          (history-entries))
-                (pcase-dolist ((map exists blockLengthDownloaded version value)
-                               (json-parse-string
-                                body :object-type 'alist :array-type 'list
-                                :false-object nil :null-object nil))
-                  (let ((history-entry (he/create :hyperdrive hyperdrive
-                                                  :path path :version version)))
-                    (setf (he/size history-entry)
-                          (map-elt (map-elt value 'blob) 'byteLength))
-                    (setf (map-elt (he/etc history-entry) 'block-length)
-                          (map-elt (map-elt value 'blob) 'blockLength))
-                    (setf (map-elt (he/etc history-entry) 'block-length-downloaded)
-                          blockLengthDownloaded)
-                    (when-let ((mtime
-                                (map-elt (map-elt value 'metadata) 'mtime)))
-                      (setf (he/mtime history-entry)
-                            (seconds-to-time (/ mtime 1000.0))))
-                    (setf (map-elt (he/etc history-entry) 'range-end)
-                          (if-let ((next-entry (car history-entries)))
-                              (1- (he/version next-entry))
-                            latest-version))
-                    (setf (map-elt (he/etc history-entry) 'existsp)
-                          (pcase exists
-                            ("unknown" 'unknown)
-                            (_ exists)))
-                    (push history-entry history-entries)))
-                (funcall then history-entries))))))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive path) entry)
+       ((cl-struct hyperdrive public-key latest-version) hyperdrive)
+       ((cl-struct plz-response body headers)
+        (condition-case err
+            (h/api 'get (h/history-url entry start end) :as 'response)
+          (err (h/error "Unable to get history for `%s': %S" (he/url entry)
+                        err))))
+       (history-entries))
+    (pcase-dolist ((map exists blockLengthDownloaded version value)
+                   (json-parse-string
+                    body :object-type 'alist :array-type 'list
+                    :false-object nil :null-object nil))
+      (let ((history-entry (he/create :hyperdrive hyperdrive
+                                      :path path :version version)))
+        (setf (he/size history-entry)
+              (map-elt (map-elt value 'blob) 'byteLength))
+        (setf (map-elt (he/etc history-entry) 'block-length)
+              (map-elt (map-elt value 'blob) 'blockLength))
+        (setf (map-elt (he/etc history-entry) 'block-length-downloaded)
+              blockLengthDownloaded)
+        (when-let ((mtime
+                    (map-elt (map-elt value 'metadata) 'mtime)))
+          (setf (he/mtime history-entry)
+                (seconds-to-time (/ mtime 1000.0))))
+        (setf (map-elt (he/etc history-entry) 'range-end)
+              (if-let ((next-entry (car history-entries)))
+                  (1- (he/version next-entry))
+                latest-version))
+        (setf (map-elt (he/etc history-entry) 'existsp)
+              (pcase exists
+                ("unknown" 'unknown)
+                (_ exists)))
+        (push history-entry history-entries)))
+    ;; TODO: Get latest-version from gateway and persist drive
+    history-entries))
 
 (defun h/history-find-buffer-visiting (entry)
   "Return a buffer showing ENTRY's history, or nil if none exists."
@@ -284,26 +285,14 @@ prefix argument \\[universal-argument], prompt for ENTRY."
         (setq-local h/history-current-entry entry)
         (setf ewoc h/ewoc) ; Bind this for the he/fill lambda.
         (ewoc-filter h/ewoc #'ignore)
-        (erase-buffer)
-        ;; TODO: Close <https://todo.sr.ht/~ushin/ushin/204> if not relevant.
-        (ewoc-set-hf h/ewoc header "Loading..."))
+        (erase-buffer))
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
       (display-buffer (current-buffer) h/history-display-buffer-action)
-      ;; (set-buffer-modified-p nil)
-      (h/history-get entry :then
-        (lambda (history-entries)
-          (dolist (history-entry history-entries)
-            (ewoc-enter-first ewoc history-entry))
-          (ewoc-set-hf ewoc header "")
-          ;; NOTE: Ensure that the buffer's window is selected,
-          ;; if it has one.  (Workaround a possible bug in EWOC.)
-          (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-              (with-selected-window buffer-window
-                (with-silent-modifications (ewoc-refresh h/ewoc))
-                (goto-char (point-min)))
-            (with-current-buffer (ewoc-buffer ewoc)
-              (with-silent-modifications (ewoc-refresh h/ewoc))
-              (goto-char (point-min)))))))))
+      (dolist (history-entry (h/history-get entry))
+        (ewoc-enter-first ewoc history-entry))
+      (ewoc-set-hf ewoc header "")
+      (with-silent-modifications (ewoc-refresh h/ewoc))
+      (goto-char (point-min)))))
 
 (defun h/history-fill-version-ranges (entry)
   "Fill version ranges starting from ENTRY at point."
