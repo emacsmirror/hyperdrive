@@ -276,7 +276,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                 (propertize "Size" 'face 'h/column-header)
                 (string-pad (propertize "Last Modified" 'face 'h/column-header)
                             h/timestamp-width nil t)))
-       (queue) (ewoc) (prev-entry) (prev-point))
+       (prev-entry) (prev-point))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
                                   (h//format-entry entry "[%H] %p")))
@@ -285,14 +285,13 @@ prefix argument \\[universal-argument], prompt for ENTRY."
       (with-silent-modifications
         (h/history-mode)
         (setq-local h/history-current-entry entry)
-        (setf ewoc h/ewoc) ; Bind this for the he/fill lambda.
         (ewoc-filter h/ewoc #'ignore)
         (erase-buffer))
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
       (display-buffer (current-buffer) h/history-display-buffer-action)
       (dolist (history-entry (h/history-get entry))
-        (ewoc-enter-first ewoc history-entry))
-      (ewoc-set-hf ewoc header "")
+        (ewoc-enter-first h/ewoc history-entry))
+      (ewoc-set-hf h/ewoc header "")
       (with-silent-modifications (ewoc-refresh h/ewoc))
       (if-let ((prev-entry)
                (node (h/ewoc-find-node h/ewoc prev-entry
