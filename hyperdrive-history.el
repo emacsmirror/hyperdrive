@@ -234,7 +234,7 @@ All other slots in each ewoc node entry data will be reused."
   "o"   #'h/history-find-file-other-window
   "v"   #'h/history-view-file
   "="   #'h/history-diff
-  "+"   #'h/history-fill-version-ranges
+  "+"   #'h/history-load-range
   "w"   #'h/history-copy-url
   "d"   #'h/history-download-file
   "F"   #'h/history-forget-file
@@ -294,8 +294,8 @@ prefix argument \\[universal-argument], prompt for ENTRY."
       (with-silent-modifications (ewoc-refresh h/ewoc))
       (goto-char (point-min)))))
 
-(defun h/history-fill-version-ranges (entry)
-  "Fill version ranges starting from ENTRY at point."
+(defun h/history-load-range (entry)
+  "Load version history for ENTRY's range at point."
   (interactive (list (h/history-entry-at-point)))
   (pcase-let
       (((cl-struct h/entry version (etc (map range-end))) entry)
@@ -333,7 +333,7 @@ buffer."
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/open entry))
     ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-fill-version-ranges entry))))
+    ('unknown (h/history-load-range entry))))
 
 (defun h/history-find-file-other-window (entry)
   "Visit hyperdrive ENTRY at point in other window.
@@ -358,7 +358,7 @@ buffer."
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/view-file entry))
     ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-fill-version-ranges entry))))
+    ('unknown (h/history-load-range entry))))
 
 (declare-function h/copy-url "hyperdrive")
 (defun h/history-copy-url (entry)
