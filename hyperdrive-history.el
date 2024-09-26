@@ -73,9 +73,7 @@ will implicitly guess the range."
   "Get file history for ENTRY then call THEN with a list of entries.
 START and END may be numbers specifying the history range to get
 from the gateway.  If START and/or END are omitted, the gateway
-will implicitly guess the range.  THEN will be called with ENTRY,
-body parsed as JSON, and the X-HISTORY-EARLIEST-CHECKED-VERSION
-response header."
+will implicitly guess the range."
   (declare (indent defun))
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                ((cl-struct hyperdrive public-key latest-version) hyperdrive))
