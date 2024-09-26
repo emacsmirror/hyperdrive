@@ -276,10 +276,12 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                 (propertize "Size" 'face 'h/column-header)
                 (string-pad (propertize "Last Modified" 'face 'h/column-header)
                             h/timestamp-width nil t)))
-       (queue) (ewoc))
+       (queue) (ewoc) (prev-entry) (prev-point))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
                                   (h//format-entry entry "[%H] %p")))
+      (setf prev-entry (h/history-entry-at-point))
+      (setf prev-point (point))
       (with-silent-modifications
         (h/history-mode)
         (setq-local h/history-current-entry entry)
@@ -292,7 +294,11 @@ prefix argument \\[universal-argument], prompt for ENTRY."
         (ewoc-enter-first ewoc history-entry))
       (ewoc-set-hf ewoc header "")
       (with-silent-modifications (ewoc-refresh h/ewoc))
-      (goto-char (point-min)))))
+      (if-let ((prev-entry)
+               (node (h/ewoc-find-node h/ewoc prev-entry
+                       :predicate #'he/equal-p)))
+          (goto-char (ewoc-location node))
+        (goto-char prev-point)))))
 
 (defun h/history-load-range (entry)
   "Load version history for ENTRY's range at point."
