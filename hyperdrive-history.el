@@ -47,15 +47,18 @@
                ((cl-struct hyperdrive public-key latest-version) hyperdrive))
     (format "hyper://%s/$/history/%s..%s%s" public-key start end path)))
 
-(cl-defun h/history-get (entry &key then)
+(cl-defun h/history-get (entry &key start end then)
   "Get file history for ENTRY then call THEN with a list of entries.
-
-THEN will be called with ENTRY, body parsed as JSON, and the
-X-HISTORY-EARLIEST-CHECKED-VERSION response header."
+START and END may be numbers specifying the history range to get
+from the gateway.  If START and/or END are omitted, the gateway
+will implicitly guess the range.  THEN will be called with ENTRY,
+body parsed as JSON, and the X-HISTORY-EARLIEST-CHECKED-VERSION
+response header."
   (declare (indent defun))
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                ((cl-struct hyperdrive public-key latest-version) hyperdrive))
-    (h/api 'get (h/history-url entry 1 latest-version) :as 'response
+    (h/api 'get (h/history-url entry start end)
+      :as 'response
       :else (lambda (err)
               (h/error "Unable to get history for `%s': %S" (he/url entry) err))
       :then (lambda (response)
