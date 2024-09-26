@@ -41,11 +41,11 @@
 
 ;;;; Functions
 
-(defun h/history-url (entry start end)
+(cl-defun h/history-url (entry &optional (start "") (end ""))
   "Return formatted history URL for ENTRY, START, and END."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
                ((cl-struct hyperdrive public-key latest-version) hyperdrive))
-    (format "hyper://%s/$/history/%d..%d%s" public-key start end path)))
+    (format "hyper://%s/$/history/%s..%s%s" public-key start end path)))
 
 (cl-defun h/history-get (entry &key then)
   "Get file history for ENTRY then call THEN with a list of entries.
