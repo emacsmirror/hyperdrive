@@ -297,19 +297,13 @@ prefix argument \\[universal-argument], prompt for ENTRY."
 (defun h/history-fill-version-ranges (entry)
   "Fill version ranges starting from ENTRY at point."
   (interactive (list (h/history-entry-at-point)))
-  (pcase-let* (((cl-struct h/entry hyperdrive etc) entry)
-               ((cl-struct hyperdrive latest-version) hyperdrive)
-               ((map range-end) etc)
-               (range-end-entry (compat-call copy-tree entry t))
-               (ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
-    (setf (he/version range-end-entry) (or range-end latest-version))
-    (overlay-put ov 'display "Loading")
-    (h/fill-version-ranges range-end-entry
-      :finally (lambda ()
-                 ;; TODO: Should we open the history buffer for entry
-                 ;; or range-end-entry or...?
-                 (delete-overlay ov)
-                 (h/history entry)))))
+  (pcase-let
+      (((cl-struct h/entry version (etc (map range-end))) entry)
+       (current-entry h/history-current-entry))
+    (overlay-put (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))
+                 'display "Loading")
+    (h/history-load entry :start version :end range-end
+      :then (lambda () (h/history current-entry)))))
 
 (declare-function h/diff-file-entries "hyperdrive-diff")
 (defun h/history-diff (old-entry new-entry)
