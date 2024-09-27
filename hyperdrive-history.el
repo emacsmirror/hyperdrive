@@ -57,18 +57,13 @@ START and END may be numbers specifying the history range to get
 from the gateway.  If START and/or END are omitted, the gateway
 will implicitly guess the range."
   (declare (indent defun))
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               ((cl-struct hyperdrive public-key latest-version) hyperdrive)
-               (earliest-start (- (or end latest-version) h/history-load-limit))
-               (start (if (>= start earliest-start) start earliest-start)))
-    (h/api 'get (h/history-url entry start end) :as 'buffer
-      :headers `(("X-History-Load-Only" . t))
-      :else (lambda (err)
-              (h/error "Unable to get history for `%s': %S" (he/url entry) err))
-      :then (lambda (_buffer)
-              ;; TODO: Get latest-version from gateway and persist drive
-              (funcall then)))))
-
+  (h/api 'get (h/history-url entry start end) :as 'buffer
+    :headers `(("X-History-Load-Only" . t))
+    :else (lambda (err)
+            (h/error "Unable to load history for `%s': %S" (he/url entry) err))
+    :then (lambda (_buffer)
+            ;; TODO: Get latest-version from gateway and persist drive
+            (funcall then))))
 (cl-defun h/history-get (entry &key start end)
   "Return list of file history entries for ENTRY.
 START and END may be numbers specifying the history range to get
