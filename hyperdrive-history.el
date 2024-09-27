@@ -41,41 +41,21 @@
 
 ;;;; Functions
 
-(cl-defun h/history-url (entry &optional (start "") (end ""))
+(cl-defun h/history-url (entry)
   "Return formatted history URL for ENTRY, START, and END."
   (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               ((cl-struct hyperdrive public-key latest-version) hyperdrive))
-    (format "hyper://%s/$/history/%s..%s%s" public-key start end path)))
+               ((cl-struct hyperdrive public-key) hyperdrive))
+    (format "hyper://%s/$/history%s" public-key path)))
 
-(defcustom h/history-load-limit 100
-  "Number of entry versions to load at once.
-Affects `hyperdrive-history-load', which see.")
-
-(cl-defun h/history-load-range (entry &key start end then)
-  "Load file history for ENTRY then call THEN with no arguments.
-START and END may be numbers specifying the history range to get
-from the gateway.  If START and/or END are omitted, the gateway
-will implicitly guess the range."
-  (declare (indent defun))
-  (h/api 'get (h/history-url entry start end) :as 'buffer
-    :headers `(("X-History-Load-Only" . t))
-    :else (lambda (err)
-            (h/error "Unable to load history for `%s': %S" (he/url entry) err))
-    :then (lambda (_buffer)
-            ;; TODO: Get latest-version from gateway and persist drive
-            (funcall then))))
-(cl-defun h/history-get (entry &key start end)
-  "Return list of file history entries for ENTRY.
-START and END may be numbers specifying the history range to get
-from the gateway.  If START and/or END are omitted, the gateway
-will implicitly guess the range."
+(cl-defun h/history-get (entry)
+  "Return list of file history entries for ENTRY."
   (declare (indent defun))
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive path) entry)
        ((cl-struct hyperdrive public-key latest-version) hyperdrive)
        ((cl-struct plz-response body headers)
         (condition-case err
-            (h/api 'get (h/history-url entry start end) :as 'response)
+            (h/api 'get (h/history-url entry) :as 'response)
           (err (h/error "Unable to get history for `%s': %S" (he/url entry)
                         err))))
        (history-entries))
@@ -303,18 +283,21 @@ prefix argument \\[universal-argument], prompt for ENTRY."
         (goto-char prev-point)))))
 
 (defun h/history-load (entry)
-  "Load version history for ENTRY's range at point."
-  (interactive (list (h/history-entry-at-point)))
-  (pcase-let
-      (((cl-struct h/entry version (etc (map range-end existsp))) entry)
-       (current-entry h/history-current-entry))
-    (pcase existsp
-      ('t (h/user-error "Entry already known to exist."))
-      ('nil (h/user-error "Entry already known not to exist")))
-    (overlay-put (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))
-                 'display "Loading")
-    (h/history-load-range entry :start version :end range-end
-      :then (lambda () (h/history current-entry)))))
+  "Load version history for ENTRY then call THEN with no arguments."
+  (interactive (list h/history-current-entry))
+  (ewoc-set-hf h/ewoc
+               (format "%s\n%s"
+                       (car (ewoc-get-hf h/ewoc))
+                       (propertize "Loading..." 'face 'h/history-unknown))
+               "")
+  (h/api 'get (h/history-url entry) :as 'buffer
+    :headers `(("X-History-Load-Only" . t))
+    :else (lambda (err)
+            (h/error "Unable to load history for `%s': %S" (he/url entry) err))
+    :then (lambda (_buffer)
+            ;; TODO: Get latest-version from gateway and persist drive
+            ;; TODO: Put this in a default callback argument.
+            (h/history entry))))
 
 (declare-function h/diff-file-entries "hyperdrive-diff")
 (defun h/history-diff (old-entry new-entry)
