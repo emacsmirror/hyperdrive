@@ -329,7 +329,7 @@ Interactively, opens file or directory at point in
 
 (defun h/dir-history (entry)
   "Display version history for ENTRY at point."
-  (interactive (list (h/dir--entry-at-point)))
+  (interactive (list (h/dir--entry-at-point)) h/dir-mode)
   (h/history entry))
 
 (defun h/create-directory-no-op ()
