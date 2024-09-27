@@ -51,7 +51,7 @@
   "Number of entry versions to load at once.
 Affects `hyperdrive-history-load', which see.")
 
-(cl-defun h/history-load (entry &key start end then)
+(cl-defun h/history-load-range (entry &key start end then)
   "Load file history for ENTRY then call THEN with no arguments.
 START and END may be numbers specifying the history range to get
 from the gateway.  If START and/or END are omitted, the gateway
@@ -242,7 +242,7 @@ All other slots in each ewoc node entry data will be reused."
   "o"   #'h/history-find-file-other-window
   "v"   #'h/history-view-file
   "="   #'h/history-diff
-  "+"   #'h/history-load-range
+  "+"   #'h/history-load
   "w"   #'h/history-copy-url
   "d"   #'h/history-download-file
   "F"   #'h/history-forget-file
@@ -307,7 +307,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
           (goto-char (ewoc-location node))
         (goto-char prev-point)))))
 
-(defun h/history-load-range (entry)
+(defun h/history-load (entry)
   "Load version history for ENTRY's range at point."
   (interactive (list (h/history-entry-at-point)))
   (pcase-let
@@ -318,7 +318,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
       ('nil (h/user-error "Entry already known not to exist")))
     (overlay-put (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))
                  'display "Loading")
-    (h/history-load entry :start version :end range-end
+    (h/history-load-range entry :start version :end range-end
       :then (lambda () (h/history current-entry)))))
 
 (declare-function h/diff-file-entries "hyperdrive-diff")
@@ -349,7 +349,7 @@ buffer."
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/open entry))
     ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-load-range entry))))
+    ('unknown (h/history-load entry))))
 
 (defun h/history-find-file-other-window (entry)
   "Visit hyperdrive ENTRY at point in other window.
@@ -374,7 +374,7 @@ buffer."
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/view-file entry))
     ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-load-range entry))))
+    ('unknown (h/history-load entry))))
 
 (declare-function h/copy-url "hyperdrive")
 (defun h/history-copy-url (entry)
