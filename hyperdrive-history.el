@@ -284,11 +284,11 @@ prefix argument \\[universal-argument], prompt for ENTRY."
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
                                   (h//format-entry entry "[%H] %p")))
-      (setf prev-entry (h/history-entry-at-point))
+      (h/history-mode)
+      (setq-local h/history-current-entry entry)
+      (setf prev-entry (h/history-entry-at-point 'no-error))
       (setf prev-point (point))
       (with-silent-modifications
-        (h/history-mode)
-        (setq-local h/history-current-entry entry)
         (ewoc-filter h/ewoc #'ignore)
         (erase-buffer))
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
