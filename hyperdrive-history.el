@@ -181,8 +181,9 @@ ENTRY's ETC slot must have `existsp' and `range-end' keys."
 (defun h/history-entry-at-point (&optional no-error)
   "Return entry at point.
 With point on header, return an entry whose RANGE-END and version
-are nil.  If history ewoc is empty, or point is below last entry
-or on column headers, signal error.  With non-nil NO-ERROR,
+are nil and whose EXISTSP value matches that of the first entry
+in the ewoc.  If history ewoc is empty, or point is below last
+entry or on column headers, signal error.  With non-nil NO-ERROR,
 return nil in that case."
   (let ((current-line (line-number-at-pos))
         (last-entry (ewoc-nth h/ewoc -1)))
@@ -190,6 +191,9 @@ return nil in that case."
            (let ((copy-entry (compat-call copy-tree h/history-current-entry t)))
              (setf (map-elt (he/etc copy-entry) 'range-end) nil)
              (setf (he/version copy-entry) nil)
+             (when-let ((first-node (ewoc-nth h/ewoc 0)))
+               (setf (map-elt (he/etc copy-entry) 'existsp)
+                     (map-elt (he/etc (ewoc-data first-node)) 'existsp)))
              copy-entry))
           ((or (not last-entry)
                (> current-line (line-number-at-pos (ewoc-location last-entry)))
