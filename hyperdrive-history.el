@@ -291,14 +291,24 @@ prefix argument \\[universal-argument], prompt for ENTRY."
                        (car (ewoc-get-hf h/ewoc))
                        (propertize "Loading..." 'face 'h/history-unknown))
                "")
-  (h/api 'get (h/history-url entry) :as 'buffer
+  (h/api 'get (h/history-url entry) :as 'response
     :headers `(("X-History-Load-Only" . t))
     :else (lambda (err)
             (h/error "Unable to load history for `%s': %S" (he/url entry) err))
-    :then (lambda (_buffer)
-            ;; TODO: Get latest-version from gateway and persist drive
-            ;; TODO: Put this in a default callback argument.
-            (h/history entry))))
+    :then
+    (pcase-lambda ((cl-struct plz-response (headers (map x-drive-size
+                                                         x-drive-version))))
+      ;; TODO: Put this in a default callback argument.
+      (when x-drive-size
+        (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
+              (cl-parse-integer x-drive-size)))
+      (when x-drive-version
+        (setf (h/latest-version (he/hyperdrive entry))
+              (string-to-number x-drive-version)))
+      ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
+      ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
+      (h/persist (he/hyperdrive entry))
+      (h/history entry))))
 
 (declare-function h/diff-file-entries "hyperdrive-diff")
 (defun h/history-diff (old-entry new-entry)
