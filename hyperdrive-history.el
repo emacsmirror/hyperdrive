@@ -284,7 +284,8 @@ prefix argument \\[universal-argument], prompt for ENTRY."
         (goto-char prev-point)))))
 
 (defun h/history-load (entry)
-  "Load version history for ENTRY then call THEN with no arguments."
+  "Load version history for ENTRY.
+Once history loads, refresh the history buffer."
   (interactive (list h/history-current-entry))
   (ewoc-set-hf h/ewoc
                (format "%s\n%s"
@@ -298,7 +299,6 @@ prefix argument \\[universal-argument], prompt for ENTRY."
     :then
     (pcase-lambda ((cl-struct plz-response (headers (map x-drive-size
                                                          x-drive-version))))
-      ;; TODO: Put this in a default callback argument.
       (when x-drive-size
         (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
               (cl-parse-integer x-drive-size)))
