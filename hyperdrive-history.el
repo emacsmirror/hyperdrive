@@ -180,21 +180,23 @@ ENTRY's ETC slot must have `existsp' and `range-end' keys."
 
 (defun h/history-entry-at-point ()
   "Return entry at point.
-With point below last entry, signals a user-error.  With point on
-header, returns an entry whose RANGE-END and version are nil."
+With point on header, return an entry whose RANGE-END and version
+are nil.  If history ewoc is empty, or point is below last entry
+or on column headers, signal error."
   (let ((current-line (line-number-at-pos))
-        (last-line (line-number-at-pos (ewoc-location (ewoc-nth h/ewoc -1))))
-        (entry-at-point (ewoc-data (ewoc-locate h/ewoc))))
+        (last-entry (ewoc-nth h/ewoc -1)))
     (cond ((= 1 current-line) ; Point on header: return version-less entry
-           (let ((copy-entry (compat-call copy-tree entry-at-point t)))
+           (let ((copy-entry (compat-call copy-tree h/history-current-entry t)))
              (setf (map-elt (he/etc copy-entry) 'range-end) nil)
              (setf (he/version copy-entry) nil)
              copy-entry))
-          ((or (> current-line last-line) (= 2 current-line))
+          ((or (not last-entry)
+               (> current-line (line-number-at-pos (ewoc-location last-entry)))
+               (= 2 current-line))
            ;; Point is below the last entry or on column headers: signal error.
            (h/user-error "No file on this line"))
           (t ; Point on a file entry: return its entry.
-           entry-at-point))))
+           (ewoc-data (ewoc-locate h/ewoc))))))
 
 (defun h/history-revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-history-mode' buffer."
