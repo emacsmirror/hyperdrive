@@ -178,11 +178,12 @@ ENTRY's ETC slot must have `existsp' and `range-end' keys."
      (propertize (or timestamp "")
                  'face 'h/timestamp))))
 
-(defun h/history-entry-at-point ()
+(defun h/history-entry-at-point (&optional no-error)
   "Return entry at point.
 With point on header, return an entry whose RANGE-END and version
 are nil.  If history ewoc is empty, or point is below last entry
-or on column headers, signal error."
+or on column headers, signal error.  With non-nil NO-ERROR,
+return nil in that case."
   (let ((current-line (line-number-at-pos))
         (last-entry (ewoc-nth h/ewoc -1)))
     (cond ((= 1 current-line) ; Point on header: return version-less entry
@@ -194,7 +195,8 @@ or on column headers, signal error."
                (> current-line (line-number-at-pos (ewoc-location last-entry)))
                (= 2 current-line))
            ;; Point is below the last entry or on column headers: signal error.
-           (h/user-error "No file on this line"))
+           (unless no-error
+             (h/user-error "No version on this line")))
           (t ; Point on a file entry: return its entry.
            (ewoc-data (ewoc-locate h/ewoc))))))
 
