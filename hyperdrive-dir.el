@@ -224,21 +224,20 @@ To be used as the pretty-printer for `ewoc-create'."
 
 (defun h/dir--entry-at-point (&optional no-error)
   "Return entry at point.
-With point on header, returns directory entry.
-With point below last entry or on column headers, signal error.
-With non-nil NO-ERROR, return nil in that case."
+With point on header, returns directory entry.  If directory ewoc
+is empty, or point is below last entry or on column headers,
+signal error.  With non-nil NO-ERROR, return nil in that case."
   (let ((current-line (line-number-at-pos))
         (last-entry (ewoc-nth h/ewoc -1)))
-    (cond ((or (not last-entry) (= 1 current-line))
-           ;; Hyperdrive is empty or point is on header line
+    (cond ((= 1 current-line) ; Point is on header line.
            h/current-entry)
-          ((or (> current-line (line-number-at-pos (ewoc-location last-entry)))
+          ((or (not last-entry)
+               (> current-line (line-number-at-pos (ewoc-location last-entry)))
                (= 2 current-line))
-           ;; Point is below the last entry or on column headers
+           ;; Ewoc is empty, or point is below last entry or on column headers.
            (unless no-error
              (h/user-error "No file/directory at point")))
-          (t
-           ;; Point on a file entry: return its entry.
+          (t ; Point on a file entry: return its entry.
            (ewoc-data (ewoc-locate h/ewoc))))))
 
 ;;;; Mode
