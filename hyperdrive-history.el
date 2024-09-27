@@ -303,8 +303,11 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   "Load version history for ENTRY's range at point."
   (interactive (list (h/history-entry-at-point)))
   (pcase-let
-      (((cl-struct h/entry version (etc (map range-end))) entry)
+      (((cl-struct h/entry version (etc (map range-end existsp))) entry)
        (current-entry h/history-current-entry))
+    (pcase existsp
+      ('t (h/user-error "Entry already known to exist."))
+      ('nil (h/user-error "Entry already known not to exist")))
     (overlay-put (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))
                  'display "Loading")
     (h/history-load entry :start version :end range-end
