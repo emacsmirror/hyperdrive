@@ -284,31 +284,14 @@ prefix argument \\[universal-argument], prompt for ENTRY."
         (goto-char prev-point)))))
 
 (defun h/history-load (entry)
-  "Load version history for ENTRY.
-Once history loads, refresh the history buffer."
+  "Load version history for ENTRY, then refresh history buffer."
   (interactive (list h/history-current-entry))
   (ewoc-set-hf h/ewoc
                (format "%s\n%s"
                        (car (ewoc-get-hf h/ewoc))
                        (propertize "Loading..." 'face 'h/history-unknown))
                "")
-  (h/api 'get (h/history-url entry) :as 'response
-    :headers `(("X-History-Load-Only" . t))
-    :else (lambda (err)
-            (h/error "Unable to load history for `%s': %S" (he/url entry) err))
-    :then
-    (pcase-lambda ((cl-struct plz-response (headers (map x-drive-size
-                                                         x-drive-version))))
-      (when x-drive-size
-        (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
-              (cl-parse-integer x-drive-size)))
-      (when x-drive-version
-        (setf (h/latest-version (he/hyperdrive entry))
-              (string-to-number x-drive-version)))
-      ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
-      ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
-      (h/persist (he/hyperdrive entry))
-      (h/history entry))))
+  (h/fully-replicate entry :then #'h/history))
 
 (declare-function h/diff-file-entries "hyperdrive-diff")
 (defun h/history-diff (old-entry new-entry)
