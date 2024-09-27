@@ -52,8 +52,8 @@
   (declare (indent defun))
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive path) entry)
-       ((cl-struct hyperdrive public-key latest-version) hyperdrive)
-       ((cl-struct plz-response body headers)
+       ((cl-struct hyperdrive latest-version) hyperdrive)
+       ((cl-struct plz-response body)
         (condition-case err
             (h/api 'get (h/history-url entry) :as 'response)
           (err (h/error "Unable to get history for `%s': %S" (he/url entry)
