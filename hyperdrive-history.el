@@ -55,6 +55,7 @@
        ((cl-struct hyperdrive latest-version) hyperdrive)
        ((cl-struct plz-response body)
         (condition-case err
+            ;; TODO: When plz adds :as 'response-with-buffer, use that.
             (h/api 'get (h/history-url entry) :as 'response)
           (err (h/error "Unable to get history for `%s': %S" (he/url entry)
                         err))))
