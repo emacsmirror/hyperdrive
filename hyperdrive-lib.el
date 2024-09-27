@@ -1190,7 +1190,7 @@ FORCE-PROMPT, prompt for entry."
                  (h//context-hyperdrive :force-prompt force-prompt)
                  :read-version t :latest-version latest-version)))
     (cond (force-prompt (read-entry))
-          ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
+          ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point 'no-error))
           (t (or h/current-entry (read-entry))))))
 
 (cl-defun h//context-hyperdrive (&key predicate force-prompt)
@@ -1334,7 +1334,7 @@ is passed to `read-string' as its DEFAULT-VALUE argument."
   "Return URL trimmed of whitespace.
 Prompts with PROMPT.  Defaults to current entry if it exists."
   (let* ((default-entry
-          (cond ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point))
+          (cond ((derived-mode-p 'h/dir-mode) (h/dir--entry-at-point 'no-error))
                 (h/current-entry h/current-entry)))
          (default-url (and default-entry (he/url default-entry))))
     (string-trim (read-string (format-prompt prompt default-url)

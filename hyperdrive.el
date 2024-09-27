@@ -1249,14 +1249,14 @@ The return value of this function is the retrieval buffer."
                  (and (not version) (h/writablep hyperdrive)))
        :help "Delete current file"])
      ("Selected"
-      :label (let ((entry-at-point (h/dir--entry-at-point)))
+      :label (let ((entry-at-point (h/dir--entry-at-point 'no-error)))
                (format-message "Selected %s: `%s'"
                                (if (h//entry-directory-p entry-at-point)
                                    "Directory"
                                  "File")
                                (he/name entry-at-point)))
       :visible (and (eq major-mode 'h/dir-mode)
-                    (h/dir--entry-at-point))
+                    (h/dir--entry-at-point 'no-error))
       ["Open" (lambda ()
                 (interactive)
                 (call-interactively #'h/dir-find-file))
@@ -1264,13 +1264,13 @@ The return value of this function is the retrieval buffer."
       ["View" (lambda ()
                 (interactive)
                 (call-interactively #'h/dir-view-file))
-       :active (and-let* ((entry-at-point (h/dir--entry-at-point)))
+       :active (and-let* ((entry-at-point (h/dir--entry-at-point 'no-error)))
                  (not (h//entry-directory-p entry-at-point)))
        :help "View file at point"]
       ["Download" (lambda ()
                     (interactive)
                     (call-interactively #'h/download))
-       :active (and-let* ((entry-at-point (h/dir--entry-at-point)))
+       :active (and-let* ((entry-at-point (h/dir--entry-at-point 'no-error)))
                  (not (h//entry-directory-p entry-at-point)))
        ;; TODO: Change to "file/directory" when it's possible to download a
        ;; whole directory
@@ -1283,7 +1283,7 @@ The return value of this function is the retrieval buffer."
                   (interactive)
                   (call-interactively #'h/delete))
        :active
-       (let ((selected-entry (h/dir--entry-at-point)))
+       (let ((selected-entry (h/dir--entry-at-point 'no-error)))
          (and (h/writablep
                (he/hyperdrive h/current-entry))
               (not (eq selected-entry h/current-entry))

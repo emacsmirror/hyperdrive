@@ -174,11 +174,11 @@
         :if (lambda ()
               (and (h/menu--scope)
                    (eq major-mode 'h/dir-mode)
-                   (h/dir--entry-at-point)))
+                   (h/dir--entry-at-point 'no-error)))
         :description
         (lambda ()
           (let ((current-entry (h/menu--scope))
-                (selected-entry (h/dir--entry-at-point)))
+                (selected-entry (h/dir--entry-at-point 'no-error)))
             (concat (propertize "Selected: " 'face 'transient-heading)
                     (propertize
                      (or (and (he/equal-p current-entry selected-entry)
@@ -190,12 +190,13 @@
         :pad-keys t
         ("d" "Download" h/download
          :inapt-if (lambda ()
-                     (and-let* ((entry-at-point (h/dir--entry-at-point)))
+                     (and-let* ((entry-at-point
+                                 (h/dir--entry-at-point 'no-error)))
                        (h//entry-directory-p entry-at-point))))
         ("D" "Delete" h/delete
          :inapt-if (lambda ()
                      (let ((current-entry (h/menu--scope))
-                           (selected-entry (h/dir--entry-at-point)))
+                           (selected-entry (h/dir--entry-at-point 'no-error)))
                        (or (not (h/writablep
                                  (he/hyperdrive current-entry)))
                            (eq selected-entry current-entry)
@@ -206,7 +207,8 @@
         ("RET" "Open" h/dir-find-file)
         ("v" "View" h/dir-view-file
          :inapt-if (lambda ()
-                     (and-let* ((entry-at-point (h/dir--entry-at-point)))
+                     (and-let* ((entry-at-point
+                                 (h/dir--entry-at-point 'no-error)))
                        (h//entry-directory-p entry-at-point))))]]
   [["Gateway"
     :description
