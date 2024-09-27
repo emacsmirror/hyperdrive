@@ -34,6 +34,9 @@
 
 (defgroup hyperdrive nil
   "P2P filesystem in Emacs."
+  :link '(info-link :tag "Info Manual" "(hyperdrive)")
+  :link '(url-link :tag "Website" "https://ushin.org/hyperdrive/hyperdrive-manual.html")
+  :link '(emacs-library-link :tag "Library Source" "hyperdrive.el")
   :group 'communication
   :group 'external
   :prefix "hyperdrive-")
