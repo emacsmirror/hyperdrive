@@ -745,6 +745,33 @@ echo area when the request for the file is made."
     (when messagep
       (h/message "Opening <%s>..." (he/url entry)))))
 
+(cl-defun h/fully-replicate (entry &key then)
+  "Fully replicate hyperdrive for ENTRY.
+Then update hyperdrive's size and latest version metadata, then
+call THEN with ENTRY as its sole argument."
+  ;; TODO: For now, this replicates the entire drive, but when
+  ;; hyper-gateway-ushin support replicating only a folder range, this code will
+  ;; change behavior to only replicating the folder range for ENTRY.
+  ;; TODO: For now, the entire db is replicated regardless of version, but the
+  ;; blob store is only replicated for the drive version.
+  (h/api 'get (he/url entry) :as 'response
+    :headers `(("X-Fully-Replicate" . "db"))
+    :else (lambda (err)
+            (h/error "Unable to replicate `%s': %S" (he/url entry) err))
+    :then
+    (pcase-lambda ((cl-struct plz-response (headers (map x-drive-size
+                                                         x-drive-version))))
+      (when x-drive-size
+        (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
+              (cl-parse-integer x-drive-size)))
+      (when x-drive-version
+        (setf (h/latest-version (he/hyperdrive entry))
+              (string-to-number x-drive-version)))
+      ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
+      ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
+      (h/persist (he/hyperdrive entry))
+      (funcall then entry))))
+
 (cl-defun he/fill (entry &key queue (then 'sync) else)
   "Fill ENTRY's metadata and call THEN.
 If THEN is `sync', return the filled entry and ignore ELSE.
