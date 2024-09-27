@@ -6,7 +6,9 @@
 
 * 0.5-pre
 
-Nothing yet...
+** Changes
+
+- Link website, library source, and Info manual in Customize group.
 
 * 0.4.2 [2024-09-24 Tue]
 
