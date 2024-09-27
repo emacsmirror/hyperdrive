@@ -54,7 +54,7 @@ If THEN, call it in the directory buffer with no arguments."
       (with-silent-modifications
         (unless h/ewoc
           (setf h/ewoc (ewoc-create #'h/dir-pp)))
-        (setf prev-entry (h/dir--entry-at-point))
+        (setf prev-entry (h/dir--entry-at-point 'no-error))
         (setf prev-point (point))
         (ewoc-filter h/ewoc #'ignore)
         (ewoc-set-hf h/ewoc header "Loading...")))
@@ -222,10 +222,11 @@ To be used as the pretty-printer for `ewoc-create'."
                         'help-echo (format "Visit this %s in other window"
                                            (if directoryp "directory ""file"))))))
 
-(defun h/dir--entry-at-point ()
+(defun h/dir--entry-at-point (&optional no-error)
   "Return entry at point.
-With point below last entry, returns nil.
-With point on header, returns directory entry."
+With point on header, returns directory entry.
+With point below last entry or on column headers, signal error.
+With non-nil NO-ERROR, return nil in that case."
   (let ((current-line (line-number-at-pos))
         (last-entry (ewoc-nth h/ewoc -1)))
     (cond ((or (not last-entry) (= 1 current-line))
@@ -234,7 +235,8 @@ With point on header, returns directory entry."
           ((or (> current-line (line-number-at-pos (ewoc-location last-entry)))
                (= 2 current-line))
            ;; Point is below the last entry or on column headers
-           nil)
+           (unless no-error
+             (h/user-error "No file/directory at point")))
           (t
            ;; Point on a file entry: return its entry.
            (ewoc-data (ewoc-locate h/ewoc))))))
@@ -296,9 +298,7 @@ With point on header, returns directory entry."
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer.  DISPLAY-BUFFER-ACTION is passed to
 `pop-to-buffer'."
-  (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point")))
-               h/dir-mode)
+  (interactive (list (h/dir--entry-at-point)) h/dir-mode)
   (h/open entry
     :then (lambda ()
             (pop-to-buffer (current-buffer) display-buffer-action))))
@@ -307,9 +307,7 @@ Interactively, visit file or directory at point in
   "Visit hyperdrive ENTRY at point in other window.
 Interactively, visit file or directory at point in
 `hyperdrive-dir' buffer."
-  (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point")))
-               h/dir-mode)
+  (interactive (list (h/dir--entry-at-point)) h/dir-mode)
   (h/dir-find-file entry :display-buffer-action t))
 
 (declare-function h/view-file "hyperdrive")
@@ -317,26 +315,21 @@ Interactively, visit file or directory at point in
   "Open hyperdrive ENTRY at point in `view-mode'.
 Interactively, opens file or directory at point in
 `hyperdrive-dir' buffer."
-  (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point")))
-               h/dir-mode)
+  (interactive (list (h/dir--entry-at-point)) h/dir-mode)
   (h/view-file entry))
 
 (declare-function h/copy-url "hyperdrive")
 
 (defun h/dir-copy-url (entry)
   "Copy URL of ENTRY into the kill ring."
-  (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point")))
-               h/dir-mode)
+  (interactive (list (h/dir--entry-at-point)) h/dir-mode)
   (h/copy-url entry))
 
 (declare-function h/history "hyperdrive-history")
 
 (defun h/dir-history (entry)
   "Display version history for ENTRY at point."
-  (interactive (list (or (h/dir--entry-at-point)
-                         (h/user-error "No file/directory at point"))))
+  (interactive (list (h/dir--entry-at-point)))
   (h/history entry))
 
 (defun h/create-directory-no-op ()
