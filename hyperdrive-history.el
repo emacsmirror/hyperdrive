@@ -285,7 +285,7 @@ prefix argument \\[universal-argument], prompt for ENTRY."
 
 (defun h/history-load (entry)
   "Load version history for ENTRY, then refresh history buffer."
-  (interactive (list h/history-current-entry))
+  (interactive (list h/history-current-entry) h/history-mode)
   (ewoc-set-hf h/ewoc
                (format "%s\n%s"
                        (car (ewoc-get-hf h/ewoc))
