@@ -286,11 +286,13 @@ prefix argument \\[universal-argument], prompt for ENTRY."
 (defun h/history-load (entry)
   "Load version history for ENTRY, then refresh history buffer."
   (interactive (list h/history-current-entry) h/history-mode)
-  (ewoc-set-hf h/ewoc
-               (format "%s\n%s"
-                       (car (ewoc-get-hf h/ewoc))
-                       (propertize "Loading..." 'face 'h/history-unknown))
-               "")
+  ;; HACK: The proper approach might be to use `ewoc-map', but this is simpler:
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward "Unknown" nil t)
+      (let ((ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
+        (overlay-put ov 'display "Loading")
+        (overlay-put ov 'evaporate t))))
   (h/fully-replicate entry :then #'h/history))
 
 (declare-function h/diff-file-entries "hyperdrive-diff")
