@@ -250,17 +250,16 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   ;; TODO: Highlight range for ENTRY
   (when (h//entry-directory-p entry)
     (h/user-error "Directory history not implemented"))
-  (pcase-let*
-      (((cl-struct hyperdrive-entry hyperdrive path) entry)
-       (main-header (h//format-entry entry "[%H] %p"))
-       (header (format
-                "%s\n%7s  %19s  %6s  %s" main-header
-                (propertize "Exists" 'face 'h/column-header)
-                (propertize "Drive Version Range" 'face 'h/column-header)
-                (propertize "Size" 'face 'h/column-header)
-                (string-pad (propertize "Last Modified" 'face 'h/column-header)
-                            h/timestamp-width nil t)))
-       (prev-entry) (prev-point))
+  (let* ((main-header (h//format-entry entry "[%H] %p"))
+         (header
+          (format
+           "%s\n%7s  %19s  %6s  %s" main-header
+           (propertize "Exists" 'face 'h/column-header)
+           (propertize "Drive Version Range" 'face 'h/column-header)
+           (propertize "Size" 'face 'h/column-header)
+           (string-pad (propertize "Last Modified" 'face 'h/column-header)
+                       h/timestamp-width nil t)))
+         (prev-entry) (prev-point))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
                                   (h//format-entry entry "[%H] %p")))
