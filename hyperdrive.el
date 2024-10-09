@@ -537,7 +537,7 @@ For non-interactive use, see `hyperdrive-write'."
                                             (he/path h/current-entry)))
                                    :latest-version t)
                      current-prefix-arg))
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive name) entry)
+  (pcase-let* (((cl-struct hyperdrive-entry name) entry)
                (url (he/url entry))
                (orig-buffer (current-buffer))
                (coding-system
