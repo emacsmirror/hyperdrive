@@ -1206,7 +1206,7 @@ case, when PREDICATE, only offer hyperdrives matching it."
   ;; Return current drive when appropriate.
   (unless force-prompt
     ;; If transient menu is open, use that as the current hyperdrive.
-    (when-let* ((obj (transient-active-prefix '(h/menu-hyperdrive)))
+    (when-let* ((obj (transient-active-prefix 'h/menu-hyperdrive))
                 (transient-hyperdrive (oref obj scope))
                 ((funcall predicate transient-hyperdrive)))
       (cl-return-from h//context-hyperdrive transient-hyperdrive))
@@ -1536,7 +1536,7 @@ Default function; see variable `h/gateway-start-function'."
 
 (defun h/menu-refresh ()
   "Refresh `hyperdrive-menu' if it's open."
-  (when (transient-active-prefix '(h/menu))
+  (when (transient-active-prefix 'h/menu)
     (transient--refresh-transient)))
 
 (defun h//gateway-stop-default ()
