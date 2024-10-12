@@ -10,6 +10,10 @@
 
 - Link website, library source, and Info manual in Customize group.
 
+** Internal
+
+- Bump package dependencies.
+
 * 0.4.2 [2024-09-24 Tue]
 
 ** Fixes
