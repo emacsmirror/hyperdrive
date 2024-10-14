@@ -828,7 +828,7 @@ entry as a side-effect."
    listing))
 
 (defun h/fill (hyperdrive)
-  "Synchronously fill the latest version slot in HYPERDRIVE."
+  "Synchronously fill latest version and drive size in HYPERDRIVE."
   (he/api 'head (he/create :hyperdrive hyperdrive :path "/")))
 
 ;; TODO: Consider using symbol-macrolet to simplify place access.
