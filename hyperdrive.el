@@ -1339,19 +1339,19 @@ The return value of this function is the retrieval buffer."
                         (interactive)
                         (call-interactively #'h/open-next-version))
        :active (and (he/version h/current-entry)
-                    (he/next h/current-entry))
+                    (map-elt (he/etc h/current-entry) 'next-version-exists-p))
        :label
-       (concat
-        "Next Version"
-        (and-let*
-            ((entry h/current-entry)
-             (next-entry (he/next entry))
-             ;; Don't add ": latest" if we're already at the latest version
-             ((not (eq entry next-entry)))
-             (display-version (if-let ((next-version (he/version next-entry)))
-                                  (number-to-string next-version)
-                                "latest")))
-          (format " (%s)" display-version)))
+       (format
+        "Next (%s)"
+        (pcase-exhaustive (map-elt (he/etc h/current-entry) 'next-version-exists-p)
+          ((guard (not (he/version h/current-entry))) "latest")
+          ('t (pcase-exhaustive
+                  (map-elt (he/etc h/current-entry) 'next-version-number)
+
+                ('nil "latest")
+                ((and (pred numberp) version) (format  "%d" version))))
+          ('nil "nonexistent")
+          ('unknown "unknown")))
        :help "Open next version"]
       ["Open Specific Version" (lambda ()
                                  (interactive)
