@@ -105,7 +105,7 @@ which see."
           ((h/gateway-live-p)
            (h/user-error "Gateway process currently live"))
           ((h//gateway-ready-p)
-           (h/user-error "Gateway already running outside of Emacs."))
+           (h/user-error "Gateway already running outside of Emacs"))
           ((and (not gateway-installed-p) (h/gateway-installing-p))
            (h/user-error "Gateway installation in-progress"))
           ((not gateway-installed-p)
@@ -153,7 +153,7 @@ which see."
 
 ;;;###autoload
 (defun hyperdrive-gateway-version ()
-  "Say version number of gateway and copy it to the kill-ring.
+  "Say version number of gateway and copy it to the `kill-ring'.
 Return version if gateway is running; otherwise signal an error."
   (interactive)
   (let ((version (format "%S" (h//gateway-version))))
