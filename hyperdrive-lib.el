@@ -933,6 +933,11 @@ Returns the ranges cons cell for ENTRY."
       (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end))
       (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car)))))
 
+(defun he/fill-version (entry)
+  "Synchronously fill next version metadata for ENTRY."
+  ;; TODO: Send request with entry version set to (1- next-version-range-start) for perf
+  (he/api 'head entry :headers '(("X-Wait-On-Version-Data" . t))))
+
 (defun h/fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
 Sends a synchronous request to get the latest contents of
