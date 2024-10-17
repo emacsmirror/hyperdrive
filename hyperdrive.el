@@ -664,24 +664,41 @@ it to `hyperdrive-open'."
                             (h/error "Missing version range data")))))))
 
 (defun h/open-next-version (entry)
-  "Open next version of ENTRY."
+  "Open next version of ENTRY.
+If entry is already at the latest version, entry was deleted
+after its current version range or entry's existence is unknown,
+say so.  If entry is already within the latest version range,
+switch to the latest version and say so."
   (interactive (list h/current-entry) h/mode)
-  (pcase-exhaustive (he/next entry)
-    ((and (pred (eq entry)) next-entry)
-     ;; ENTRY already at latest version: open and say `revert-buffer'.
-     (h/open next-entry)
+  (he/fill-version entry)
+  (pcase-exhaustive (map-elt (he/etc entry) 'next-version-exists-p)
+    ((guard (not (he/version entry)))
      (h/message
-      "Already at latest version of entry; consider reverting buffer with %s to check for newer versions"
-      (substitute-command-keys
-       (if (fboundp 'revert-buffer-quick)
-           "\\[revert-buffer-quick]"
-         "\\[revert-buffer]"))))
-    ('nil ;; Known nonexistent: suggest `h/history'.
-     (h/message "Entry deleted after this version. Try \\[hyperdrive-history]"))
-    ('unknown ;; Unknown existence: suggest `h/history'.
-     (h/message "Next version unknown. Try \\[hyperdrive-history]"))
-    ((and (pred he/p) next-entry)
-     (h/open next-entry))))
+      "Already at latest version of %s; \
+use \\[revert-buffer-quick] to check for changes."
+      (h//format-entry entry)))
+    ('t (pcase-exhaustive (map-elt (he/etc entry) 'next-version-number)
+
+          ('nil
+           (h/open (he/create :hyperdrive (he/hyperdrive entry)
+                              :path (he/path entry) :version nil))
+           (h/message
+            "Switching to latest version of %s; \
+use \\[revert-buffer-quick] to check for changes."
+            (h//format-entry entry)))
+          ((and (pred numberp) version)
+           (h/open (he/create :hyperdrive (he/hyperdrive entry)
+                              :path (he/path entry) :version version)))))
+    ('nil
+     (h/message "%s was deleted at version %d.  Try \\[hyperdrive-history]."
+                (h//format-entry entry)
+                (map-elt (he/etc entry) 'next-version-number)))
+    ('unknown
+     (h/message
+      "Temporarily unable to load next version of %s: unknown at %d. \
+Try \\[hyperdrive-history]."
+      (h//format-entry entry)
+      (map-elt (he/etc entry) 'next-version-number)))))
 
 (defun h/open-at-version (entry version)
   "Open ENTRY at VERSION.
