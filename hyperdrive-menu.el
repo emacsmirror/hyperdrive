@@ -113,19 +113,26 @@
      :inapt-if-not (lambda ()
                      (let ((entry (h/menu--scope)))
                        (and (he/version entry)
-                            (he/p (he/next entry)))))
-     :description (lambda ()
-                    (concat "Next"
-                            (and-let* ((entry (h/menu--scope))
-                                       (next-entry (he/next entry))
-                                       ;; Don't add ": latest" if we're already at the latest
-                                       ;; version or if the next version is `unknown'.
-                                       ((and (he/version entry)
-                                             (he/p (he/next entry))))
-                                       (display-version (if-let ((next-version (he/version next-entry)))
-                                                            (number-to-string next-version)
-                                                          "latest")))
-                              (concat ": " (propertize display-version 'face 'transient-value))))))
+                            (map-elt (he/etc entry) 'next-version-exists-p))))
+     :description
+     (lambda ()
+       (let ((entry (h/menu--scope)))
+         (format
+          "Next %s"
+          (pcase-exhaustive (map-elt (he/etc entry) 'next-version-exists-p)
+            ((guard (not (he/version entry)))
+             (propertize "latest" 'face 'h/history-existent))
+            ('t (pcase-exhaustive (map-elt (he/etc entry) 'next-version-number)
+
+                  ('nil
+                   (propertize "latest" 'face 'h/history-existent))
+                  ((and (pred numberp) version)
+                   (format (propertize "%d" 'face 'h/history-existent)
+                           version))))
+            ;; TODO: Is it possible to show the `h/history-nonexistent' face
+            ;; over the `transient-inapt-suffix' face?
+            ('nil (propertize "nonexistent" 'face 'h/history-nonexistent))
+            ('unknown (propertize "unknown" 'face 'h/history-unknown)))))))
     ("V a" "At..." h/open-at-version)
     ("V h" "History" h/history
      :inapt-if (lambda ()
