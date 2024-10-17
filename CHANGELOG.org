@@ -6,9 +6,26 @@
 
 * 0.5-pre
 
-** Changes
+Version ~0.5~ simplifies the history logic, removing the persisted
+~hyperdrive-version-ranges~ variable, deleting hundreds of lines of
+code since ~v0.4~, and more correctly handling edge cases and errors.
 
+** Changed
+
+- It's now possible to attempt to jump to the next version of a file
+  even before the gateway knows if it exists or not.
+- More descriptive error messages when attempting to load nonexistent
+  or unknown file versions.
+- Removed persist variable ~hyperdrive-version-ranges~.  Feel free to
+  delete the old data inside ~hyperdrive-persist-location~.
 - Link website, library source, and Info manual in Customize group.
+- More colorful version descriptions in ~hyperdrive-menu~.
+
+** Fixed
+
+- Handle diffing a file when the previous version is not known to exist.
+- ~hyperdrive-menu~ and the menu bar now correctly indicate when the
+  next and/or previous version of current directory do not exist.
 
 ** Internal
 
