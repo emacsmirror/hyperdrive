@@ -255,7 +255,8 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
              'utf-8)
             (detected-encoding detected-encoding))))
        ((map link allow content-length content-type last-modified x-drive-size
-             x-drive-version x-file-block-length x-file-block-length-downloaded)
+             x-drive-version x-file-block-length x-file-block-length-downloaded
+             x-next-version-exists x-next-version-number)
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
        ;; while ENTRY may have a DNSLink domain but no public key yet.
@@ -301,6 +302,12 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
     (h/persist (he/hyperdrive entry))
 
     ;; Fill entry.
+    (when x-next-version-exists
+      (setf (map-elt (he/etc entry) 'next-version-exists-p)
+            (json-parse-string x-next-version-exists :false-object nil)))
+    (when x-next-version-number
+      (setf (map-elt (he/etc entry) 'next-version-number)
+            (json-parse-string x-next-version-number :null-object nil)))
     (when content-length
       (setf (he/size entry)
             (ignore-errors (cl-parse-integer content-length))))
