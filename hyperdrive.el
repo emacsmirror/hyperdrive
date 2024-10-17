@@ -465,7 +465,6 @@ directory.  Otherwise, or with universal prefix argument
                          ((map etag) headers)
                          (nonexistent-entry (compat-call copy-tree entry t)))
               (setf (he/version nonexistent-entry) (string-to-number etag))
-              (h/update-nonexistent-version-range nonexistent-entry)
               ;; Since there's no way for `h//write-contents' to run when
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
               ;; `save-buffer' re-saves files after they've been deleted.
@@ -563,14 +562,13 @@ For non-interactive use, see `hyperdrive-write'."
           (h/user-error "Aborted"))))
     (h/write entry
       :body encoded-buffer
-      :then (lambda (response)
+      :then (lambda (_response)
               (when (buffer-live-p orig-buffer)
                 (with-current-buffer orig-buffer
                   (unless h/mode
                     (h//clean-buffer)
                     (h//set-auto-mode)
                     (h/mode))
-                  (he//fill entry (plz-response-headers response))
                   ;; PUT responses only include ETag and Last-Modified
                   ;; headers, so we need to set other entry metadata manually.
                   (setf (he/size entry) (with-current-buffer encoded-buffer

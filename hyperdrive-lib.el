@@ -480,49 +480,6 @@ before making the entry struct."
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
-(defun h//entry-version-range-key (entry)
-  "Return URI-encoded URL for ENTRY without protocol, version, target, or face.
-Intended to be used as hash table key in `hyperdrive-version-ranges'."
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
-               (version-less (he/create :hyperdrive hyperdrive :path path)))
-    (substring-no-properties
-     (h//format-entry-url version-less :host-format '(public-key)
-                          :with-protocol nil :with-target nil))))
-
-;; TODO: Add tests for version range functions
-(defun he/version-ranges (entry)
-  "Return version ranges for ENTRY."
-  (gethash (h//entry-version-range-key entry) h/version-ranges))
-
-(gv-define-setter he/version-ranges (ranges entry)
-  `(progn
-     (setf (gethash (h//entry-version-range-key ,entry) h/version-ranges) ,ranges)
-     (persist-save 'h/version-ranges)))
-
-(defun h/purge-version-ranges (hyperdrive)
-  "Purge all version range data for HYPERDRIVE."
-  (maphash (lambda (key _val)
-             ;; NOTE: The KEY starts with the key and ends with a path, so we compare as prefix.
-             (when (string-prefix-p (h/public-key hyperdrive) key)
-               (remhash key h/version-ranges)))
-           h/version-ranges)
-  (persist-save 'h/version-ranges))
-
-(cl-defun he/version-range (entry &key version)
-  "Return the version range containing ENTRY.
-Returns nil when ENTRY is not known to exist at its version.
-
-With non-nil VERSION, use it instead of ENTRY's version."
-  (declare (indent defun))
-  (pcase-let*
-      (((cl-struct hyperdrive-entry hyperdrive (version entry-version)) entry)
-       (version (or version entry-version (h/latest-version hyperdrive)))
-       (ranges (he/version-ranges entry)))
-    (and ranges
-         (cl-find-if (pcase-lambda (`(,range-start . ,(map :range-end)))
-                       (<= range-start version range-end))
-                     ranges))))
-
 (defun he/exists-p (entry)
   "Synchronously return status of ENTRY's existence at its version.
 - t       :: ENTRY is known to exist.
@@ -540,82 +497,6 @@ With non-nil VERSION, use it instead of ENTRY's version."
         nil)
        (_ (signal (car err) (cdr err)))))))
 
-(defun he/version-ranges-no-gaps (entry)
-  "Return ranges alist for ENTRY with no gaps in history.
-Returned newly-constructed alist where each range-end is always
-1- the following range-start.  Each gap is filled with a cons cell
-whose car is the range start and whose cdr is a plist with a
-numerical \\+`:range-end' and \\+`:existsp' set to \\+`unknown':
-
-\(RANGE-START . (\\+`:range-end' RANGE-END \\+`:existsp' \\+`unknown'))
-
-When the final range's range-end is less than ENTRY's
-hyperdrive's latest-version slot, the final gap is filled."
-  (let ((ranges '())
-        (previous-range-end 0))
-    (pcase-dolist (`(,range-start . ,(map :range-end :existsp))
-                   (he/version-ranges entry))
-      ;; If he/version-ranges returns nil, this whole loop will be skipped.
-      (let ((next-range-start (1+ previous-range-end)))
-        (when (> range-start next-range-start)
-          ;; Insert an "unknown" gap range
-          (push `(,next-range-start . ( :range-end ,(1- range-start)
-                                        :existsp unknown))
-                ranges))
-        (push `(,range-start . ( :range-end ,range-end
-                                 :existsp ,existsp))
-              ranges)
-        (setf previous-range-end range-end)))
-    (pcase-let* ((final-known-range (car ranges))
-                 (`(,_range-start . ,(map (:range-end final-known-range-end)))
-                  final-known-range)
-                 (latest-version (h/latest-version (he/hyperdrive entry))))
-      (unless final-known-range-end
-        (setf final-known-range-end 0))
-      (when (< final-known-range-end latest-version)
-        ;; Insert possible final gap between latest known range
-        ;; and hyperdrive's latest-version
-        (push `(,(1+ final-known-range-end)
-                . (:range-end ,latest-version :existsp unknown))
-              ranges)))
-    (nreverse ranges)))
-
-(cl-defun he/previous (entry &key cache-only)
-  "Return ENTRY at its hyperdrive's previous version, or nil.
-If ENTRY is a directory, return a copy with decremented version.
-If CACHE-ONLY, don't send a request to the gateway; only check
-`hyperdrive-version-ranges'.  In this case, return value may also
-be \\+`unknown'."
-
-  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path version) entry)
-               (version (or version (h/latest-version hyperdrive))))
-    (if (h//entry-directory-p entry)
-        (and (> version 1)
-             (he/create :hyperdrive hyperdrive
-                        :path path
-                        :version (1- version)))
-      (let ((previous-version
-             (1- (or (car (he/version-range entry))
-                     ;; Version range data missing: Decrement version.
-                     version))))
-        (pcase-exhaustive (he/version-range entry :version previous-version)
-          (`(,range-start . ,(map :existsp))
-           (if existsp
-               ;; Return entry if it's known existent.
-               (he/at range-start entry)
-             ;; Return nil if it's known nonexistent.
-             nil))
-          ('nil
-           ;; Entry is not known to exist, optionally send a request.
-           (if cache-only
-               'unknown
-             (and-let* ((previous-entry (he/at previous-version entry)))
-               ;; Entry version is currently its range end,
-               ;; but it should be its version range start.
-               (setf (he/version previous-entry)
-                     (car (he/version-range previous-entry)))
-               previous-entry))))))))
-
 (defun he/at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
 When VERSION is nil, return latest version of ENTRY."
@@ -629,64 +510,6 @@ When VERSION is nil, return latest version of ENTRY."
          ;; FIXME: If plz-error is a curl-error, this block will fail.
          (404 nil)
          (_ (signal (car err) (cdr err))))))))
-
-(cl-defun he/next (entry)
-  "Return unfilled ENTRY at its hyperdrive's next version.
-
-If ENTRY's version is nil, return value is `eq' to ENTRY.
-Else, if next version is known nonexistent, return nil.
-Else, if current or next version's existence is unknown, return \\+`unknown'."
-  (unless (he/version entry)
-    ;; ENTRY's version is nil: return ENTRY.
-    (cl-return-from he/next entry))
-
-  ;; ENTRY's version is not nil.
-  (let ((next-entry (compat-call copy-tree entry t))
-        (latest-version (h/latest-version (he/hyperdrive entry))))
-
-    ;; ENTRY version is the latest version: return ENTRY with nil version.
-    (when (eq latest-version (he/version entry))
-      (setf (he/version next-entry) nil)
-      (cl-return-from he/next next-entry))
-
-    ;; ENTRY is a directory: increment the version number by one.
-    (when (h//entry-directory-p entry)
-      (cl-incf (he/version next-entry))
-      (when (eq latest-version (he/version next-entry))
-        ;; Next ENTRY is the latest version: return ENTRY with nil version.
-        (setf (he/version next-entry) nil))
-      (cl-return-from he/next next-entry))
-
-    ;; ENTRY is a file...
-    (pcase-let* ((`(,_range-start . ,(map :range-end))
-                  (he/version-range entry))
-                 (next-range-start (1+ (or range-end
-                                           ;; Version range data is missing for
-                                           ;; ENTRY: return `unknown'.
-                                           (cl-return-from he/next 'unknown))))
-                 ((map (:existsp next-range-existsp)
-                       (:range-end next-range-end))
-                  ;; TODO: If cl struct copiers are extended like this:
-                  ;;       https://lists.gnu.org/archive/html/help-gnu-emacs/2021-10/msg00797.html
-                  ;;       replace following sexp with
-                  ;;       (he/version-range (hyperdrive-entry-copy :version next-range-start))
-                  (map-elt (he/version-ranges-no-gaps entry) next-range-start)))
-      ;; ENTRY is in the last version range: return ENTRY with nil version.
-      (when (eq latest-version range-end)
-        (setf (he/version next-entry) nil)
-        (cl-return-from he/next next-entry))
-
-      ;; Check existence of ENTRY's next version range...
-      (pcase-exhaustive next-range-existsp
-        ('t
-         (setf (he/version next-entry)
-               (if (eq next-range-end latest-version)
-                   ;; This is the latest version: remove version number.
-                   nil
-                 next-range-start))
-         next-entry)
-        ('nil nil)
-        ('unknown 'unknown)))))
 
 (declare-function h/history "hyperdrive-history")
 (cl-defun h/open
@@ -823,46 +646,16 @@ the given `plz-queue'"
                    (_
                     (h/message "hyperdrive-entry-fill: error: %S" plz-error))))))
   (pcase then
-    ('sync (condition-case err
-               (he//fill entry (plz-response-headers
-                                (he/api 'head entry :then 'sync :noquery t)))
-             (plz-error
-              (pcase (plz-response-status (plz-error-response (caddr err)))
-                ;; FIXME: If plz-error is a curl-error, this block will fail.
-                (404 ;; Entry doesn't exist at this version: update range data.
-                 (h/update-nonexistent-version-range entry)))
-              ;; Re-signal error for, e.g. `he/at'.
-              (signal (car err) (cdr err)))))
-    (_ (he/api 'head entry
-         :queue queue
-         :then (lambda (response)
-                 (funcall then (he//fill entry (plz-response-headers response))))
-         :else (lambda (&rest args)
-                 (when (he/version entry)
-                   ;; If request is canceled, the entry may not have a version.
-                   ;; FIXME: Only update nonexistent range on 404.
-                   (h/update-nonexistent-version-range entry))
-                 (apply else args))
-         :noquery t))))
-
-(defun he//fill (entry headers)
-  "Fill existent range for ENTRY in `hyperdrive-version-ranges' from HEADERS.
-
-Returns filled ENTRY."
-  (pcase-let (((map etag) headers))
-    (when (and etag (not (h//entry-directory-p entry)))
-      ;; Directory version ranges are not supported.
-      (h/update-existent-version-range entry (string-to-number etag)))
-    entry))
+    ('sync (he/api 'head entry :then 'sync :noquery t))
+    (_ (he/api 'head entry :queue queue :then then :else :else :noquery t))))
 
 (defun h//fill-listing-entries (listing hyperdrive version)
   "Return entries list with metadata from LISTING.
 Accepts HYPERDRIVE and VERSION of parent entry as arguments.
 LISTING should be an alist based on the JSON retrieved in, e.g.,
-`hyperdrive-dir-handler'.  Fills existent version ranges for each
-entry as a side-effect."
+`hyperdrive-dir-handler'."
   (mapcar
-   (pcase-lambda ((map seq key value blockLengthDownloaded))
+   (pcase-lambda ((map key value blockLengthDownloaded))
      (let* ((mtime (map-elt (map-elt value 'metadata) 'mtime))
             (size (map-elt (map-elt value 'blob) 'byteLength))
             (block-length (map-elt (map-elt value 'blob) 'blockLength))
@@ -877,80 +670,12 @@ entry as a side-effect."
        (when blockLengthDownloaded
          (setf (map-elt (he/etc entry) 'block-length-downloaded)
                blockLengthDownloaded))
-       (when seq
-         ;; seq is the hyperdrive version *before* the entry was added/modified
-         (hyperdrive-update-existent-version-range entry (1+ seq)))
        entry))
    listing))
 
 (defun h/fill (hyperdrive)
   "Synchronously fill latest version and drive size in HYPERDRIVE."
   (he/api 'head (he/create :hyperdrive hyperdrive :path "/")))
-
-;; TODO: Consider using symbol-macrolet to simplify place access.
-
-(defun h/update-existent-version-range (entry range-start)
-  "Update the version range for ENTRY which exists at its version.
-Sets the range keyed by RANGE-START to a plist whose :range-end
-value is ENTRY's version.
-
-For the format of each version range, see `hyperdrive-version-ranges'.
-
-Returns the ranges cons cell for ENTRY."
-  (cl-check-type range-start integer)
-  (unless (h//entry-directory-p entry)
-    (pcase-let* ((ranges (he/version-ranges entry))
-                 (range (map-elt ranges range-start))
-                 ((map (:range-end old-range-end)) range)
-                 ((cl-struct hyperdrive-entry hyperdrive version) entry)
-                 (range-end (or version (h/latest-version hyperdrive))))
-      (unless (and old-range-end (>= old-range-end range-end))
-        ;; If there already exists a equally long or longer existent range in
-        ;; `h/version-ranges', there's nothing to do.
-        (setf (plist-get range :existsp) t)
-        (setf (plist-get range :range-end) range-end)
-        (setf (map-elt ranges range-start) range)
-        (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car))))))
-
-(defun h/update-nonexistent-version-range (entry)
-  "Update the version range for ENTRY which doesn't exist at its version.
-Checks for nonexistent previous or next ranges, to combine them
-into one contiguous nonexistent range.
-
-For the format of each version range, see `hyperdrive-version-ranges'.
-
-Returns the ranges cons cell for ENTRY."
-  (unless (or (h//entry-directory-p entry)
-              ;; If there already exists a nonexistent range in
-              ;; `h/version-ranges', there's nothing to do.
-              (he/version-range entry)
-              ;; Don't store ranges for entries which have never existed.
-              ;; NOTE: This check may incorrectly skip the body if
-              ;; `hyperdrive-version-ranges' has been cleared.
-              (not (he/version-ranges entry)))
-    (pcase-let*
-        ((ranges (he/version-ranges entry))
-         ((cl-struct hyperdrive-entry hyperdrive path version) entry)
-         (version (or version (h/latest-version hyperdrive)))
-         (previous-range (he/version-range
-                           (he/create :hyperdrive hyperdrive :path path :version (1- version))))
-         (`(,previous-range-start . ,(map (:existsp previous-exists-p))) previous-range)
-         (next-range (he/version-range
-                       (he/create :hyperdrive hyperdrive :path path :version (1+ version))))
-         (`(,next-range-start . ,(map (:existsp next-exists-p) (:range-end next-range-end))) next-range)
-         (range-start (if (and previous-range (null previous-exists-p))
-                          ;; Extend previous nonexistent range
-                          previous-range-start
-                        version))
-         (range-end (if (and next-range (null next-exists-p))
-                        ;; Extend next nonexistent range
-                        next-range-end
-                      version)))
-      ;; Delete next range if it's contiguous with current range.
-      (when (and next-range (null next-exists-p))
-        (setf ranges (map-delete ranges next-range-start)))
-      (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end))
-      (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car)))))
 
 (defun he/fill-version (entry)
   "Synchronously fill next version metadata for ENTRY."
@@ -994,14 +719,12 @@ HYPERDRIVE's public metadata file."
 
 - HYPERDRIVE file content and metadata managed by the gateway
 - hash table entry for HYPERDRIVE in `hyperdrive-hyperdrives'
-- hash table entries for HYPERDRIVE in `hyperdrive-version-ranges'
 
 Call ELSE if request fails."
   (declare (indent defun))
   (he/api 'delete (he/create :hyperdrive hyperdrive)
     :then (lambda (response)
             (h/persist hyperdrive :purge t)
-            (h/purge-version-ranges hyperdrive)
             (funcall then response))
     :else else))
 

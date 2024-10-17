@@ -174,8 +174,6 @@ been checked."
                   (let ((status-code (plz-response-status (plz-error-response plz-error))))
                     (pcase status-code
                       (404 ;; Entry doesn't exist: Set `status' to `new'".
-                       ;; TODO: Consider moving `h/update-nonexistent-version-range' call...
-                       (h/update-nonexistent-version-range entry)
                        (push (make-hyperdrive-mirror-item
                               :file file :url (he/url entry) :status 'new)
                              items)
