@@ -506,20 +506,22 @@ With non-nil VERSION, use it instead of ENTRY's version."
                        (<= range-start version range-end))
                      ranges))))
 
-(cl-defun he/exists-p (entry &key version)
-  "Return status of ENTRY's existence at its version.
-
+(defun he/exists-p (entry)
+  "Synchronously return status of ENTRY's existence at its version.
 - t       :: ENTRY is known to exist.
 - nil     :: ENTRY is known to not exist.
-- unknown :: ENTRY is not known to exist.
-
-Does not make a request to the gateway; checks the cached value
-in `hyperdrive-version-ranges'.
-With non-nil VERSION, use it instead of ENTRY's version."
-  (if-let ((range (he/version-range entry :version version)))
-      (pcase-let ((`(,_range-start . ,(map :existsp)) range))
-        existsp)
-    'unknown))
+- unknown :: ENTRY is not known to exist (timed out after 1s)"
+  (condition-case err
+      (and (he/api 'head entry :timeout 1) t)
+    (plz-error
+     (pcase (caddr err)
+       ((app plz-error-curl-error `(28 . ,_message))
+        ;; Curl error 28 is "Operation timeout."
+        'unknown)
+       ((app plz-error-response (cl-struct plz-response (status 404) body))
+        ;; 404 "Not Found".
+        nil)
+       (_ (signal (car err) (cdr err)))))))
 
 (defun he/version-ranges-no-gaps (entry)
   "Return ranges alist for ENTRY with no gaps in history.
