@@ -83,7 +83,12 @@ Passes ARGS to `format-message'."
   + t :: next version range exists
   + nil :: next version range does not exist
   + \\+`unknown' :: next version range existence is not known
-- next-version-number :: Start of next range or nil if latest."))
+- next-version-number :: Start of next range or nil if latest.
+- previous-version-exists-p :: Whether or not the previous version exists.
+  + t :: previous version range exists
+  + nil :: previous version range does not exist
+  + \\+`unknown' :: previous version range existence is not known
+- previous-version-number :: Start of previous range."))
 
 (cl-defstruct (hyperdrive (:constructor h/create)
                           (:copier nil))
