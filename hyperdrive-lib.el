@@ -78,7 +78,12 @@ Passes ARGS to `format-message'."
 - block-length :: Number of blocks file blob takes up.
 - block-length-downloaded :: Number of blocks downloaded for file.
 - existsp :: Whether entry exists at its version.
-- range-end :: The last drive version pointing to the same blob."))
+- range-end :: The last drive version pointing to the same blob.
+- next-version-exists-p :: Whether or not the next version exists.
+  + t :: next version range exists
+  + nil :: next version range does not exist
+  + \\+`unknown' :: next version range existence is not known
+- next-version-number :: Start of next range or nil if latest."))
 
 (cl-defstruct (hyperdrive (:constructor h/create)
                           (:copier nil))
@@ -250,7 +255,8 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
              'utf-8)
             (detected-encoding detected-encoding))))
        ((map link allow content-length content-type last-modified x-drive-size
-             x-drive-version x-file-block-length x-file-block-length-downloaded)
+             x-drive-version x-file-block-length x-file-block-length-downloaded
+             x-next-version-exists x-next-version-number)
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
        ;; while ENTRY may have a DNSLink domain but no public key yet.
@@ -296,6 +302,12 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
     (h/persist (he/hyperdrive entry))
 
     ;; Fill entry.
+    (when x-next-version-exists
+      (setf (map-elt (he/etc entry) 'next-version-exists-p)
+            (json-parse-string x-next-version-exists :false-object nil)))
+    (when x-next-version-number
+      (setf (map-elt (he/etc entry) 'next-version-number)
+            (json-parse-string x-next-version-number :null-object nil)))
     (when content-length
       (setf (he/size entry)
             (ignore-errors (cl-parse-integer content-length))))
@@ -494,20 +506,22 @@ With non-nil VERSION, use it instead of ENTRY's version."
                        (<= range-start version range-end))
                      ranges))))
 
-(cl-defun he/exists-p (entry &key version)
-  "Return status of ENTRY's existence at its version.
-
+(defun he/exists-p (entry)
+  "Synchronously return status of ENTRY's existence at its version.
 - t       :: ENTRY is known to exist.
 - nil     :: ENTRY is known to not exist.
-- unknown :: ENTRY is not known to exist.
-
-Does not make a request to the gateway; checks the cached value
-in `hyperdrive-version-ranges'.
-With non-nil VERSION, use it instead of ENTRY's version."
-  (if-let ((range (he/version-range entry :version version)))
-      (pcase-let ((`(,_range-start . ,(map :existsp)) range))
-        existsp)
-    'unknown))
+- unknown :: ENTRY is not known to exist (timed out after 1s)"
+  (condition-case err
+      (and (he/api 'head entry :timeout 1) t)
+    (plz-error
+     (pcase (caddr err)
+       ((app plz-error-curl-error `(28 . ,_message))
+        ;; Curl error 28 is "Operation timeout."
+        'unknown)
+       ((app plz-error-response (cl-struct plz-response (status 404) body))
+        ;; 404 "Not Found".
+        nil)
+       (_ (signal (car err) (cdr err)))))))
 
 (defun he/version-ranges-no-gaps (entry)
   "Return ranges alist for ENTRY with no gaps in history.
@@ -920,6 +934,11 @@ Returns the ranges cons cell for ENTRY."
         (setf ranges (map-delete ranges next-range-start)))
       (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end))
       (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car)))))
+
+(defun he/fill-version (entry)
+  "Synchronously fill next version metadata for ENTRY."
+  ;; TODO: Send request with entry version set to (1- next-version-range-start) for perf
+  (he/api 'head entry :headers '(("X-Wait-On-Version-Data" . t))))
 
 (defun h/fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
