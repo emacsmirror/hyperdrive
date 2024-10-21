@@ -571,9 +571,10 @@ echo area when the request for the file is made."
                           (not (h//entry-directory-p entry))
                           (h/writablep hyperdrive)
                           (not (he/version entry)))
+                     ;; `existsp' will be set to non-nil in `he//api-then'.
+                     (setf (map-elt (he/etc entry) 'existsp) nil)
                      ;; Entry is a writable file: create a new buffer
                      ;; that will be saved to its path.
-
                      (if-let ((buffer (h//find-buffer-visiting entry)))
                          ;; Buffer already exists: likely the user deleted the
                          ;; entry without killing the buffer.  Switch to the
