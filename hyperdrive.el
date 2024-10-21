@@ -656,12 +656,21 @@ it to `hyperdrive-open'."
 (defun h/open-previous-version (entry)
   "Open previous version of ENTRY."
   (interactive (list h/current-entry) h/mode)
-  (if-let ((previous-entry (he/previous entry)))
-      (h/open previous-entry)
-    (h/message "%s does not exist at version %s. Try \\[hyperdrive-history]"
-               (h//format-entry entry "[%H] %p")
-               (1- (car (or (he/version-range entry)
-                            (h/error "Missing version range data")))))))
+  (he/fill-version entry)
+  (pcase-let (((cl-struct h/entry hyperdrive path version
+                          (etc (map previous-version-exists-p
+                                    previous-version-number)))
+               entry))
+    (pcase-exhaustive previous-version-exists-p
+      ('t (h/open (he/create :hyperdrive hyperdrive :path path
+                             :version previous-version-number)))
+      ('nil (h/message "%s nonexistent before version %d.  Try \\[hyperdrive-history]."
+                       (h//format-entry entry) version))
+      ('unknown (h/message
+                 "Temporarily unable to load previous version of %s: \
+unknown before version %d. \
+Try \\[hyperdrive-history]."
+                 (h//format-entry entry) version)))))
 
 (defun h/open-next-version (entry)
   "Open next version of ENTRY.
