@@ -83,7 +83,12 @@ Passes ARGS to `format-message'."
   + t :: next version range exists
   + nil :: next version range does not exist
   + \\+`unknown' :: next version range existence is not known
-- next-version-number :: Start of next range or nil if latest."))
+- next-version-number :: Start of next range or nil if latest.
+- previous-version-exists-p :: Whether or not the previous version exists.
+  + t :: previous version range exists
+  + nil :: previous version range does not exist
+  + \\+`unknown' :: previous version range existence is not known
+- previous-version-number :: Start of previous range."))
 
 (cl-defstruct (hyperdrive (:constructor h/create)
                           (:copier nil))
@@ -256,7 +261,8 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
             (detected-encoding detected-encoding))))
        ((map link allow content-length content-type last-modified x-drive-size
              x-drive-version x-file-block-length x-file-block-length-downloaded
-             x-next-version-exists x-next-version-number)
+             x-next-version-exists x-next-version-number
+             x-previous-version-exists x-previous-version-number)
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
        ;; while ENTRY may have a DNSLink domain but no public key yet.
@@ -304,10 +310,21 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
     ;; Fill entry.
     (when x-next-version-exists
       (setf (map-elt (he/etc entry) 'next-version-exists-p)
-            (json-parse-string x-next-version-exists :false-object nil)))
+            ;; HACK: At least on Emacs 28 and 29, `json-parse-string' signals an
+            ;; error when receiving the string "unknown" or the string
+            ;; "undefined", so we parse ourselves.
+            (pcase-exhaustive x-next-version-exists
+              ("true" t) ("false" nil) ("unknown" 'unknown))))
     (when x-next-version-number
       (setf (map-elt (he/etc entry) 'next-version-number)
             (json-parse-string x-next-version-number :null-object nil)))
+    (when x-previous-version-exists
+      (setf (map-elt (he/etc entry) 'previous-version-exists-p)
+            (pcase-exhaustive x-previous-version-exists
+              ("true" t) ("false" nil) ("unknown" 'unknown))))
+    (when x-previous-version-number
+      (setf (map-elt (he/etc entry) 'previous-version-number)
+            (json-parse-string x-previous-version-number)))
     (when content-length
       (setf (he/size entry)
             (ignore-errors (cl-parse-integer content-length))))
