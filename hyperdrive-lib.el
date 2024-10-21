@@ -310,13 +310,18 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
     ;; Fill entry.
     (when x-next-version-exists
       (setf (map-elt (he/etc entry) 'next-version-exists-p)
-            (json-parse-string x-next-version-exists :false-object nil)))
+            ;; HACK: At least on Emacs 28 and 29, `json-parse-string' signals an
+            ;; error when receiving the string "unknown" or the string
+            ;; "undefined", so we parse ourselves.
+            (pcase-exhaustive x-next-version-exists
+              ("true" t) ("false" nil) ("unknown" 'unknown))))
     (when x-next-version-number
       (setf (map-elt (he/etc entry) 'next-version-number)
             (json-parse-string x-next-version-number :null-object nil)))
     (when x-previous-version-exists
       (setf (map-elt (he/etc entry) 'previous-version-exists-p)
-            (json-parse-string x-previous-version-exists :false-object nil)))
+            (pcase-exhaustive x-previous-version-exists
+              ("true" t) ("false" nil) ("unknown" 'unknown))))
     (when x-previous-version-number
       (setf (map-elt (he/etc entry) 'previous-version-number)
             (json-parse-string x-previous-version-number)))
