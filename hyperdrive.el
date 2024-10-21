@@ -1335,14 +1335,14 @@ The return value of this function is the retrieval buffer."
       ["Previous Version" (lambda ()
                             (interactive)
                             (call-interactively #'h/open-previous-version))
-       :active (he/previous h/current-entry :cache-only t)
+       :active (map-elt (he/etc h/current-entry) 'previous-version-exists-p)
        :label
-       (concat "Previous Version"
-               (pcase-exhaustive (he/previous h/current-entry :cache-only t)
-                 ('unknown (format " (?)"))
-                 ('nil nil)
-                 ((cl-struct hyperdrive-entry version)
-                  (format " (%s)" version))))
+       (format
+        "Previous (%s)"
+        (pcase-exhaustive (map-elt (he/etc h/current-entry) 'previous-version-exists-p)
+          ('t (map-elt (he/etc h/current-entry) 'previous-version-number))
+          ('nil "nonexistent")
+          ('unknown "unknown")))
        :help "Open previous version"]
       ["Next Version" (lambda ()
                         (interactive)
