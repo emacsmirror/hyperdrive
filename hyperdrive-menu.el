@@ -97,18 +97,20 @@
                               'face 'h/history-existent))))))
     ("V p" "Previous" h/open-previous-version
      :inapt-if-not (lambda ()
-                     (he/previous (h/menu--scope) :cache-only t))
+                     (map-elt (he/etc (h/menu--scope)) 'previous-version-exists-p))
      ;; :transient t
-     :description (lambda ()
-                    (if-let ((entry (h/menu--scope)))
-                        (concat "Previous"
-                                (pcase-exhaustive (he/previous entry :cache-only t)
-                                  ('unknown (concat ": " (propertize "?" 'face 'transient-value)))
-                                  ('nil nil)
-                                  ((cl-struct hyperdrive-entry version)
-                                   (concat ": " (propertize (number-to-string version)
-                                                            'face 'transient-value)))))
-                      "Previous")))
+     :description
+     (lambda ()
+       (let ((entry (h/menu--scope)))
+         (format
+          "Previous %s"
+          (pcase-exhaustive (map-elt (he/etc entry) 'previous-version-exists-p)
+            ('t (format (propertize "%d" 'face 'h/history-existent)
+                        (map-elt (he/etc entry) 'previous-version-number)))
+            ;; TODO: Is it possible to show the `h/history-nonexistent' face
+            ;; over the `transient-inapt-suffix' face?
+            ('nil (propertize "nonexistent" 'face 'h/history-nonexistent))
+            ('unknown (propertize "unknown" 'face 'h/history-unknown)))))))
     ("V n" "Next" h/open-next-version
      :inapt-if-not (lambda ()
                      (let ((entry (h/menu--scope)))
