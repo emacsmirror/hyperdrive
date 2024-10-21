@@ -488,7 +488,7 @@ When VERSION is nil, return latest version of ENTRY."
     (setf (he/version entry) version)
     (condition-case err
         ;; FIXME: Requests to out of range version currently hang.
-        (he/api 'head entry)
+        (progn (he/api 'head entry) entry)
       (plz-error
        (pcase (plz-response-status (plz-error-response (caddr err)))
          ;; FIXME: If plz-error is a curl-error, this block will fail.
