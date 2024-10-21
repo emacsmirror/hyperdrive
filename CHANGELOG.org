@@ -35,14 +35,14 @@ code since ~v0.4~, and more correctly handling edge cases and errors.
 
 * 0.4.2 [2024-09-24 Tue]
 
-** Fixes
+** Fixed
 
 - Set major mode in hyperdrive files even before it is saved.
 - Compiler warnings.  (Thanks to Jonas Bernoulli!)
 
 * 0.4.1 [2024-09-13 Fri]
 
-** Fixes
+** Fixed
 
 - Fix following a link to an Org document whose target is not found.
 
