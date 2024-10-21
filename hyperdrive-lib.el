@@ -481,23 +481,6 @@ before making the entry struct."
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
-(defun he/exists-p (entry)
-  "Synchronously return status of ENTRY's existence at its version.
-- t       :: ENTRY is known to exist.
-- nil     :: ENTRY is known to not exist.
-- unknown :: ENTRY is not known to exist (timed out after 1s)"
-  (condition-case err
-      (and (he/api 'head entry :timeout 1) t)
-    (plz-error
-     (pcase (caddr err)
-       ((app plz-error-curl-error `(28 . ,_message))
-        ;; Curl error 28 is "Operation timeout."
-        'unknown)
-       ((app plz-error-response (cl-struct plz-response (status 404) body))
-        ;; 404 "Not Found".
-        nil)
-       (_ (signal (car err) (cdr err)))))))
-
 (defun he/at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
 When VERSION is nil, return latest version of ENTRY."
