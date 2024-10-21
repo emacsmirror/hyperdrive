@@ -41,6 +41,53 @@
 
 ;;;; Functions
 
+(cl-defun h/history-url (entry)
+  "Return formatted history URL for ENTRY, START, and END."
+  (pcase-let* (((cl-struct hyperdrive-entry hyperdrive path) entry)
+               ((cl-struct hyperdrive public-key) hyperdrive))
+    (format "hyper://%s/$/history%s" public-key path)))
+
+(cl-defun h/history-get (entry)
+  "Return list of file history entries for ENTRY."
+  (declare (indent defun))
+  (pcase-let*
+      (((cl-struct hyperdrive-entry hyperdrive path) entry)
+       ((cl-struct hyperdrive latest-version) hyperdrive)
+       ((cl-struct plz-response body)
+        (condition-case err
+            ;; TODO: When plz adds :as 'response-with-buffer, use that.
+            (h/api 'get (h/history-url entry) :as 'response)
+          (err (h/error "Unable to get history for `%s': %S" (he/url entry)
+                        err))))
+       (history-entries))
+    (pcase-dolist ((map exists blockLengthDownloaded version value)
+                   (json-parse-string
+                    body :object-type 'alist :array-type 'list
+                    :false-object nil :null-object nil))
+      (let ((history-entry (he/create :hyperdrive hyperdrive
+                                      :path path :version version)))
+        (setf (he/size history-entry)
+              (map-elt (map-elt value 'blob) 'byteLength))
+        (setf (map-elt (he/etc history-entry) 'block-length)
+              (map-elt (map-elt value 'blob) 'blockLength))
+        (setf (map-elt (he/etc history-entry) 'block-length-downloaded)
+              blockLengthDownloaded)
+        (when-let ((mtime
+                    (map-elt (map-elt value 'metadata) 'mtime)))
+          (setf (he/mtime history-entry)
+                (seconds-to-time (/ mtime 1000.0))))
+        (setf (map-elt (he/etc history-entry) 'range-end)
+              (if-let ((next-entry (car history-entries)))
+                  (1- (he/version next-entry))
+                latest-version))
+        (setf (map-elt (he/etc history-entry) 'existsp)
+              (pcase exists
+                ("unknown" 'unknown)
+                (_ exists)))
+        (push history-entry history-entries)))
+    ;; TODO: Get latest-version from gateway and persist drive
+    history-entries))
+
 (defun h/history-find-buffer-visiting (entry)
   "Return a buffer showing ENTRY's history, or nil if none exists."
   ;; There should only ever be one buffer showing ENTRY's history, so it's safe
@@ -107,23 +154,31 @@ ENTRY's ETC slot must have `existsp' and `range-end' keys."
      (propertize (or timestamp "")
                  'face 'h/timestamp))))
 
-(defun h/history-entry-at-point ()
+(defun h/history-entry-at-point (&optional no-error)
   "Return entry at point.
-With point below last entry, signals a user-error.  With point on
-header, returns an entry whose RANGE-END and version are nil."
+With point on header, return an entry whose RANGE-END and version
+are nil and whose EXISTSP value matches that of the first entry
+in the ewoc.  If history ewoc is empty, or point is below last
+entry or on column headers, signal error.  With non-nil NO-ERROR,
+return nil in that case."
   (let ((current-line (line-number-at-pos))
-        (last-line (line-number-at-pos (ewoc-location (ewoc-nth h/ewoc -1))))
-        (entry-at-point (ewoc-data (ewoc-locate h/ewoc))))
+        (last-entry (ewoc-nth h/ewoc -1)))
     (cond ((= 1 current-line) ; Point on header: return version-less entry
-           (let ((copy-entry (compat-call copy-tree entry-at-point t)))
+           (let ((copy-entry (compat-call copy-tree h/history-current-entry t)))
              (setf (map-elt (he/etc copy-entry) 'range-end) nil)
              (setf (he/version copy-entry) nil)
+             (when-let ((first-node (ewoc-nth h/ewoc 0)))
+               (setf (map-elt (he/etc copy-entry) 'existsp)
+                     (map-elt (he/etc (ewoc-data first-node)) 'existsp)))
              copy-entry))
-          ((or (> current-line last-line) (= 2 current-line))
+          ((or (not last-entry)
+               (> current-line (line-number-at-pos (ewoc-location last-entry)))
+               (= 2 current-line))
            ;; Point is below the last entry or on column headers: signal error.
-           (h/user-error "No file on this line"))
+           (unless no-error
+             (h/user-error "No version on this line")))
           (t ; Point on a file entry: return its entry.
-           entry-at-point))))
+           (ewoc-data (ewoc-locate h/ewoc))))))
 
 (defun h/history-revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-history-mode' buffer."
@@ -163,7 +218,7 @@ All other slots in each ewoc node entry data will be reused."
   "o"   #'h/history-find-file-other-window
   "v"   #'h/history-view-file
   "="   #'h/history-diff
-  "+"   #'h/history-fill-version-ranges
+  "+"   #'h/history-load
   "w"   #'h/history-copy-url
   "d"   #'h/history-download-file
   "F"   #'h/history-forget-file
@@ -195,87 +250,49 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   ;; TODO: Highlight range for ENTRY
   (when (h//entry-directory-p entry)
     (h/user-error "Directory history not implemented"))
-  (pcase-let*
-      (((cl-struct hyperdrive-entry hyperdrive path) entry)
-       (entries
-        ;; TODO: Double check and continue.
-        (mapcar (pcase-lambda (`(,range-start . ,(map :range-end :existsp)))
-                  ;; Some entries may not exist at `range-start',
-                  ;; as in the version before it was created, see:
-                  ;; (info "(hyperdrive)Versioning")
-                  (he/create
-                   :hyperdrive hyperdrive
-                   :path path
-                   ;; Set version to range-start
-                   :version range-start
-                   :etc `((existsp . ,existsp) (range-end . ,range-end))))
-                ;; Display in reverse chronological order
-                (nreverse (he/version-ranges-no-gaps entry))))
-       (main-header (h//format-entry entry "[%H] %p"))
-       (header (format
-                "%s\n%7s  %19s  %6s  %s" main-header
-                (propertize "Exists" 'face 'h/column-header)
-                (propertize "Drive Version Range" 'face 'h/column-header)
-                (propertize "Size" 'face 'h/column-header)
-                (string-pad (propertize "Last Modified" 'face 'h/column-header)
-                            h/timestamp-width nil t)))
-       (queue) (ewoc))
+  (let* ((main-header (h//format-entry entry "[%H] %p"))
+         (header
+          (format
+           "%s\n%7s  %19s  %6s  %s" main-header
+           (propertize "Exists" 'face 'h/column-header)
+           (propertize "Drive Version Range" 'face 'h/column-header)
+           (propertize "Size" 'face 'h/column-header)
+           (string-pad (propertize "Last Modified" 'face 'h/column-header)
+                       h/timestamp-width nil t)))
+         (prev-entry) (prev-point))
     (with-current-buffer (get-buffer-create
                           (format "*Hyperdrive-history: %s*"
                                   (h//format-entry entry "[%H] %p")))
+      (h/history-mode)
+      (setq-local h/history-current-entry entry)
+      (setf prev-entry (h/history-entry-at-point 'no-error))
+      (setf prev-point (point))
       (with-silent-modifications
-        (h/history-mode)
-        (setq-local h/history-current-entry entry)
-        (setf ewoc h/ewoc) ; Bind this for the he/fill lambda.
         (ewoc-filter h/ewoc #'ignore)
-        (erase-buffer)
-        (ewoc-set-hf h/ewoc header "")
-        (mapc (apply-partially #'ewoc-enter-last h/ewoc) entries))
+        (erase-buffer))
       ;; TODO: Display files in pop-up window, like magit-diff buffers appear when selected from magit-log
       (display-buffer (current-buffer) h/history-display-buffer-action)
-      (setf queue
-            (make-plz-queue
-             :limit h/queue-limit
-             :finally (lambda ()
-                        ;; NOTE: Ensure that the buffer's window is selected,
-                        ;; if it has one.  (Workaround a possible bug in EWOC.)
-                        (if-let ((buffer-window (get-buffer-window (ewoc-buffer ewoc))))
-                            (with-selected-window buffer-window
-                              ;; TODO: Use `ewoc-invalidate' on individual entries
-                              ;; (maybe later, as performance comes to matter more).
-                              (with-silent-modifications (ewoc-refresh h/ewoc))
-                              (goto-char (point-min)))
-                          (with-current-buffer (ewoc-buffer ewoc)
-                            (with-silent-modifications (ewoc-refresh h/ewoc))
-                            (goto-char (point-min))))
-                        ;; TODO: Accept then argument?
-                        ;; (with-current-buffer (ewoc-buffer ewoc)
-                        ;;   (when then
-                        ;;     (funcall then)))
-                        )))
-      (dolist (entry entries)
-        (when (eq t (map-elt (he/etc entry) 'existsp))
-          ;; TODO: Handle failures?
-          (he/fill entry :queue queue :then #'ignore)))
-      (set-buffer-modified-p nil)
-      (goto-char (point-min)))))
+      (dolist (history-entry (h/history-get entry))
+        (ewoc-enter-first h/ewoc history-entry))
+      (ewoc-set-hf h/ewoc header "")
+      (with-silent-modifications (ewoc-refresh h/ewoc))
+      (if-let ((prev-entry)
+               (node (h/ewoc-find-node h/ewoc prev-entry
+                       :predicate #'he/equal-p)))
+          (goto-char (ewoc-location node))
+        (goto-char prev-point)))))
 
-(defun h/history-fill-version-ranges (entry)
-  "Fill version ranges starting from ENTRY at point."
-  (interactive (list (h/history-entry-at-point)))
-  (pcase-let* (((cl-struct h/entry hyperdrive etc) entry)
-               ((cl-struct hyperdrive latest-version) hyperdrive)
-               ((map range-end) etc)
-               (range-end-entry (compat-call copy-tree entry t))
-               (ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
-    (setf (he/version range-end-entry) (or range-end latest-version))
-    (overlay-put ov 'display "Loading")
-    (h/fill-version-ranges range-end-entry
-      :finally (lambda ()
-                 ;; TODO: Should we open the history buffer for entry
-                 ;; or range-end-entry or...?
-                 (delete-overlay ov)
-                 (h/history entry)))))
+(defun h/history-load (entry)
+  "Load version history for ENTRY, then refresh history buffer."
+  (interactive (list h/history-current-entry) h/history-mode)
+  ;; HACK: The proper approach might be to use `ewoc-map', but this is simpler:
+  (save-excursion
+    (goto-char (point-min))
+    (while (search-forward "Unknown" nil t)
+      (let ((ov (make-overlay (pos-bol) (+ (pos-bol) (length "Loading")))))
+        (overlay-put ov 'display "Loading")
+        (overlay-put ov 'evaporate t))))
+  (h/fully-replicate entry :then #'h/history))
 
 (declare-function h/diff-file-entries "hyperdrive-diff")
 (defun h/history-diff (old-entry new-entry)
@@ -305,7 +322,7 @@ buffer."
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/open entry))
     ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-fill-version-ranges entry))))
+    ('unknown (h/history-load entry))))
 
 (defun h/history-find-file-other-window (entry)
   "Visit hyperdrive ENTRY at point in other window.
@@ -330,7 +347,7 @@ buffer."
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/view-file entry))
     ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-fill-version-ranges entry))))
+    ('unknown (h/history-load entry))))
 
 (declare-function h/copy-url "hyperdrive")
 (defun h/history-copy-url (entry)

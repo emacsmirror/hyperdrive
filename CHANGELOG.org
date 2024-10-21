@@ -12,6 +12,8 @@
 
 ** Internal
 
+- Add ~hyperdrive-fully-replicate~ to fully replicate a hyperdrive's
+  inode db, blob store, or both.
 - Bump package dependencies.
 
 * 0.4.2 [2024-09-24 Tue]

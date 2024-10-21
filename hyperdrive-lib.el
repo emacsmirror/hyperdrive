@@ -745,6 +745,33 @@ echo area when the request for the file is made."
     (when messagep
       (h/message "Opening <%s>..." (he/url entry)))))
 
+(cl-defun h/fully-replicate (entry &key then)
+  "Fully replicate hyperdrive for ENTRY.
+Then update hyperdrive's size and latest version metadata, then
+call THEN with ENTRY as its sole argument."
+  ;; TODO: For now, this replicates the entire drive, but when
+  ;; hyper-gateway-ushin support replicating only a folder range, this code will
+  ;; change behavior to only replicating the folder range for ENTRY.
+  ;; TODO: For now, the entire db is replicated regardless of version, but the
+  ;; blob store is only replicated for the drive version.
+  (h/api 'get (he/url entry) :as 'response
+    :headers `(("X-Fully-Replicate" . "db"))
+    :else (lambda (err)
+            (h/error "Unable to replicate `%s': %S" (he/url entry) err))
+    :then
+    (pcase-lambda ((cl-struct plz-response (headers (map x-drive-size
+                                                         x-drive-version))))
+      (when x-drive-size
+        (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
+              (cl-parse-integer x-drive-size)))
+      (when x-drive-version
+        (setf (h/latest-version (he/hyperdrive entry))
+              (string-to-number x-drive-version)))
+      ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
+      ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
+      (h/persist (he/hyperdrive entry))
+      (funcall then entry))))
+
 (cl-defun he/fill (entry &key queue (then 'sync) else)
   "Fill ENTRY's metadata and call THEN.
 If THEN is `sync', return the filled entry and ignore ELSE.
@@ -895,110 +922,6 @@ Returns the ranges cons cell for ENTRY."
         (setf ranges (map-delete ranges next-range-start)))
       (setf (map-elt ranges range-start) `(:existsp nil :range-end ,range-end))
       (setf (he/version-ranges entry) (cl-sort ranges #'< :key #'car)))))
-
-(cl-defun h/fill-version-ranges (entry &key (finally #'ignore))
-  "Asynchronously fill in versions ranges before ENTRY.
-Once all requests return, call FINALLY with no arguments."
-  (declare (indent defun))
-  (let* ((outstanding-nonexistent-requests-p)
-         (total-requests-limit h/fill-version-ranges-limit)
-         (fill-entry-queue (make-plz-queue
-                            :limit h/queue-limit
-                            :finally (lambda ()
-                                       (unless outstanding-nonexistent-requests-p
-                                         (funcall finally)))))
-         ;; Flag used in the nonexistent-queue finalizer.
-         finishedp)
-    (cl-labels
-        ((fill-existent-at (version)
-           (let ((prev-range-end (1- (car (he/version-range entry :version version)))))
-             (if (and (cl-plusp total-requests-limit)
-                      (eq 'unknown (he/exists-p entry :version prev-range-end)))
-                 ;; Recurse backward through history.
-                 (fill-entry-at prev-range-end)
-               (setf finishedp t))))
-         (fill-nonexistent-at (version)
-           (let ((nonexistent-queue
-                  (make-plz-queue
-                   :limit h/queue-limit
-                   :finally (lambda ()
-                              (setf outstanding-nonexistent-requests-p nil)
-                              (if finishedp
-                                  ;; If the fill-nonexistent-at loop stopped
-                                  ;; prematurely, stop filling and call `finally'.
-                                  (funcall finally)
-                                (let ((last-requested-version (- version h/queue-limit)))
-                                  (cl-decf total-requests-limit h/queue-limit)
-                                  (pcase-exhaustive (he/exists-p entry :version last-requested-version)
-                                    ('t (fill-existent-at last-requested-version))
-                                    ('nil (fill-nonexistent-at last-requested-version))
-                                    ('unknown
-                                     ;; This clause may run when attempting to
-                                     ;; fill version ranges for an entry which
-                                     ;; has never been saved: Say message and
-                                     ;; call `finally' so callers can clean up.
-                                     (h/message "Entry should have been filled at version: %s"
-                                                last-requested-version)
-                                     (funcall finally))))))))
-                 ;; Make a copy of the version ranges for use in the HEAD request callback.
-                 (copy-entry-version-ranges (copy-sequence (he/version-ranges entry))))
-             ;; For nonexistent entries, send requests in parallel.
-             (cl-dotimes (i h/queue-limit)
-               ;; Send the maximum number of simultaneous requests.
-               (let ((prev-entry (compat-call copy-tree entry t)))
-                 (setf (he/version prev-entry) (- version i 1))
-                 (unless (and (cl-plusp (he/version prev-entry))
-                              (eq 'unknown (he/exists-p prev-entry))
-                              (> total-requests-limit i))
-                   ;; Stop at the beginning of the history, at a known
-                   ;; existent/nonexistent entry, or at the limit.
-                   (setf finishedp t)
-                   (cl-return))
-                 (he/api 'head prev-entry
-                   :queue nonexistent-queue
-                   :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
-                           (pcase-let* ((range-start (string-to-number etag))
-                                        ((map :existsp) (map-elt copy-entry-version-ranges range-start)))
-                             (when (eq 'unknown existsp)
-                               ;; Stop if the requested entry has a
-                               ;; range-start that was already known
-                               ;; before this batch of parallel requests.
-                               (setf finishedp t))
-                             (h/update-existent-version-range prev-entry range-start)))
-                   :else (lambda (err)
-                           ;; TODO: Better error handling.
-                           (pcase (plz-response-status (plz-error-response err))
-                             ;; FIXME: If plz-error is a curl-error, this block will fail.
-                             (404 (h/update-nonexistent-version-range prev-entry))
-                             (_ (signal (car err) (cdr err)))))
-                   :noquery t)
-                 (setf outstanding-nonexistent-requests-p t)))))
-         (fill-entry-at (version)
-           (let ((copy-entry (compat-call copy-tree entry t)))
-             (setf (he/version copy-entry) version)
-             (cl-decf total-requests-limit)
-             (he/api 'head copy-entry
-               :queue fill-entry-queue
-               :then (pcase-lambda ((cl-struct plz-response (headers (map etag))))
-                       (pcase-let* ((range-start (string-to-number etag))
-                                    ((map :existsp)
-                                     (map-elt (he/version-ranges copy-entry) range-start)))
-                         (h/update-existent-version-range copy-entry range-start)
-                         (if (eq 't existsp)
-                             ;; Stop if the requested entry has a
-                             ;; range-start that was already known
-                             ;; before this batch of parallel requests.
-                             (setf finishedp t)
-                           (fill-existent-at version))))
-               :else (lambda (err)
-                       (pcase (plz-response-status (plz-error-response err))
-                         ;; FIXME: If plz-error is a curl-error, this block will fail.
-                         (404
-                          (h/update-nonexistent-version-range copy-entry)
-                          (fill-nonexistent-at version))
-                         (_ (signal (car err) (cdr err)))))
-               :noquery t))))
-      (fill-entry-at (he/version entry)))))
 
 (defun h/fill-metadata (hyperdrive)
   "Fill HYPERDRIVE's public metadata and return it.
