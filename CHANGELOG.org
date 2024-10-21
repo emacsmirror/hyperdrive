@@ -6,9 +6,9 @@
 
 * 0.5-pre
 
-Version ~0.5~ simplifies the history logic, removing the persisted
-~hyperdrive-version-ranges~ variable, deleting hundreds of lines of
-code since ~v0.4~, and more correctly handling edge cases and errors.
+Version ~0.5~ simplifies the history logic, removes the persisted
+~hyperdrive-version-ranges~ variable, deletes hundreds of lines of
+code since ~v0.4~, and more correctly handles edge cases and errors.
 
 ** Changed
 
