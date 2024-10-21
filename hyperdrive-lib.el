@@ -236,15 +236,15 @@ metadata from the response."
     (unless (eq 'sync then)
       (setf (plist-get rest :then)
             (lambda (response)
-              (he//api-then entry response)
+              (he//api-then method entry response)
               (funcall then response))))
     (let ((response (apply #'h/api method (he/url entry) rest)))
       (when (eq 'sync then)
-        (funcall 'he//api-then entry response))
+        (funcall 'he//api-then method entry response))
       response)))
 
-(defun he//api-then (entry response)
-  "Update ENTRY and ENTRY hyperdrive metadata according to RESPONSE.
+(defun he//api-then (method entry response)
+  "Update ENTRY and drive metadata according to METHOD and RESPONSE.
 Sets ENTRY's hyperdrive to the persisted version of the drive if
 it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
   (pcase-let*
