@@ -557,13 +557,15 @@ default:
 
   Move between entries.
 
-- Key: + (hyperdrive-history-fill-version-ranges) ::
+- Key: + (hyperdrive-history-load) ::
 
-  Load version history for unknown version ranges.
+  Load all drive metadata, including version metadata, then reload the
+  history buffer.
 
 - Key: RET (hyperdrive-history-find-file) ::
 
-  Open the file at the start of the version range at point.
+  Open the file at the start of the version range at point.  When the
+  version range at point is ~unknown~, run ~hyperdrive-history-load~.
 
 - Key: o (hyperdrive-history-find-file-other-window) ::
 - Key: <mouse-1> ::
@@ -574,7 +576,9 @@ default:
 
 - Key: v (hyperdrive-history-view-file) ::
 
-  Open the file at the start of the version range at point in [[info:emacs#View Mode][view-mode]].
+  Open the file at the start of the version range at point in [[info:emacs#View
+   Mode][view-mode]].  When the version range at point is ~unknown~, run
+  ~hyperdrive-history-load~.
 
 - Key: w (hyperdrive-history-copy-url) ::
 
@@ -777,7 +781,7 @@ recoverable.*
   for confirmation before deleting anything.  In addition to the
   hyperdrive's file content and metadata, ~hyperdrive-purge~ also
   deletes relevant metadata persisted in the ~hyperdrive-hyperdrives~
-  and ~hyperdrive-version-ranges~ variables.
+  variable.
 
 ** Non-interactive use
 
@@ -992,49 +996,13 @@ Since only the current version of a hyperdrive file can be updated,
 is specified in a hyper URL.
 
 **** Partial version data
-# TODO: Fixup documentation
+
 Because hyperdrives are sparsely replicated (see [[*Sparse replication]]),
-~hyperdrive.el~ might not know the full version history of a file.  When
-the gateway (see [[*hyper-gateway-ushin]]) loads a file from the network, it
-also loads some version metadata about that file.  Specifically, it
-loads the hyperdrive version number at which the file was modified.
-For example, if I load the most recent version of ~/bar.org~ from your
-hyperdrive (see [[*Versioning][the prior section]]), my gateway would also load the
-start of the version range containing the most recent version of
-~/bar.org~.  My ~hyperdrive.el~ knows the latest version number of your
-drive, but with partial version history, the history of ~/bar.org~ in
-your drive looks like this for me:
-
-| Version range | exists  |
-|---------------+---------|
-|            53 | yes     |
-|          1-52 | unknown |
-
-If I run ~M-x hyperdrive-previous~ while looking at the latest version
-of ~/bar.org~, ~hyperdrive.el~ will display ~/bar.org~ at version 52.  In
-the background, the gateway will report that ~/bar.org~ at version 52 of
-your hyperdrive was actually created at version 51 of your hyperdrive:
-
-| Version range | exists  |
-|---------------+---------|
-|            53 | yes     |
-|         51-52 | yes     |
-|          1-50 | unknown |
-
-Running ~hyperdrive-previous~ while looking at ~/bar.org~ at version 51 or
-52 will send a request for ~/bar.org~ at version 50.  The gateway will
-report that ~/bar.org~ does not exist at version 50, but it won't report
-whether ~/bar.org~ ever existed /before/ version 50.  For example,
-~/bar.org~ might have been created at version 6, deleted at 14, then
-created again at version 51.  ~hyperdrive.el~ will keep sending requests
-to the network (up to ~hyperdrive-fill-version-ranges-limit~) until the
-history view looks like:
-
-| Version range | exists  |
-|---------------+---------|
-|            53 | yes     |
-|         51-52 | yes     |
-|          1-50 | no      |
+~hyperdrive.el~ might not know the full version history of a file.
+In the history view (see [[*History buffer]]), ranges of the history which
+have not yet been downloaded from the network are displayed as
+"unknown".  You can run the ~hyperdrive-history-load~ command to
+download the full history and reload the history buffer.
 
 **** No directory version history
 
@@ -1168,9 +1136,8 @@ running ~M-x customize-group RET hyperdrive RET~:
 
 - User Option: hyperdrive-persist-location ::
 
-  Location where ~persist~ will store data, currently
-  ~hyperdrive-hyperdrives~ and ~hyperdrive-version-ranges~.  By default,
-  uses the default ~persist~ location.
+  Location where ~persist~ will store ~hyperdrive-hyperdrives~.  By
+  default, uses the default ~persist~ location.
 
 - User Option: hyperdrive-timestamp-format ::
 
@@ -1181,11 +1148,6 @@ running ~M-x customize-group RET hyperdrive RET~:
 
   Default number of request sent to the gateway at a time in a queue.
   Defaults to ~20~.
-
-- User Option: hyperdrive-fill-version-ranges-limit ::
-
-  Default maximum number of requests when filling version history.
-  Defaults to ~100~.
 
 - User Option: hyperdrive-preferred-formats ::
 

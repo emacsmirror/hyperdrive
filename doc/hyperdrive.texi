@@ -857,15 +857,17 @@ default:
 @findex hyperdrive-ewoc-previous
 Move between entries.
 
-@item @kbd{+} (@code{hyperdrive-history-fill-version-ranges})
+@item @kbd{+} (@code{hyperdrive-history-load})
 @kindex +
-@findex hyperdrive-history-fill-version-ranges
-Load version history for unknown version ranges.
+@findex hyperdrive-history-load
+Load all drive metadata, including version metadata, then reload the
+history buffer.
 
 @item @kbd{@key{RET}} (@code{hyperdrive-history-find-file})
 @kindex RET
 @findex hyperdrive-history-find-file
-Open the file at the start of the version range at point.
+Open the file at the start of the version range at point.  When the
+version range at point is @code{unknown}, run @code{hyperdrive-history-load}.
 
 @item @kbd{o} (@code{hyperdrive-history-find-file-other-window})
 @itemx @kbd{<mouse-1>}
@@ -880,7 +882,8 @@ window.
 @item @kbd{v} (@code{hyperdrive-history-view-file})
 @kindex v
 @findex hyperdrive-history-view-file
-Open the file at the start of the version range at point in @ref{View Mode,view-mode,,emacs,}.
+Open the file at the start of the version range at point in @ref{View Mode,view-mode,,emacs,}.  When the version range at point is @code{unknown}, run
+@code{hyperdrive-history-load}.
 
 @item @kbd{w} (@code{hyperdrive-history-copy-url})
 @kindex w
@@ -1106,7 +1109,7 @@ Remove all data related to a hyperdrive.  This command will prompt
 for confirmation before deleting anything.  In addition to the
 hyperdrive's file content and metadata, @code{hyperdrive-purge} also
 deletes relevant metadata persisted in the @code{hyperdrive-hyperdrives}
-and @code{hyperdrive-version-ranges} variables.
+variable.
 @end deffn
 
 @node Non-interactive use
@@ -1373,61 +1376,11 @@ is specified in a hyper URL@.
 @subsubsection Partial version data
 
 Because hyperdrives are sparsely replicated (see @ref{Sparse replication}),
-@code{hyperdrive.el} might not know the full version history of a file.  When
-the gateway (see @ref{hyper-gateway-ushin}) loads a file from the network, it
-also loads some version metadata about that file.  Specifically, it
-loads the hyperdrive version number at which the file was modified.
-For example, if I load the most recent version of @code{/bar.org} from your
-hyperdrive (see @ref{Versioning, , the prior section}), my gateway would also load the
-start of the version range containing the most recent version of
-@code{/bar.org}.  My @code{hyperdrive.el} knows the latest version number of your
-drive, but with partial version history, the history of @code{/bar.org} in
-your drive looks like this for me:
-
-@multitable {aaaaaaaaaaaaa} {aaaaaaa}
-@headitem Version range
-@tab exists
-@item 53
-@tab yes
-@item 1-52
-@tab unknown
-@end multitable
-
-If I run @code{M-x hyperdrive-previous} while looking at the latest version
-of @code{/bar.org}, @code{hyperdrive.el} will display @code{/bar.org} at version 52.  In
-the background, the gateway will report that @code{/bar.org} at version 52 of
-your hyperdrive was actually created at version 51 of your hyperdrive:
-
-@multitable {aaaaaaaaaaaaa} {aaaaaaa}
-@headitem Version range
-@tab exists
-@item 53
-@tab yes
-@item 51-52
-@tab yes
-@item 1-50
-@tab unknown
-@end multitable
-
-Running @code{hyperdrive-previous} while looking at @code{/bar.org} at version 51 or
-52 will send a request for @code{/bar.org} at version 50.  The gateway will
-report that @code{/bar.org} does not exist at version 50, but it won't report
-whether @code{/bar.org} ever existed @emph{before} version 50.  For example,
-@code{/bar.org} might have been created at version 6, deleted at 14, then
-created again at version 51.  @code{hyperdrive.el} will keep sending requests
-to the network (up to @code{hyperdrive-fill-version-ranges-limit}) until the
-history view looks like:
-
-@multitable {aaaaaaaaaaaaa} {aaaaaa}
-@headitem Version range
-@tab exists
-@item 53
-@tab yes
-@item 51-52
-@tab yes
-@item 1-50
-@tab no
-@end multitable
+@code{hyperdrive.el} might not know the full version history of a file.
+In the history view (see @ref{History buffer}), ranges of the history which
+have not yet been downloaded from the network are displayed as
+``unknown''.  You can run the @code{hyperdrive-history-load} command to
+download the full history and reload the history buffer.
 
 @node No directory version history
 @subsubsection No directory version history
@@ -1601,9 +1554,8 @@ will start the gateway on this port.
 @end defopt
 
 @defopt hyperdrive-persist-location
-Location where @code{persist} will store data, currently
-@code{hyperdrive-hyperdrives} and @code{hyperdrive-version-ranges}.  By default,
-uses the default @code{persist} location.
+Location where @code{persist} will store @code{hyperdrive-hyperdrives}.  By
+default, uses the default @code{persist} location.
 @end defopt
 
 @defopt hyperdrive-timestamp-format
@@ -1614,11 +1566,6 @@ which see.
 @defopt hyperdrive-queue-limit
 Default number of request sent to the gateway at a time in a queue.
 Defaults to @code{20}.
-@end defopt
-
-@defopt hyperdrive-fill-version-ranges-limit
-Default maximum number of requests when filling version history.
-Defaults to @code{100}.
 @end defopt
 
 @defopt hyperdrive-preferred-formats
