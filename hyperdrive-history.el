@@ -299,13 +299,27 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   "Show diff between OLD-ENTRY and NEW-ENTRY.
 Interactively, diff entry at point with previous entry."
   ;; TODO: Set entries based on marked ranges
-  ;; TODO: What to do for unknown-existent entries?
-  (interactive (let* ((new-entry (h/history-entry-at-point))
-                      (old-entry (he/previous new-entry)))
-                 (unless old-entry
-                   (setf old-entry (compat-call copy-tree new-entry t))
-                   (cl-decf (he/version old-entry)))
-                 (list old-entry new-entry)) h/history-mode)
+  (interactive
+   (pcase-let*
+       (((and new-entry (cl-struct h/entry version (etc (map existsp))))
+         (h/history-entry-at-point))
+        (next-node (pcase version
+                     ((guard (eq 'unknown existsp))
+                      (h/user-error "Can't diff with unknown version range.  \
+Try `hyperdrive-history-load' (\\[hyperdrive-history-load])"))
+                     ('nil ; Point is on the header: get second node.
+                      (ewoc-nth h/ewoc 1))
+                     (1 ; Point is on last (nonexistent) range: signal error.
+                      (h/user-error "At earliest version range"))
+                     (_ (ewoc-next h/ewoc (h/ewoc-find-node h/ewoc new-entry
+                                            :predicate #'he/equal-p)))))
+        ;; `old-entry' might be nil if we're at the last node.
+        (old-entry (and next-node (ewoc-data next-node))))
+     (when (and old-entry (eq 'unknown (map-elt (he/etc old-entry) 'existsp)))
+       (h/user-error "Can't diff with unknown version range.  \
+Try `hyperdrive-history-load' (\\[hyperdrive-history-load])"))
+     (list old-entry new-entry))
+   h/history-mode)
   (h/diff-file-entries old-entry new-entry
     :then (lambda ()
             (pop-to-buffer (current-buffer)))))
