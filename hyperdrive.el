@@ -510,8 +510,8 @@ in a directory.  Otherwise, or with universal prefix argument
               (h/message "Downloaded `%s' to `%s'." url filename)
               ;; TODO: If plz adds support for getting response headers when downloading
               ;; as a file (<https://github.com/alphapapa/plz.el/issues/61>), use it here.
-              ;; Filling entry is necessary in order to update hyperdrive disk-usage.
-              (he/fill (h/url-entry url)))
+              ;; Head request is necessary in order to update hyperdrive disk-usage.
+              (he/api 'head (h/url-entry url)))
       :else (lambda (plz-error)
               (h/message "Unable to download: %s: %S" url plz-error)))))
 

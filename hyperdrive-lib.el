@@ -504,7 +504,7 @@ When VERSION is nil, return latest version of ENTRY."
     (setf (he/version entry) version)
     (condition-case err
         ;; FIXME: Requests to out of range version currently hang.
-        (he/fill entry)
+        (he/api 'head entry)
       (plz-error
        (pcase (plz-response-status (plz-error-response (caddr err)))
          ;; FIXME: If plz-error is a curl-error, this block will fail.
@@ -530,8 +530,8 @@ echo area when the request for the file is made."
   ;; FIXME: Some of the synchronous filling functions we've added now cause this to be blocking,
   ;; which is very noticeable when a file can't be loaded from the gateway and eventually times out.
   (let ((hyperdrive (he/hyperdrive entry)))
-    (he/fill entry
-      :then (lambda (entry)
+    (he/api 'head entry
+      :then (lambda (_response)
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
                            (handler (alist-get type h/type-handlers
                                                nil nil #'string-match-p)))
@@ -623,31 +623,6 @@ call THEN with ENTRY as its sole argument."
       ;; TODO: Consider debouncing or something for hyperdrive-persist to minimize I/O.
       (h/persist (he/hyperdrive entry))
       (funcall then entry))))
-
-(cl-defun he/fill (entry &key queue (then 'sync) else)
-  "Fill ENTRY's metadata and call THEN.
-If THEN is `sync', return the filled entry and ignore ELSE.
-Otherwise, make request asynchronously and call THEN with the
-filled entry; or if request fails, call ELSE (which is passed to
-`hyperdrive-api', which see.  If QUEUE, make the fill request in
-the given `plz-queue'"
-  (declare (indent defun))
-  (unless else
-    ;; Binding this in the function argument form causes a spurious
-    ;; lint warning about a docstring being too long, so we do this
-    ;; here instead.
-    (setf else (lambda (plz-error)
-                 (pcase (plz-error-message plz-error)
-                   ((or (rx "queue cleared; request canceled.")
-                        "curl process killed")
-                    ;; Don't message when the queue was cleared
-                    ;; (e.g. if the user reverted too quickly).
-                    nil)
-                   (_
-                    (h/message "hyperdrive-entry-fill: error: %S" plz-error))))))
-  (pcase then
-    ('sync (he/api 'head entry :then 'sync :noquery t))
-    (_ (he/api 'head entry :queue queue :then then :else :else :noquery t))))
 
 (defun h//fill-listing-entries (listing hyperdrive version)
   "Return entries list with metadata from LISTING.
