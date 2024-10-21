@@ -85,13 +85,16 @@
              (directoryp (hyperdrive--entry-directory-p entry)))
         (concat
          (propertize "Version: " 'face 'transient-heading)
-         (propertize (format "%s"
-                             (cond (directoryp (or version "latest"))
-                                   ((null existsp) "nonexistent")
-                                   ((eq 'unknown existsp) "unknown")
-                                   (version version)
-                                   (t "latest")))
-                     'face 'transient-value))))
+         (cond (directoryp (propertize (format "%s" (or version "latest"))
+                                       'face 'h/history-existent))
+               ((null existsp) (propertize "nonexistent"
+                                           'face 'h/history-unknown))
+               ((eq 'unknown existsp) (propertize "unknown"
+                                                  'face 'h/history-unknown))
+               (version (propertize (format "%d" version)
+                                    'face 'h/history-existent))
+               (t (propertize "latest"
+                              'face 'h/history-existent))))))
     ("V p" "Previous" h/open-previous-version
      :inapt-if-not (lambda ()
                      (he/previous (h/menu--scope) :cache-only t))
