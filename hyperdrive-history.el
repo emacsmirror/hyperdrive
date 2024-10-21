@@ -53,7 +53,8 @@
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive path) entry)
        ((cl-struct hyperdrive latest-version) hyperdrive)
-       ((cl-struct plz-response body)
+       ((cl-struct plz-response body
+                   (headers (map x-drive-size x-drive-version)))
         (condition-case err
             ;; TODO: When plz adds :as 'response-with-buffer, use that.
             (h/api 'get (h/history-url entry) :as 'response)
@@ -85,7 +86,14 @@
                 ("unknown" 'unknown)
                 (_ exists)))
         (push history-entry history-entries)))
-    ;; TODO: Get latest-version from gateway and persist drive
+    (when x-drive-size
+      (setf (map-elt (h/etc hyperdrive) 'disk-usage)
+            (cl-parse-integer x-drive-size)))
+    (when x-drive-version
+      (setf (h/latest-version hyperdrive)
+            (string-to-number x-drive-version)))
+    ;; TODO: Update buffers like h/describe-hyperdrive after updating drive.
+    (h/persist (he/hyperdrive entry))
     history-entries))
 
 (defun h/history-find-buffer-visiting (entry)
