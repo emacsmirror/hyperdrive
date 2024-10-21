@@ -308,6 +308,7 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
     (h/persist (he/hyperdrive entry))
 
     ;; Fill entry.
+    (setf (map-elt (he/etc entry) 'existsp) (not (eq method 'delete)))
     (when x-next-version-exists
       (setf (map-elt (he/etc entry) 'next-version-exists-p)
             ;; HACK: At least on Emacs 28 and 29, `json-parse-string' signals an
