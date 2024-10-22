@@ -1773,6 +1773,8 @@ build manifests.
 
 @uref{https://eshelyaron.com/, Eshel Yaron} for the suggestion to add @code{hyperdrive-menu-bar-mode}.
 
+@uref{https://riscy.io/, Chris Rayner} for the suggestion to add @code{hyperdrive-org-transclusion-mode}.
+
 @node Indices
 @chapter Indices
 

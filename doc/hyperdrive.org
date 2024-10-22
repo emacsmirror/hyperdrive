@@ -1310,6 +1310,8 @@ build manifests.
 
 [[https://eshelyaron.com/][Eshel Yaron]] for the suggestion to add ~hyperdrive-menu-bar-mode~.
 
+[[https://riscy.io/][Chris Rayner]] for the suggestion to add ~hyperdrive-org-transclusion-mode~.
+
 * Indices
 
 ** Keystroke index
