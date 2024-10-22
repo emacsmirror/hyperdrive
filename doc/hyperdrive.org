@@ -850,8 +850,7 @@ following snippet to your configuration:
 
 #+begin_src emacs-lisp
   (with-eval-after-load 'org-transclusion
-    (add-to-list 'org-transclusion-extensions 'hyperdrive-org-transclusion)
-    (require 'hyperdrive-org-transclusion))
+    (hyperdrive-org-transclusion-mode +1))
 #+end_src
 
 You can then run ~M-x org-transclusion-add~ on the following link to

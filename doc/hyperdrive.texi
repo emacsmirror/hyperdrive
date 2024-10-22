@@ -1186,8 +1186,7 @@ following snippet to your configuration:
 
 @lisp
 (with-eval-after-load 'org-transclusion
-  (add-to-list 'org-transclusion-extensions 'hyperdrive-org-transclusion)
-  (require 'hyperdrive-org-transclusion))
+  (hyperdrive-org-transclusion-mode +1))
 @end lisp
 
 You can then run @code{M-x org-transclusion-add} on the following link to
