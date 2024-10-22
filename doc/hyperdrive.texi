@@ -148,7 +148,6 @@ Hyperdrive
 Versioning
 
 * Partial version data::
-* No directory version history::
 
 Naming
 
@@ -625,8 +624,7 @@ exist, @code{hyperdrive.el} will prompt you to take action:
 
 @itemize
 @item
-@code{h} (history) to open the @ref{View the hyperdrive version history, , version history} for that file. This only
-works for files, not folders (see @ref{No directory version history})
+@code{h} (history) to open the @ref{View the hyperdrive version history, , version history} for that file.
 @item
 @code{u} (up) to open the parent directory containing that file or folder
 @item
@@ -1368,7 +1366,6 @@ is specified in a hyper URL@.
 
 @menu
 * Partial version data::
-* No directory version history::
 @end menu
 
 @node Partial version data
@@ -1380,29 +1377,6 @@ In the history view (see @ref{History buffer}), ranges of the history which
 have not yet been downloaded from the network are displayed as
 ``unknown''.  You can run the @code{hyperdrive-history-load} command to
 download the full history and reload the history buffer.
-
-@node No directory version history
-@subsubsection No directory version history
-
-Version history for directories is not implemented for a design reason
-and technical reason:
-
-@itemize
-@item
-Directories have neither mtime nor size metadata, so a history view
-for directories wouldn't be that useful.
-@item
-Implementation of directory history would be somewhat ugly, since it
-requires either
-@enumerate
-@item
-storing an entry for each directory in @code{hyperdrive-version-ranges},
-which doesn't optimally normalize version history data, or
-@item
-generating directory history based on the history of the files it
-contains, which can never prove that a directory doesn't exist.
-@end enumerate
-@end itemize
 
 @node Master key
 @subsection Master key
