@@ -499,9 +499,14 @@ When VERSION is nil, return latest version of ENTRY."
 (cl-defun h/open
     (entry &key recurse (createp t) (messagep t)
            (then (lambda ()
-                   (pop-to-buffer (current-buffer)
-                                  '((display-buffer-reuse-window
-                                     display-buffer-same-window))))))
+                   ;; HACK: `pop-to-buffer' moves point back to the beginning of
+                   ;; the buffer in certain cases (see
+                   ;; <https://todo.sr.ht/~ushin/ushin/213>), so
+                   ;; `save-excursion' ensure that point is retained.
+                   (save-excursion
+                     (pop-to-buffer (current-buffer)
+                                    '((display-buffer-reuse-window
+                                       display-buffer-same-window)))))))
   "Open hyperdrive ENTRY.
 If RECURSE, proceed up the directory hierarchy if given path is
 not found.  THEN is a function to pass to the handler which will
