@@ -26,6 +26,8 @@ code since ~v0.4~, and more correctly handles edge cases and errors.
 - Handle diffing a file when the previous version is not known to exist.
 - ~hyperdrive-menu~ and the menu bar now correctly indicate when the
   next and/or previous version of current directory do not exist.
+- Correctly jump to headings when following Org links to a hyperdrive
+  file whose buffer is already open in a window.
 
 ** Internal
 
