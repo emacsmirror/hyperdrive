@@ -72,11 +72,13 @@ it is added automatically at run-time using the value of
   :type 'natnum)
 
 (defcustom h/persist-location nil
-  ;; TODO: Consider using XDG locations for this.  (Note that xdg-state-home is
-  ;; only in Emacs 29+ and is not in compat.)
+  ;; TODO: Consider using XDG locations for this, as well as storing
+  ;; -hyperdrives separately from -version-ranges.  (Note that xdg-state-home
+  ;; is only in Emacs 29+ and is not in compat.)
   "Location where `persist' will store data.
 
-- `hyperdrive-hyperdrives'"
+- `hyperdrive-hyperdrives'
+- `hyperdrive-existent-versions'"
   :type '(choice (const :tag "Use default persist location" nil)
                  (file :tag "Custom location")))
 
