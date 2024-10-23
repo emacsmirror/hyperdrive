@@ -48,7 +48,8 @@
     (format "hyper://%s/$/history%s" public-key path)))
 
 (cl-defun h/history-get (entry)
-  "Return list of file history entries for ENTRY."
+  "Return list of file history entries for ENTRY.
+Updates `hyperdrive-existent-versions' as a side effect."
   (declare (indent defun))
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive path) entry)
@@ -85,6 +86,8 @@
               (pcase exists
                 ("unknown" 'unknown)
                 (_ exists)))
+        (when (eq t exists)
+          (h/update-existent-versions hyperdrive path version))
         (push history-entry history-entries)))
     (when x-drive-size
       (setf (map-elt (h/etc hyperdrive) 'disk-usage)
