@@ -232,6 +232,13 @@ metadata from the response."
   (cl-assert (null (plist-get rest :body-type)))
   (setf (plist-get rest :body-type) 'binary)
   (unless (map-elt rest :then) (setf (map-elt rest :then) 'sync))
+  (when-let* ((version (he/version entry))
+              (existent-versions (gethash (h//existent-versions-key entry)
+                                          h/existent-versions))
+              (next-existent-version
+               (cl-find-if (apply-partially #'< version) existent-versions)))
+    (push `("X-Next-Version-Hint" . ,next-existent-version)
+          (map-elt rest :headers)))
   (pcase-let* (((map :then) rest))
     (unless (eq 'sync then)
       (setf (plist-get rest :then)
@@ -259,9 +266,9 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
              ;; Default to UTF-8
              'utf-8)
             (detected-encoding detected-encoding))))
-       ((map link allow content-length content-type last-modified x-drive-size
-             x-drive-version x-file-block-length x-file-block-length-downloaded
-             x-next-version-exists x-next-version-number
+       ((map link allow content-length content-type last-modified etag
+             x-drive-size x-file-block-length x-file-block-length-downloaded
+             x-drive-version x-next-version-exists x-next-version-number
              x-previous-version-exists x-previous-version-number)
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
@@ -346,6 +353,22 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
             (ignore-errors
               (cl-parse-integer x-file-block-length-downloaded))))
 
+    ;; Fill `hyperdrive-existent-versions'
+    (unless (eq method 'delete)
+      (when etag
+        (h/update-existent-versions
+         (he/hyperdrive entry) (he/path entry) (json-parse-string etag)))
+      (when-let (((string-equal "true" x-next-version-exists))
+                 (next-version-number
+                  (json-parse-string x-next-version-number :null-object nil)))
+        (h/update-existent-versions
+         (he/hyperdrive entry) (he/path entry) next-version-number))
+      (when-let (((string-equal "true" x-previous-version-exists))
+                 (previous-version-number
+                  (json-parse-string x-previous-version-number)))
+        (h/update-existent-versions
+         (he/hyperdrive entry) (he/path entry) previous-version-number)))
+
     ;; Redisplay entry.
     (unless (h//entry-directory-p entry)
       ;; There's currently never a reason to redisplay directory entries since
@@ -354,6 +377,14 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
       ;; NOTE: When we send a HEAD and GET request in rapid succession,
       ;; `he//invalidate' gets called twice.  Consider debouncing.
       (he//invalidate entry))))
+
+(defun h/purge-existent-versions (hyperdrive)
+  "Purge all existent versions for HYPERDRIVE."
+  (maphash (lambda (key _val)
+             (when (h/equal-p (he/hyperdrive key) hyperdrive)
+               (remhash key h/existent-versions)))
+           h/existent-versions)
+  (persist-save 'h/existent-versions))
 
 (declare-function h/dir--invalidate-entry "hyperdrive-dir")
 (declare-function h/history--invalidate-entry "hyperdrive-history")
@@ -480,6 +511,11 @@ before making the entry struct."
 ;;;; Entries
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
+
+(defun h//existent-versions-key (entry)
+  "Return ENTRY with only `:hyperdrive' and `:path' slots.
+Intended to be used as hash table key in `hyperdrive-existent-versions'."
+  (he//create :hyperdrive (he/hyperdrive entry) :path (he/path entry)))
 
 (defun he/at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
@@ -620,7 +656,7 @@ Accepts HYPERDRIVE and VERSION of parent entry as arguments.
 LISTING should be an alist based on the JSON retrieved in, e.g.,
 `hyperdrive-dir-handler'."
   (mapcar
-   (pcase-lambda ((map key value blockLengthDownloaded))
+   (pcase-lambda ((map key value seq blockLengthDownloaded))
      (let* ((mtime (map-elt (map-elt value 'metadata) 'mtime))
             (size (map-elt (map-elt value 'blob) 'byteLength))
             (block-length (map-elt (map-elt value 'blob) 'blockLength))
@@ -635,8 +671,23 @@ LISTING should be an alist based on the JSON retrieved in, e.g.,
        (when blockLengthDownloaded
          (setf (map-elt (he/etc entry) 'block-length-downloaded)
                blockLengthDownloaded))
+       (when seq
+         (h/update-existent-versions
+          ;; seq is the hyperdrive version *before* entry was added/modified
+          (he/hyperdrive entry) (he/path entry) (1+ seq)))
        entry))
    listing))
+
+(defun h/update-existent-versions (hyperdrive path version)
+  "Update and persist `hyperdrive-existent-versions'.
+Accepts HYPERDRIVE, PATH, and VERSION, an existent range start."
+  (cl-callf (lambda (existent-versions)
+              (cl-pushnew version existent-versions)
+              (sort existent-versions #'<))
+      (gethash (h//existent-versions-key
+                (he//create :hyperdrive hyperdrive :path path :version version))
+               h/existent-versions))
+  (persist-save 'h/existent-versions))
 
 (defun h/fill (hyperdrive)
   "Synchronously fill latest version and drive size in HYPERDRIVE."
@@ -684,12 +735,14 @@ HYPERDRIVE's public metadata file."
 
 - HYPERDRIVE file content and metadata managed by the gateway
 - hash table entry for HYPERDRIVE in `hyperdrive-hyperdrives'
+- hash table entries for HYPERDRIVE in `hyperdrive-existent-versions'
 
 Call ELSE if request fails."
   (declare (indent defun))
   (he/api 'delete (he/create :hyperdrive hyperdrive)
     :then (lambda (response)
             (h/persist hyperdrive :purge t)
+            (h/purge-existent-versions hyperdrive)
             (funcall then response))
     :else else))
 
