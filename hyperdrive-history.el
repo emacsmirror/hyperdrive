@@ -337,12 +337,8 @@ Try `hyperdrive-history-load' (\\[hyperdrive-history-load])"))
 
 (defun h/history-find-file (entry)
   "Visit hyperdrive ENTRY at point.
-When entry does not exist, does nothing and returns nil.  When
-entry is not known to exist, attempts to load entry at ENTRY's
-ETC slot's RANGE-END value.
-
-Interactively, visit entry at point in `hyperdrive-history'
-buffer."
+When entry does not exist, signal an error.  When entry is not
+known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/open entry))
@@ -351,23 +347,16 @@ buffer."
 
 (defun h/history-find-file-other-window (entry)
   "Visit hyperdrive ENTRY at point in other window.
-Then call THEN.  When entry does not exist, does nothing and
-returns nil.  When entry is not known to exist, attempts to load
-entry at ENTRY's ETC slot's RANGE-END value.
-
-Interactively, visit entry at point in `hyperdrive-history'
-buffer."
+Then call THEN.  When entry does not exist, signal an error.
+When entry is not known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
   (h/open entry :then (lambda () (pop-to-buffer (current-buffer) t))))
 
 (declare-function h/view-file "hyperdrive")
 (defun h/history-view-file (entry)
   "Open hyperdrive ENTRY at point in `view-mode'.
-When entry does not exist or is not known to exist, does nothing
-and returns nil.
-
-Interactively, visit entry at point in `hyperdrive-history'
-buffer."
+When entry does not exist, signal an error.  When entry is not
+known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/view-file entry))
@@ -376,7 +365,7 @@ buffer."
 
 (declare-function h/copy-url "hyperdrive")
 (defun h/history-copy-url (entry)
-  "Copy URL of ENTRY into the kill ring.
+  "Copy URL of ENTRY at point into the kill ring.
 When entry does not exist, signal an error.  When entry is not
 known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
@@ -388,6 +377,7 @@ known to exist, reload history."
 (declare-function h/download "hyperdrive")
 (defun h/history-download-file (entry)
   "Download ENTRY at point.
+Prompts for download destination path.
 When ENTRY does not exist, signal an error.  When ENTRY is not
 known to exist, reload history."
   ;; To avoid duplicating the `read-file-name' prompt, the interactive form does
