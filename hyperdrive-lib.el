@@ -232,6 +232,13 @@ metadata from the response."
   (cl-assert (null (plist-get rest :body-type)))
   (setf (plist-get rest :body-type) 'binary)
   (unless (map-elt rest :then) (setf (map-elt rest :then) 'sync))
+  (when-let* ((version (he/version entry))
+              (existent-versions (gethash (h//existent-versions-key entry)
+                                          h/existent-versions))
+              (next-existent-version
+               (cl-find-if (apply-partially #'< version) existent-versions)))
+    (push `("X-Next-Version-Hint" . ,next-existent-version)
+          (map-elt rest :headers)))
   (pcase-let* (((map :then) rest))
     (unless (eq 'sync then)
       (setf (plist-get rest :then)
