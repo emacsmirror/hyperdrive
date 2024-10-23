@@ -378,6 +378,14 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
       ;; `he//invalidate' gets called twice.  Consider debouncing.
       (he//invalidate entry))))
 
+(defun h/purge-existent-versions (hyperdrive)
+  "Purge all existent versions for HYPERDRIVE."
+  (maphash (lambda (key _val)
+             (when (h/equal-p (he/hyperdrive key) hyperdrive)
+               (remhash key h/existent-versions)))
+           h/existent-versions)
+  (persist-save 'h/existent-versions))
+
 (declare-function h/dir--invalidate-entry "hyperdrive-dir")
 (declare-function h/history--invalidate-entry "hyperdrive-history")
 (defun he//invalidate (entry)
