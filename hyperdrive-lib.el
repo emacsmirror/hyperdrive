@@ -731,12 +731,14 @@ HYPERDRIVE's public metadata file."
 
 - HYPERDRIVE file content and metadata managed by the gateway
 - hash table entry for HYPERDRIVE in `hyperdrive-hyperdrives'
+- hash table entries for HYPERDRIVE in `hyperdrive-existent-versions'
 
 Call ELSE if request fails."
   (declare (indent defun))
   (he/api 'delete (he/create :hyperdrive hyperdrive)
     :then (lambda (response)
             (h/persist hyperdrive :purge t)
+            (h/purge-existent-versions hyperdrive)
             (funcall then response))
     :else else))
 
