@@ -20,6 +20,7 @@ code since ~v0.4~, and more correctly handles edge cases and errors.
   delete the old data inside ~hyperdrive-persist-location~.
 - Link website, library source, and Info manual in Customize group.
 - More colorful version descriptions in ~hyperdrive-menu~.
+- Display latest hyperdrive version at top of history buffer.
 
 ** Fixed
 
