@@ -385,7 +385,9 @@ buffer."
 
 (declare-function h/download "hyperdrive")
 (defun h/history-download-file (entry)
-  "Download ENTRY at point."
+  "Download ENTRY at point.
+When ENTRY does not exist, signal an error.  When ENTRY is not
+known to exist, reload history."
   ;; To avoid duplicating the `read-file-name' prompt, the interactive form does
   ;; not include the filename.
   (interactive (list (h/history-entry-at-point)) h/history-mode)
@@ -395,7 +397,7 @@ buffer."
          (read-file-name "Filename: "
                          (expand-file-name name h/download-directory))))
     ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/user-error "File not known to exist!"))))
+    ('unknown (h/history-load entry))))
 
 (declare-function h/forget-file "hyperdrive")
 (defun h/history-forget-file (entry)
