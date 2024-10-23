@@ -465,7 +465,7 @@ Capture group matches version number.")
 
 ;;;;; Persisted variables
 
-(persist-defvar h/hyperdrives (make-hash-table :test #'equal)
+(persist-defvar h/hyperdrives (make-hash-table :test 'equal)
   "List of known hyperdrives."
   h/persist-location)
 
