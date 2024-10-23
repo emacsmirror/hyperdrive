@@ -202,7 +202,7 @@ to the gateway which do not involve an entry.  Otherwise, use
                ;; We wrap the provided ELSE in our own lambda that
                ;; checks for common errors.
                (else* (apply-partially #'h/api-default-else else)))
-    (plist-put rest :else else*)
+    (setf rest (plist-put rest :else else*))
     (condition-case err
         ;; The `condition-case' is only intended for synchronous
         ;; requests.  Async requests should never signal a `plz-error'
