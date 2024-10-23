@@ -376,12 +376,14 @@ buffer."
 
 (declare-function h/copy-url "hyperdrive")
 (defun h/history-copy-url (entry)
-  "Copy URL of ENTRY into the kill ring."
+  "Copy URL of ENTRY into the kill ring.
+When entry does not exist, signal an error.  When entry is not
+known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
     ('t (h/copy-url entry))
     ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/user-error "File not known to exist!"))))
+    ('unknown (h/history-load entry))))
 
 (declare-function h/download "hyperdrive")
 (defun h/history-download-file (entry)
