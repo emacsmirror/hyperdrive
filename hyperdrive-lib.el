@@ -78,7 +78,6 @@ Passes ARGS to `format-message'."
 - block-length :: Number of blocks file blob takes up.
 - block-length-downloaded :: Number of blocks downloaded for file.
 - existsp :: Whether entry exists at its version.
-- range-end :: The last drive version pointing to the same blob.
 - next-version-exists-p :: Whether or not the next version exists.
   + t :: next version range exists
   + nil :: next version range does not exist
@@ -1497,12 +1496,18 @@ Compares their public keys."
   "Return non-nil if entries A and B have the same hyperdrive."
   (h/equal-p (he/hyperdrive a) (he/hyperdrive b)))
 
-(defun he/within-version-range-p (entry entry-with-range-end)
-  "Return non-nil if ENTRY is within range of ENTRY-WITH-RANGE-END."
-  (<= (he/version entry-with-range-end)
-      (or (he/version entry)
-          (h/latest-version (he/hyperdrive entry)))
-      (map-elt (he/etc entry-with-range-end) 'range-end)))
+(defun he/within-version-range-p (entry entry-with-next-version-number)
+  "Return non-nil if ENTRY is within range of ENTRY-WITH-NEXT-VERSION-NUMBER."
+  (let* ((latest-version (h/latest-version (he/hyperdrive entry)))
+         (range-start (he/version entry-with-next-version-number))
+         (version (or (he/version entry) latest-version))
+         (range-end
+          (if-let ((next-version-number
+                    (map-elt (he/etc entry-with-next-version-number)
+                             'next-version-number)))
+              (1- next-version-number)
+            latest-version)))
+    (<= range-start version range-end)))
 
 (defun h/safe-p (hyperdrive)
   "Return whether HYPERDRIVE is safe or not.
