@@ -650,6 +650,17 @@ LISTING should be an alist based on the JSON retrieved in, e.g.,
        entry))
    listing))
 
+(defun h/update-existent-versions (hyperdrive path version)
+  "Update and persist `hyperdrive-existent-versions'.
+Accepts HYPERDRIVE, PATH, and VERSION, an existent range start."
+  (cl-callf (lambda (existent-versions)
+              (cl-pushnew version existent-versions)
+              (sort existent-versions #'<))
+      (gethash (h//existent-versions-key
+                (he//create :hyperdrive hyperdrive :path path :version version))
+               h/existent-versions))
+  (persist-save 'h/existent-versions))
+
 (defun h/fill (hyperdrive)
   "Synchronously fill latest version and drive size in HYPERDRIVE."
   (he/api 'head (he/create :hyperdrive hyperdrive :path "/")))
