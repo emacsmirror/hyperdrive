@@ -78,7 +78,6 @@ Passes ARGS to `format-message'."
 - block-length :: Number of blocks file blob takes up.
 - block-length-downloaded :: Number of blocks downloaded for file.
 - existsp :: Whether entry exists at its version.
-- range-end :: The last drive version pointing to the same blob.
 - next-version-exists-p :: Whether or not the next version exists.
   + t :: next version range exists
   + nil :: next version range does not exist
