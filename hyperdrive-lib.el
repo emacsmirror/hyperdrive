@@ -656,7 +656,7 @@ Accepts HYPERDRIVE and VERSION of parent entry as arguments.
 LISTING should be an alist based on the JSON retrieved in, e.g.,
 `hyperdrive-dir-handler'."
   (mapcar
-   (pcase-lambda ((map key value blockLengthDownloaded))
+   (pcase-lambda ((map key value seq blockLengthDownloaded))
      (let* ((mtime (map-elt (map-elt value 'metadata) 'mtime))
             (size (map-elt (map-elt value 'blob) 'byteLength))
             (block-length (map-elt (map-elt value 'blob) 'blockLength))
@@ -671,6 +671,10 @@ LISTING should be an alist based on the JSON retrieved in, e.g.,
        (when blockLengthDownloaded
          (setf (map-elt (he/etc entry) 'block-length-downloaded)
                blockLengthDownloaded))
+       (when seq
+         (h/update-existent-versions
+          ;; seq is the hyperdrive version *before* entry was added/modified
+          (he/hyperdrive entry) (he/path entry) (1+ seq)))
        entry))
    listing))
 
