@@ -113,15 +113,10 @@ Updates `hyperdrive-existent-versions' as a side effect."
   (mouse-set-point event)
   (call-interactively #'h/history-find-file-other-window))
 
-(defun h/history-pp (thing)
-  "Pretty-print THING.
+(defun h/history-pp (entry)
+  "Pretty-print history ENTRY.
+ENTRY's ETC must have `existsp' and `next-version-number' keys.
 To be used as the pretty-printer for `ewoc-create'."
-  ;; FIXME: Perform type-checking? If not, is this function necessary?
-  (insert (h/history--format-entry thing)))
-
-(defun h/history--format-entry (entry)
-  "Return ENTRY formatted as a string.
-ENTRY's ETC slot must have `existsp' and `next-version-number' keys."
   (pcase-let*
       (((cl-struct hyperdrive-entry version size mtime etc) entry)
        ((map block-length block-length-downloaded existsp next-version-number)
@@ -140,31 +135,32 @@ ENTRY's ETC slot must have `existsp' and `next-version-number' keys."
                     (propertize " " 'display '(space :width h/timestamp-width)))))
     ;; FIXME: Use dynamic width of range column equal to 2N+1, where N
     ;; is the width of the hyperdrive's latest version
-    (format
-     "%7s  %19s  %6s  %s"
-     (propertize exists-marker
-                 'face (pcase-exhaustive existsp
-                         ('t 'h/history-existent)
-                         ('nil 'h/history-nonexistent)
-                         ('unknown 'h/history-unknown)))
-     (propertize formatted-range
-                 'face 'h/history-range
-                 'mouse-face 'highlight
-                 'help-echo (format (pcase-exhaustive existsp
-                                      ('t "Open version %s")
-                                      ('nil "Nonexistent at version %s")
-                                      ('unknown "Load history at version %s"))
-                                    version))
-     (propertize (or size "")
-                 'face (and block-length-downloaded block-length
-                            (pcase block-length-downloaded
-                              (0 'h/size-not-downloaded)
-                              ((pred (= block-length)) 'h/size-fully-downloaded)
-                              (_ 'h/size-partially-downloaded)))
-                 'help-echo (format "%s of %s blocks downloaded"
-                                    block-length-downloaded block-length))
-     (propertize (or timestamp "")
-                 'face 'h/timestamp))))
+    (insert
+     (format
+      "%7s  %19s  %6s  %s"
+      (propertize exists-marker
+                  'face (pcase-exhaustive existsp
+                          ('t 'h/history-existent)
+                          ('nil 'h/history-nonexistent)
+                          ('unknown 'h/history-unknown)))
+      (propertize formatted-range
+                  'face 'h/history-range
+                  'mouse-face 'highlight
+                  'help-echo (format (pcase-exhaustive existsp
+                                       ('t "Open version %s")
+                                       ('nil "Nonexistent at version %s")
+                                       ('unknown "Load history at version %s"))
+                                     version))
+      (propertize (or size "")
+                  'face (and block-length-downloaded block-length
+                             (pcase block-length-downloaded
+                               (0 'h/size-not-downloaded)
+                               ((pred (= block-length)) 'h/size-fully-downloaded)
+                               (_ 'h/size-partially-downloaded)))
+                  'help-echo (format "%s of %s blocks downloaded"
+                                     block-length-downloaded block-length))
+      (propertize (or timestamp "")
+                  'face 'h/timestamp)))))
 
 (defun h/history-entry-at-point (&optional no-error)
   "Return entry at point.
