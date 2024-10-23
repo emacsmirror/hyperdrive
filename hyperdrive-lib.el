@@ -481,6 +481,11 @@ before making the entry struct."
 
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
+(defun h//existent-versions-key (entry)
+  "Return ENTRY with only `:hyperdrive' and `:path' slots.
+Intended to be used as hash table key in `hyperdrive-existent-versions'."
+  (he//create :hyperdrive (he/hyperdrive entry) :path (he/path entry)))
+
 (defun he/at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
 When VERSION is nil, return latest version of ENTRY."
