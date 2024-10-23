@@ -266,9 +266,9 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
              ;; Default to UTF-8
              'utf-8)
             (detected-encoding detected-encoding))))
-       ((map link allow content-length content-type last-modified x-drive-size
-             x-drive-version x-file-block-length x-file-block-length-downloaded
-             x-next-version-exists x-next-version-number
+       ((map link allow content-length content-type last-modified etag
+             x-drive-size x-file-block-length x-file-block-length-downloaded
+             x-drive-version x-next-version-exists x-next-version-number
              x-previous-version-exists x-previous-version-number)
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
@@ -352,6 +352,22 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
       (setf (map-elt (he/etc entry) 'block-length-downloaded)
             (ignore-errors
               (cl-parse-integer x-file-block-length-downloaded))))
+
+    ;; Fill `hyperdrive-existent-versions'
+    (unless (eq method 'delete)
+      (when etag
+        (h/update-existent-versions
+         (he/hyperdrive entry) (he/path entry) (json-parse-string etag)))
+      (when-let (((string-equal "true" x-next-version-exists))
+                 (next-version-number
+                  (json-parse-string x-next-version-number :null-object nil)))
+        (h/update-existent-versions
+         (he/hyperdrive entry) (he/path entry) next-version-number))
+      (when-let (((string-equal "true" x-previous-version-exists))
+                 (previous-version-number
+                  (json-parse-string x-previous-version-number)))
+        (h/update-existent-versions
+         (he/hyperdrive entry) (he/path entry) previous-version-number)))
 
     ;; Redisplay entry.
     (unless (h//entry-directory-p entry)
