@@ -384,26 +384,16 @@ buffer."
     ('unknown (h/user-error "File not known to exist!"))))
 
 (declare-function h/download "hyperdrive")
-(defun h/history-download-file (entry filename)
-  "Download ENTRY at point to FILENAME on disk."
-  (interactive
-   (pcase-let*
-       ((entry (h/history-entry-at-point))
-        ((cl-struct hyperdrive-entry name) entry)
-        (read-filename (and (eq t (map-elt (he/etc entry) 'existsp))
-                            ;; Only prompt for filename when entry exists
-
-                            ;; FIXME: This function is only intended for
-                            ;; interactive use. Is it acceptable to have a nil
-                            ;; argument list and perform the user interactions
-                            ;; in the body? This change would deduplicate the
-                            ;; check for the existence of the entry.
-                            (read-file-name
-                             "Filename: "
-                             (expand-file-name name h/download-directory)))))
-     (list entry read-filename)) h/history-mode)
+(defun h/history-download-file (entry)
+  "Download ENTRY at point."
+  ;; To avoid duplicating the `read-file-name' prompt, the interactive form does
+  ;; not include the filename.
+  (interactive (list (h/history-entry-at-point)) h/history-mode)
   (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
-    ('t (h/download entry filename))
+    ('t (h/download
+         entry
+         (read-file-name "Filename: "
+                         (expand-file-name name h/download-directory))))
     ('nil (h/user-error "File does not exist!"))
     ('unknown (h/user-error "File not known to exist!"))))
 
