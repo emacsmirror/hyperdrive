@@ -335,22 +335,27 @@ Try `hyperdrive-history-load' (\\[hyperdrive-history-load])"))
     :then (lambda ()
             (pop-to-buffer (current-buffer)))))
 
+(defmacro h/history--when-exists (&rest body)
+  (declare (indent defun))
+  `(pcase-exhaustive (map-elt (he/etc entry) 'existsp)
+     ('t ,@body)
+     ('nil (h/user-error "File does not exist!"))
+     ('unknown (h/history-load entry))))
+
 (defun h/history-find-file (entry)
   "Visit hyperdrive ENTRY at point.
 When entry does not exist, signal an error.  When entry is not
 known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
-  (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
-    ('t (h/open entry))
-    ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-load entry))))
+  (h/history--when-exists (h/open entry)))
 
 (defun h/history-find-file-other-window (entry)
   "Visit hyperdrive ENTRY at point in other window.
 Then call THEN.  When entry does not exist, signal an error.
 When entry is not known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
-  (h/open entry :then (lambda () (pop-to-buffer (current-buffer) t))))
+  (h/history--when-exists
+    (h/open entry :then (lambda () (pop-to-buffer (current-buffer) t)))))
 
 (declare-function h/view-file "hyperdrive")
 (defun h/history-view-file (entry)
@@ -358,10 +363,7 @@ When entry is not known to exist, reload history."
 When entry does not exist, signal an error.  When entry is not
 known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
-  (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
-    ('t (h/view-file entry))
-    ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-load entry))))
+  (h/history--when-exists (h/view-file entry)))
 
 (declare-function h/copy-url "hyperdrive")
 (defun h/history-copy-url (entry)
@@ -369,10 +371,7 @@ known to exist, reload history."
 When entry does not exist, signal an error.  When entry is not
 known to exist, reload history."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
-  (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
-    ('t (h/copy-url entry))
-    ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-load entry))))
+  (h/history--when-exists (h/copy-url entry)))
 
 (declare-function h/download "hyperdrive")
 (defun h/history-download-file (entry)
@@ -383,13 +382,10 @@ known to exist, reload history."
   ;; To avoid duplicating the `read-file-name' prompt, the interactive form does
   ;; not include the filename.
   (interactive (list (h/history-entry-at-point)) h/history-mode)
-  (pcase-exhaustive (map-elt (he/etc entry) 'existsp)
-    ('t (h/download
-         entry
-         (read-file-name "Filename: "
-                         (expand-file-name name h/download-directory))))
-    ('nil (h/user-error "File does not exist!"))
-    ('unknown (h/history-load entry))))
+  (h/history--when-exists
+    (h/download entry
+                (read-file-name "Filename: "
+                                (expand-file-name name h/download-directory)))))
 
 (declare-function h/forget-file "hyperdrive")
 (defun h/history-forget-file (entry)
@@ -398,7 +394,7 @@ Only delete the blob(s) for the file at ENTRY's version range;
 other blobs are not cleared.  Hyperdrive directory contents are
 not modified; file blobs may be recoverable from other peers."
   (interactive (list (h/history-entry-at-point)) h/history-mode)
-  (h/forget-file entry))
+  (h/history--when-exists (h/forget-file entry)))
 
 (provide 'hyperdrive-history)
 
