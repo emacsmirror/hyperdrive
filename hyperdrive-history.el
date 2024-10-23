@@ -118,13 +118,15 @@ Updates `hyperdrive-existent-versions' as a side effect."
 ENTRY's ETC must have `existsp' and `next-version-number' keys.
 To be used as the pretty-printer for `ewoc-create'."
   (pcase-let*
-      (((cl-struct hyperdrive-entry version size mtime etc) entry)
+      (((cl-struct hyperdrive-entry hyperdrive version size mtime etc) entry)
        ((map block-length block-length-downloaded existsp next-version-number)
         etc)
-       (range-end (and next-version-number (1- next-version-number)))
+       (range-end (if next-version-number
+                      (1- next-version-number)
+                    (h/latest-version hyperdrive)))
        (formatted-range (if (eq version range-end)
                             (format "%d" version)
-                          (format "%d-%s" version (or range-end ""))))
+                          (format "%d-%d" version (or range-end ""))))
        (exists-marker (format "%7s" (pcase-exhaustive existsp
                                       ('t "Yes")
                                       ('nil "No")
