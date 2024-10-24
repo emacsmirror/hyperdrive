@@ -122,6 +122,29 @@ list of BLOCKERs, as in `fons-blocked'."
                         relations))))
       (add-relations-from root))))
 
+(cl-defun fons-blocked (blockers &key blocked-fn finally)
+  "Calculate hash table of blocked and call FINALLY.
+
+BLOCKED-FN is a function that accepts two arguments, BLOCKER and
+a function which should be called asynchronously with a list of
+blocked IDs by BLOCKER.
+
+FINALLY is a callback function which will be called with the
+blocked hash table as its sole argument."
+  (let ((blocked (make-hash-table :test 'equal))
+        (pending (hash-table-count blockers)))
+    (maphash (lambda (blocker _)
+               (funcall
+                blocked-fn blocker
+                (lambda (&optional blocks)
+                  ;; Argument is optional so the callback can be called in case of
+                  ;; error to decrement `pending'.
+                  (dolist (block blocks)
+                    (push blocker (gethash block blocked)))
+                  (when (zerop (cl-decf pending))
+                    (funcall finally blocked)))))
+             blockers)))
+
 (cl-defun fons-blocked-from-p (&key from-id target-id users)
   "Return non-nil if TARGET-ID is blocked from FROM-ID's
 perspective.  USERS is a list of `fons-user' structs."
@@ -131,23 +154,6 @@ perspective.  USERS is a list of `fons-user' structs."
                  thereis (fons-blocked-from-p
                           :from blocker :target target-id :users users))))
   )
-
-
-
-(defun fons-blocked (blockers)
-  "Return BLOCKED hash table based on BLOCKERS.
-BLOCKERS may be a hash table, keyed by BLOCKER identifier.
-BLOCKERS hash values are unused, but may be a list of
-`fons-relation' structs, as in the car of the return value of
-`fons-relations'.
-
-BLOCKED hash table is keyed by BLOCKED identifier, and each hash
-value is a list of BLOCKER identifiers which blocked BLOCKED."
-  (let ((blocked (make-hash-table :test #'equal)))
-    (dolist (blocker (hash-table-keys blockers))
-      (dolist (direct-block (fons-direct-blocks blocker))
-        (cl-callf2 push blocker (gethash direct-block blocked))))
-    blocked))
 
 (defun hyperdrive-fons-relations-hops (relations)
   "Return hops for RELATIONS.
