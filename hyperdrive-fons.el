@@ -42,11 +42,15 @@
 ;;;; Functions
 
 (cl-defun fons-relations
-    (root &key hops-fn (blocked (make-hash-table)) (max-hops 3))
-  "Return hash table of relations.
+    (root &key hops-fn finally (blocked (make-hash-table)) (max-hops 3))
+  "Calculate hash table of relations and call FINALLY.
 
-HOPS-FN is the function that accepts the argument FROM and
-returns a list of `fons-hops' structs.
+HOPS-FN is the function that accepts two arguments, FROM and a
+function which should be called asynchronously with a list of
+`fons-hops' structs from FROM.
+
+FINALLY is a callback function which will be called with the
+relations hash table as its sole argument.
 
 Each table contains `fons-relation' structs from ROOT (a
 `fons-user' struct).  Recurses up to MAX-HOPS times.
@@ -59,57 +63,64 @@ list of BLOCKERs, as in `fons-blocked'."
     (error "MAX-HOPS must be an positive integer"))
   (when (gethash root blocked)
     (error "BLOCKED must not contain ROOT"))
-  (let ((relations (make-hash-table :test 'equal)))
-    (cl-labels ((add-relations-from (from &optional paths-to-from)
-                  ;; TODO: Consider returning a list of TOs instead of hops.
-                  (dolist (hop (funcall hops-fn from))
-                    (when-let ((to-relation
-                                (and (not (equal root (fons-hop-to hop)))
-                                     (ensure-relation (fons-hop-to hop))))
-                               (paths-to-to
-                                (if paths-to-from
-                                    ;; `extended-paths' may return nil if the only
-                                    ;; paths to TO are circular.
-                                    (extended-paths paths-to-from hop)
-                                  ;; On the 1st hop, paths-to-from is nil.
-                                  (list (make-fons-path :hops (list hop))))))
-                      (update-relation to-relation paths-to-to)
-                      (when (and (within-max-hops-p to-relation)
-                                 (not (gethash (fons-hop-to hop) blocked)))
-                        (add-relations-from (fons-relation-to to-relation)
-                                            paths-to-to)))))
-                (update-relation (relation paths)
-                  (setf (fons-relation-paths relation)
-                        (append paths (fons-relation-paths relation))))
-                (extended-paths (paths hop)
-                  "Return list of PATHS extended by HOP without circular hops."
-                  (remq nil
-                        (mapcar
-                         (lambda (path)
-                           (unless (circular-p path hop)
-                             (make-fons-path
-                              :hops (append (fons-path-hops path) (list hop)))))
-                         paths)))
-                (circular-p (path last-hop)
-                  "Return non-nil when HOP circles back to any hop in PATH."
-                  (cl-some (lambda (hop)
-                             (equal (fons-hop-to last-hop) (fons-hop-from hop)))
-                           (fons-path-hops path)))
-                (within-max-hops-p (relation)
-                  (cl-some (lambda (path)
-                             (length< (fons-path-hops path) max-hops))
-                           (fons-relation-paths relation)))
-                (ensure-relation (to)
-                  "Add relation from ROOT to TO if none exists, then return it."
-                  (or (gethash to relations)
-                      (puthash to (make-fons-relation :from root :to to)
-                               relations))))
-      (add-relations-from root)
-      (maphash (lambda (to relation)
-                 (when (gethash to blocked)
-                   (setf (fons-relation-blocked-p relation) t)))
-               relations)
-      relations)))
+  (let ((relations (make-hash-table :test 'equal))
+        (pending 0))
+    (cl-labels
+        ((add-relations-from (from &optional paths-to-from)
+           ;; TODO: Consider returning a list of TOs instead of hops.
+           (cl-incf pending)
+           (funcall
+            hops-fn from
+            (lambda (hops)
+              (dolist (hop hops)
+                (when-let ((to-relation
+                            (and (not (equal root (fons-hop-to hop)))
+                                 (ensure-relation (fons-hop-to hop))))
+                           (paths-to-to
+                            (if paths-to-from
+                                ;; `extended-paths' may return nil if the only
+                                ;; paths to TO are circular.
+                                (extended-paths paths-to-from hop)
+                              ;; On the 1st hop, paths-to-from is nil.
+                              (list (make-fons-path :hops (list hop))))))
+                  (update-relation to-relation paths-to-to)
+                  (when (and (within-max-hops-p to-relation)
+                             (not (gethash (fons-hop-to hop) blocked)))
+                    (add-relations-from (fons-relation-to to-relation)
+                                        paths-to-to))))
+              (when (zerop (cl-decf pending))
+                (maphash (lambda (to relation)
+                           (when (gethash to blocked)
+                             (setf (fons-relation-blocked-p relation) t)))
+                         relations)
+                (funcall finally relations)))))
+         (update-relation (relation paths)
+           (setf (fons-relation-paths relation)
+                 (append paths (fons-relation-paths relation))))
+         (extended-paths (paths hop)
+           "Return list of PATHS extended by HOP without circular hops."
+           (remq nil
+                 (mapcar
+                  (lambda (path)
+                    (unless (circular-p path hop)
+                      (make-fons-path
+                       :hops (append (fons-path-hops path) (list hop)))))
+                  paths)))
+         (circular-p (path last-hop)
+           "Return non-nil when HOP circles back to any hop in PATH."
+           (cl-some (lambda (hop)
+                      (equal (fons-hop-to last-hop) (fons-hop-from hop)))
+                    (fons-path-hops path)))
+         (within-max-hops-p (relation)
+           (cl-some (lambda (path)
+                      (length< (fons-path-hops path) max-hops))
+                    (fons-relation-paths relation)))
+         (ensure-relation (to)
+           "Add relation from ROOT to TO if none exists, then return it."
+           (or (gethash to relations)
+               (puthash to (make-fons-relation :from root :to to)
+                        relations))))
+      (add-relations-from root))))
 
 (cl-defun fons-blocked-from-p (&key from-id target-id users)
   "Return non-nil if TARGET-ID is blocked from FROM-ID's
