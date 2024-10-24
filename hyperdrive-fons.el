@@ -47,7 +47,7 @@
 
 HOPS-FN is the function that accepts three arguments, FROM,
 TOPIC, and a function which should be called asynchronously with
-a list of `fons-hops' structs from FROM.
+a list of TOs from FROM.
 
 FINALLY is a callback function which will be called with the
 relations hash table as its sole argument.
@@ -67,15 +67,15 @@ list of BLOCKERs, as in `fons-blocked'."
         (pending 0))
     (cl-labels
         ((add-relations-from (from &optional paths-to-from)
-           ;; TODO: Consider returning a list of TOs instead of hops.
            (cl-incf pending)
            (funcall
             hops-fn from topic
-            (lambda (hops)
-              (dolist (hop hops)
-                (when-let ((to-relation
-                            (and (not (equal root (fons-hop-to hop)))
-                                 (ensure-relation (fons-hop-to hop))))
+            (lambda (tos)
+              (dolist (to tos)
+                (when-let ((hop (make-fons-hop :from from :to to))
+                           (to-relation
+                            (and (not (equal root to))
+                                 (ensure-relation to)))
                            (paths-to-to
                             (if paths-to-from
                                 ;; `extended-paths' may return nil if the only
@@ -85,7 +85,7 @@ list of BLOCKERs, as in `fons-blocked'."
                               (list (make-fons-path :hops (list hop))))))
                   (update-relation to-relation paths-to-to)
                   (when (and (within-max-hops-p to-relation)
-                             (not (gethash (fons-hop-to hop) blocked)))
+                             (not (gethash to blocked)))
                     (add-relations-from (fons-relation-to to-relation)
                                         paths-to-to))))
               (when (zerop (cl-decf pending))
