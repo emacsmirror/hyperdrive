@@ -685,7 +685,7 @@ Accepts HYPERDRIVE, PATH, and VERSION, an existent range start."
               (cl-pushnew version existent-versions)
               (sort existent-versions #'<))
       (gethash (h//existent-versions-key
-                (he//create :hyperdrive hyperdrive :path path :version version))
+                (he//create :hyperdrive hyperdrive :path path))
                h/existent-versions))
   (persist-save 'h/existent-versions))
 
