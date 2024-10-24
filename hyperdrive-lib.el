@@ -512,9 +512,10 @@ before making the entry struct."
 ;; These functions take a hyperdrive-entry struct argument, not a URL.
 
 (defun h//existent-versions-key (entry)
-  "Return ENTRY with only `:hyperdrive' and `:path' slots.
+  "Return cons cell of ENTRY hyperdrive public-key and path.
 Intended to be used as hash table key in `hyperdrive-existent-versions'."
-  (he//create :hyperdrive (he/hyperdrive entry) :path (he/path entry)))
+  ;; This format is designed to have compact serialization.
+  (cons (h/public-key (he/hyperdrive entry)) (he/path entry)))
 
 (defun he/at (version entry)
   "Return ENTRY at its hyperdrive's VERSION, or nil if not found.
