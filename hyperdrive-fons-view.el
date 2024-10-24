@@ -131,12 +131,13 @@ called and replaces the buffer content with the rendered output."
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view
-    (relations from &key (layout hyperdrive-fons-view-layout))
+    (relations from &key (layout hyperdrive-fons-view-layout) label-fun)
   "View RELATIONS from FROM."
   (pcase-let* ((hops (hyperdrive-fons-relations-hops relations))
                (graphviz-string
                 (hyperdrive-fons-view--format-graph
-                 hops relations :root-name from :layout layout)))
+                 hops relations :root-name from :layout layout
+                 :label-fun label-fun)))
     (hyperdrive-fons-view--render-graphviz graphviz-string)))
 
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
@@ -181,7 +182,7 @@ called and replaces the buffer content with the rendered output."
           ;; (fons-hop-score hop)
           color))
 
-(cl-defun hyperdrive-fons-view--format-graph (hops relations &key root-name layout)
+(cl-defun hyperdrive-fons-view--format-graph (hops relations &key root-name layout (label-fun #'identity))
   "Return a graphviz-string string for HOPS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
@@ -191,11 +192,11 @@ called and replaces the buffer content with the rendered output."
                                 (cl-loop for (key value) on pairs by #'cddr
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
-              (format-relation-label (to _relation)
+              (format-relation-label (to &optional _relation)
                 (insert
                  (format
                   "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\"];\n"
-                  to to to hyperdrive-fons-view-source-color))))
+                  to (funcall label-fun to) to hyperdrive-fons-view-source-color))))
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")
@@ -215,6 +216,7 @@ called and replaces the buffer content with the rendered output."
                                  (hyperdrive-fons-view--format-hop
                                   hop hyperdrive-fons-view-source-color))
                                hops))
+        (format-relation-label root-name)
         (maphash #'format-relation-label relations)
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
