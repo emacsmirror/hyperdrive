@@ -53,7 +53,6 @@ Updates `hyperdrive-existent-versions' as a side effect."
   (declare (indent defun))
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive path) entry)
-       ((cl-struct hyperdrive latest-version) hyperdrive)
        ((cl-struct plz-response body
                    (headers (map x-drive-size x-drive-version)))
         (condition-case err
@@ -335,6 +334,7 @@ Try `hyperdrive-history-load' (\\[hyperdrive-history-load])"))
             (pop-to-buffer (current-buffer)))))
 
 (defmacro h/history--when-exists (&rest body)
+  "Wrap BODY to check that the entry exists."
   (declare (indent defun))
   `(pcase-exhaustive (map-elt (he/etc entry) 'existsp)
      ('t ,@body)
@@ -382,9 +382,9 @@ known to exist, reload history."
   ;; not include the filename.
   (interactive (list (h/history-entry-at-point)) h/history-mode)
   (h/history--when-exists
-    (h/download entry
-                (read-file-name "Filename: "
-                                (expand-file-name name h/download-directory)))))
+   (h/download entry (read-file-name
+                      "Filename: " (expand-file-name
+                                    (he/name entry) h/download-directory)))))
 
 (declare-function h/forget-file "hyperdrive")
 (defun h/history-forget-file (entry)
