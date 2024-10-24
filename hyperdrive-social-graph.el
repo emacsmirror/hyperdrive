@@ -60,6 +60,35 @@ Call THEN with a list of TOs."
                  (h/message "Error getting social graph data: %s" (he/url from-entry) plz-error)
                  (funcall then nil)))))))
 
+
+(cl-defun hsg/blocked-fn (blocker then)
+  "Asynchronously get blocks from BLOCKER.
+Call THEN with a list of block IDs."
+  ;; TODO: This function has no queue limit.
+  (let ((blocker-entry (h/url-entry blocker)))
+    (setf (he/path blocker-entry) hsg/data-filename)
+    (he/api 'get blocker-entry :noquery t
+      :then (lambda (response)
+              (condition-case err
+                  (let* ((parsed
+                          ;; TODO: When plz adds :as 'response-with-buffer, use that.
+                          (json-parse-string (plz-response-body response)
+                                             :array-type 'list))
+                         (blocks (map-elt parsed "_blocked")))
+                    (funcall then blocks))
+                (json-error
+                 (h/message "Error parsing social graph data: %s" (he/url blocker-entry))
+                 (funcall then nil))))
+      :else (lambda (plz-error)
+              (pcase (plz-response-status (plz-error-response plz-error))
+                ;; FIXME: If plz-error is a curl-error, this block will fail.
+                (404
+                 (h/message "No social graph data found: %s" (he/url blocker-entry))
+                 (funcall then nil))
+                (_
+                 ;; TODO: Put error in another buffer.  Check error 500 for malformed URLs?
+                 (h/message "Error getting social graph data: %s" (he/url blocker-entry) plz-error)
+                 (funcall then nil)))))))
 (defun hsg/hop-format-fun (hop)
   "Return display string for HOP."
   (h//format (he/hyperdrive (h/url-entry hop))))
