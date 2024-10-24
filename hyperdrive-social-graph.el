@@ -32,7 +32,7 @@
 
 (defun hsg/hops-fn (from topic then)
   "Asynchronously get hops from FROM about TOPIC.
-Call THEN with a list of `fons-hop' structs.."
+Call THEN with a list of TOs."
   (let* ((from-entry (h/url-entry from))
          ;; (from-user (make-fons-user :id from))
          (_ (setf (he/path from-entry) hsg/data-filename))
@@ -41,17 +41,11 @@ Call THEN with a list of `fons-hop' structs.."
       ;; Despite error, always call THEN so `pending' gets decremented.
       :then (lambda (response)
               (condition-case err
-                  (let* ((parsed
-                          ;; TODO: When plz adds :as 'response-with-buffer, use that.
-                          (json-parse-string (plz-response-body response)
-                                             :array-type 'list))
-                         (tos (map-elt (map-elt parsed "sources") topic))
-                         (hops (mapcar (lambda (to)
-                                         (make-fons-hop :from from :to to))
-                                       tos)))
-                    ;; (setf (fons-user-sources from-user) tos)
-                    ;; (message "HOPS: %S" hops)
-                    (funcall then hops))
+                  ;; TODO: When plz adds :as 'response-with-buffer, use that.
+                  (funcall then (map-elt (json-parse-string
+                                          (plz-response-body response)
+                                          :array-type 'list)
+                                         topic))
                 (json-error
                  (h/message "Error parsing social graph data: %s" (he/url from-entry))
                  (funcall then nil))))
