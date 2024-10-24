@@ -42,12 +42,12 @@
 ;;;; Functions
 
 (cl-defun fons-relations
-    (root &key hops-fn finally (blocked (make-hash-table)) (max-hops 3))
+    (root &key hops-fn topic finally (blocked (make-hash-table)) (max-hops 3))
   "Calculate hash table of relations and call FINALLY.
 
-HOPS-FN is the function that accepts two arguments, FROM and a
-function which should be called asynchronously with a list of
-`fons-hops' structs from FROM.
+HOPS-FN is the function that accepts three arguments, FROM,
+TOPIC, and a function which should be called asynchronously with
+a list of `fons-hops' structs from FROM.
 
 FINALLY is a callback function which will be called with the
 relations hash table as its sole argument.
@@ -70,7 +70,7 @@ list of BLOCKERs, as in `fons-blocked'."
            ;; TODO: Consider returning a list of TOs instead of hops.
            (cl-incf pending)
            (funcall
-            hops-fn from
+            hops-fn from topic
             (lambda (hops)
               (dolist (hop hops)
                 (when-let ((to-relation
