@@ -175,12 +175,13 @@ perspective.  USERS is a list of `fons-user' structs."
                           :from blocker :target target-id :users users))))
   )
 
-(defun hyperdrive-fons-relations-hops (relations)
-  "Return hops for RELATIONS.
-RELATIONS may be a hash table of `fons-relation' structs."
+(defun hyperdrive-fons-merge-relations-hops (merge-relations type)
+  "Return hops of TYPE for MERGE-RELATIONS.
+MERGE-RELATIONS may be a hash table as in `fons-merge-relations'."
   (let (hops)
-    (cl-labels ((map-relation (_to relation)
-                  (mapc #'map-path (fons-relation-paths relation)))
+    (cl-labels ((map-merge-relation (_to merge-relation)
+                  (when-let ((relation (map-elt merge-relation type)))
+                    (mapc #'map-path (fons-relation-paths relation))))
                 (map-path (path)
                   (mapc #'map-hop (fons-path-hops path)))
                 (map-hop (hop)
@@ -189,7 +190,7 @@ RELATIONS may be a hash table of `fons-relation' structs."
                   ;; 2. (unless (cl-find hop hops) (push hop hops))
                   ;; 3. hash table instead of cl-pushnew on a list
                   (cl-pushnew hop hops :test #'equal)))
-      (maphash #'map-relation relations)
+      (maphash #'map-merge-relation merge-relations)
       hops)))
 
 ;;;; Footer
