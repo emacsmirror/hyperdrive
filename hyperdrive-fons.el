@@ -145,7 +145,7 @@ blocked hash table as its sole argument."
                             (make-fons-relation
                              :from blocker :to block :blocked-p t
                              :paths (list (make-fons-path :hops (list hop))))))
-                      (push block-relation (gethash block blocked))))
+                      (setf (gethash block blocked) block-relation)))
                   (when (zerop (cl-decf pending))
                     (funcall finally blocked)))))
              blockers)))
