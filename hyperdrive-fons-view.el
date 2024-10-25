@@ -245,7 +245,7 @@ called and replaces the buffer content with the rendered output."
                      "ratio" "fill"
                      "mindist" "0")
         (dolist (type '(relations blockers blocked))
-          (dolist (hop (hyperdrive-fons-merge-relations-hops merge-relations type))
+          (dolist (hop (fons-merge-relations-hops merge-relations type))
             (insert (hyperdrive-fons-view--format-hop
                      hop (pcase type
                            ('relations hyperdrive-fons-view-source-color)

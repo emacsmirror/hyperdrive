@@ -176,7 +176,7 @@ perspective.  USERS is a list of `fons-user' structs."
                           :from blocker :target target-id :users users))))
   )
 
-(defun hyperdrive-fons-merge-relations-hops (merge-relations type)
+(defun fons-merge-relations-hops (merge-relations type)
   "Return hops of TYPE for MERGE-RELATIONS.
 MERGE-RELATIONS may be a hash table as in `fons-merge-relations'."
   (let (hops)
