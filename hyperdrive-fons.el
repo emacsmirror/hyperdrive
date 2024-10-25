@@ -140,7 +140,12 @@ blocked hash table as its sole argument."
                   ;; Argument is optional so the callback can be called in case of
                   ;; error to decrement `pending'.
                   (dolist (block blocks)
-                    (push blocker (gethash block blocked)))
+                    (let* ((hop (make-fons-hop :from blocker :to block))
+                           (block-relation
+                            (make-fons-relation
+                             :from blocker :to block :blocked-p t
+                             :paths (list (make-fons-path :hops (list hop))))))
+                      (push block-relation (gethash block blocked))))
                   (when (zerop (cl-decf pending))
                     (funcall finally blocked)))))
              blockers)))
