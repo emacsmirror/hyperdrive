@@ -76,6 +76,22 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
+(defcustom hyperdrive-fons-view-blocker-color "blue"
+  "Blocker edge and node color.
+May be any string listed here:
+<https://graphviz.org/doc/info/colors.html>."
+  ;; Don't use :type 'color.  Emacs colors don't necessarily match graphviz
+  ;; colors, and they may contain spaces, preventing the graph from rendering.
+  :type 'string)
+
+(defcustom hyperdrive-fons-view-blocked-color "red"
+  "Blocked edge and node color.
+May be any string listed here:
+<https://graphviz.org/doc/info/colors.html>."
+  ;; Don't use :type 'color.  Emacs colors don't necessarily match graphviz
+  ;; colors, and they may contain spaces, preventing the graph from rendering.
+  :type 'string)
+
 ;;;; Macros
 
 (defmacro hyperdrive-fons-view--graphviz (type &rest body)
