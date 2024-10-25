@@ -527,5 +527,24 @@ Destructively modifies and returns MAP."
              (aset coords i (- (car size) (aref coords i)))))))))
   map)
 
+(defun hyperdrive-fons-view-join (r g b)
+  "Build a color from R G B.
+Inverse of `color-values'."
+  ;; Thanks to Oleh Krehel <https://oremacs.com/2015/04/28/blending-faces/>
+  (format "#%02x%02x%02x" (ash r -8) (ash g -8) (ash b -8)))
+
+(defun hyperdrive-fons-view-blend (c1 c2 &optional alpha)
+  "Blend the two colors C1 and C2 with ALPHA.
+C1 and C2 are in the format of `color-values'.
+ALPHA is a number between 0.0 and 1.0 which corresponds to the
+influence of C1 on the result."
+  ;; Thanks to Oleh Krehel <https://oremacs.com/2015/04/28/blending-faces/>
+  (setq alpha (or alpha 0.5))
+  (apply #'hyperdrive-fons-view-join
+         (cl-mapcar
+          (lambda (x y)
+            (round (+ (* x alpha) (* y (- 1 alpha)))))
+          c1 c2)))
+
 (provide 'hyperdrive-fons-view)
 ;;; hyperdrive-fons-view.el ends here
