@@ -150,6 +150,21 @@ blocked hash table as its sole argument."
                     (funcall finally blocked)))))
              blockers)))
 
+(cl-defun fons-merge-relations (relations blockers blocked)
+  "Return hash table which merges RELATIONS, BLOCKERS, and BLOCKED."
+  (let ((merge-relations (make-hash-table :test 'equal)))
+    (dolist (table (list relations blockers blocked))
+      (maphash (lambda (id relation)
+                 (setf (map-elt
+                        (gethash id merge-relations)
+                        (pcase table
+                          ((pred (eq relations)) 'relations)
+                          ((pred (eq blockers)) 'blockers)
+                          ((pred (eq blocked)) 'blocked)))
+                       relation))
+               table))
+    merge-relations))
+
 (cl-defun fons-blocked-from-p (&key from-id target-id users)
   "Return non-nil if TARGET-ID is blocked from FROM-ID's
 perspective.  USERS is a list of `fons-user' structs."
