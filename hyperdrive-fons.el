@@ -122,6 +122,36 @@ list of BLOCKERs, as in `fons-blocked'."
                         relations))))
       (add-relations-from root))))
 
+(defun fons-filter-shortest-path (merge-relations)
+  "Return MERGE-RELATIONS with only shortest paths."
+  (let ((copy-merge-relations (copy-hash-table merge-relations)))
+    ;; TODO(review) copying hash table and nested lists
+    (cl-labels
+        ((map-merge-relation (id merge-relation)
+           (thunk-let ((copy-merge-relation
+                        (compat-call copy-tree merge-relation t)))
+             (dolist (type '(relations blockers))
+               ;; Skip `blocked', since its paths are always one hop.
+               (when-let*
+                   ((relation (map-elt merge-relation type))
+                    (shortest-hops-length
+                     ;; TODO(review): Merge `cl-loop', `cl-remove-if' for speed?
+                     (cl-loop for path in (fons-relation-paths relation)
+                              minimize (length (fons-path-hops path))))
+                    (new-paths
+                     (cl-remove-if (apply-partially #'< shortest-hops-length)
+                                   (fons-relation-paths relation)
+                                   :key (lambda (path)
+                                          (length (fons-path-hops path))))))
+                 (unless (eq new-paths (fons-relation-paths relation))
+                   (setf (fons-relation-paths
+                          (map-elt copy-merge-relation type))
+                         new-paths)
+                   (setf (gethash id copy-merge-relations)
+                         copy-merge-relation)))))))
+      (maphash #'map-merge-relation copy-merge-relations)
+      copy-merge-relations)))
+
 (cl-defun fons-blocked (blockers &key blocked-fn finally)
   "Calculate hash table of blocked and call FINALLY.
 

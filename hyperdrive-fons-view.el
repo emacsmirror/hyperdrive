@@ -34,6 +34,7 @@
 
 (require 'cl-lib)
 (require 'map)
+(require 'thunk)
 
 (require 'hyperdrive-fons)
 
@@ -149,7 +150,7 @@ called and replaces the buffer content with the rendered output."
 ;;;; Functions
 
 ;; TODO: Add flags for determining what to render.  Check the u4u trust demo video again.
-;; TODO: Add shortest-path, narrow flag
+;; TODO: Add narrow flag
 (cl-defun hyperdrive-fons-view
     (relations root &key (layout hyperdrive-fons-view-layout) label-fun)
   "View RELATIONS from ROOT."
