@@ -68,7 +68,7 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
-(defcustom hyperdrive-fons-view-source-color "green"
+(defcustom hyperdrive-fons-view-source-color (hyperdrive-fons-view-blend (color-values "green") (color-values (face-attribute 'default :background)))
   "Source edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -76,7 +76,7 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocker-color "blue"
+(defcustom hyperdrive-fons-view-blocker-color (hyperdrive-fons-view-blend (color-values "blue") (color-values (face-attribute 'default :background)))
   "Blocker edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -84,7 +84,7 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocked-color "red"
+(defcustom hyperdrive-fons-view-blocked-color (hyperdrive-fons-view-blend (color-values "red") (color-values (face-attribute 'default :background)))
   "Blocked edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
