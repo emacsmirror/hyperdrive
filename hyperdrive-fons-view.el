@@ -131,12 +131,12 @@ called and replaces the buffer content with the rendered output."
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view
-    (relations from &key (layout hyperdrive-fons-view-layout) label-fun)
-  "View RELATIONS from FROM."
+    (relations root &key (layout hyperdrive-fons-view-layout) label-fun)
+  "View RELATIONS from ROOT."
   (pcase-let* ((hops (hyperdrive-fons-relations-hops relations))
                (graphviz-string
                 (hyperdrive-fons-view--format-graph
-                 hops relations :root-name from :layout layout
+                 hops relations :root-name root :layout layout
                  :label-fun label-fun)))
     (hyperdrive-fons-view--render-graphviz graphviz-string)))
 
