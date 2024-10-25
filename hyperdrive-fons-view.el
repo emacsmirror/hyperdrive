@@ -210,7 +210,6 @@ called and replaces the buffer content with the rendered output."
                      "overlap" hyperdrive-fons-view-overlap
                      "margin" "0"
                      "ratio" "fill"
-                     "nodesep" "0"
                      "mindist" "0")
         (mapc #'insert (mapcar (lambda (hop)
                                  (hyperdrive-fons-view--format-hop
