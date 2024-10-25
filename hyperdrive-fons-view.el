@@ -133,11 +133,9 @@ called and replaces the buffer content with the rendered output."
 (cl-defun hyperdrive-fons-view
     (relations root &key (layout hyperdrive-fons-view-layout) label-fun)
   "View RELATIONS from ROOT."
-  (pcase-let* ((graphviz-string
-                (hyperdrive-fons-view--format-graph
-                 relations :root-name root :layout layout
-                 :label-fun label-fun)))
-    (hyperdrive-fons-view--render-graphviz graphviz-string)))
+  (hyperdrive-fons-view--render-graphviz
+   (hyperdrive-fons-view--format-graph
+    relations :root-name root :layout layout :label-fun label-fun)))
 
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
   "Render GRAPHVIZ string in BUFFER scaled by SCALE."
