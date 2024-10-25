@@ -137,15 +137,16 @@ blocked hash table as its sole argument."
                (funcall
                 blocked-fn blocker
                 (lambda (&optional blocks)
-                  ;; Argument is optional so the callback can be called in case of
-                  ;; error to decrement `pending'.
                   (dolist (block blocks)
-                    (let* ((hop (make-fons-hop :from blocker :to block))
-                           (block-relation
-                            (make-fons-relation
-                             :from blocker :to block :blocked-p t
-                             :paths (list (make-fons-path :hops (list hop))))))
-                      (setf (gethash block blocked) block-relation)))
+                    (let ((path (make-fons-path
+                                 :hops (list (make-fons-hop
+                                              :from blocker :to block))))
+                          (relation (or (gethash block blocked)
+                                        (setf (gethash block blocked)
+                                              (make-fons-relation
+                                               :from blocker :to block
+                                               :blocked-p t :paths nil)))))
+                      (push path (fons-relation-paths relation))))
                   (when (zerop (cl-decf pending))
                     (funcall finally blocked)))))
              blockers)))
