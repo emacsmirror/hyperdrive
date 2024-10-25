@@ -192,7 +192,7 @@ called and replaces the buffer content with the rendered output."
                                 (cl-loop for (key value) on pairs by #'cddr
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
-              (format-relation-label (to &optional _relation)
+              (format-relation-to (to &optional _relation)
                 (insert
                  (format
                   "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\"];\n"
@@ -216,8 +216,8 @@ called and replaces the buffer content with the rendered output."
                                  (hyperdrive-fons-view--format-hop
                                   hop hyperdrive-fons-view-source-color))
                                hops))
-        (format-relation-label root-name)
-        (maphash #'format-relation-label relations)
+        (format-relation-to root-name)
+        (maphash #'format-relation-to relations)
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
         (insert "}"))
