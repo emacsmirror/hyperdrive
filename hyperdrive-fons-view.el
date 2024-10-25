@@ -133,10 +133,9 @@ called and replaces the buffer content with the rendered output."
 (cl-defun hyperdrive-fons-view
     (relations root &key (layout hyperdrive-fons-view-layout) label-fun)
   "View RELATIONS from ROOT."
-  (pcase-let* ((hops (hyperdrive-fons-relations-hops relations))
-               (graphviz-string
+  (pcase-let* ((graphviz-string
                 (hyperdrive-fons-view--format-graph
-                 hops relations :root-name root :layout layout
+                 relations :root-name root :layout layout
                  :label-fun label-fun)))
     (hyperdrive-fons-view--render-graphviz graphviz-string)))
 
@@ -182,8 +181,8 @@ called and replaces the buffer content with the rendered output."
           ;; (fons-hop-score hop)
           color))
 
-(cl-defun hyperdrive-fons-view--format-graph (hops relations &key root-name layout (label-fun #'identity))
-  "Return a graphviz-string string for HOPS."
+(cl-defun hyperdrive-fons-view--format-graph (relations &key root-name layout (label-fun #'identity))
+  "Return a graphviz-string string for RELATIONS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
                          do (insert (format "%s=\"%s\"" key value) "\n")))
@@ -214,7 +213,7 @@ called and replaces the buffer content with the rendered output."
         (mapc #'insert (mapcar (lambda (hop)
                                  (hyperdrive-fons-view--format-hop
                                   hop hyperdrive-fons-view-source-color))
-                               hops))
+                               (hyperdrive-fons-relations-hops relations)))
         (format-relation-to root-name)
         (maphash #'format-relation-to relations)
         (when root-name
