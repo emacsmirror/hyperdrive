@@ -68,6 +68,8 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
+;; TODO: Reload image on defcustom change
+;; TODO: Recalculate defucstoms in `modus-themes-after-load-theme-hook'.
 (defcustom hyperdrive-fons-view-source-color (hyperdrive-fons-view-blend (color-values "green") (color-values (face-attribute 'default :background)))
   "Source edge and node color.
 May be any string listed here:
@@ -146,6 +148,8 @@ called and replaces the buffer content with the rendered output."
 
 ;;;; Functions
 
+;; TODO: Add flags for determining what to render.  Check the u4u trust demo video again.
+;; TODO: Add shortest-path, narrow flag
 (cl-defun hyperdrive-fons-view
     (relations root &key (layout hyperdrive-fons-view-layout) label-fun)
   "View RELATIONS from ROOT."
