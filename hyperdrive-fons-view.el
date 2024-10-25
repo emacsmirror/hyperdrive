@@ -195,8 +195,8 @@ called and replaces the buffer content with the rendered output."
           ;; (fons-hop-score hop)
           color))
 
-(cl-defun hyperdrive-fons-view--format-graph (relations &key root-name layout (label-fun #'identity))
-  "Return a graphviz-string string for RELATIONS."
+(cl-defun hyperdrive-fons-view--format-graph (merge-relations &key root-name layout (label-fun #'identity))
+  "Return a graphviz-string string for MERGE-RELATIONS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
                          do (insert (format "%s=\"%s\"" key value) "\n")))
@@ -205,11 +205,27 @@ called and replaces the buffer content with the rendered output."
                                 (cl-loop for (key value) on pairs by #'cddr
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
-              (format-relation-to (to &optional _relation)
+              (format-relation-to (to merge-relations)
                 (insert
                  (format
-                  "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\"];\n"
-                  to (funcall label-fun to) to hyperdrive-fons-view-source-color))))
+                  "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
+                  to (funcall label-fun to) to "purple"
+                  ;; Prioritize blocked > relation > blocker
+                  (pcase (mapcar #'car merge-relations)
+                    ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-color)
+                    ((pred (memq 'relations)) hyperdrive-fons-view-source-color)
+                    ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-color))
+                  ;; Prioritize blocker > blocked > relation
+                  (pcase (mapcar #'car merge-relations)
+                    ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-color)
+                    ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-color)
+                    ((pred (memq 'relations)) hyperdrive-fons-view-source-color)))))
+              (format-root (root)
+                (insert (format
+                         "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
+                         root (funcall label-fun root) root "purple"
+                         hyperdrive-fons-view-source-color
+                         hyperdrive-fons-view-blocker-color))))
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")
@@ -224,12 +240,15 @@ called and replaces the buffer content with the rendered output."
                      "margin" "0"
                      "ratio" "fill"
                      "mindist" "0")
-        (mapc #'insert (mapcar (lambda (hop)
-                                 (hyperdrive-fons-view--format-hop
-                                  hop hyperdrive-fons-view-source-color))
-                               (hyperdrive-fons-relations-hops relations)))
-        (format-relation-to root-name)
-        (maphash #'format-relation-to relations)
+        (dolist (type '(relations blockers blocked))
+          (dolist (hop (hyperdrive-fons-merge-relations-hops merge-relations type))
+            (insert (hyperdrive-fons-view--format-hop
+                     hop (pcase type
+                           ('relations hyperdrive-fons-view-source-color)
+                           ('blockers hyperdrive-fons-view-blocker-color)
+                           ('blocked hyperdrive-fons-view-blocked-color))))))
+        (format-root root-name)
+        (maphash #'format-relation-to merge-relations)
         (when root-name
           (insert (format "root=\"%s\"" root-name)))
         (insert "}"))
