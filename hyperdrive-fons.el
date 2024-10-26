@@ -52,8 +52,8 @@ a list of TOs from FROM.
 FINALLY is a callback function which will be called with the
 relations hash table as its sole argument.
 
-Each table contains `fons-relation' structs from ROOT (a
-`fons-user' struct).  Recurses up to MAX-HOPS times.
+Each table contains `fons-relation' structs from ROOT.  Recurses
+up to MAX-HOPS times.
 
 BLOCKED may be a hash table keyed by TOs which should not be
 recursed into and whose relations will be flagged as blocked.
