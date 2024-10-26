@@ -194,9 +194,7 @@ called and replaces the buffer content with the rendered output."
 (defun hyperdrive-fons-view--format-hop (hop color)
   "Return graphviz-string for HOP."
   (format "%s -> %s [color=\"%s\" penwidth=2];\n"
-          (fons-hop-from hop) (fons-hop-to hop)
-          ;; (fons-hop-score hop)
-          color))
+          (fons-hop-from hop) (fons-hop-to hop) color))
 
 (cl-defun hyperdrive-fons-view--format-graph (merge-relations &key root-name layout (label-fun #'identity))
   "Return a graphviz-string string for MERGE-RELATIONS."
