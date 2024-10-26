@@ -35,8 +35,7 @@
 Call THEN with a list of TOs."
   (let* ((from-entry (h/url-entry from))
          ;; (from-user (make-fons-user :id from))
-         (_ (setf (he/path from-entry) hsg/data-filename))
-         hops)
+         (_ (setf (he/path from-entry) hsg/data-filename)))
     (he/api 'get from-entry :noquery t
       ;; Despite error, always call THEN so `pending' gets decremented.
       :then (lambda (response)
