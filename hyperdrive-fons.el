@@ -152,6 +152,46 @@ list of BLOCKERs, as in `fons-blocked'."
       (maphash #'map-merge-relation copy-merge-relations)
       copy-merge-relations)))
 
+(defun fons-filter-narrow-to (ids merge-relations)
+  "Return MERGE-RELATIONS with only paths to IDS.
+When used in conjunction with `fons-filter-shortest-path',
+`fons-filter-narrow-to' must be applied second, and not vice
+versa, to ensure the exclusion of nodes which form a longer path
+to one of the IDS."
+  ;; TODO: Refactor with `cl-loop'.
+  (let ((copy-merge-relations (make-hash-table :test 'equal))
+        blocker-ids)
+    ;; For each ID which is a source, keep the source relation for all IDs which
+    ;; are part of a path to it.
+    (dolist (id ids)
+      (when-let (relations (map-elt (gethash id merge-relations) 'relations))
+        (setf (map-elt (gethash id copy-merge-relations) 'relations) relations)
+        (dolist (path (fons-relation-paths relations))
+          (pcase-dolist ((cl-struct fons-hop from) (fons-path-hops path))
+            (when-let* ((merge-relation (gethash from merge-relations))
+                        (relation (map-elt merge-relation 'relations)))
+              (setf (map-elt (gethash from copy-merge-relations) 'relations)
+                    relation))))))
+    ;; For each ID which is blocked, add the blocked relation.  Also track the
+    ;; `blocker-id's of the blockers which block ID.
+    (dolist (id ids)
+      (when-let (blocked (map-elt (gethash id merge-relations) 'blocked))
+        (setf (map-elt (gethash id copy-merge-relations) 'blocked) blocked)
+        (dolist (path (fons-relation-paths blocked))
+          (push (fons-hop-from (car (fons-path-hops path))) blocker-ids))))
+    ;; For each ID which is a blocker and for each blocker which blocked an ID,
+    ;; keep the blocker relation for all IDs which are part of a path to it.
+    (dolist (id (delete-dups (append ids blocker-ids)))
+      (when-let (blockers (map-elt (gethash id merge-relations) 'blockers))
+        (setf (map-elt (gethash id copy-merge-relations) 'blockers) blockers)
+        (dolist (path (fons-relation-paths blockers))
+          (pcase-dolist ((cl-struct fons-hop from) (fons-path-hops path))
+            (when-let* ((merge-relation (gethash from merge-relations))
+                        (blockers (map-elt merge-relation 'blockers)))
+              (setf (map-elt (gethash from copy-merge-relations) 'blockers)
+                    blockers))))))
+    copy-merge-relations))
+
 (cl-defun fons-blocked (blockers &key blocked-fn finally)
   "Calculate hash table of blocked and call FINALLY.
 
