@@ -130,7 +130,7 @@ list of BLOCKERs, as in `fons-blocked'."
         ((map-merge-relation (id merge-relation)
            (thunk-let ((copy-merge-relation
                         (compat-call copy-tree merge-relation t)))
-             (dolist (type '(relations blockers))
+             (dolist (type '(sources blockers))
                ;; Skip `blocked', since its paths are always one hop.
                (when-let*
                    ((relation (map-elt merge-relation type))
@@ -164,14 +164,14 @@ to one of the IDS."
     ;; For each ID which is a source, keep the source relation for all IDs which
     ;; are part of a path to it.
     (dolist (id ids)
-      (when-let (relations (map-elt (gethash id merge-relations) 'relations))
-        (setf (map-elt (gethash id copy-merge-relations) 'relations) relations)
-        (dolist (path (fons-relation-paths relations))
+      (when-let (sources (map-elt (gethash id merge-relations) 'sources))
+        (setf (map-elt (gethash id copy-merge-relations) 'sources) sources)
+        (dolist (path (fons-relation-paths sources))
           (pcase-dolist ((cl-struct fons-hop from) (fons-path-hops path))
             (when-let* ((merge-relation (gethash from merge-relations))
-                        (relation (map-elt merge-relation 'relations)))
-              (setf (map-elt (gethash from copy-merge-relations) 'relations)
-                    relation))))))
+                        (sources (map-elt merge-relation 'sources)))
+              (setf (map-elt (gethash from copy-merge-relations) 'sources)
+                    sources))))))
     ;; For each ID which is blocked, add the blocked relation.  Also track the
     ;; `blocker-id's of the blockers which block ID.
     (dolist (id ids)
@@ -222,15 +222,15 @@ blocked hash table as its sole argument."
                     (funcall finally blocked)))))
              blockers)))
 
-(cl-defun fons-merge-relations (relations blockers blocked)
-  "Return hash table which merges RELATIONS, BLOCKERS, and BLOCKED."
+(cl-defun fons-merge-relations (sources blockers blocked)
+  "Return hash table which merges SOURCES, BLOCKERS, and BLOCKED."
   (let ((merge-relations (make-hash-table :test 'equal)))
-    (dolist (table (list relations blockers blocked))
+    (dolist (table (list sources blockers blocked))
       (maphash (lambda (id relation)
                  (setf (map-elt
                         (gethash id merge-relations)
                         (pcase table
-                          ((pred (eq relations)) 'relations)
+                          ((pred (eq sources)) 'sources)
                           ((pred (eq blockers)) 'blockers)
                           ((pred (eq blocked)) 'blocked)))
                        relation))

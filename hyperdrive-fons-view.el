@@ -211,16 +211,16 @@ called and replaces the buffer content with the rendered output."
                  (format
                   "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
                   to (funcall label-fun to) to "purple"
-                  ;; Prioritize blocked > relation > blocker
+                  ;; Prioritize blocked > source > blocker
                   (pcase (mapcar #'car merge-relations)
                     ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-color)
-                    ((pred (memq 'relations)) hyperdrive-fons-view-source-color)
+                    ((pred (memq 'sources)) hyperdrive-fons-view-source-color)
                     ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-color))
-                  ;; Prioritize blocker > blocked > relation
+                  ;; Prioritize blocker > blocked > source
                   (pcase (mapcar #'car merge-relations)
                     ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-color)
                     ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-color)
-                    ((pred (memq 'relations)) hyperdrive-fons-view-source-color)))))
+                    ((pred (memq 'sources)) hyperdrive-fons-view-source-color)))))
               (format-root (root)
                 (insert (format
                          "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
@@ -241,11 +241,11 @@ called and replaces the buffer content with the rendered output."
                      "margin" "0"
                      "ratio" "fill"
                      "mindist" "0")
-        (dolist (type '(relations blockers blocked))
+        (dolist (type '(sources blockers blocked))
           (dolist (hop (fons-merge-relations-hops merge-relations type))
             (insert (hyperdrive-fons-view--format-hop
                      hop (pcase type
-                           ('relations hyperdrive-fons-view-source-color)
+                           ('sources hyperdrive-fons-view-source-color)
                            ('blockers hyperdrive-fons-view-blocker-color)
                            ('blocked hyperdrive-fons-view-blocked-color))))))
         (format-root root-name)
