@@ -47,7 +47,8 @@ Call THEN with a list of TOs."
                                           :array-type 'list)
                                          topic))
                 (json-error
-                 (h/message "Error parsing social graph data: %s" (he/url from-entry))
+                 (h/message "Error parsing social graph data: %s\n%S"
+                            (he/url from-entry) err)
                  (funcall then nil))))
       :else (lambda (plz-error)
               (pcase (plz-response-status (plz-error-response plz-error))
@@ -77,7 +78,8 @@ Call THEN with a list of block IDs."
                          (blocks (map-elt parsed "_blocked")))
                     (funcall then blocks))
                 (json-error
-                 (h/message "Error parsing social graph data: %s" (he/url blocker-entry))
+                 (h/message "Error parsing social graph data: %s\n%S"
+                            (he/url blocker-entry) err)
                  (funcall then nil))))
       :else (lambda (plz-error)
               (pcase (plz-response-status (plz-error-response plz-error))
