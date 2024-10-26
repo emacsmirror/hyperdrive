@@ -211,12 +211,13 @@ blocked hash table as its sole argument."
                     (let ((path (make-fons-path
                                  :hops (list (make-fons-hop
                                               :from blocker :to block))))
-                          (relation (or (gethash block blocked)
-                                        (setf (gethash block blocked)
-                                              (make-fons-relation
-                                               :from blocker :to block
-                                               :blocked-p t :paths nil)))))
-                      (push path (fons-relation-paths relation))))
+                          (blocked-relation
+                           (or (gethash block blocked)
+                               (setf (gethash block blocked)
+                                     (make-fons-relation
+                                      :from blocker :to block
+                                      :blocked-p t :paths nil)))))
+                      (push path (fons-relation-paths blocked-relation))))
                   (when (zerop (cl-decf pending))
                     (funcall finally blocked)))))
              blockers)))
