@@ -27,8 +27,12 @@
 
 ;;; Code:
 
+;;;; Variables:
+
 (defconst hsg/data-filename "/.well-known/social-graph.json"
   "Hyperdrive filename to search for social graph data.")
+
+;;;; Functions:
 
 (defun hsg/data (public-key topic &key then)
   "Load social graph data for PUBLIC-KEY on TOPIC then call THEN.
@@ -70,6 +74,7 @@ Call THEN with a list of TOs."
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
   (hsg/data blocker "_blocked" :then then))
+
 (defun hsg/hop-format-fun (hop)
   "Return display string for HOP."
   (h//format (he/hyperdrive (h/url-entry hop))))
