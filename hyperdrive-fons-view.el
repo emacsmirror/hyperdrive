@@ -223,7 +223,7 @@ called and replaces the buffer content with the rendered output."
                     ((pred (memq 'sources)) hyperdrive-fons-view-source-color)))))
               (format-root (root)
                 (insert (format
-                         "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
+                         "%s [label=\"%s\", href=\"%s\", shape=\"house\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
                          root (funcall label-fun root) root "purple"
                          hyperdrive-fons-view-source-color
                          hyperdrive-fons-view-blocker-color))))
