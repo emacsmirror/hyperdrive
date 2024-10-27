@@ -30,6 +30,37 @@
 (defconst hsg/data-filename "/.well-known/social-graph.json"
   "Hyperdrive filename to search for social graph data.")
 
+(defun hsg/data (public-key topic &key then)
+  "Load social graph data for PUBLIC-KEY on TOPIC then call THEN.
+THEN will be called with the parsed JSON hash table as its sole
+argument.  If error, demote it and call THEN with nil argument."
+  ;; TODO: Add a queue limit.
+  (let ((entry (h/url-entry public-key)))
+    (setf (he/path entry) hsg/data-filename)
+    (he/api 'get entry :noquery t
+      ;; Despite error, always call THEN so `pending' gets decremented.
+      :then (lambda (response)
+              (condition-case err
+                  ;; TODO: When plz adds :as 'response-with-buffer, use that.
+                  (funcall then (map-elt (json-parse-string
+                                          (plz-response-body response)
+                                          :array-type 'list)
+                                         topic))
+                (json-error
+                 (h/message "Error parsing social graph data: %s\n%S"
+                            (he/url entry) err)
+                 (funcall then nil))))
+      :else (lambda (plz-error)
+              (pcase (plz-response-status (plz-error-response plz-error))
+                ;; FIXME: If plz-error is a curl-error, this block will fail.
+                (404
+                 (h/message "No social graph data found: %s" (he/url entry))
+                 (funcall then nil))
+                (_
+                 ;; TODO: Put error in another buffer.  Check error 500 for malformed URLs?
+                 (h/message "Error getting social graph data: %s" (he/url entry) plz-error)
+                 (funcall then nil)))))))
+
 (defun hsg/hops-fn (from topic then)
   "Asynchronously get hops from FROM about TOPIC.
 Call THEN with a list of TOs."
