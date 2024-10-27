@@ -64,63 +64,12 @@ argument.  If error, demote it and call THEN with nil argument."
 (defun hsg/hops-fn (from topic then)
   "Asynchronously get hops from FROM about TOPIC.
 Call THEN with a list of TOs."
-  (let* ((from-entry (h/url-entry from))
-         ;; (from-user (make-fons-user :id from))
-         (_ (setf (he/path from-entry) hsg/data-filename)))
-    (he/api 'get from-entry :noquery t
-      ;; Despite error, always call THEN so `pending' gets decremented.
-      :then (lambda (response)
-              (condition-case err
-                  ;; TODO: When plz adds :as 'response-with-buffer, use that.
-                  (funcall then (map-elt (json-parse-string
-                                          (plz-response-body response)
-                                          :array-type 'list)
-                                         topic))
-                (json-error
-                 (h/message "Error parsing social graph data: %s\n%S"
-                            (he/url from-entry) err)
-                 (funcall then nil))))
-      :else (lambda (plz-error)
-              (pcase (plz-response-status (plz-error-response plz-error))
-                ;; FIXME: If plz-error is a curl-error, this block will fail.
-                (404
-                 (h/message "No social graph data found: %s" (he/url from-entry))
-                 (funcall then nil))
-                (_
-                 ;; TODO: Put error in another buffer.  Check error 500 for malformed URLs?
-                 (h/message "Error getting social graph data: %s" (he/url from-entry) plz-error)
-                 (funcall then nil)))))))
-
+  (hsg/data from topic :then then))
 
 (cl-defun hsg/blocked-fn (blocker then)
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
-  ;; TODO: This function has no queue limit.
-  (let ((blocker-entry (h/url-entry blocker)))
-    (setf (he/path blocker-entry) hsg/data-filename)
-    (he/api 'get blocker-entry :noquery t
-      :then (lambda (response)
-              (condition-case err
-                  (let* ((parsed
-                          ;; TODO: When plz adds :as 'response-with-buffer, use that.
-                          (json-parse-string (plz-response-body response)
-                                             :array-type 'list))
-                         (blocks (map-elt parsed "_blocked")))
-                    (funcall then blocks))
-                (json-error
-                 (h/message "Error parsing social graph data: %s\n%S"
-                            (he/url blocker-entry) err)
-                 (funcall then nil))))
-      :else (lambda (plz-error)
-              (pcase (plz-response-status (plz-error-response plz-error))
-                ;; FIXME: If plz-error is a curl-error, this block will fail.
-                (404
-                 (h/message "No social graph data found: %s" (he/url blocker-entry))
-                 (funcall then nil))
-                (_
-                 ;; TODO: Put error in another buffer.  Check error 500 for malformed URLs?
-                 (h/message "Error getting social graph data: %s" (he/url blocker-entry) plz-error)
-                 (funcall then nil)))))))
+  (hsg/data blocker "_blocked" :then then))
 (defun hsg/hop-format-fun (hop)
   "Return display string for HOP."
   (h//format (he/hyperdrive (h/url-entry hop))))
