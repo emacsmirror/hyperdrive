@@ -81,6 +81,9 @@ Call THEN with a list of block IDs."
   "Return display string for HOP."
   (h//format (he/hyperdrive (h/url-entry hop))))
 
+(defcustom hsg/default-topic "_default"
+  "Special topic name used as a fallback when no topic is specified.")
+
 ;;; Footer:
 
 (provide 'hyperdrive-social-graph)

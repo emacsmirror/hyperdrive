@@ -32,9 +32,6 @@
 
 ;;;; Variables
 
-(defvar fons-default-topic "_default"
-  "Special topic name used as a fallback when no topic is specified.")
-
 (defgroup fons nil
   "FIXME: Docstring."
   :group 'applications)
