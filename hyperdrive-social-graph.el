@@ -27,6 +27,8 @@
 
 ;;; Code:
 
+(require 'hyperdrive-fons-view)
+
 ;;;; Variables:
 
 (defconst hsg/data-filename "/.well-known/social-graph.json"
