@@ -31,6 +31,10 @@
 
 ;;;; Variables:
 
+(defgroup hyperdrive-social-graph nil
+  "Customization of the hyperdrive social graph."
+  :group 'hyperdrive)
+
 (defconst hsg/data-filename "/.well-known/social-graph.json"
   "Hyperdrive filename to search for social graph data.")
 
