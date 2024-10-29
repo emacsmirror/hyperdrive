@@ -169,11 +169,12 @@ called and replaces the buffer content with the rendered output."
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view
-    (merge-relations root &key (layout hyperdrive-fons-view-layout) label-fun)
+    (merge-relations root &key (layout hyperdrive-fons-view-layout) label-fun buffer)
   "View MERGE-RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
-    merge-relations :root-name root :layout layout :label-fun label-fun)))
+    merge-relations :root-name root :layout layout :label-fun label-fun)
+   :buffer buffer))
 
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
   "Render GRAPHVIZ string in BUFFER scaled by SCALE."
