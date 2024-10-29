@@ -85,8 +85,120 @@ Call THEN with a list of block IDs."
   "Return display string for HOP."
   (h//format (he/hyperdrive (h/url-entry hop))))
 
+;;;; Transient UI
+
+(defvar hsg/root nil)
+(defvar hsg/topic nil)
+(defvar hsg/merge-relations nil)
+
+;; TODO: Make default max hops customizable
+(defvar hsg/sources-max-hops 3)
+(defvar hsg/blockers-max-hops 3)
+
+(defvar hsg/shortest-path-p t)
+
+(defcustom hsg/buffer-name "*hyperdrive-social-graph-view*"
+  "Buffer name to show social graph."
+  :type 'string)
+
 (defcustom hsg/default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
+
+;;;###autoload (autoload 'hyperdrive-social-graph "hyperdrive-social-graph" nil t)
+(transient-define-prefix hyperdrive-social-graph (topic hyperdrive)
+  "Show menu for HYPERDRIVE social graph."
+  ;; TODO: Update info manual link
+  :info-manual "(hyperdrive)"
+  :refresh-suffixes t
+  ["Hyperdrive social graph"
+   :pad-keys t
+   ("s" hsg/set-shortest-path)
+   ("g" "Go (reload)" hsg/view)]
+  (interactive (list (hsg/read-topic)
+                     (h//context-hyperdrive :force-prompt current-prefix-arg)))
+  ;; TODO: Add prefix to change root
+  (setf hsg/root (h/public-key hyperdrive))
+  (setf hsg/merge-relations
+        (hsg/merge-relations
+         (h/public-key hyperdrive)
+         topic
+         :sources-max-hops hsg/sources-max-hops
+         :blockers-max-hops hsg/blockers-max-hops
+         :finally (lambda (merge-relations)
+                    (setf hsg/merge-relations merge-relations)
+                    ;; TODO: Make h/fill-metadata async and request in a queue.
+                    ;; (maphash (lambda (id _)
+                    ;;            (h/fill-metadata (he/hyperdrive (h/url-entry))))
+                    ;;          hsg/merge-relations)
+                    (hsg/refresh))))
+  (transient-setup 'hyperdrive-social-graph nil nil :scope hyperdrive))
+
+(transient-define-suffix hsg/view ()
+  :inapt-if-not (lambda () (and hsg/merge-relations
+                                (not (processp hsg/merge-relations))))
+  :transient t
+  (interactive)
+  (h/fons-view (hsg/filter hsg/merge-relations) hsg/root
+               :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name))
+
+(transient-define-suffix hsg/set-shortest-path ()
+  :transient t
+  :description (lambda ()
+                 (format "Shortest path: %s"
+                         (if hsg/shortest-path-p
+                             (propertize "yes" 'face 'transient-argument)
+                           (propertize "no" 'face 'transient-inactive-suffix))))
+  (interactive)
+  (cl-callf not hsg/shortest-path-p)
+  (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
+    (hsg/view)))
+
+(cl-defun hsg/merge-relations (root topic &key finally sources-max-hops blockers-max-hops)
+  "Load merge-relations from ROOT about TOPIC and call FINALLY.
+FINALLY should be a function which accepts a single argument, a
+\\+`merge-relations' hash table, as in `fons-merge-relations'.
+SOURCES-MAX-HOPS and BLOCKERS-MAX-HOPS are the maximum number of
+hops to traverse for sources and blockers, respectively."
+  (fons-relations
+   root :hops-fn #'hsg/hops-fn :topic "_blockers" :max-hops blockers-max-hops
+   :finally
+   (lambda (blockers)
+     (fons-blocked
+      blockers :blocked-fn #'hsg/blocked-fn :finally
+      (lambda (blocked)
+        (fons-relations
+         root :hops-fn #'hsg/hops-fn :topic topic
+         :blocked blocked :max-hops sources-max-hops :finally
+         (lambda (sources)
+           (funcall finally
+                    (fons-merge-relations sources blockers blocked)))))))))
+
+(defun hsg/filter (merge-relations)
+  "Return filtered MERGE-RELATIONS."
+  ;; TODO: Make filters customizable
+  (cond
+   ;; Apply shortest-path before narrowing
+   (hsg/shortest-path-p
+    (cl-callf fons-filter-shortest-path merge-relations))
+   (hsg/narrow-to-p
+    (cl-callf2 fons-filter-narrow-to hsg/narrow-ids merge-relations)))
+  merge-relations)
+
+(defun hsg/refresh ()
+  "Refresh `hyperdrive-social-graph' if it's open."
+  (when (transient-active-prefix 'hyperdrive-social-graph)
+    (transient--refresh-transient)))
+
+(defvar hsg/topic-history nil
+  "Minibuffer history of `hyperdrive-social-graph-read-topic'.")
+
+(defun hsg/read-topic ()
+  "Read topic string.
+Blank string defaults to `hyperdrive-social-graph-default-topic'."
+  (let ((topic (read-string "Topic (leave blank for default topic): " nil hsg/topic-history)))
+    (when (string-blank-p topic)
+      (setf topic hsg/default-topic))
+    topic))
 
 ;;; Footer:
 
