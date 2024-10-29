@@ -181,7 +181,8 @@ hops to traverse for sources and blockers, respectively."
    (hsg/shortest-path-p
     (cl-callf fons-filter-shortest-path merge-relations))
    (hsg/narrow-to-p
-    (cl-callf2 fons-filter-narrow-to hsg/narrow-ids merge-relations)))
+    (cl-callf2 fons-filter-narrow-to
+        (mapcar #'h/public-key hsg/narrow-hyperdrives) merge-relations)))
   merge-relations)
 
 (defun hsg/refresh ()
