@@ -239,6 +239,7 @@ Call THEN with a list of block IDs."
   "Open buffer displaying hyperdrive social graph."
   (h/fons-view (hsg/filter hsg/merge-relations)
                (h/public-key hsg/root-hyperdrive)
+               :focus-ids (mapcar #'h/public-key hsg/only-paths-to)
                :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name))
 
 (transient-define-suffix hsg/set-shortest-path-p ()
