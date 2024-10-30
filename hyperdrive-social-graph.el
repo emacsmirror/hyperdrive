@@ -176,13 +176,12 @@ hops to traverse for sources and blockers, respectively."
 (defun hsg/filter (merge-relations)
   "Return filtered MERGE-RELATIONS."
   ;; TODO: Make filters customizable
-  (cond
-   ;; Apply shortest-path before narrowing
-   (hsg/shortest-path-p
+  (when hsg/shortest-path-p
+    ;; Apply shortest-path before narrowing
     (cl-callf fons-filter-shortest-path merge-relations))
-   (hsg/narrow-to-p
+  (when hsg/narrow-to-p
     (cl-callf2 fons-filter-narrow-to
-        (mapcar #'h/public-key hsg/narrow-hyperdrives) merge-relations)))
+        (mapcar #'h/public-key hsg/narrow-hyperdrives) merge-relations))
   merge-relations)
 
 (defun hsg/refresh ()
