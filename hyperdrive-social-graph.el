@@ -136,6 +136,7 @@ Call THEN with a list of block IDs."
    ("r" hsg/set-root-hyperdrive)
    ("t" hsg/set-topic)
    ("m s" hsg/set-sources-max-hops)
+   ("m b" hsg/set-blockers-max-hops)
    ("S" hsg/set-shortest-path-p)
    ("s" hsg/set-show-sources-p)
    ("b" hsg/set-show-blockers-p)
@@ -201,6 +202,18 @@ Call THEN with a list of block IDs."
   (interactive)
   (setf hsg/sources-max-hops
         (read-number "Max hops for sources: " hsg/sources-max-hops))
+  (hsg/load))
+
+(transient-define-suffix hsg/set-blockers-max-hops ()
+  :transient t
+  :description
+  (lambda ()
+    (format (concat "Max hops for blockers: "
+                    (propertize "%d" 'face 'transient-argument))
+            hsg/blockers-max-hops))
+  (interactive)
+  (setf hsg/blockers-max-hops
+        (read-number "Max hops for blockers: " hsg/blockers-max-hops))
   (hsg/load))
 
 (transient-define-suffix hsg/reload ()
