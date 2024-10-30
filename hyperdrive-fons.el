@@ -149,13 +149,13 @@ list of BLOCKERs, as in `fons-blocked'."
       (maphash #'map-merge-relation copy-merge-relations)
       copy-merge-relations)))
 
-(cl-defun fons-filter-narrow-to (ids merge-relations)
+(cl-defun fons-filter-only-paths-to (ids merge-relations)
   "Return MERGE-RELATIONS with only paths to IDS.
 When used in conjunction with `fons-filter-shortest-path',
-`fons-filter-narrow-to' must be applied second, and not vice
+`fons-filter-only-paths-to' must be applied second, and not vice
 versa, to ensure the exclusion of nodes which form a longer path
 to one of the IDS."
-  (unless ids (cl-return-from fons-filter-narrow-to merge-relations))
+  (unless ids (cl-return-from fons-filter-only-paths-to merge-relations))
   ;; TODO: Refactor with `cl-loop'.
   (let ((copy-merge-relations (make-hash-table :test 'equal))
         blocker-ids)

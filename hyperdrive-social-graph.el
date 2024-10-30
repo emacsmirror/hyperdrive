@@ -100,8 +100,7 @@ Call THEN with a list of block IDs."
 (defvar hsg/show-blocked-p t)
 
 (defvar hsg/shortest-path-p t)
-(defvar hsg/narrow-hyperdrives nil
-  "List of hyperdrives to narrow to.")
+(defvar hsg/only-paths-to nil)
 
 (defcustom hsg/buffer-name "*hyperdrive-social-graph-view*"
   "Buffer name to show social graph."
@@ -136,9 +135,9 @@ Call THEN with a list of block IDs."
    ("t" hsg/set-topic)
    ("g" "Reload" hsg/reload)]
   ["Only paths to"
-   (:info #'hsg/format-narrow-hyperdrives :format "%d")
-   ("n a" "Add" hsg/add-narrow-hyperdrives)
-   ("n d" "Delete" hsg/delete-narrow-hyperdrives)]
+   (:info #'hsg/format-only-paths-to :format "%d")
+   ("n a" "Add" hsg/only-paths-to-add)
+   ("n d" "Delete" hsg/only-paths-to-delete)]
   [["Sources"
     ("s s" hsg/set-show-sources-p)
     ("s m" hsg/set-sources-max-hops)]
@@ -290,42 +289,42 @@ Call THEN with a list of block IDs."
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
     (hsg/display-graph)))
 
-(defun hsg/format-narrow-hyperdrives ()
+(defun hsg/format-only-paths-to ()
   (string-join
    (mapcar (lambda (hyperdrive)
              (format "     - %s" (h//format hyperdrive)))
-           hsg/narrow-hyperdrives)
+           hsg/only-paths-to)
    "\n"))
 
-(transient-define-suffix hsg/add-narrow-hyperdrives (hyperdrive)
-  "Add HYPERDRIVE to `hsg/narrow-hyperdrives' and reload.
-Drives which are not yet narrowed are offered for completion."
+(transient-define-suffix hsg/only-paths-to-add (hyperdrive)
+  "Add HYPERDRIVE to `hsg/only-paths-to' and reload.
+Only drives not in `hsg/only-paths-to' are offered for completion."
   :transient t
   :inapt-if-not #'hsg/loaded-merge-relations
   (interactive
    (list (h/read-hyperdrive :predicate
            (lambda (hyperdrive)
-             (unless (cl-member hyperdrive hsg/narrow-hyperdrives
+             (unless (cl-member hyperdrive hsg/only-paths-to
                                 :test #'h/equal-p)
                (catch 'break
                  (maphash (lambda (id _)
                             (when (string= (h/public-key hyperdrive) id)
                               (throw 'break t)))
                           hsg/merge-relations)))))))
-  (push hyperdrive hsg/narrow-hyperdrives)
+  (push hyperdrive hsg/only-paths-to)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
     (hsg/display-graph)))
 
-(transient-define-suffix hsg/delete-narrow-hyperdrives (hyperdrive)
-  "Delete HYPERDRIVE from `hsg/narrow-hyperdrives' and reload."
+(transient-define-suffix hsg/only-paths-to-delete (hyperdrive)
+  "Delete HYPERDRIVE from `hsg/only-paths-to' and reload."
   :transient t
   :inapt-if-not #'hsg/loaded-merge-relations
   (interactive (list (h/read-hyperdrive :predicate
                        (lambda (hyperdrive)
-                         (cl-member hyperdrive hsg/narrow-hyperdrives
+                         (cl-member hyperdrive hsg/only-paths-to
                                     :test #'h/equal-p)))))
-  (setf hsg/narrow-hyperdrives
-        (cl-delete hyperdrive hsg/narrow-hyperdrives :test #'h/equal-p))
+  (setf hsg/only-paths-to
+        (cl-delete hyperdrive hsg/only-paths-to :test #'h/equal-p))
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
     (hsg/display-graph)))
 
@@ -359,9 +358,9 @@ hops to traverse for sources and blockers, respectively."
       :blockedp hsg/show-blocked-p))
   (when hsg/shortest-path-p
     (cl-callf fons-filter-shortest-path merge-relations))
-  ;; Apply narrowing last
-  (cl-callf2 fons-filter-narrow-to
-      (mapcar #'h/public-key hsg/narrow-hyperdrives) merge-relations)
+  ;; Apply `hsg/only-paths-to' last
+  (cl-callf2 fons-filter-only-paths-to
+      (mapcar #'h/public-key hsg/only-paths-to) merge-relations)
   merge-relations)
 
 (defun hsg/refresh-menu ()
