@@ -130,7 +130,7 @@ Call THEN with a list of block IDs."
    ("n d" "Delete narrow" hsg/delete-narrow-hyperdrives)
    ("g" "Reload" hsg/reload)]
   (interactive (list (hsg/context-topic :force-prompt current-prefix-arg)
-                     (h//context-hyperdrive :force-prompt current-prefix-arg)))
+                     (hsg/context-root-hyperdrive :force-prompt current-prefix-arg)))
   (setf hsg/topic topic)
   ;; TODO: Add prefix to change root
   (setf hsg/root-hyperdrive hyperdrive)
@@ -340,6 +340,17 @@ Blank string defaults to `hyperdrive-social-graph-default-topic'."
   (if (and hsg/topic (not force-prompt))
       hsg/topic
     (hsg/read-topic)))
+
+(cl-defun hsg/context-root-hyperdrive (&key force-prompt)
+  "Return `hyperdrive-social-graph-root-hyperdrive' or prompt for drive.
+With FORCE-PROMPT, or interactively with universal prefix
+argument \\[universal-argument], always prompt."
+  (interactive (list current-prefix-arg))
+  (if (and hsg/root-hyperdrive (not force-prompt))
+      hsg/root-hyperdrive
+    (h/read-hyperdrive :default (or (and h/current-entry
+                                         (he/hyperdrive h/current-entry))
+                                    hsg/root-hyperdrive))))
 
 ;;; Footer:
 
