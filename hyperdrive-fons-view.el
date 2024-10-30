@@ -229,7 +229,7 @@ called and replaces the buffer content with the rendered output."
               (format-relation-to (to merge-relations)
                 (insert
                  (format
-                  "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
+                  "%s [label=\"%s\", href=\"%s\", shape=\"ellipse\", color=\"%s\", style=\"filled\", penwidth=\"4\", fillcolor=\"%s;0.5:%s\"];\n"
                   to (funcall label-fun to) to "purple"
                   ;; Prioritize blocked > source > blocker
                   (pcase (mapcar #'car merge-relations)
@@ -243,7 +243,7 @@ called and replaces the buffer content with the rendered output."
                     ((pred (memq 'sources)) hyperdrive-fons-view-source-color)))))
               (format-root (root)
                 (insert (format
-                         "%s [label=\"%s\", href=\"%s\", shape=\"house\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
+                         "%s [label=\"%s\", href=\"%s\", shape=\"house\", penwidth=\"4\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
                          root (funcall label-fun root) root "purple"
                          hyperdrive-fons-view-source-color
                          hyperdrive-fons-view-blocker-color))
