@@ -915,10 +915,11 @@ case, when PREDICATE, only offer hyperdrives matching it."
       (cl-return-from h//context-hyperdrive current-hyperdrive)))
 
   ;; Otherwise, prompt for drive.
-  (h/read-hyperdrive predicate))
+  (h/read-hyperdrive :predicate predicate))
 
-(defun h/read-hyperdrive (&optional predicate)
+(cl-defun h/read-hyperdrive (&key predicate)
   "Read hyperdrive from among those which match PREDICATE."
+  (declare (indent defun))
   (when (zerop (hash-table-count h/hyperdrives))
     (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
   (unless predicate

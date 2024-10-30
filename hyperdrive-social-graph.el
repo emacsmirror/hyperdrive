@@ -252,15 +252,15 @@ Drives which are not yet narrowed are offered for completion."
   :inapt-if-not (lambda () (and hsg/merge-relations
                                 (not (processp hsg/merge-relations))))
   (interactive
-   (list (h/read-hyperdrive
-          (lambda (hyperdrive)
-            (unless (cl-member hyperdrive hsg/narrow-hyperdrives
-                               :test #'h/equal-p)
-              (catch 'break
-                (maphash (lambda (id _)
-                           (when (string= (h/public-key hyperdrive) id)
-                             (throw 'break t)))
-                         hsg/merge-relations)))))))
+   (list (h/read-hyperdrive :predicate
+           (lambda (hyperdrive)
+             (unless (cl-member hyperdrive hsg/narrow-hyperdrives
+                                :test #'h/equal-p)
+               (catch 'break
+                 (maphash (lambda (id _)
+                            (when (string= (h/public-key hyperdrive) id)
+                              (throw 'break t)))
+                          hsg/merge-relations)))))))
   (push hyperdrive hsg/narrow-hyperdrives)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
     (hsg/display-graph)))
@@ -270,10 +270,10 @@ Drives which are not yet narrowed are offered for completion."
   :transient t
   :inapt-if-not (lambda () (and hsg/merge-relations
                                 (not (processp hsg/merge-relations))))
-  (interactive (list (h/read-hyperdrive
-                      (lambda (hyperdrive)
-                        (cl-member hyperdrive hsg/narrow-hyperdrives
-                                   :test #'h/equal-p)))))
+  (interactive (list (h/read-hyperdrive :predicate
+                       (lambda (hyperdrive)
+                         (cl-member hyperdrive hsg/narrow-hyperdrives
+                                    :test #'h/equal-p)))))
   (setf hsg/narrow-hyperdrives
         (cl-delete hyperdrive hsg/narrow-hyperdrives :test #'h/equal-p))
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))

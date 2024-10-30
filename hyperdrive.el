@@ -528,7 +528,7 @@ without prompting.
 This function is for interactive use only since it calls
 `select-safe-coding-system', which may prompt for input.
 For non-interactive use, see `hyperdrive-write'."
-  (interactive (list (h/read-entry (h/read-hyperdrive #'h/writablep)
+  (interactive (list (h/read-entry (h/read-hyperdrive :predicate #'h/writablep)
                                    :default-path
                                    (or (and (buffer-file-name)
                                             (file-name-nondirectory
@@ -794,7 +794,7 @@ After successful upload, call THEN.  When QUEUE, use it."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: " nil nil t)))
                  (list filename
-                       (h/read-entry (h/read-hyperdrive #'h/writablep)
+                       (h/read-entry (h/read-hyperdrive :predicate #'h/writablep)
                                      :default-path (file-name-nondirectory filename)
                                      :latest-version t))))
   (let ((last-modified (let ((system-time-locale "C"))
