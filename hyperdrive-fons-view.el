@@ -247,8 +247,8 @@ called and replaces the buffer content with the rendered output."
                          root (funcall label-fun root) root "purple"
                          hyperdrive-fons-view-source-color
                          hyperdrive-fons-view-blocker-color))
-                (insert (format "{ rank=\"source\"; %s; }" root))
-                (insert (format "root=\"%s\"" root-name))))
+                (insert (format "{ rank=\"source\"; %s; }\n" root))
+                (insert (format "root=\"%s\"\n" root-name))))
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")
