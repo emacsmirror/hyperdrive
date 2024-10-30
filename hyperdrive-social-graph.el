@@ -342,13 +342,11 @@ hops to traverse for sources and blockers, respectively."
   "Minibuffer history of `hyperdrive-social-graph-read-topic'.")
 
 (defun hsg/read-topic ()
-  "Read topic string.
-Blank string defaults to `hyperdrive-social-graph-default-topic'."
+  "Read topic string or nil with blank string."
   (let ((topic (read-string "Topic (leave blank for default topic): "
                             nil hsg/topic-history)))
-    (when (string-blank-p topic)
-      (setf topic hsg/default-topic))
-    topic))
+    (and (not (string-blank-p topic))
+         topic)))
 
 (cl-defun hsg/context-topic (&key force-prompt)
   "Return `hyperdrive-social-graph-topic' or read topic string.
