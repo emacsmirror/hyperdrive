@@ -111,6 +111,18 @@ Call THEN with a list of block IDs."
 (defcustom hsg/default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
 
+(defun hyperdrive-social-graph (topic hyperdrive)
+  "Show menu for HYPERDRIVE social graph."
+  (interactive (list (hsg/context-topic :force-prompt current-prefix-arg)
+                     (hsg/context-root-hyperdrive :force-prompt current-prefix-arg)))
+  (if (and (string-equal topic hsg/topic)
+           (h/equal-p hyperdrive hsg/root-hyperdrive)
+           (hsg/loaded-merge-relations))
+      (hsg/display-graph)
+    (setf hsg/topic topic)
+    (setf hsg/root-hyperdrive hyperdrive)
+    (hsg/load)))
+
 ;;;###autoload (autoload 'hyperdrive-social-graph "hyperdrive-social-graph" nil t)
 (transient-define-prefix hyperdrive-social-graph-menu (topic hyperdrive)
   "Show menu for HYPERDRIVE social graph."
@@ -131,10 +143,8 @@ Call THEN with a list of block IDs."
    ("g" "Reload" hsg/reload)]
   (interactive (list (hsg/context-topic :force-prompt current-prefix-arg)
                      (hsg/context-root-hyperdrive :force-prompt current-prefix-arg)))
-  (setf hsg/topic topic)
+  (h/social-graph topic hyperdrive)
   ;; TODO: Add prefix to change root
-  (setf hsg/root-hyperdrive hyperdrive)
-  (hsg/load)
   (transient-setup 'hyperdrive-social-graph-menu nil nil :scope hyperdrive))
 
 (defun hsg/load ()
