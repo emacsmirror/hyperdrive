@@ -87,7 +87,7 @@ Call THEN with a list of block IDs."
 
 ;;;; Transient UI
 
-(defvar hsg/root nil)
+(defvar hsg/root-hyperdrive nil)
 (defvar hsg/topic nil)
 (defvar hsg/merge-relations nil)
 
@@ -132,7 +132,7 @@ Call THEN with a list of block IDs."
                      (h//context-hyperdrive :force-prompt current-prefix-arg)))
   (setf hsg/topic topic)
   ;; TODO: Add prefix to change root
-  (setf hsg/root (h/public-key hyperdrive))
+  (setf hsg/root-hyperdrive hyperdrive)
   (setf hsg/merge-relations
         (hsg/merge-relations
          (h/public-key hyperdrive)
@@ -167,7 +167,8 @@ Call THEN with a list of block IDs."
 
 (defun hsg/display-graph ()
   "Open buffer displaying hyperdrive social graph."
-  (h/fons-view (hsg/filter hsg/merge-relations) hsg/root
+  (h/fons-view (hsg/filter hsg/merge-relations)
+               (h/public-key hsg/root-hyperdrive)
                :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name))
 
 (transient-define-suffix hsg/set-shortest-path-p ()
