@@ -96,6 +96,9 @@ Call THEN with a list of block IDs."
 (defvar hsg/blockers-max-hops 3)
 
 (defvar hsg/shortest-path-p t)
+(defvar hsg/narrow-to-p t)
+(defvar hsg/narrow-hyperdrives nil
+  "List of hyperdrives to narrow to.")
 
 (defcustom hsg/buffer-name "*hyperdrive-social-graph-view*"
   "Buffer name to show social graph."
@@ -113,6 +116,10 @@ Call THEN with a list of block IDs."
   ["Hyperdrive social graph"
    :pad-keys t
    ("s" hsg/set-shortest-path)
+   ("N" hsg/set-narrow-to-p)
+   (:info #'hsg/format-narrow-hyperdrives :format "%d")
+   ("n a" "Add narrow" hsg/add-narrow-hyperdrives)
+   ("n d" "Delete narrow" hsg/delete-narrow-hyperdrives)
    ("g" "Go (reload)" hsg/view)]
   (interactive (list (hsg/read-topic)
                      (h//context-hyperdrive :force-prompt current-prefix-arg)))
@@ -150,6 +157,59 @@ Call THEN with a list of block IDs."
                            (propertize "no" 'face 'transient-inactive-suffix))))
   (interactive)
   (cl-callf not hsg/shortest-path-p)
+  (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
+    (hsg/view)))
+
+(transient-define-suffix hsg/set-narrow-to-p ()
+  :transient t
+  :description (lambda ()
+                 (format "Narrow: %s"
+                         (if hsg/narrow-to-p
+                             (propertize "yes" 'face 'transient-argument)
+                           (propertize "no" 'face 'transient-inactive-suffix))))
+  (interactive)
+  (cl-callf not hsg/narrow-to-p)
+  (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
+    (hsg/view)))
+
+(defun hsg/format-narrow-hyperdrives ()
+  (string-join
+   (mapcar (lambda (hyperdrive)
+             (format "     - %s" (h//format hyperdrive)))
+           hsg/narrow-hyperdrives)
+   "\n"))
+
+(transient-define-suffix hsg/add-narrow-hyperdrives (hyperdrive)
+  "Add HYPERDRIVE to `hsg/narrow-hyperdrives' and reload.
+Drives which are not yet narrowed are offered for completion."
+  :transient t
+  :inapt-if-not (lambda () (and hsg/merge-relations
+                                (not (processp hsg/merge-relations))))
+  (interactive
+   (list (h/read-hyperdrive
+          (lambda (hyperdrive)
+            (unless (cl-member hyperdrive hsg/narrow-hyperdrives
+                               :test #'h/equal-p)
+              (catch 'break
+                (maphash (lambda (id _)
+                           (when (string= (h/public-key hyperdrive) id)
+                             (throw 'break t)))
+                         hsg/merge-relations)))))))
+  (push hyperdrive hsg/narrow-hyperdrives)
+  (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
+    (hsg/view)))
+
+(transient-define-suffix hsg/delete-narrow-hyperdrives (hyperdrive)
+  "Delete HYPERDRIVE from `hsg/narrow-hyperdrives' and reload."
+  :transient t
+  :inapt-if-not (lambda () (and hsg/merge-relations
+                                (not (processp hsg/merge-relations))))
+  (interactive (list (h/read-hyperdrive
+                      (lambda (hyperdrive)
+                        (cl-member hyperdrive hsg/narrow-hyperdrives
+                                   :test #'h/equal-p)))))
+  (setf hsg/narrow-hyperdrives
+        (cl-delete hyperdrive hsg/narrow-hyperdrives :test #'h/equal-p))
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
     (hsg/view)))
 
