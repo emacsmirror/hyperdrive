@@ -190,7 +190,7 @@ Call THEN with a list of block IDs."
     (format "Topic: %s"
             (if hsg/topic
                 (propertize hsg/topic 'face 'transient-argument)
-              (propertize "Default" 'face 'transient-inactive-suffix))))
+              (propertize "Default" 'face 'transient-inactive-value))))
   (interactive)
   (setf hsg/topic (hsg/read-topic))
   (hsg/load))
@@ -247,7 +247,7 @@ Call THEN with a list of block IDs."
                  (format "Shortest path: %s"
                          (if hsg/shortest-path-p
                              (propertize "yes" 'face 'transient-argument)
-                           (propertize "no" 'face 'transient-inactive-suffix))))
+                           (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hsg/shortest-path-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
@@ -259,7 +259,7 @@ Call THEN with a list of block IDs."
                  (format "Show sources: %s"
                          (if hsg/show-sources-p
                              (propertize "yes" 'face 'transient-argument)
-                           (propertize "no" 'face 'transient-inactive-suffix))))
+                           (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hsg/show-sources-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
@@ -271,7 +271,7 @@ Call THEN with a list of block IDs."
                  (format "Show blockers: %s"
                          (if hsg/show-blockers-p
                              (propertize "yes" 'face 'transient-argument)
-                           (propertize "no" 'face 'transient-inactive-suffix))))
+                           (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hsg/show-blockers-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
@@ -283,7 +283,7 @@ Call THEN with a list of block IDs."
                  (format "Show blocked: %s"
                          (if hsg/show-blocked-p
                              (propertize "yes" 'face 'transient-argument)
-                           (propertize "no" 'face 'transient-inactive-suffix))))
+                           (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hsg/show-blocked-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
