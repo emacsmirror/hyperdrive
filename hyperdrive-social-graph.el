@@ -115,7 +115,7 @@ Call THEN with a list of block IDs."
   :refresh-suffixes t
   ["Hyperdrive social graph"
    :pad-keys t
-   ("s" hsg/set-shortest-path)
+   ("s" hsg/set-shortest-path-p)
    ("N" hsg/set-narrow-to-p)
    (:info #'hsg/format-narrow-hyperdrives :format "%d")
    ("n a" "Add narrow" hsg/add-narrow-hyperdrives)
@@ -148,7 +148,7 @@ Call THEN with a list of block IDs."
   (h/fons-view (hsg/filter hsg/merge-relations) hsg/root
                :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name))
 
-(transient-define-suffix hsg/set-shortest-path ()
+(transient-define-suffix hsg/set-shortest-path-p ()
   :transient t
   :description (lambda ()
                  (format "Shortest path: %s"
