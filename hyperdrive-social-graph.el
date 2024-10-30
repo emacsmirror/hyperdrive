@@ -132,6 +132,7 @@ Call THEN with a list of block IDs."
   ["Hyperdrive social graph"
    :pad-keys t
    ;; TODO: When changing `hsg/root-hyperdrive', reset local variables to default values?
+   ("r" hsg/set-root-hyperdrive)
    ("s" hsg/set-shortest-path-p)
    ("t s" hsg/set-show-sources-p)
    ("t b" hsg/set-show-blockers-p)
@@ -144,7 +145,6 @@ Call THEN with a list of block IDs."
   (interactive (list (hsg/context-topic :force-prompt current-prefix-arg)
                      (hsg/context-root-hyperdrive :force-prompt current-prefix-arg)))
   (h/social-graph topic hyperdrive)
-  ;; TODO: Add prefix to change root
   (transient-setup 'hyperdrive-social-graph-menu nil nil :scope hyperdrive))
 
 (defun hsg/load ()
@@ -164,6 +164,17 @@ Call THEN with a list of block IDs."
                     ;;          hsg/merge-relations)
                     (hsg/refresh-menu))))
   (hsg/display-loading-buffer))
+
+(transient-define-suffix hsg/set-root-hyperdrive ()
+  :transient t
+  :description
+  (lambda ()
+    (format "Root: %s" (if hsg/root-hyperdrive
+                           (h//format-hyperdrive hsg/root-hyperdrive)
+                         (propertize "unset" 'face))))
+  (interactive)
+  (setf hsg/root-hyperdrive (h/read-hyperdrive :default hsg/root-hyperdrive))
+  (hsg/load))
 
 (transient-define-suffix hsg/reload ()
   :inapt-if-not #'hsg/loaded-merge-relations
