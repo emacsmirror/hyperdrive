@@ -127,7 +127,7 @@ Call THEN with a list of block IDs."
    (:info #'hsg/format-narrow-hyperdrives :format "%d")
    ("n a" "Add narrow" hsg/add-narrow-hyperdrives)
    ("n d" "Delete narrow" hsg/delete-narrow-hyperdrives)
-   ("g" "Go (reload)" hsg/view)]
+   ("g" "Reload" hsg/reload)]
   (interactive (list (hsg/read-topic)
                      (h//context-hyperdrive :force-prompt current-prefix-arg)))
   (setf hsg/topic topic)
@@ -154,12 +154,12 @@ Call THEN with a list of block IDs."
                     (hsg/refresh-menu))))
   (hsg/display-loading-buffer))
 
-(transient-define-suffix hsg/view ()
+(transient-define-suffix hsg/reload ()
   :inapt-if-not (lambda () (and hsg/merge-relations
                                 (not (processp hsg/merge-relations))))
   :transient t
   (interactive)
-  (hsg/display-graph))
+  (hsg/load))
 
 (defun hsg/display-loading-buffer ()
   "Open loading buffer for hyperdrive social graph."
