@@ -169,11 +169,11 @@ called and replaces the buffer content with the rendered output."
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view
-    (merge-relations root &key (layout hyperdrive-fons-view-layout) label-fun buffer)
+    (merge-relations root &key (layout hyperdrive-fons-view-layout) focus-ids label-fun buffer)
   "View MERGE-RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
-    merge-relations :root-name root :layout layout :label-fun label-fun)
+    merge-relations :root-name root :focus-ids focus-ids :layout layout :label-fun label-fun)
    :buffer buffer))
 
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
@@ -216,7 +216,7 @@ called and replaces the buffer content with the rendered output."
   (format "%s -> %s [color=\"%s\" penwidth=2];\n"
           (fons-hop-from hop) (fons-hop-to hop) color))
 
-(cl-defun hyperdrive-fons-view--format-graph (merge-relations &key root-name layout (label-fun #'identity))
+(cl-defun hyperdrive-fons-view--format-graph (merge-relations &key root-name focus-ids layout (label-fun #'identity))
   "Return a graphviz-string string for MERGE-RELATIONS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
@@ -248,7 +248,10 @@ called and replaces the buffer content with the rendered output."
                          hyperdrive-fons-view-source-color
                          hyperdrive-fons-view-blocker-color))
                 (insert (format "{ rank=\"source\"; %s; }\n" root))
-                (insert (format "root=\"%s\"\n" root-name))))
+                (insert (format "root=\"%s\"\n" root-name)))
+              (format-focus-ids (focus-ids)
+                (insert (format "subgraph cluster_focus_ids { rank=\"sink\"; color=\"white\"; %s; }\n"
+                                (string-join focus-ids "; ")))))
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")
@@ -280,6 +283,8 @@ called and replaces the buffer content with the rendered output."
                      hop hyperdrive-fons-view-blocked-color))))
         (format-root root-name)
         (maphash #'format-relation-to merge-relations)
+        (when focus-ids
+          (format-focus-ids focus-ids))
         (insert "}"))
       (buffer-string))))
 
