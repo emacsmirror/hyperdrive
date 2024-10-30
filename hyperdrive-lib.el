@@ -917,8 +917,9 @@ case, when PREDICATE, only offer hyperdrives matching it."
   ;; Otherwise, prompt for drive.
   (h/read-hyperdrive :predicate predicate))
 
-(cl-defun h/read-hyperdrive (&key predicate)
-  "Read hyperdrive from among those which match PREDICATE."
+(cl-defun h/read-hyperdrive (&key predicate default)
+  "Read hyperdrive from among those which match PREDICATE.
+DEFAULT is the default hyperdrive."
   (declare (indent defun))
   (when (zerop (hash-table-count h/hyperdrives))
     (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
@@ -928,10 +929,12 @@ case, when PREDICATE, only offer hyperdrives matching it."
   (let* ((current-hyperdrive (and h/current-entry
                                   (he/hyperdrive h/current-entry)))
          (hyperdrives (cl-remove-if-not predicate (hash-table-values h/hyperdrives)))
-         (default (and h/current-entry
-                       (funcall predicate current-hyperdrive)
-                       (h//format-hyperdrive (he/hyperdrive h/current-entry))))
-         (prompt (format-prompt "Hyperdrive" default))
+         (default (or default
+                      (and h/current-entry
+                           (funcall predicate current-hyperdrive)
+                           (he/hyperdrive h/current-entry))))
+         (formatted-default (and default (h//format-hyperdrive default)))
+         (prompt (format-prompt "Hyperdrive" formatted-default))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (h//format-hyperdrive hyperdrive) hyperdrive))
                              hyperdrives))
@@ -944,7 +947,7 @@ case, when PREDICATE, only offer hyperdrives matching it."
                  '(metadata (category . hyperdrive))
                (complete-with-action
                 action candidates string predicate)))
-           nil 'require-match nil nil default)))
+           nil 'require-match nil nil formatted-default)))
     (or (alist-get selected candidates nil nil #'equal)
         (h/user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
 
