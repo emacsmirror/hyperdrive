@@ -146,7 +146,7 @@ Call THEN with a list of block IDs."
                     ;; (maphash (lambda (id _)
                     ;;            (h/fill-metadata (he/hyperdrive (h/url-entry))))
                     ;;          hsg/merge-relations)
-                    (hsg/refresh))))
+                    (hsg/refresh-menu))))
   (hsg/display-loading-buffer)
   (transient-setup 'hyperdrive-social-graph nil nil :scope hyperdrive))
 
@@ -303,7 +303,7 @@ hops to traverse for sources and blockers, respectively."
         (mapcar #'h/public-key hsg/narrow-hyperdrives) merge-relations))
   merge-relations)
 
-(defun hsg/refresh ()
+(defun hsg/refresh-menu ()
   "Refresh `hyperdrive-social-graph' if it's open."
   (when (transient-active-prefix 'hyperdrive-social-graph)
     (transient--refresh-transient)))
