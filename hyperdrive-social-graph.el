@@ -95,6 +95,10 @@ Call THEN with a list of block IDs."
 (defvar hsg/sources-max-hops 3)
 (defvar hsg/blockers-max-hops 3)
 
+(defvar hsg/show-sources-p t)
+(defvar hsg/show-blockers-p t)
+(defvar hsg/show-blocked-p t)
+
 (defvar hsg/shortest-path-p t)
 (defvar hsg/narrow-to-p t)
 (defvar hsg/narrow-hyperdrives nil
@@ -116,6 +120,9 @@ Call THEN with a list of block IDs."
   ["Hyperdrive social graph"
    :pad-keys t
    ("s" hsg/set-shortest-path-p)
+   ("t s" hsg/set-show-sources-p)
+   ("t b" hsg/set-show-blockers-p)
+   ("t x" hsg/set-show-blocked-p)
    ("N" hsg/set-narrow-to-p)
    (:info #'hsg/format-narrow-hyperdrives :format "%d")
    ("n a" "Add narrow" hsg/add-narrow-hyperdrives)
@@ -157,6 +164,42 @@ Call THEN with a list of block IDs."
                            (propertize "no" 'face 'transient-inactive-suffix))))
   (interactive)
   (cl-callf not hsg/shortest-path-p)
+  (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
+    (hsg/view)))
+
+(transient-define-suffix hsg/set-show-sources-p ()
+  :transient t
+  :description (lambda ()
+                 (format "Show sources: %s"
+                         (if hsg/show-sources-p
+                             (propertize "yes" 'face 'transient-argument)
+                           (propertize "no" 'face 'transient-inactive-suffix))))
+  (interactive)
+  (cl-callf not hsg/show-sources-p)
+  (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
+    (hsg/view)))
+
+(transient-define-suffix hsg/set-show-blockers-p ()
+  :transient t
+  :description (lambda ()
+                 (format "Show blockers: %s"
+                         (if hsg/show-blockers-p
+                             (propertize "yes" 'face 'transient-argument)
+                           (propertize "no" 'face 'transient-inactive-suffix))))
+  (interactive)
+  (cl-callf not hsg/show-blockers-p)
+  (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
+    (hsg/view)))
+
+(transient-define-suffix hsg/set-show-blocked-p ()
+  :transient t
+  :description (lambda ()
+                 (format "Show blocked: %s"
+                         (if hsg/show-blocked-p
+                             (propertize "yes" 'face 'transient-argument)
+                           (propertize "no" 'face 'transient-inactive-suffix))))
+  (interactive)
+  (cl-callf not hsg/show-blocked-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
     (hsg/view)))
 
@@ -236,6 +279,11 @@ hops to traverse for sources and blockers, respectively."
 (defun hsg/filter (merge-relations)
   "Return filtered MERGE-RELATIONS."
   ;; TODO: Make filters customizable
+  (unless (and hsg/show-sources-p hsg/show-blockers-p hsg/show-blocked-p)
+    (cl-callf fons-filter-to-types merge-relations
+      :sourcesp hsg/show-sources-p
+      :blockersp hsg/show-blockers-p
+      :blockedp hsg/show-blocked-p))
   (when hsg/shortest-path-p
     ;; Apply shortest-path before narrowing
     (cl-callf fons-filter-shortest-path merge-relations))
