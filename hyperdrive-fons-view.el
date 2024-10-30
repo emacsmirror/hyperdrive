@@ -261,13 +261,21 @@ called and replaces the buffer content with the rendered output."
                      "margin" "0"
                      "ratio" "fill"
                      "mindist" "0")
-        (dolist (type '(sources blockers blocked))
-          (dolist (hop (fons-merge-relations-hops merge-relations type))
+        (dolist (hop (fons-merge-relations-hops merge-relations 'sources))
+          (insert (hyperdrive-fons-view--format-hop
+                   hop hyperdrive-fons-view-source-color)))
+        (dolist (hop (fons-merge-relations-hops merge-relations 'blockers))
+          (insert (hyperdrive-fons-view--format-hop
+                   hop hyperdrive-fons-view-blocker-color)))
+        (when (catch 'blocker-relation-exists-p
+                ;; Only display block hops when blockers are displayed.
+                (maphash (lambda (_id merge-relation)
+                           (when (map-elt merge-relation 'blockers)
+                             (throw 'blocker-relation-exists-p t)))
+                         merge-relations))
+          (dolist (hop (fons-merge-relations-hops merge-relations 'blocked))
             (insert (hyperdrive-fons-view--format-hop
-                     hop (pcase type
-                           ('sources hyperdrive-fons-view-source-color)
-                           ('blockers hyperdrive-fons-view-blocker-color)
-                           ('blocked hyperdrive-fons-view-blocked-color))))))
+                     hop hyperdrive-fons-view-blocked-color))))
         (format-root root-name)
         (maphash #'format-relation-to merge-relations)
         (when root-name
