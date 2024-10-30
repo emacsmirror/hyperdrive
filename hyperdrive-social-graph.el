@@ -130,6 +130,7 @@ Call THEN with a list of block IDs."
    ("g" "Go (reload)" hsg/view)]
   (interactive (list (hsg/read-topic)
                      (h//context-hyperdrive :force-prompt current-prefix-arg)))
+  (setf hsg/topic topic)
   ;; TODO: Add prefix to change root
   (setf hsg/root (h/public-key hyperdrive))
   (setf hsg/merge-relations
