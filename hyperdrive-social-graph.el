@@ -134,6 +134,7 @@ Call THEN with a list of block IDs."
    :pad-keys t
    ;; TODO: When changing `hsg/root-hyperdrive', reset local variables to default values?
    ("r" hsg/set-root-hyperdrive)
+   ("t" hsg/set-topic)
    ("S" hsg/set-shortest-path-p)
    ("s" hsg/set-show-sources-p)
    ("b" hsg/set-show-blockers-p)
@@ -175,6 +176,18 @@ Call THEN with a list of block IDs."
                          (propertize "unset" 'face))))
   (interactive)
   (setf hsg/root-hyperdrive (h/read-hyperdrive :default hsg/root-hyperdrive))
+  (hsg/load))
+
+(transient-define-suffix hsg/set-topic ()
+  :transient t
+  :description
+  (lambda ()
+    (format "Topic: %s"
+            (if hsg/topic
+                (propertize hsg/topic 'face 'transient-argument)
+              (propertize "Default" 'face 'transient-inactive-suffix))))
+  (interactive)
+  (setf hsg/topic (hsg/read-topic))
   (hsg/load))
 
 (transient-define-suffix hsg/reload ()
