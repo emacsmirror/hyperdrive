@@ -285,9 +285,9 @@ hops to traverse for sources and blockers, respectively."
       :blockersp hsg/show-blockers-p
       :blockedp hsg/show-blocked-p))
   (when hsg/shortest-path-p
-    ;; Apply shortest-path before narrowing
     (cl-callf fons-filter-shortest-path merge-relations))
   (when hsg/narrow-to-p
+    ;; Apply narrowing last
     (cl-callf2 fons-filter-narrow-to
         (mapcar #'h/public-key hsg/narrow-hyperdrives) merge-relations))
   merge-relations)
