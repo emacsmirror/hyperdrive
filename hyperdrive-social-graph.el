@@ -119,6 +119,7 @@ Call THEN with a list of block IDs."
   :refresh-suffixes t
   ["Hyperdrive social graph"
    :pad-keys t
+   ;; TODO: When changing `hsg/root-hyperdrive', reset local variables to default values?
    ("s" hsg/set-shortest-path-p)
    ("t s" hsg/set-show-sources-p)
    ("t b" hsg/set-show-blockers-p)
@@ -169,6 +170,8 @@ Call THEN with a list of block IDs."
       (insert "Loading hyperdrive social graph data...")
       (display-buffer (current-buffer)))))
 
+;; TODO: Display full screen by default.
+;; TODO: Accept display-action argument.  Default is to not pop to buffer.
 (defun hsg/display-graph ()
   "Open buffer displaying hyperdrive social graph."
   (h/fons-view (hsg/filter hsg/merge-relations)
