@@ -100,7 +100,6 @@ Call THEN with a list of block IDs."
 (defvar hsg/show-blocked-p t)
 
 (defvar hsg/shortest-path-p t)
-(defvar hsg/narrow-to-p t)
 (defvar hsg/narrow-hyperdrives nil
   "List of hyperdrives to narrow to.")
 
@@ -136,11 +135,10 @@ Call THEN with a list of block IDs."
    ("r" hsg/set-root-hyperdrive)
    ("t" hsg/set-topic)
    ("g" "Reload" hsg/reload)]
-  ["Narrow"
-   ("N" hsg/set-narrow-to-p)
+  ["Only paths to"
    (:info #'hsg/format-narrow-hyperdrives :format "%d")
-   ("n a" "Add narrow" hsg/add-narrow-hyperdrives)
-   ("n d" "Delete narrow" hsg/delete-narrow-hyperdrives)]
+   ("n a" "Add" hsg/add-narrow-hyperdrives)
+   ("n d" "Delete" hsg/delete-narrow-hyperdrives)]
   [["Sources"
     ("s s" hsg/set-show-sources-p)
     ("s m" hsg/set-sources-max-hops)]
@@ -292,18 +290,6 @@ Call THEN with a list of block IDs."
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
     (hsg/display-graph)))
 
-(transient-define-suffix hsg/set-narrow-to-p ()
-  :transient t
-  :description (lambda ()
-                 (format "Narrow: %s"
-                         (if hsg/narrow-to-p
-                             (propertize "yes" 'face 'transient-argument)
-                           (propertize "no" 'face 'transient-inactive-suffix))))
-  (interactive)
-  (cl-callf not hsg/narrow-to-p)
-  (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
-    (hsg/display-graph)))
-
 (defun hsg/format-narrow-hyperdrives ()
   (string-join
    (mapcar (lambda (hyperdrive)
@@ -373,10 +359,9 @@ hops to traverse for sources and blockers, respectively."
       :blockedp hsg/show-blocked-p))
   (when hsg/shortest-path-p
     (cl-callf fons-filter-shortest-path merge-relations))
-  (when hsg/narrow-to-p
-    ;; Apply narrowing last
-    (cl-callf2 fons-filter-narrow-to
-        (mapcar #'h/public-key hsg/narrow-hyperdrives) merge-relations))
+  ;; Apply narrowing last
+  (cl-callf2 fons-filter-narrow-to
+      (mapcar #'h/public-key hsg/narrow-hyperdrives) merge-relations)
   merge-relations)
 
 (defun hsg/refresh-menu ()
