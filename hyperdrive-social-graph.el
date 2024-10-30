@@ -135,17 +135,23 @@ Call THEN with a list of block IDs."
    ;; TODO: When changing `hsg/root-hyperdrive', reset local variables to default values?
    ("r" hsg/set-root-hyperdrive)
    ("t" hsg/set-topic)
-   ("m s" hsg/set-sources-max-hops)
-   ("m b" hsg/set-blockers-max-hops)
-   ("S" hsg/set-shortest-path-p)
-   ("s" hsg/set-show-sources-p)
-   ("b" hsg/set-show-blockers-p)
-   ("x" hsg/set-show-blocked-p)
+   ("g" "Reload" hsg/reload)]
+  ["Narrow"
    ("N" hsg/set-narrow-to-p)
    (:info #'hsg/format-narrow-hyperdrives :format "%d")
    ("n a" "Add narrow" hsg/add-narrow-hyperdrives)
-   ("n d" "Delete narrow" hsg/delete-narrow-hyperdrives)
-   ("g" "Reload" hsg/reload)]
+   ("n d" "Delete narrow" hsg/delete-narrow-hyperdrives)]
+  [["Sources"
+    ("s s" hsg/set-show-sources-p)
+    ("s m" hsg/set-sources-max-hops)]
+   ["Blockers"
+    ("b s" hsg/set-show-blockers-p)
+    ("b m" hsg/set-blockers-max-hops)]
+   ["Blocked"
+    ("x s" hsg/set-show-blocked-p)]]
+  ["Options"
+   ("S" hsg/set-shortest-path-p)]
+
   (interactive (list (hsg/context-topic :force-prompt current-prefix-arg)
                      (hsg/context-root-hyperdrive :force-prompt current-prefix-arg)))
   (h/social-graph topic hyperdrive)
