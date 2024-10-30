@@ -326,7 +326,8 @@ hops to traverse for sources and blockers, respectively."
 (defun hsg/read-topic ()
   "Read topic string.
 Blank string defaults to `hyperdrive-social-graph-default-topic'."
-  (let ((topic (read-string "Topic (leave blank for default topic): " nil hsg/topic-history)))
+  (let ((topic (read-string "Topic (leave blank for default topic): "
+                            nil hsg/topic-history)))
     (when (string-blank-p topic)
       (setf topic hsg/default-topic))
     topic))
