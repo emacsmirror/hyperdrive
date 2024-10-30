@@ -140,11 +140,14 @@ Call THEN with a list of block IDs."
          :blockers-max-hops hsg/blockers-max-hops
          :finally (lambda (merge-relations)
                     (setf hsg/merge-relations merge-relations)
+                    (h/fons-view (hsg/filter hsg/merge-relations) hsg/root
+                                 :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name)
                     ;; TODO: Make h/fill-metadata async and request in a queue.
                     ;; (maphash (lambda (id _)
                     ;;            (h/fill-metadata (he/hyperdrive (h/url-entry))))
                     ;;          hsg/merge-relations)
                     (hsg/refresh))))
+  (hsg/display-loading-buffer)
   (transient-setup 'hyperdrive-social-graph nil nil :scope hyperdrive))
 
 (transient-define-suffix hsg/view ()
@@ -154,6 +157,14 @@ Call THEN with a list of block IDs."
   (interactive)
   (h/fons-view (hsg/filter hsg/merge-relations) hsg/root
                :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name))
+
+(defun hsg/display-loading-buffer ()
+  "Open loading buffer for hyperdrive social graph."
+  (with-current-buffer hsg/buffer-name
+    (with-silent-modifications
+      (erase-buffer)
+      (insert "Loading hyperdrive social graph data...")
+      (display-buffer (current-buffer)))))
 
 (transient-define-suffix hsg/set-shortest-path-p ()
   :transient t
