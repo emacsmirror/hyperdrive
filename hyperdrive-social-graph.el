@@ -116,6 +116,7 @@ Call THEN with a list of block IDs."
   (interactive (list (hsg/context-topic :force-prompt current-prefix-arg)
                      (hsg/context-root-hyperdrive :force-prompt current-prefix-arg)))
   (if (and (equal topic hsg/topic)
+           hsg/root-hyperdrive
            (h/equal-p hyperdrive hsg/root-hyperdrive)
            (hsg/loaded-merge-relations))
       (hsg/display-graph)
