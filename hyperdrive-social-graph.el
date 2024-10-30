@@ -350,13 +350,11 @@ hops to traverse for sources and blockers, respectively."
          topic)))
 
 (cl-defun hsg/context-topic (&key force-prompt)
-  "Return `hyperdrive-social-graph-topic' or read topic string.
+  "Return `hyperdrive-social-graph-topic'.
 With FORCE-PROMPT, or interactively with universal prefix
 argument \\[universal-argument], always prompt.
 Blank string defaults to `hyperdrive-social-graph-default-topic'."
-  (if (and hsg/topic (not force-prompt))
-      hsg/topic
-    (hsg/read-topic)))
+  (if force-prompt (hsg/read-topic) hsg/topic))
 
 (cl-defun hsg/context-root-hyperdrive (&key force-prompt)
   "Return `hyperdrive-social-graph-root-hyperdrive' or prompt for drive.
