@@ -156,8 +156,7 @@ Call THEN with a list of block IDs."
   (hsg/display-loading-buffer))
 
 (transient-define-suffix hsg/reload ()
-  :inapt-if-not (lambda () (and hsg/merge-relations
-                                (not (processp hsg/merge-relations))))
+  :inapt-if-not #'hsg/loaded-merge-relations
   :transient t
   (interactive)
   (hsg/load))
@@ -249,8 +248,7 @@ Call THEN with a list of block IDs."
   "Add HYPERDRIVE to `hsg/narrow-hyperdrives' and reload.
 Drives which are not yet narrowed are offered for completion."
   :transient t
-  :inapt-if-not (lambda () (and hsg/merge-relations
-                                (not (processp hsg/merge-relations))))
+  :inapt-if-not #'hsg/loaded-merge-relations
   (interactive
    (list (h/read-hyperdrive :predicate
            (lambda (hyperdrive)
@@ -268,8 +266,7 @@ Drives which are not yet narrowed are offered for completion."
 (transient-define-suffix hsg/delete-narrow-hyperdrives (hyperdrive)
   "Delete HYPERDRIVE from `hsg/narrow-hyperdrives' and reload."
   :transient t
-  :inapt-if-not (lambda () (and hsg/merge-relations
-                                (not (processp hsg/merge-relations))))
+  :inapt-if-not #'hsg/loaded-merge-relations
   (interactive (list (h/read-hyperdrive :predicate
                        (lambda (hyperdrive)
                          (cl-member hyperdrive hsg/narrow-hyperdrives
@@ -351,6 +348,11 @@ argument \\[universal-argument], always prompt."
     (h/read-hyperdrive :default (or (and h/current-entry
                                          (he/hyperdrive h/current-entry))
                                     hsg/root-hyperdrive))))
+
+(defun hsg/loaded-merge-relations ()
+  "Return `hyperdrive-social-graph-merge-relations' if loaded."
+  (and (not (processp hsg/merge-relations))
+       hsg/merge-relations))
 
 ;;; Footer:
 
