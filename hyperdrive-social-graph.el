@@ -140,8 +140,7 @@ Call THEN with a list of block IDs."
          :blockers-max-hops hsg/blockers-max-hops
          :finally (lambda (merge-relations)
                     (setf hsg/merge-relations merge-relations)
-                    (h/fons-view (hsg/filter hsg/merge-relations) hsg/root
-                                 :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name)
+                    (hsg/display-graph)
                     ;; TODO: Make h/fill-metadata async and request in a queue.
                     ;; (maphash (lambda (id _)
                     ;;            (h/fill-metadata (he/hyperdrive (h/url-entry))))
@@ -155,8 +154,7 @@ Call THEN with a list of block IDs."
                                 (not (processp hsg/merge-relations))))
   :transient t
   (interactive)
-  (h/fons-view (hsg/filter hsg/merge-relations) hsg/root
-               :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name))
+  (hsg/display-graph))
 
 (defun hsg/display-loading-buffer ()
   "Open loading buffer for hyperdrive social graph."
@@ -165,6 +163,11 @@ Call THEN with a list of block IDs."
       (erase-buffer)
       (insert "Loading hyperdrive social graph data...")
       (display-buffer (current-buffer)))))
+
+(defun hsg/display-graph ()
+  "Open buffer displaying hyperdrive social graph."
+  (h/fons-view (hsg/filter hsg/merge-relations) hsg/root
+               :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name))
 
 (transient-define-suffix hsg/set-shortest-path-p ()
   :transient t
@@ -176,7 +179,7 @@ Call THEN with a list of block IDs."
   (interactive)
   (cl-callf not hsg/shortest-path-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
-    (hsg/view)))
+    (hsg/display-graph)))
 
 (transient-define-suffix hsg/set-show-sources-p ()
   :transient t
@@ -188,7 +191,7 @@ Call THEN with a list of block IDs."
   (interactive)
   (cl-callf not hsg/show-sources-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
-    (hsg/view)))
+    (hsg/display-graph)))
 
 (transient-define-suffix hsg/set-show-blockers-p ()
   :transient t
@@ -200,7 +203,7 @@ Call THEN with a list of block IDs."
   (interactive)
   (cl-callf not hsg/show-blockers-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
-    (hsg/view)))
+    (hsg/display-graph)))
 
 (transient-define-suffix hsg/set-show-blocked-p ()
   :transient t
@@ -212,7 +215,7 @@ Call THEN with a list of block IDs."
   (interactive)
   (cl-callf not hsg/show-blocked-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
-    (hsg/view)))
+    (hsg/display-graph)))
 
 (transient-define-suffix hsg/set-narrow-to-p ()
   :transient t
@@ -224,7 +227,7 @@ Call THEN with a list of block IDs."
   (interactive)
   (cl-callf not hsg/narrow-to-p)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
-    (hsg/view)))
+    (hsg/display-graph)))
 
 (defun hsg/format-narrow-hyperdrives ()
   (string-join
@@ -251,7 +254,7 @@ Drives which are not yet narrowed are offered for completion."
                          hsg/merge-relations)))))))
   (push hyperdrive hsg/narrow-hyperdrives)
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
-    (hsg/view)))
+    (hsg/display-graph)))
 
 (transient-define-suffix hsg/delete-narrow-hyperdrives (hyperdrive)
   "Delete HYPERDRIVE from `hsg/narrow-hyperdrives' and reload."
@@ -265,7 +268,7 @@ Drives which are not yet narrowed are offered for completion."
   (setf hsg/narrow-hyperdrives
         (cl-delete hyperdrive hsg/narrow-hyperdrives :test #'h/equal-p))
   (when-let ((buffer-window (get-buffer-window hsg/buffer-name)))
-    (hsg/view)))
+    (hsg/display-graph)))
 
 (cl-defun hsg/merge-relations (root topic &key finally sources-max-hops blockers-max-hops)
   "Load merge-relations from ROOT about TOPIC and call FINALLY.
