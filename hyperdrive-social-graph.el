@@ -150,6 +150,24 @@ Call THEN with a list of block IDs."
   (hsg/display-loading-buffer)
   (transient-setup 'hyperdrive-social-graph nil nil :scope hyperdrive))
 
+(defun hsg/load ()
+  "Load `hsg/merge-relations' and redisplay graph."
+  (setf hsg/merge-relations
+        (hsg/merge-relations
+         (h/public-key hsg/root-hyperdrive)
+         hsg/topic
+         :sources-max-hops hsg/sources-max-hops
+         :blockers-max-hops hsg/blockers-max-hops
+         :finally (lambda (merge-relations)
+                    (setf hsg/merge-relations merge-relations)
+                    (hsg/display-graph)
+                    ;; TODO: Make h/fill-metadata async and request in a queue.
+                    ;; (maphash (lambda (id _)
+                    ;;            (h/fill-metadata (he/hyperdrive (h/url-entry))))
+                    ;;          hsg/merge-relations)
+                    (hsg/refresh-menu))))
+  (hsg/display-loading-buffer))
+
 (transient-define-suffix hsg/view ()
   :inapt-if-not (lambda () (and hsg/merge-relations
                                 (not (processp hsg/merge-relations))))
