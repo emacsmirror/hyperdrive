@@ -112,7 +112,7 @@ Call THEN with a list of block IDs."
   "Special topic name used as a fallback when no topic is specified.")
 
 ;;;###autoload (autoload 'hyperdrive-social-graph "hyperdrive-social-graph" nil t)
-(transient-define-prefix hyperdrive-social-graph (topic hyperdrive)
+(transient-define-prefix hyperdrive-social-graph-menu (topic hyperdrive)
   "Show menu for HYPERDRIVE social graph."
   ;; TODO: Update info manual link
   :info-manual "(hyperdrive)"
@@ -135,7 +135,7 @@ Call THEN with a list of block IDs."
   ;; TODO: Add prefix to change root
   (setf hsg/root-hyperdrive hyperdrive)
   (hsg/load)
-  (transient-setup 'hyperdrive-social-graph nil nil :scope hyperdrive))
+  (transient-setup 'hyperdrive-social-graph-menu nil nil :scope hyperdrive))
 
 (defun hsg/load ()
   "Load `hsg/merge-relations' and redisplay graph."
@@ -313,8 +313,8 @@ hops to traverse for sources and blockers, respectively."
   merge-relations)
 
 (defun hsg/refresh-menu ()
-  "Refresh `hyperdrive-social-graph' if it's open."
-  (when (transient-active-prefix 'hyperdrive-social-graph)
+  "Refresh `hyperdrive-social-graph-menu' if it's open."
+  (when (transient-active-prefix 'hyperdrive-social-graph-menu)
     (transient--refresh-transient)))
 
 (defvar hsg/topic-history nil
