@@ -133,21 +133,7 @@ Call THEN with a list of block IDs."
   (setf hsg/topic topic)
   ;; TODO: Add prefix to change root
   (setf hsg/root-hyperdrive hyperdrive)
-  (setf hsg/merge-relations
-        (hsg/merge-relations
-         (h/public-key hyperdrive)
-         topic
-         :sources-max-hops hsg/sources-max-hops
-         :blockers-max-hops hsg/blockers-max-hops
-         :finally (lambda (merge-relations)
-                    (setf hsg/merge-relations merge-relations)
-                    (hsg/display-graph)
-                    ;; TODO: Make h/fill-metadata async and request in a queue.
-                    ;; (maphash (lambda (id _)
-                    ;;            (h/fill-metadata (he/hyperdrive (h/url-entry))))
-                    ;;          hsg/merge-relations)
-                    (hsg/refresh-menu))))
-  (hsg/display-loading-buffer)
+  (hsg/load)
   (transient-setup 'hyperdrive-social-graph nil nil :scope hyperdrive))
 
 (defun hsg/load ()
