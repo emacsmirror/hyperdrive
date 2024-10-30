@@ -190,6 +190,24 @@ to one of the IDS."
                     blockers))))))
     copy-merge-relations))
 
+(cl-defun fons-filter-to-types (merge-relations &key sourcesp blockersp blockedp)
+  "Return MERGE-RELATIONS based on relation type.
+When SOURCESP, BLOCKERSP, and/or BLOCKEDP, include \\+`sources',
+\\+`blockers', and/or \\+`blocked' respectively."
+  (let ((copy-merge-relations (make-hash-table :test 'equal))
+        types)
+    (when blockedp (push 'blocked types))
+    (when blockersp (push 'blockers types))
+    (when sourcesp (push 'sources types))
+    (maphash (lambda (id merge-relation)
+               (dolist (type types)
+                 (when-let ((relation (map-elt (gethash id merge-relations)
+                                               type)))
+                   (setf (map-elt (gethash id copy-merge-relations) type)
+                         relation))))
+             merge-relations)
+    copy-merge-relations))
+
 (cl-defun fons-blocked (blockers &key blocked-fn finally)
   "Calculate hash table of blocked and call FINALLY.
 
