@@ -152,7 +152,7 @@ Call THEN with a list of block IDs."
   (setf hsg/merge-relations
         (hsg/merge-relations
          (h/public-key hsg/root-hyperdrive)
-         hsg/topic
+         (or hsg/topic hsg/default-topic)
          :sources-max-hops hsg/sources-max-hops
          :blockers-max-hops hsg/blockers-max-hops
          :finally (lambda (merge-relations)
