@@ -134,10 +134,10 @@ Call THEN with a list of block IDs."
    :pad-keys t
    ;; TODO: When changing `hsg/root-hyperdrive', reset local variables to default values?
    ("r" hsg/set-root-hyperdrive)
-   ("s" hsg/set-shortest-path-p)
-   ("t s" hsg/set-show-sources-p)
-   ("t b" hsg/set-show-blockers-p)
-   ("t x" hsg/set-show-blocked-p)
+   ("S" hsg/set-shortest-path-p)
+   ("s" hsg/set-show-sources-p)
+   ("b" hsg/set-show-blockers-p)
+   ("x" hsg/set-show-blocked-p)
    ("N" hsg/set-narrow-to-p)
    (:info #'hsg/format-narrow-hyperdrives :format "%d")
    ("n a" "Add narrow" hsg/add-narrow-hyperdrives)
