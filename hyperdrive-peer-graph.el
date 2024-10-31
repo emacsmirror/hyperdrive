@@ -149,6 +149,11 @@ Reload data and redisplay graph."
 (defcustom hpg/default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
 
+(defcustom hpg/display-buffer-action '(display-buffer-full-frame)
+  "Display buffer action for hyperdrive peer graph.
+Passed to `display-buffer', which see."
+  :type display-buffer--action-custom-type)
+
 (defun hyperdrive-peer-graph (topic hyperdrive)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (list (hpg/context-topic :force-prompt current-prefix-arg)
@@ -274,8 +279,6 @@ Reload data and redisplay graph."
       (insert "Loading hyperdrive peer graph data...")
       (display-buffer (current-buffer)))))
 
-;; TODO: Display full screen by default.
-;; TODO: Accept display-action argument.  Default is to not pop to buffer.
 (defun hpg/display-graph ()
   "Open buffer displaying hyperdrive peer graph."
   (let ((buffer
@@ -285,7 +288,7 @@ Reload data and redisplay graph."
                       :label-fun #'hpg/label-fun :buffer hpg/buffer-name)))
     (with-current-buffer buffer
       (hpg/mode)
-      (pop-to-buffer (current-buffer) '(display-buffer-full-frame)))))
+      (pop-to-buffer (current-buffer) hpg/display-buffer-action))))
 
 (transient-define-suffix hpg/set-shortest-path-p ()
   :transient t
