@@ -277,7 +277,7 @@ Passed to `display-buffer', which see."
     (with-silent-modifications
       (erase-buffer)
       (insert "Loading hyperdrive peer graph data...")
-      (display-buffer (current-buffer)))))
+      (display-buffer (current-buffer) hpg/display-buffer-action))))
 
 (defun hpg/display-graph ()
   "Open buffer displaying hyperdrive peer graph."
