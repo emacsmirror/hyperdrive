@@ -83,7 +83,8 @@ Call THEN with a list of block IDs."
 
 (defun hsg/hop-format-fun (hop)
   "Return display string for HOP."
-  (let ((h/formats '((petname . "%s")
+  (let ((hyperdrive (he/hyperdrive (h/url-entry hop)))
+        (h/formats '((petname . "%s")
                      (nickname . "%s")
                      (public-key . "%s")
                      ;; FIXME: Don't hardcode short key length.
@@ -91,8 +92,7 @@ Call THEN with a list of block IDs."
                      (seed . "%s")
                      (domains . "%s"))))
     (format "<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>"
-            (h//format-preferred (he/hyperdrive (h/url-entry hop)))
-            (h//preferred-format (he/hyperdrive (h/url-entry hop))))))
+            (h//format-preferred hyperdrive) (h//preferred-format hyperdrive))))
 
 ;;;; Transient UI
 
