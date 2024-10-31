@@ -199,7 +199,7 @@ called and replaces the buffer content with the rendered output."
     (insert graph)
     (hyperdrive-fons-view--graphviz "cmapx"
       (mapcar (lambda (area)
-                (pcase-let* ((`(area ,(map shape href title coords)) area)
+                (pcase-let* ((`(area ,(map shape href coords)) area)
                              (coords-list (mapcar #'string-to-number
                                                   (split-string coords ","))))
                   (list (pcase-exhaustive shape
@@ -209,7 +209,7 @@ called and replaces the buffer content with the rendered output."
         	          ("rect" (pcase-let ((`(,x0 ,y0 ,x1 ,y1) coords-list))
                                     (cons 'rect
                                           (cons (cons x0 y0) (cons x1 y1))))))
-        	        href (list 'help-echo title))))
+        	        href (list 'help-echo href))))
               (cddr (libxml-parse-xml-region (point-min) (point-max)))))))
 
 (defun hyperdrive-fons-view--format-hop (hop color)
