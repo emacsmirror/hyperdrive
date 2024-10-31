@@ -90,7 +90,7 @@ influence of C1 on the result."
 
 ;; TODO: Reload image on defcustom change
 ;; TODO: Recalculate defucstoms in `modus-themes-after-load-theme-hook'.
-(defcustom hyperdrive-fons-view-source-color (hyperdrive-fons-view-blend (color-values "green") (color-values (face-attribute 'default :background)))
+(defcustom hyperdrive-fons-view-source-node-color (hyperdrive-fons-view-blend (color-values "green") (color-values (face-attribute 'default :background)) 0.25)
   "Source edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -98,7 +98,15 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocker-color (hyperdrive-fons-view-blend (color-values "blue") (color-values (face-attribute 'default :background)))
+(defcustom hyperdrive-fons-view-source-edge-color (hyperdrive-fons-view-blend (color-values "green") (color-values (face-attribute 'default :background)) 0.75)
+  "Source edge and node color.
+May be any string listed here:
+<https://graphviz.org/doc/info/colors.html>."
+  ;; Don't use :type 'color.  Emacs colors don't necessarily match graphviz
+  ;; colors, and they may contain spaces, preventing the graph from rendering.
+  :type 'string)
+
+(defcustom hyperdrive-fons-view-blocker-node-color (hyperdrive-fons-view-blend (color-values "blue") (color-values (face-attribute 'default :background)) 0.25)
   "Blocker edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -106,7 +114,23 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocked-color (hyperdrive-fons-view-blend (color-values "red") (color-values (face-attribute 'default :background)))
+(defcustom hyperdrive-fons-view-blocker-edge-color (hyperdrive-fons-view-blend (color-values "blue") (color-values (face-attribute 'default :background)) 0.75)
+  "Blocker edge and node color.
+May be any string listed here:
+<https://graphviz.org/doc/info/colors.html>."
+  ;; Don't use :type 'color.  Emacs colors don't necessarily match graphviz
+  ;; colors, and they may contain spaces, preventing the graph from rendering.
+  :type 'string)
+
+(defcustom hyperdrive-fons-view-blocked-node-color (hyperdrive-fons-view-blend (color-values "red") (color-values (face-attribute 'default :background)) 0.25)
+  "Blocked edge and node color.
+May be any string listed here:
+<https://graphviz.org/doc/info/colors.html>."
+  ;; Don't use :type 'color.  Emacs colors don't necessarily match graphviz
+  ;; colors, and they may contain spaces, preventing the graph from rendering.
+  :type 'string)
+
+(defcustom hyperdrive-fons-view-blocked-edge-color (hyperdrive-fons-view-blend (color-values "red") (color-values (face-attribute 'default :background)) 0.75)
   "Blocked edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -233,20 +257,20 @@ replaces the buffer content with the rendered output."
                   "purple"
                   ;; Prioritize blocked > source > blocker
                   (pcase (mapcar #'car merge-relations)
-                    ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-color)
-                    ((pred (memq 'sources)) hyperdrive-fons-view-source-color)
-                    ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-color))
+                    ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-node-color)
+                    ((pred (memq 'sources)) hyperdrive-fons-view-source-node-color)
+                    ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-node-color))
                   ;; Prioritize blocker > blocked > source
                   (pcase (mapcar #'car merge-relations)
-                    ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-color)
-                    ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-color)
-                    ((pred (memq 'sources)) hyperdrive-fons-view-source-color)))))
+                    ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-node-color)
+                    ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-node-color)
+                    ((pred (memq 'sources)) hyperdrive-fons-view-source-node-color)))))
               (format-root (root)
                 (insert (format
                          "%s [label=%s, href=\"%s\", shape=\"invhouse\", penwidth=\"4\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
                          root (funcall label-fun root) root "purple"
-                         hyperdrive-fons-view-source-color
-                         hyperdrive-fons-view-blocker-color))
+                         hyperdrive-fons-view-source-node-color
+                         hyperdrive-fons-view-blocker-node-color))
                 (insert (format "{ rank=\"source\"; %s; }\n" root))
                 (insert (format "root=\"%s\"\n" root-name))))
     (with-temp-buffer
@@ -265,10 +289,10 @@ replaces the buffer content with the rendered output."
                      "mindist" "0")
         (dolist (hop (fons-merge-relations-hops merge-relations 'sources))
           (insert (hyperdrive-fons-view--format-hop
-                   hop hyperdrive-fons-view-source-color)))
+                   hop hyperdrive-fons-view-source-edge-color)))
         (dolist (hop (fons-merge-relations-hops merge-relations 'blockers))
           (insert (hyperdrive-fons-view--format-hop
-                   hop hyperdrive-fons-view-blocker-color)))
+                   hop hyperdrive-fons-view-blocker-edge-color)))
         (when (catch 'blocker-relation-exists-p
                 ;; Only display block hops when blockers are displayed.
                 (maphash (lambda (_id merge-relation)
@@ -277,7 +301,7 @@ replaces the buffer content with the rendered output."
                          merge-relations))
           (dolist (hop (fons-merge-relations-hops merge-relations 'blocked))
             (insert (hyperdrive-fons-view--format-hop
-                     hop hyperdrive-fons-view-blocked-color))))
+                     hop hyperdrive-fons-view-blocked-edge-color))))
         (format-root root-name)
         (maphash #'format-relation-to merge-relations)
         (insert "}"))
