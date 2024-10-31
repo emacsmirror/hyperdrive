@@ -382,9 +382,9 @@ known to exist, reload history."
   ;; not include the filename.
   (interactive (list (h/history-entry-at-point)) h/history-mode)
   (h/history--when-exists
-   (h/download entry (read-file-name
-                      "Filename: " (expand-file-name
-                                    (he/name entry) h/download-directory)))))
+    (h/download entry (read-file-name
+                       "Filename: " (expand-file-name
+                                     (he/name entry) h/download-directory)))))
 
 (declare-function h/forget-file "hyperdrive")
 (defun h/history-forget-file (entry)
