@@ -246,10 +246,12 @@ Call THEN with a list of block IDs."
 ;; TODO: Accept display-action argument.  Default is to not pop to buffer.
 (defun hsg/display-graph ()
   "Open buffer displaying hyperdrive social graph."
-  (h/fons-view (hsg/filter hsg/merge-relations)
-               (h/public-key hsg/root-hyperdrive)
-               :focus-ids (mapcar #'h/public-key hsg/only-paths-to)
-               :label-fun #'hsg/label-fun :buffer hsg/buffer-name))
+  (let ((buffer
+         (h/fons-view (hsg/filter hsg/merge-relations)
+                      (h/public-key hsg/root-hyperdrive)
+                      :focus-ids (mapcar #'h/public-key hsg/only-paths-to)
+                      :label-fun #'hsg/label-fun :buffer hsg/buffer-name)))
+    (pop-to-buffer buffer '(display-buffer-full-frame))))
 
 (transient-define-suffix hsg/set-shortest-path-p ()
   :transient t

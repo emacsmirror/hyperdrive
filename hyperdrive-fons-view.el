@@ -178,7 +178,7 @@ called and replaces the buffer content with the rendered output."
    :buffer buffer))
 
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
-  "Render GRAPHVIZ string in BUFFER scaled by SCALE."
+  "Render GRAPHVIZ string in BUFFER and return BUFFER."
   (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
     (let* ((original-map (hyperdrive-fons-view--graph-map graphviz))
            (svg-string (hyperdrive-fons-view--svg graphviz))
@@ -187,11 +187,10 @@ called and replaces the buffer content with the rendered output."
       (when (> 30 emacs-major-version)
         ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
         (setq image (nconc image (list :map (copy-tree original-map t)))))
-      (hyperdrive-fons-view-mode)
       (erase-buffer)
       (insert-image image)
       (goto-char (point-min))
-      (pop-to-buffer (current-buffer)))))
+      (current-buffer))))
 
 (defun hyperdrive-fons-view--graph-map (graph)
   "Return image map for Graphviz GRAPH."
