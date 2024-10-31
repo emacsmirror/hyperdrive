@@ -196,6 +196,7 @@ Reload data and redisplay graph."
 
 (defun hsg/load ()
   "Load `hsg/merge-relations' and redisplay graph."
+  ;; TODO: Refill name and color metadata.
   (setf hsg/merge-relations
         (hsg/merge-relations
          (h/public-key hsg/root-hyperdrive)
