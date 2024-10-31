@@ -106,7 +106,8 @@ Reload data and redisplay graph."
   :doc "Local keymap for `hyperdrive-social-graph-mode' buffers."
   ;; It's easy to accidentally trigger drag events when clicking.
   "<drag-mouse-1>" #'hsg/view-follow-link
-  "<mouse-1>" #'hsg/view-follow-link)
+  "<mouse-1>" #'hsg/view-follow-link
+  "?" #'hsg/menu)
 
 (define-derived-mode hsg/mode h/fons-view-mode
   '("Hyperdrive-social-graph")
