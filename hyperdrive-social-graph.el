@@ -96,6 +96,11 @@ Call THEN with a list of block IDs."
 
 ;;;; Graph minor mode
 
+(defun hsg/revert-buffer (&optional _ignore-auto _noconfirm)
+  "Revert `hyperdrive-describe-mode' buffer.
+Reload data and redisplay graph."
+  (hsg/load))
+
 (defvar-keymap hsg/mode-map
   :parent special-mode-map
   :doc "Local keymap for `hyperdrive-social-graph-mode' buffers."
@@ -107,7 +112,8 @@ Call THEN with a list of block IDs."
   '("Hyperdrive-social-graph")
   "Major mode for viewing Hyperdrive social graph."
   :group 'hyperdrive
-  :interactive nil)
+  :interactive nil
+  (setq-local revert-buffer-function #'hsg/revert-buffer))
 
 ;;;; Commands
 
