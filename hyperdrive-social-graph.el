@@ -96,11 +96,28 @@ Call THEN with a list of block IDs."
 
 ;;;; Graph minor mode
 
+(defvar-keymap hsg/mode-map
+  :parent special-mode-map
+  :doc "Local keymap for `hyperdrive-social-graph-mode' buffers."
+  ;; It's easy to accidentally trigger drag events when clicking.
+  "<drag-mouse-1>" #'hsg/view-follow-link
+  "<mouse-1>" #'hsg/view-follow-link)
+
 (define-derived-mode hsg/mode h/fons-view-mode
   '("Hyperdrive-social-graph")
   "Major mode for viewing Hyperdrive social graph."
   :group 'hyperdrive
   :interactive nil)
+
+;;;; Commands
+
+(defun hsg/view-follow-link (event)
+  "Follow link at EVENT's position."
+  (interactive "e")
+  (pcase (cadadr event)  ;; Image id from image map
+    ((and (rx (group (= 52 alphanumeric))) public-key)
+     (h/open (h/url-entry public-key)))))
+
 ;;;; Transient UI
 
 (defvar hsg/root-hyperdrive nil)
