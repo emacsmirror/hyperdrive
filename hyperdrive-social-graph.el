@@ -94,6 +94,13 @@ Call THEN with a list of block IDs."
     (format "<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>"
             (h//format-preferred hyperdrive) (h//preferred-format hyperdrive))))
 
+;;;; Graph minor mode
+
+(define-derived-mode hsg/mode h/fons-view-mode
+  '("Hyperdrive-social-graph")
+  "Major mode for viewing Hyperdrive social graph."
+  :group 'hyperdrive
+  :interactive nil)
 ;;;; Transient UI
 
 (defvar hsg/root-hyperdrive nil)
@@ -251,7 +258,9 @@ Call THEN with a list of block IDs."
                       (h/public-key hsg/root-hyperdrive)
                       :focus-ids (mapcar #'h/public-key hsg/only-paths-to)
                       :label-fun #'hsg/label-fun :buffer hsg/buffer-name)))
-    (pop-to-buffer buffer '(display-buffer-full-frame))))
+    (with-current-buffer buffer
+      (hsg/mode)
+      (pop-to-buffer (current-buffer) '(display-buffer-full-frame)))))
 
 (transient-define-suffix hsg/set-shortest-path-p ()
   :transient t
