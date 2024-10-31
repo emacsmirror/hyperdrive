@@ -216,7 +216,8 @@ called and replaces the buffer content with the rendered output."
   (format "%s -> %s [color=\"%s\" penwidth=2];\n"
           (fons-hop-from hop) (fons-hop-to hop) color))
 
-(cl-defun hyperdrive-fons-view--format-graph (merge-relations &key root-name focus-ids layout (label-fun #'identity))
+(cl-defun hyperdrive-fons-view--format-graph
+    (merge-relations &key root-name focus-ids layout (label-fun #'identity))
   "Return a graphviz-string string for MERGE-RELATIONS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
