@@ -254,7 +254,7 @@ replaces the buffer content with the rendered output."
                   (if (member to focus-ids)
                       "house"
                     "ellipse")
-                  "purple"
+                  "grey"
                   ;; Prioritize blocked > source > blocker
                   (pcase (mapcar #'car merge-relations)
                     ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-node-color)
@@ -268,7 +268,7 @@ replaces the buffer content with the rendered output."
               (format-root (root)
                 (insert (format
                          "%s [label=%s, href=\"%s\", shape=\"invhouse\", penwidth=\"4\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
-                         root (funcall label-fun root) root "purple"
+                         root (funcall label-fun root) root "grey"
                          hyperdrive-fons-view-source-node-color
                          hyperdrive-fons-view-blocker-node-color))
                 (insert (format "{ rank=\"source\"; %s; }\n" root))
