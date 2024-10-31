@@ -763,7 +763,7 @@ Returns URL formatted like:
 
   hyper://HOST-FORMAT/PATH/TO/FILE
 
-HOST-FORMAT is passed to `hyperdrive--preferred-format', which see.
+HOST-FORMAT is passed to `hyperdrive--format-preferred', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
 full URL.  If WITH-TARGET, append the ENTRY's target, stored in
@@ -783,7 +783,7 @@ Path and target fragment are URI-encoded."
                (protocol (and with-protocol "hyper://"))
                (host (and host-format
                           ;; FIXME: Update docstring to say that host-format can be nil to omit it.
-                          (h//preferred-format (he/hyperdrive entry)
+                          (h//format-preferred (he/hyperdrive entry)
                                                host-format h/raw-formats)))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
@@ -834,7 +834,7 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                                      format)
                      ;; HACK: Once using lambdas in this specifier,
                      ;; remove the `string-match-p' check.
-                     (h//preferred-format hyperdrive)))
+                     (h//format-preferred hyperdrive)))
          (?P . ,(fmt 'petname petname 'h/petname))
          (?N . ,(fmt 'nickname nickname 'h/nickname))
          (?k . ,(fmt 'short-key public-key 'h/public-key))
@@ -850,7 +850,25 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                              ","))
                   "")))))))
 
-(defun h//preferred-format (hyperdrive &optional format formats)
+(defun h//preferred-format (hyperdrive &optional format)
+  "Return preferred format for HYPERDRIVE.
+FORMAT should be one or a list of symbols, by default
+`hyperdrive-preferred-formats', which see for choices.  If the
+specified FORMAT is not available, return nil."
+  (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
+                           (metadata (map ('name nickname))))
+                hyperdrive))
+    (cl-loop for f in (ensure-list (or format h/preferred-formats))
+             when (pcase f
+                    ((and 'petname (guard petname)) 'petname)
+                    ((and 'nickname (guard nickname)) 'nickname)
+                    ((and 'domain (guard (car domains))) 'domain)
+                    ((and 'seed (guard seed)) 'domain)
+                    ((and 'short-key (guard public-key)) 'short-key)
+                    ((and 'public-key (guard public-key)) 'public-key))
+             return it)))
+
+(defun h//format-preferred (hyperdrive &optional format formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
 FORMAT should be one or a list of symbols, by default
 `hyperdrive-preferred-formats', which see for choices.  If the
@@ -858,24 +876,13 @@ specified FORMAT is not available, return nil.
 
 Each item in FORMAT is formatted according to FORMATS, set by
 default to `hyperdrive-formats', which see."
-  (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
-                           (metadata (map ('name nickname))))
-                hyperdrive))
-    (cl-loop for f in (ensure-list (or format h/preferred-formats))
-             when (pcase f
-                    ((and 'petname (guard petname))
-                     (h//format hyperdrive "%P" formats))
-                    ((and 'nickname (guard nickname))
-                     (h//format hyperdrive "%N" formats))
-                    ((and 'domain (guard (car domains)))
-                     (h//format hyperdrive "%D" formats))
-                    ((and 'seed (guard seed))
-                     (h//format hyperdrive "%S" formats))
-                    ((and 'short-key (guard public-key))
-                     (h//format hyperdrive "%k" formats))
-                    ((and 'public-key (guard public-key))
-                     (h//format hyperdrive "%K" formats)))
-             return it)))
+  (pcase (h//preferred-format hyperdrive format)
+    ('petname (h//format hyperdrive "%P" formats))
+    ('nickname (h//format hyperdrive "%N" formats))
+    ('domain (h//format hyperdrive "%D" formats))
+    ('seed (h//format hyperdrive "%S" formats))
+    ('short-key (h//format hyperdrive "%k" formats))
+    ('public-key (h//format hyperdrive "%K" formats))))
 
 ;;;; Reading from the user
 
@@ -957,7 +964,7 @@ DEFAULT is the default hyperdrive."
 For each of FORMATS, concatenates the value separated by two spaces."
   (string-trim
    (cl-loop for format in formats
-            when (h//preferred-format hyperdrive format)
+            when (h//format-preferred hyperdrive format)
             concat (concat it "  "))))
 
 (cl-defun h/read-entry (hyperdrive &key default-path latest-version read-version)
@@ -1413,7 +1420,7 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                     `((?n . ,(fmt 'name name))
                       (?p . ,(fmt 'path path))
                       (?v . ,(fmt 'version version))
-                      (?H . ,(h//preferred-format hyperdrive nil formats))
+                      (?H . ,(h//format-preferred hyperdrive nil formats))
                       (?D . ,(h//format hyperdrive "%D" formats))
                       (?k . ,(h//format hyperdrive "%k" formats))
                       (?K . ,(h//format hyperdrive "%K" formats))
