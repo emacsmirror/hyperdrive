@@ -288,6 +288,7 @@
    ;; TODO(transient): Implement :inapt-if* for groups.
    :pad-keys t
    ("d" h/menu-describe-hyperdrive)
+   ("G" h/menu-peer-graph)
    ("w" h/menu-hyperdrive-copy-url)
    (:info (lambda () (h//format (h/menu--scope) "Public key: %K" h/raw-formats)))
    ( :info (lambda () (h//format (h/menu--scope) "Seed: %S" h/raw-formats))
@@ -438,6 +439,11 @@
   :description "Describe"
   (interactive)
   (h/describe-hyperdrive (h/menu--scope)))
+
+(transient-define-suffix h/menu-peer-graph ()
+  :description "Peer graph"
+  (interactive)
+  (h/peer-graph-menu h/peer-graph-topic (h/menu--scope)))
 
 (transient-define-suffix h/menu-hyperdrive-copy-url ()
   :description "Copy URL"
