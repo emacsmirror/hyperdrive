@@ -268,7 +268,7 @@ Reload data and redisplay graph."
 
 (defun hpg/display-loading-buffer ()
   "Open loading buffer for hyperdrive peer graph."
-  (with-current-buffer hpg/buffer-name
+  (with-current-buffer (get-buffer-create hpg/buffer-name)
     (with-silent-modifications
       (erase-buffer)
       (insert "Loading hyperdrive peer graph data...")
