@@ -272,7 +272,7 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
        ;; while ENTRY may have a DNSLink domain but no public key yet.
-       (public-key (progn (string-match h//public-key-re link)
+       (public-key (progn (string-match h//url-re link)
                           (match-string 1 link)))
        ;; NOTE: Don't destructure `persisted-hyperdrive' with `pcase' here since it may be nil.
        (persisted-hyperdrive (gethash public-key h/hyperdrives)))
