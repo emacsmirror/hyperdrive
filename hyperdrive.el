@@ -469,7 +469,7 @@ directory.  Otherwise, or with universal prefix argument
               ;; `buffer-modified-p' returns nil, this is a workaround to ensure that
               ;; `save-buffer' re-saves files after they've been deleted.
               (when-let* ((buffer (h//find-buffer-visiting entry))
-                          (_ (buffer-live-p buffer)))
+                          ((buffer-live-p buffer)))
                 (with-current-buffer buffer (set-buffer-modified-p t)))
               (funcall then response)))
     :else else))
