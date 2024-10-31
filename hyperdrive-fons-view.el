@@ -114,19 +114,6 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-;;;; Macros
-
-(defmacro hyperdrive-fons-view--graphviz (type &rest body)
-  "Run Graphviz for TYPE on current buffer, then run BODY in it.
-Current buffer should contain a Graphviz graph.  Graphviz is
-called and replaces the buffer content with the rendered output."
-  (declare (indent defun) (debug (stringp body)))
-  `(if (zerop (call-process-region (point-min) (point-max) "dot" 'delete t nil
-                                   (concat "-T" ,type)))
-       (progn
-         ,@body)
-     (error "Oops: %s" (buffer-string))))
-
 ;;;; Mode
 
 (defvar-keymap hyperdrive-fons-view-mode-map
@@ -177,6 +164,14 @@ called and replaces the buffer content with the rendered output."
     merge-relations :root-name root :focus-ids focus-ids :layout layout :label-fun label-fun)
    :buffer buffer))
 
+(defun hyperdrive-fons-view--graphviz (buffer type)
+  "Run Graphviz for TYPE on BUFFER.
+BUFFER should contain a Graphviz graph.  Graphviz is called and
+replaces the buffer content with the rendered output."
+  (unless (zerop (call-process-region (point-min) (point-max) "dot" 'delete t nil
+                                      (concat "-T" type)))
+    (error "Error generating graph: %S" (buffer-string))))
+
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
   "Render GRAPHVIZ string in BUFFER and return BUFFER."
   (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
@@ -196,20 +191,20 @@ called and replaces the buffer content with the rendered output."
   "Return image map for Graphviz GRAPH."
   (with-temp-buffer
     (insert graph)
-    (hyperdrive-fons-view--graphviz "cmapx"
-      (mapcar (lambda (area)
-                (pcase-let* ((`(area ,(map shape href coords)) area)
-                             (coords-list (mapcar #'string-to-number
-                                                  (split-string coords ","))))
-                  (list (pcase-exhaustive shape
-        	          ("circle" (pcase-let ((`(,x ,y ,r) coords-list))
-                                      (cons 'circle (cons (cons x y) r))))
-        	          ("poly" (cons 'poly (vconcat coords-list)))
-        	          ("rect" (pcase-let ((`(,x0 ,y0 ,x1 ,y1) coords-list))
-                                    (cons 'rect
-                                          (cons (cons x0 y0) (cons x1 y1))))))
-        	        href (list 'help-echo href))))
-              (cddr (libxml-parse-xml-region (point-min) (point-max)))))))
+    (hyperdrive-fons-view--graphviz (current-buffer) "cmapx")
+    (mapcar (lambda (area)
+              (pcase-let* ((`(area ,(map shape href coords)) area)
+                           (coords-list (mapcar #'string-to-number
+                                                (split-string coords ","))))
+                (list (pcase-exhaustive shape
+        	        ("circle" (pcase-let ((`(,x ,y ,r) coords-list))
+                                    (cons 'circle (cons (cons x y) r))))
+        	        ("poly" (cons 'poly (vconcat coords-list)))
+        	        ("rect" (pcase-let ((`(,x0 ,y0 ,x1 ,y1) coords-list))
+                                  (cons 'rect
+                                        (cons (cons x0 y0) (cons x1 y1))))))
+        	      href (list 'help-echo href))))
+            (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
 (defun hyperdrive-fons-view--format-hop (hop color)
   "Return graphviz-string for HOP."
@@ -292,8 +287,8 @@ called and replaces the buffer content with the rendered output."
   "Return SVG string for Graphviz GRAPH."
   (with-temp-buffer
     (insert hops-graph)
-    (hyperdrive-fons-view--graphviz "svg"
-      (buffer-string))))
+    (hyperdrive-fons-view--graphviz (current-buffer) "svg")
+    (buffer-string)))
 
 (defvar hyperdrive-fons-view-prism-minimum-contrast 6
   "Attempt to enforce this minimum contrast ratio for user faces.
