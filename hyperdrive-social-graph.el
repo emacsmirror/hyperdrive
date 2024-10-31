@@ -81,9 +81,9 @@ Call THEN with a list of TOs."
 Call THEN with a list of block IDs."
   (hsg/data blocker "_blocked" :then then))
 
-(defun hsg/hop-format-fun (hop)
-  "Return display string for HOP."
-  (let ((hyperdrive (he/hyperdrive (h/url-entry hop)))
+(defun hsg/label-fun (public-key)
+  "Return display string for PUBLIC-KEY."
+  (let ((hyperdrive (he/hyperdrive (h/url-entry public-key)))
         (h/formats '((petname . "%s")
                      (nickname . "%s")
                      (public-key . "%s")
@@ -249,7 +249,7 @@ Call THEN with a list of block IDs."
   (h/fons-view (hsg/filter hsg/merge-relations)
                (h/public-key hsg/root-hyperdrive)
                :focus-ids (mapcar #'h/public-key hsg/only-paths-to)
-               :label-fun #'hsg/hop-format-fun :buffer hsg/buffer-name))
+               :label-fun #'hsg/label-fun :buffer hsg/buffer-name))
 
 (transient-define-suffix hsg/set-shortest-path-p ()
   :transient t
