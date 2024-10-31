@@ -202,13 +202,13 @@ called and replaces the buffer content with the rendered output."
                              (coords-list (mapcar #'string-to-number
                                                   (split-string coords ","))))
                   (list (pcase-exhaustive shape
-		          ("circle" (pcase-let ((`(,x ,y ,r) coords-list))
+        	          ("circle" (pcase-let ((`(,x ,y ,r) coords-list))
                                       (cons 'circle (cons (cons x y) r))))
-		          ("poly" (cons 'poly (vconcat coords-list)))
-		          ("rect" (pcase-let ((`(,x0 ,y0 ,x1 ,y1) coords-list))
+        	          ("poly" (cons 'poly (vconcat coords-list)))
+        	          ("rect" (pcase-let ((`(,x0 ,y0 ,x1 ,y1) coords-list))
                                     (cons 'rect
                                           (cons (cons x0 y0) (cons x1 y1))))))
-		        href (list 'help-echo title))))
+        	        href (list 'help-echo title))))
               (cddr (libxml-parse-xml-region (point-min) (point-max)))))))
 
 (defun hyperdrive-fons-view--format-hop (hop color)
