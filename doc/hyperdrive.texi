@@ -1725,6 +1725,9 @@ You can remove @code{hyperdrive.el} with @code{M-x package-delete hyperdrive}.
 @node Acknowledgments
 @chapter Acknowledgments
 
+Paula Maas and Martin Turner for inspiration, feedback and undying
+support.
+
 @uref{https://github.com/alphapapa/, Adam Porter} for rewriting @code{hyperdrive.el} and for his work on @code{plz.el}.
 
 @uref{https://mauve.moe/, Mauve Signweaver} for their guidance into the

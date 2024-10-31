@@ -1273,6 +1273,9 @@ You can remove ~hyperdrive.el~ with ~M-x package-delete hyperdrive~.
 
 * Acknowledgments
 
+Paula Maas and Martin Turner for inspiration, feedback and undying
+support.
+
 [[https://github.com/alphapapa/][Adam Porter]] for rewriting ~hyperdrive.el~ and for his work on ~plz.el~.
 
 [[https://mauve.moe/][Mauve Signweaver]] for their guidance into the
