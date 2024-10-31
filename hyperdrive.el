@@ -664,12 +664,15 @@ it to `hyperdrive-open'."
       ('t (h/open (he/create :hyperdrive hyperdrive :path path
                              :version previous-version-number)))
       ('nil (h/message "%s nonexistent before version %d.  Try \\[hyperdrive-history]."
-                       (h//format-entry entry) version))
+                       (h//format-entry
+                        entry h/default-entry-format-without-version)
+                       version))
       ('unknown (h/message
                  "Temporarily unable to load previous version of %s: \
 unknown before version %d. \
 Try \\[hyperdrive-history]."
-                 (h//format-entry entry) version)))))
+                 (h//format-entry entry h/default-entry-format-without-version)
+                 version)))))
 
 (defun h/open-next-version (entry)
   "Open next version of ENTRY.
@@ -684,7 +687,7 @@ switch to the latest version and say so."
      (h/message
       "Already at latest version of %s; \
 use \\[revert-buffer-quick] to check for changes."
-      (h//format-entry entry)))
+      (h//format-entry entry h/default-entry-format-without-version)))
     ('t (pcase-exhaustive (map-elt (he/etc entry) 'next-version-number)
 
           ('nil
@@ -693,30 +696,33 @@ use \\[revert-buffer-quick] to check for changes."
            (h/message
             "Switching to latest version of %s; \
 use \\[revert-buffer-quick] to check for changes."
-            (h//format-entry entry)))
+            (h//format-entry entry h/default-entry-format-without-version)))
           ((and (pred numberp) version)
            (h/open (he/create :hyperdrive (he/hyperdrive entry)
                               :path (he/path entry) :version version)))))
     ('nil
      (h/message "%s was deleted at version %d.  Try \\[hyperdrive-history]."
-                (h//format-entry entry)
+                (h//format-entry entry h/default-entry-format-without-version)
                 (map-elt (he/etc entry) 'next-version-number)))
     ('unknown
      (h/message
       "Temporarily unable to load next version of %s: unknown at %d. \
 Try \\[hyperdrive-history]."
-      (h//format-entry entry)
+      (h//format-entry entry h/default-entry-format-without-version)
       (map-elt (he/etc entry) 'next-version-number)))))
 
 (defun h/open-at-version (entry version)
   "Open ENTRY at VERSION.
 Nil VERSION means open the entry at its hyperdrive's latest version."
-  (interactive (let ((entry h/current-entry))
-                 (list entry (h/read-version
-                              :hyperdrive (he/hyperdrive entry)
-                              :prompt (format-message "Open `%s' at version (leave blank for latest version)"
-                                                      (h//format-entry entry)))))
-               h/mode)
+  (interactive
+   (let ((entry h/current-entry))
+     (list entry (h/read-version
+                  :hyperdrive (he/hyperdrive entry)
+                  :prompt (format-message
+                           "Open `%s' at version (leave blank for latest version)"
+                           (h//format-entry
+                            entry h/default-entry-format-without-version)))))
+   h/mode)
   (if-let ((latest-entry (he/at version entry)))
       (h/open latest-entry)
     (h/message "%s does not exist at version %s. Try \\[hyperdrive-history]"

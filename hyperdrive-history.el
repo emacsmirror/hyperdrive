@@ -259,7 +259,8 @@ prefix argument \\[universal-argument], prompt for ENTRY."
   ;; TODO: Highlight range for ENTRY
   (when (h//entry-directory-p entry)
     (h/user-error "Directory history not implemented"))
-  (let* ((main-header (h//format-entry entry "[%H] %p"))
+  (let* ((main-header (h//format-entry entry
+                                       h/default-entry-format-without-version))
          (header
           (format
            "%s\n%7s  %19s  %6s  %s" main-header
@@ -269,9 +270,11 @@ prefix argument \\[universal-argument], prompt for ENTRY."
            (string-pad (propertize "Last Modified" 'face 'h/column-header)
                        h/timestamp-width nil t)))
          (prev-entry) (prev-point))
-    (with-current-buffer (get-buffer-create
-                          (format "*Hyperdrive-history: %s*"
-                                  (h//format-entry entry "[%H] %p")))
+    (with-current-buffer
+        (get-buffer-create
+         (format "*Hyperdrive-history: %s*"
+                 (h//format-entry
+                  entry h/default-entry-format-without-version)))
       (h/history-mode)
       (setq-local h/history-current-entry entry)
       (setf prev-entry (h/history-entry-at-point 'no-error))
