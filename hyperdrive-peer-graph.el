@@ -139,6 +139,7 @@ Reload data and redisplay graph."
 (defvar hpg/show-sources-p t)
 (defvar hpg/show-blockers-p t)
 (defvar hpg/show-blocked-p t)
+(defvar hpg/show-all-blocked-p nil)
 
 (defvar hpg/shortest-path-p t)
 (defvar hpg/only-paths-to nil)
@@ -191,7 +192,8 @@ Passed to `display-buffer', which see."
     ("b s" hpg/set-show-blockers-p)
     ("b m" hpg/set-blockers-max-hops)]
    ["Blocked"
-    ("x s" hpg/set-show-blocked-p)]]
+    ("x s" hpg/set-show-blocked-p)
+    ("x a" hpg/set-show-all-blocked-p)]]
   ["Options"
    ("S" hpg/set-shortest-path-p)]
 
@@ -339,6 +341,19 @@ Passed to `display-buffer', which see."
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
 
+(transient-define-suffix hpg/set-show-all-blocked-p ()
+  :transient t
+  :inapt-if-nil 'hpg/show-blocked-p
+  :description (lambda ()
+                 (format "Show all blocked: %s"
+                         (if (and hpg/show-blocked-p hpg/show-all-blocked-p)
+                             (propertize "yes" 'face 'transient-argument)
+                           (propertize "no" 'face 'transient-inactive-value))))
+  (interactive)
+  (cl-callf not hpg/show-all-blocked-p)
+  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
+    (hpg/display-graph)))
+
 (defun hpg/format-only-paths-to ()
   (string-join
    (mapcar (lambda (hyperdrive)
@@ -403,11 +418,12 @@ hops to traverse for sources and blockers, respectively."
 (defun hpg/filter (merge-relations)
   "Return filtered MERGE-RELATIONS."
   ;; TODO: Make filters customizable
-  (unless (and hpg/show-sources-p hpg/show-blockers-p hpg/show-blocked-p)
+  (unless (and hpg/show-sources-p hpg/show-blockers-p hpg/show-blocked-p hpg/show-all-blocked-p)
     (cl-callf fons-filter-to-types merge-relations
       :sourcesp hpg/show-sources-p
       :blockersp hpg/show-blockers-p
-      :blockedp hpg/show-blocked-p))
+      :blockedp hpg/show-blocked-p
+      :all-blocked-p (and hpg/show-blocked-p hpg/show-all-blocked-p)))
   (when hpg/shortest-path-p
     (cl-callf fons-filter-shortest-path merge-relations))
   ;; Apply `hpg/only-paths-to' last
