@@ -258,7 +258,7 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
         ;; TODO: After the resolution of <https://todo.sr.ht/~ushin/ushin/211>,
         ;; use the encoding specified in the 'Content-Type' header.  For now, we
         ;; rely on the guesswork of `detect-coding-region'.
-        (if-let ((filename-encoding (auto-coding-alist-lookup (he/name entry))))
+        (if-let ((filename-encoding (auto-coding-alist-lookup (he/path entry))))
             filename-encoding
           (pcase (detect-coding-string (plz-response-body response) t)
             ((or 'undecided 'undecided-dos 'undecided-mac 'undecided-unix)
