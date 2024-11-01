@@ -40,13 +40,12 @@
 
 ;;;; Functions:
 
-(defun hpg/data (public-key topic &key then)
-  "Load peer graph data for PUBLIC-KEY on TOPIC then call THEN.
+(defun hpg/data (hyperdrive topic &key then)
+  "Load peer graph data for HYPERDRIVE on TOPIC then call THEN.
 THEN will be called with the parsed JSON hash table as its sole
 argument.  If error, demote it and call THEN with nil argument."
   ;; TODO: Add a queue limit.
-  (let ((entry (h/url-entry public-key)))
-    (setf (he/path entry) hpg/data-filename)
+  (let ((entry (he//create :hyperdrive hyperdrive :path hpg/data-filename)))
     (he/api 'get entry :noquery t
       ;; Despite error, always call THEN so `pending' gets decremented.
       :then (lambda (response)
@@ -74,12 +73,12 @@ argument.  If error, demote it and call THEN with nil argument."
 (defun hpg/hops-fn (from topic then)
   "Asynchronously get hops from FROM about TOPIC.
 Call THEN with a list of TOs."
-  (hpg/data from topic :then then))
+  (hpg/data (h/create :public-key from) topic :then then))
 
 (cl-defun hpg/blocked-fn (blocker then)
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
-  (hpg/data blocker "_blocked" :then then))
+  (hpg/data (h/create :public-key blocker) "_blocked" :then then))
 
 (defun hpg/label-fun (public-key)
   "Return display string for PUBLIC-KEY."
