@@ -45,6 +45,8 @@
 THEN will be called with the parsed JSON hash table as its sole
 argument.  If error, demote it and call THEN with nil argument."
   ;; TODO: Add a queue limit.
+  ;; TODO: `hpg/data' may be called multiple times for the same hyperdrive in a
+  ;; single call to `fons-relations'.  If performance becomes an issue, memoize.
   (let ((entry (he//create :hyperdrive hyperdrive :path hpg/data-filename)))
     (he/api 'get entry :noquery t
       ;; Despite error, always call THEN so `pending' gets decremented.
