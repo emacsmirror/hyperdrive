@@ -244,7 +244,7 @@ replaces the buffer content with the rendered output."
                                 (cl-loop for (key value) on pairs by #'cddr
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
-              (format-relation-to (to merge-relations)
+              (format-to (to merge-relation)
                 (insert
                  (format
                   "%s [label=%s, href=\"%s\", shape=\"%s\", color=\"%s\", style=\"filled\", penwidth=\"4\", fillcolor=\"%s;0.5:%s\"];\n"
@@ -254,12 +254,12 @@ replaces the buffer content with the rendered output."
                     "ellipse")
                   "grey"
                   ;; Prioritize blocked > source > blocker
-                  (pcase (mapcar #'car merge-relations)
+                  (pcase (mapcar #'car merge-relation)
                     ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-node-color)
                     ((pred (memq 'sources)) hyperdrive-fons-view-source-node-color)
                     ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-node-color))
                   ;; Prioritize blocker > blocked > source
-                  (pcase (mapcar #'car merge-relations)
+                  (pcase (mapcar #'car merge-relation)
                     ((pred (memq 'blockers)) hyperdrive-fons-view-blocker-node-color)
                     ((pred (memq 'blocked)) hyperdrive-fons-view-blocked-node-color)
                     ((pred (memq 'sources)) hyperdrive-fons-view-source-node-color)))))
@@ -301,7 +301,7 @@ replaces the buffer content with the rendered output."
             (insert (hyperdrive-fons-view--format-hop
                      hop hyperdrive-fons-view-blocked-edge-color))))
         (format-root root-name)
-        (maphash #'format-relation-to merge-relations)
+        (maphash #'format-to merge-relations)
         (insert "}"))
       (buffer-string))))
 
