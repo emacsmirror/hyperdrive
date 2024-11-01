@@ -194,7 +194,7 @@ to the gateway which do not involve an entry.  Otherwise, use
      ;; <https://git.sr.ht/~ushin/hypercore-fetch-ushin/#codefetchhypernameexamplenoresolve-method-getcode>
      (setf url (concat url "?noResolve"))))
   (pcase-let* ((else (pcase (plist-get rest :then)
-                       ((or `nil 'sync)
+                       ((or 'nil 'sync)
                         ;; In keeping with `plz', ignore ELSE for sync requests.
                         nil)
                        (_ (plist-get rest :else))))
