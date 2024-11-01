@@ -190,21 +190,42 @@ to one of the IDS."
                     blockers))))))
     copy-merge-relations))
 
-(cl-defun fons-filter-to-types (merge-relations &key sourcesp blockersp blockedp)
+(cl-defun fons-filter-to-types
+    (merge-relations &key sourcesp blockersp blockedp all-blocked-p)
   "Return MERGE-RELATIONS based on relation type.
-When SOURCESP, BLOCKERSP, and/or BLOCKEDP, include \\+`sources',
-\\+`blockers', and/or \\+`blocked' respectively."
+When BLOCKERSP, include \\+`blockers'.
+
+When SOURCESP but not BLOCKEDP, include \\+`sources' for which
+`fons-relation-blocked-p' returns nil.
+
+When SOURCESP and BLOCKEDP, include all \\+`sources'.
+
+When BLOCKEDP but not ALL-BLOCKED-P, include \\+`blocked' which
+are also \\+`sources'.
+
+When BLOCKEDP and ALL-BLOCKED-P, include all \\+`blocked'."
   (let ((copy-merge-relations (make-hash-table :test 'equal))
         types)
-    (when blockedp (push 'blocked types))
-    (when blockersp (push 'blockers types))
-    (when sourcesp (push 'sources types))
-    (maphash (lambda (id merge-relation)
-               (dolist (type types)
-                 (when-let ((relation (map-elt merge-relation type)))
-                   (setf (map-elt (gethash id copy-merge-relations) type)
-                         relation))))
-             merge-relations)
+    (maphash
+     (lambda (id merge-relation)
+       (let ((blocker-relation (map-elt merge-relation 'blockers))
+             (source-relation (map-elt merge-relation 'sources))
+             (blocked-relation (map-elt merge-relation 'blocked)))
+         (when (and blockersp blocker-relation)
+           (setf (map-elt (gethash id copy-merge-relations) 'blockers)
+                 blocker-relation))
+         (when (and sourcesp
+                    source-relation
+                    (or blockedp
+                        (not (fons-relation-blocked-p source-relation))))
+           (setf (map-elt (gethash id copy-merge-relations) 'sources)
+                 source-relation))
+         (when (and blockedp
+                    blocked-relation
+                    (or all-blocked-p source-relation))
+           (setf (map-elt (gethash id copy-merge-relations) 'blocked)
+                 blocked-relation))))
+     merge-relations)
     copy-merge-relations))
 
 (cl-defun fons-blocked (blockers &key blocked-fn finally)
