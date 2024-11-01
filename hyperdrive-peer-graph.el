@@ -203,6 +203,7 @@ Passed to `display-buffer', which see."
 (defun hpg/load ()
   "Load `hpg/merge-relations' and redisplay graph."
   ;; TODO: Refill name and color metadata.
+  ;; TODO: If called in rapid succession, stop the requests from the first call.
   (setf hpg/merge-relations
         (hpg/merge-relations
          (h/public-key hpg/root-hyperdrive)
