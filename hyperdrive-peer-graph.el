@@ -181,8 +181,8 @@ Passed to `display-buffer', which see."
    ("g" "Reload" hpg/reload)]
   ["Only paths to"
    (:info #'hpg/format-only-paths-to :format "%d")
-   ("n a" "Add" hpg/only-paths-to-add)
-   ("n d" "Delete" hpg/only-paths-to-delete)]
+   ("o a" "Add" hpg/only-paths-to-add)
+   ("o d" "Delete" hpg/only-paths-to-delete)]
   [["Sources"
     ("s s" hpg/set-show-sources-p)
     ("s m" hpg/set-sources-max-hops)]
