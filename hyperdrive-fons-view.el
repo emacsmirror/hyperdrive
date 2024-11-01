@@ -181,12 +181,12 @@ May be any string listed here:
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view
-    (merge-relations root &key (layout hyperdrive-fons-view-layout) focus-ids label-fun buffer)
+    (merge-relations root &key (layout hyperdrive-fons-view-layout) focus-ids label-fun)
   "View MERGE-RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
-    merge-relations :root-name root :focus-ids focus-ids :layout layout :label-fun label-fun)
-   :buffer buffer))
+    merge-relations :root-name root :focus-ids focus-ids
+    :layout layout :label-fun label-fun)))
 
 (defun hyperdrive-fons-view--graphviz (buffer type)
   "Run Graphviz for TYPE on BUFFER.
@@ -196,20 +196,18 @@ replaces the buffer content with the rendered output."
                                       (concat "-T" type)))
     (error "Error generating graph: %S" (buffer-string))))
 
-(cl-defun hyperdrive-fons-view--render-graphviz (graphviz &key buffer)
-  "Render GRAPHVIZ string in BUFFER and return BUFFER."
-  (with-current-buffer (get-buffer-create (or buffer "*hyperdrive-fons-view*"))
-    (let* ((original-map (hyperdrive-fons-view--graph-map graphviz))
-           (svg-string (hyperdrive-fons-view--svg graphviz))
-           (inhibit-read-only t)
-           (image (create-image svg-string 'svg t :original-map original-map)))
-      (when (> 30 emacs-major-version)
-        ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
-        (setq image (nconc image (list :map (copy-tree original-map t)))))
-      (erase-buffer)
-      (insert-image image)
-      (goto-char (point-min))
-      (current-buffer))))
+(cl-defun hyperdrive-fons-view--render-graphviz (graphviz)
+  "Render GRAPHVIZ string in current buffer."
+  (let* ((original-map (hyperdrive-fons-view--graph-map graphviz))
+         (svg-string (hyperdrive-fons-view--svg graphviz))
+         (inhibit-read-only t)
+         (image (create-image svg-string 'svg t :original-map original-map)))
+    (when (> 30 emacs-major-version)
+      ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
+      (setq image (nconc image (list :map (copy-tree original-map t)))))
+    (erase-buffer)
+    (insert-image image)
+    (goto-char (point-min))))
 
 (defun hyperdrive-fons-view--graph-map (graph)
   "Return image map for Graphviz GRAPH."

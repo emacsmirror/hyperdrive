@@ -282,14 +282,13 @@ Passed to `display-buffer', which see."
 
 (defun hpg/display-graph ()
   "Open buffer displaying hyperdrive peer graph."
-  (let ((buffer
-         (h/fons-view (hpg/filter hpg/merge-relations)
-                      (h/public-key hpg/root-hyperdrive)
-                      :focus-ids (mapcar #'h/public-key hpg/only-paths-to)
-                      :label-fun #'hpg/label-fun :buffer hpg/buffer-name)))
-    (with-current-buffer buffer
-      (hpg/mode)
-      (pop-to-buffer (current-buffer) hpg/display-buffer-action))))
+  (with-current-buffer (get-buffer-create hpg/buffer-name)
+    (h/fons-view (hpg/filter hpg/merge-relations)
+                 (h/public-key hpg/root-hyperdrive)
+                 :focus-ids (mapcar #'h/public-key hpg/only-paths-to)
+                 :label-fun #'hpg/label-fun)
+    (hpg/mode)
+    (pop-to-buffer (current-buffer) hpg/display-buffer-action)))
 
 (transient-define-suffix hpg/set-shortest-path-p ()
   :transient t
