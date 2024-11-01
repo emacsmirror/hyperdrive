@@ -368,10 +368,12 @@ Only drives not in `hpg/only-paths-to' are offered for completion."
   "Delete HYPERDRIVE from `hpg/only-paths-to' and reload."
   :transient t
   :inapt-if-not #'hpg/loaded-merge-relations
-  (interactive (list (h/read-hyperdrive :predicate
-                       (lambda (hyperdrive)
-                         (cl-member hyperdrive hpg/only-paths-to
-                                    :test #'h/equal-p)))))
+  (interactive (list (if (length= hpg/only-paths-to 1)
+                         (car hpg/only-paths-to)
+                       (h/read-hyperdrive :predicate
+                         (lambda (hyperdrive)
+                           (cl-member hyperdrive hpg/only-paths-to
+                                      :test #'h/equal-p))))))
   (setf hpg/only-paths-to
         (cl-delete hyperdrive hpg/only-paths-to :test #'h/equal-p))
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
