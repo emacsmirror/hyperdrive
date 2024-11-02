@@ -169,7 +169,7 @@ Passed to `display-buffer', which see."
     (setf hpg/root-hyperdrive hyperdrive)
     (hpg/load)))
 
-;;;###autoload (autoload 'hyperdrive-peer-graph "hyperdrive-peer-graph" nil t)
+;;;###autoload (autoload 'hyperdrive-peer-graph-menu "hyperdrive-peer-graph" nil t)
 (transient-define-prefix hyperdrive-peer-graph-menu (topic hyperdrive)
   "Show menu for HYPERDRIVE peer graph."
   ;; TODO: Update info manual link
