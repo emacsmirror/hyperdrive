@@ -147,7 +147,9 @@ May be any string listed here:
   :group 'hyperdrive
   :interactive nil
   ;; `pixel-scroll-precision-mode' makes <wheel-up>/<wheel-down> not scroll.
-  (pixel-scroll-precision-mode -1)
+  ;; TODO: Test and report potential Emacs bug with scrolling images with
+  ;; `pixel-scroll-precision-mode'.
+  ;; (pixel-scroll-precision-mode -1)
   (setq-local cursor-type nil)
   ;; TODO: Consider effect of `fast-but-imprecise-scrolling'.
 
