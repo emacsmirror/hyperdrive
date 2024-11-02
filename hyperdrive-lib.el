@@ -763,6 +763,13 @@ use it."
                               (he/url entry) plz-error)
                    (funcall then))))))))
 
+(cl-defun h/fill-metadata-all (hyperdrives &key finally)
+  "Fill metadata for all hyperdrives then call FINALLY.
+FINALLY will be called with no arguments."
+  (let ((queue (make-plz-queue :limit h/queue-limit :finally finally)))
+    (dolist (hyperdrive hyperdrives)
+      (h/fill-metadata hyperdrive :then #'ignore :queue queue))))
+
 (cl-defun h/purge-no-prompt (hyperdrive &key then else)
   "Purge all data corresponding to HYPERDRIVE, then call THEN with response.
 
