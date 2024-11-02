@@ -34,6 +34,7 @@
 
 (require 'cl-lib)
 (require 'map)
+(require 'color)
 
 (require 'hyperdrive-fons)
 
@@ -68,28 +69,30 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
-(defun hyperdrive-fons-view-join (r g b)
-  "Build a color from R G B.
-Inverse of `color-values'."
-  ;; Thanks to Oleh Krehel <https://oremacs.com/2015/04/28/blending-faces/>
-  (format "#%02x%02x%02x" (ash r -8) (ash g -8) (ash b -8)))
+(defun h/fons-view-blend-with-background (name alpha)
+  "Return hex of color NAME blended with background with ALPHA."
+  (apply #'color-rgb-to-hex
+         `(,@(h/fons-view-blend
+              (color-name-to-rgb name)
+              (color-name-to-rgb (face-attribute 'default :background))
+              alpha)
+           2)))
 
-(defun hyperdrive-fons-view-blend (c1 c2 &optional alpha)
-  "Blend the two colors C1 and C2 with ALPHA.
-C1 and C2 are in the format of `color-values'.
-ALPHA is a number between 0.0 and 1.0 which corresponds to the
-influence of C1 on the result."
-  ;; Thanks to Oleh Krehel <https://oremacs.com/2015/04/28/blending-faces/>
+(defun h/fons-view-blend (a b &optional alpha)
+  "Blend the two colors A and B with ALPHA.
+A and B should be lists (RED GREEN BLUE), where each element is
+between 0.0 and 1.0, inclusive.  ALPHA controls the influence A
+has on the result and should be between 0.0 and 1.0, inclusive."
   (setq alpha (or alpha 0.5))
-  (apply #'hyperdrive-fons-view-join
-         (cl-mapcar
-          (lambda (x y)
-            (round (+ (* x alpha) (* y (- 1 alpha)))))
-          c1 c2)))
+  (let (blend)
+    (dotimes (i 3)
+      (push (+ (* (nth i a) alpha) (* (nth i b) (- 1 alpha))) blend))
+    (nreverse blend)))
 
 ;; TODO: Reload image on defcustom change
-;; TODO: Recalculate defucstoms in `modus-themes-after-load-theme-hook'.
-(defcustom hyperdrive-fons-view-source-node-color (hyperdrive-fons-view-blend (color-values "green") (color-values (face-attribute 'default :background)) 0.25)
+;; TODO: Recalculate defcustoms in `modus-themes-after-load-theme-hook'.
+(defcustom hyperdrive-fons-view-source-node-color
+  (h/fons-view-blend-with-background "green" 0.25)
   "Source edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -97,7 +100,8 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-source-edge-color (hyperdrive-fons-view-blend (color-values "green") (color-values (face-attribute 'default :background)) 0.75)
+(defcustom hyperdrive-fons-view-source-edge-color
+  (h/fons-view-blend-with-background "green" 0.75)
   "Source edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -105,7 +109,8 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocker-node-color (hyperdrive-fons-view-blend (color-values "blue") (color-values (face-attribute 'default :background)) 0.25)
+(defcustom hyperdrive-fons-view-blocker-node-color
+  (h/fons-view-blend-with-background "blue" 0.25)
   "Blocker edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -113,7 +118,8 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocker-edge-color (hyperdrive-fons-view-blend (color-values "blue") (color-values (face-attribute 'default :background)) 0.75)
+(defcustom hyperdrive-fons-view-blocker-edge-color
+  (h/fons-view-blend-with-background "blue" 0.75)
   "Blocker edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -121,7 +127,8 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocked-node-color (hyperdrive-fons-view-blend (color-values "red") (color-values (face-attribute 'default :background)) 0.25)
+(defcustom hyperdrive-fons-view-blocked-node-color
+  (h/fons-view-blend-with-background "red" 0.25)
   "Blocked edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -129,7 +136,8 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocked-edge-color (hyperdrive-fons-view-blend (color-values "red") (color-values (face-attribute 'default :background)) 0.75)
+(defcustom hyperdrive-fons-view-blocked-edge-color
+  (h/fons-view-blend-with-background "red" 0.75)
   "Blocked edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
