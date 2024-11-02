@@ -314,93 +314,93 @@ graphviz string, and replaces it with the rendered output."
     (hyperdrive-fons-view--graphviz "svg")
     (buffer-string)))
 
-(defvar hyperdrive-fons-view-prism-minimum-contrast 6
-  "Attempt to enforce this minimum contrast ratio for user faces.
-This should be a reasonable number from, e.g. 0-7 or so."
-  ;; Prot would almost approve of this default.  :) I would go all the way
-  ;; to 7, but 6 already significantly dilutes the colors in some cases.
-  )
+;; (defvar hyperdrive-fons-view-prism-minimum-contrast 6
+;;   "Attempt to enforce this minimum contrast ratio for user faces.
+;; This should be a reasonable number from, e.g. 0-7 or so."
+;;   ;; Prot would almost approve of this default.  :) I would go all the way
+;;   ;; to 7, but 6 already significantly dilutes the colors in some cases.
+;;   )
 
-(cl-defun hyperdrive-fons-view--prism-color
-    (string &key (contrast-with (face-background 'default nil 'default)))
-  ;; Copied from ement.el.
-  "Return a computed color for STRING.
-The color is adjusted to have sufficient contrast with the color
-CONTRAST-WITH (by default, the default face's background).  The
-computed color is useful for user messages, generated room
-avatars, etc."
-  (require 'color)
-  ;; TODO: Use this instead of `ement-room--user-color'.  (Same algorithm ,just takes a
-  ;; string as argument.)
-  ;; TODO: Try using HSV somehow so we could avoid having so many strings return a
-  ;; nearly-black color.
-  (cl-labels ((relative-luminance (rgb)
-                ;; Copy of `modus-themes-wcag-formula', an elegant
-                ;; implementation by Protesilaos Stavrou.  Also see
-                ;; <https://en.wikipedia.org/wiki/Relative_luminance> and
-                ;; <https://www.w3.org/TR/WCAG20/#relativeluminancedef>.
-                (cl-loop for k in '(0.2126 0.7152 0.0722)
-                         for x in rgb
-                         sum (* k (if (<= x 0.03928)
-                                      (/ x 12.92)
-                                    (expt (/ (+ x 0.055) 1.055) 2.4)))))
-              (contrast-ratio (a b)
-                ;; Copy of `modus-themes-contrast'; see above.
-                (let ((ct (/ (+ (relative-luminance a) 0.05)
-                             (+ (relative-luminance b) 0.05))))
-                  (max ct (/ ct))))
-              (increase-contrast (color against target toward)
-                (let ((gradient (cdr (color-gradient color toward 20)))
-                      new-color)
-                  (cl-loop do (setf new-color (pop gradient))
-                           while new-color
-                           until (>= (contrast-ratio new-color against) target)
-                           ;; Avoid infinite loop in case of weirdness
-                           ;; by returning color as a fallback.
-                           finally return (or new-color color)))))
-    (let* ((id string)
-           (id-hash (float (abs (sxhash id))))
-           ;; TODO: Wrap-around the value to get the color I want.
-           (ratio (/ id-hash (float most-positive-fixnum)))
-           (color-num (round (* (* 255 255 255) ratio)))
-           (color-rgb (list (/ (float (logand color-num 255)) 255)
-                            (/ (float (ash (logand color-num 65280) -8)) 255)
-                            (/ (float (ash (logand color-num 16711680) -16)) 255)))
-           (contrast-with-rgb (color-name-to-rgb contrast-with)))
-      (when (< (contrast-ratio color-rgb contrast-with-rgb) hyperdrive-fons-view-prism-minimum-contrast)
-        (setf color-rgb (increase-contrast color-rgb contrast-with-rgb hyperdrive-fons-view-prism-minimum-contrast
-                                           (color-name-to-rgb
-                                            ;; Ideally we would use the foreground color,
-                                            ;; but in some themes, like Solarized Dark,
-                                            ;; the foreground color's contrast is too low
-                                            ;; to be effective as the value to increase
-                                            ;; contrast against, so we use white or black.
-                                            (pcase contrast-with
-                                              ((or `nil "unspecified-bg")
-                                               ;; The `contrast-with' color (i.e. the
-                                               ;; default background color) is nil.  This
-                                               ;; probably means that we're displaying on
-                                               ;; a TTY.
-                                               (if (fboundp 'frame--current-backround-mode)
-                                                   ;; This function can tell us whether
-                                                   ;; the background color is dark or
-                                                   ;; light, but it was added in Emacs
-                                                   ;; 28.1.
-                                                   (pcase (frame--current-backround-mode (selected-frame))
-                                                     ('dark "white")
-                                                     ('light "black"))
-                                                 ;; Pre-28.1: Since faces' colors may be
-                                                 ;; "unspecified" on TTY frames, in which
-                                                 ;; case we have nothing to compare with, we
-                                                 ;; assume that the background color of such
-                                                 ;; a frame is black and increase contrast
-                                                 ;; toward white.
-                                                 "white"))
-                                              (_
-                                               ;; The `contrast-with` color is usable: test it.
-                                               (if (color-dark-p (color-name-to-rgb contrast-with))
-                                                   "white" "black")))))))
-      (apply #'color-rgb-to-hex (append color-rgb (list 2))))))
+;; (cl-defun hyperdrive-fons-view--prism-color
+;;     (string &key (contrast-with (face-background 'default nil 'default)))
+;;   ;; Copied from ement.el.
+;;   "Return a computed color for STRING.
+;; The color is adjusted to have sufficient contrast with the color
+;; CONTRAST-WITH (by default, the default face's background).  The
+;; computed color is useful for user messages, generated room
+;; avatars, etc."
+;;   (require 'color)
+;;   ;; TODO: Use this instead of `ement-room--user-color'.  (Same algorithm ,just takes a
+;;   ;; string as argument.)
+;;   ;; TODO: Try using HSV somehow so we could avoid having so many strings return a
+;;   ;; nearly-black color.
+;;   (cl-labels ((relative-luminance (rgb)
+;;                 ;; Copy of `modus-themes-wcag-formula', an elegant
+;;                 ;; implementation by Protesilaos Stavrou.  Also see
+;;                 ;; <https://en.wikipedia.org/wiki/Relative_luminance> and
+;;                 ;; <https://www.w3.org/TR/WCAG20/#relativeluminancedef>.
+;;                 (cl-loop for k in '(0.2126 0.7152 0.0722)
+;;                          for x in rgb
+;;                          sum (* k (if (<= x 0.03928)
+;;                                       (/ x 12.92)
+;;                                     (expt (/ (+ x 0.055) 1.055) 2.4)))))
+;;               (contrast-ratio (a b)
+;;                 ;; Copy of `modus-themes-contrast'; see above.
+;;                 (let ((ct (/ (+ (relative-luminance a) 0.05)
+;;                              (+ (relative-luminance b) 0.05))))
+;;                   (max ct (/ ct))))
+;;               (increase-contrast (color against target toward)
+;;                 (let ((gradient (cdr (color-gradient color toward 20)))
+;;                       new-color)
+;;                   (cl-loop do (setf new-color (pop gradient))
+;;                            while new-color
+;;                            until (>= (contrast-ratio new-color against) target)
+;;                            ;; Avoid infinite loop in case of weirdness
+;;                            ;; by returning color as a fallback.
+;;                            finally return (or new-color color)))))
+;;     (let* ((id string)
+;;            (id-hash (float (abs (sxhash id))))
+;;            ;; TODO: Wrap-around the value to get the color I want.
+;;            (ratio (/ id-hash (float most-positive-fixnum)))
+;;            (color-num (round (* (* 255 255 255) ratio)))
+;;            (color-rgb (list (/ (float (logand color-num 255)) 255)
+;;                             (/ (float (ash (logand color-num 65280) -8)) 255)
+;;                             (/ (float (ash (logand color-num 16711680) -16)) 255)))
+;;            (contrast-with-rgb (color-name-to-rgb contrast-with)))
+;;       (when (< (contrast-ratio color-rgb contrast-with-rgb) hyperdrive-fons-view-prism-minimum-contrast)
+;;         (setf color-rgb (increase-contrast color-rgb contrast-with-rgb hyperdrive-fons-view-prism-minimum-contrast
+;;                                            (color-name-to-rgb
+;;                                             ;; Ideally we would use the foreground color,
+;;                                             ;; but in some themes, like Solarized Dark,
+;;                                             ;; the foreground color's contrast is too low
+;;                                             ;; to be effective as the value to increase
+;;                                             ;; contrast against, so we use white or black.
+;;                                             (pcase contrast-with
+;;                                               ((or `nil "unspecified-bg")
+;;                                                ;; The `contrast-with' color (i.e. the
+;;                                                ;; default background color) is nil.  This
+;;                                                ;; probably means that we're displaying on
+;;                                                ;; a TTY.
+;;                                                (if (fboundp 'frame--current-backround-mode)
+;;                                                    ;; This function can tell us whether
+;;                                                    ;; the background color is dark or
+;;                                                    ;; light, but it was added in Emacs
+;;                                                    ;; 28.1.
+;;                                                    (pcase (frame--current-backround-mode (selected-frame))
+;;                                                      ('dark "white")
+;;                                                      ('light "black"))
+;;                                                  ;; Pre-28.1: Since faces' colors may be
+;;                                                  ;; "unspecified" on TTY frames, in which
+;;                                                  ;; case we have nothing to compare with, we
+;;                                                  ;; assume that the background color of such
+;;                                                  ;; a frame is black and increase contrast
+;;                                                  ;; toward white.
+;;                                                  "white"))
+;;                                               (_
+;;                                                ;; The `contrast-with` color is usable: test it.
+;;                                                (if (color-dark-p (color-name-to-rgb contrast-with))
+;;                                                    "white" "black")))))))
+;;       (apply #'color-rgb-to-hex (append color-rgb (list 2))))))
 
 ;;;;; Compatibility with pre-Emacs 30 image.el
 
