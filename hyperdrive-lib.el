@@ -561,6 +561,7 @@ echo area when the request for the file is made."
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
                            (handler (alist-get type h/type-handlers
                                                nil nil #'string-match-p)))
+                (h/fill-metadata hyperdrive)
                 (funcall (or handler #'h/handler-default) entry :then then)))
       :else (lambda (err)
               (cl-labels ((not-found-action ()
