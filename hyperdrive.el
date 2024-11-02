@@ -171,7 +171,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
                 (h/api 'post (concat "hyper://localhost/?key="
                                      (url-hexify-string seed))
                   :as 'response))
-               (hyperdrive (he/hyperdrive (h/url-entry url))))
+               (hyperdrive (h/url-hyperdrive url)))
     (unless url (h/error "Unable to create new hyperdrive with seed: %S" seed))
     (setf (h/seed hyperdrive) seed)
     (setf (h/writablep hyperdrive) t)

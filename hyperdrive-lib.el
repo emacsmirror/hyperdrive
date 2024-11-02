@@ -120,6 +120,10 @@ domains slot."
                (host (or public-key (car domains))))
     (concat "hyper://" host)))
 
+(defun h/url-hyperdrive (url)
+  "Return a hyperdrive from URL."
+  (he/hyperdrive (h/url-entry url)))
+
 (defun h//url-hexify-string (string)
   "Return STRING having been URL-encoded.
 Calls `url-hexify-string' with the \"/\" character added to
@@ -1118,7 +1122,7 @@ hyperdrive."
             (h/api 'get (format "hyper://localhost/?key=%s"
                                 (url-hexify-string seed))
               :as 'response :noquery t)))
-        (h/fill (h/url-entry url))
+        (h/fill (h/url-hyperdrive url))
         url)
     (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
                    ;; FIXME: If plz-error is a curl-error, this block will fail.

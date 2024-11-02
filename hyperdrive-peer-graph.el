@@ -84,7 +84,7 @@ Call THEN with a list of block IDs."
 
 (defun hpg/label-fun (public-key)
   "Return display string for PUBLIC-KEY."
-  (let ((hyperdrive (he/hyperdrive (h/url-entry public-key)))
+  (let ((hyperdrive (h/url-hyperdrive public-key))
         (h/formats '((petname . "%s")
                      (nickname . "%s")
                      (public-key . "%s")
