@@ -298,7 +298,7 @@ Passed to `display-buffer', which see."
 (transient-define-suffix hpg/set-shortest-path-p ()
   :transient t
   :description (lambda ()
-                 (format "Shortest path: %s"
+                 (format "Shortest paths only: %s"
                          (if hpg/shortest-path-p
                              (propertize "yes" 'face 'transient-argument)
                            (propertize "no" 'face 'transient-inactive-value))))
