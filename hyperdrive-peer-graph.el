@@ -212,14 +212,16 @@ Passed to `display-buffer', which see."
          (or hpg/topic hpg/default-topic)
          :sources-max-hops hpg/sources-max-hops
          :blockers-max-hops hpg/blockers-max-hops
-         :finally (lambda (merge-relations)
-                    (setf hpg/merge-relations merge-relations)
-                    (hpg/display-graph)
-                    ;; TODO: Make h/fill-metadata async and request in a queue.
-                    ;; (maphash (lambda (id _)
-                    ;;            (h/fill-metadata (he/hyperdrive (h/url-entry))))
-                    ;;          hpg/merge-relations)
-                    (hpg/refresh-menu))))
+         :finally
+         (lambda (merge-relations)
+           (setf hpg/merge-relations merge-relations)
+           (h/fill-metadata-all
+            (cons hpg/root-hyperdrive
+                  (mapcar #'h/url-hyperdrive
+                          (hash-table-keys hpg/merge-relations)))
+            :finally (lambda ()
+                       (hpg/display-graph)
+                       (hpg/refresh-menu))))))
   (hpg/display-loading-buffer))
 
 (transient-define-suffix hpg/set-root-hyperdrive ()
