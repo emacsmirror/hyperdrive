@@ -108,6 +108,8 @@ Reload data and redisplay graph."
   ;; It's easy to accidentally trigger drag events when clicking.
   "<drag-mouse-1>" #'hpg/view-follow-link
   "<mouse-1>" #'hpg/view-follow-link
+  "<drag-mouse-3>" #'hpg/menu-bar
+  "<mouse-3>" #'hpg/menu-bar
   "?" #'hpg/menu)
 
 (define-derived-mode hpg/mode h/fons-view-mode
@@ -126,6 +128,19 @@ Reload data and redisplay graph."
     ((and (rx (group (= 52 alphanumeric))) public-key)
      (setf hpg/root-hyperdrive (h/url-hyperdrive public-key))
      (hpg/load))))
+
+(defun hpg/menu-bar (event)
+  "Pop up `hyperdrive-peer-graph' menu bar."
+  (interactive "e")
+  (pcase (cadadr event)  ;; Image id from image map
+    ((and (rx (group (= 52 alphanumeric))) public-key)
+     (let ((hyperdrive (h/url-hyperdrive public-key)))
+       (popup-menu
+        `("" ; Empty string appears necessary
+          ["Open hyperdrive"
+           (lambda ()
+             (interactive)
+             (h/open (he//create :hyperdrive ,hyperdrive :path "/")))]))))))
 
 ;;;; Transient UI
 
