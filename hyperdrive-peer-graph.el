@@ -124,7 +124,8 @@ Reload data and redisplay graph."
   (interactive "e")
   (pcase (cadadr event)  ;; Image id from image map
     ((and (rx (group (= 52 alphanumeric))) public-key)
-     (h/open (h/url-entry public-key)))))
+     (setf hpg/root-hyperdrive (h/url-hyperdrive public-key))
+     (hpg/load))))
 
 ;;;; Transient UI
 
