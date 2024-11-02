@@ -182,10 +182,10 @@ May be any string listed here:
     merge-relations :root-name root :focus-ids focus-ids
     :layout layout :label-fun label-fun)))
 
-(defun hyperdrive-fons-view--graphviz (buffer type)
-  "Run Graphviz for TYPE on BUFFER.
-BUFFER should contain a Graphviz graph.  Graphviz is called and
-replaces the buffer content with the rendered output."
+(defun hyperdrive-fons-view--graphviz (type)
+  "Run Graphviz for TYPE on current buffer.
+Graphviz is called on current buffer content, which should be a
+graphviz string, and replaces it with the rendered output."
   (unless (zerop (call-process-region (point-min) (point-max) "dot" 'delete t nil
                                       (concat "-T" type)))
     (error "Error generating graph: %S" (buffer-string))))
@@ -207,7 +207,7 @@ replaces the buffer content with the rendered output."
   "Return image map for Graphviz GRAPH."
   (with-temp-buffer
     (insert graph)
-    (hyperdrive-fons-view--graphviz (current-buffer) "cmapx")
+    (hyperdrive-fons-view--graphviz "cmapx")
     (mapcar (lambda (area)
               (pcase-let* ((`(area ,(map shape href coords)) area)
                            (coords-list (mapcar #'string-to-number
@@ -303,7 +303,7 @@ replaces the buffer content with the rendered output."
   "Return SVG string for Graphviz GRAPH."
   (with-temp-buffer
     (insert hops-graph)
-    (hyperdrive-fons-view--graphviz (current-buffer) "svg")
+    (hyperdrive-fons-view--graphviz "svg")
     (buffer-string)))
 
 (defvar hyperdrive-fons-view-prism-minimum-contrast 6
