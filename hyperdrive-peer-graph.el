@@ -383,18 +383,22 @@ Only drives not in `hpg/only-paths-to' are offered for completion."
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
 
-(transient-define-suffix hpg/only-paths-to-delete (hyperdrive)
+(transient-define-suffix hpg/only-paths-to-delete (hyperdrive delete-all-p)
   "Delete HYPERDRIVE from `hpg/only-paths-to' and reload."
   :transient t
   :inapt-if-not #'hpg/loaded-merge-relations
-  (interactive (list (if (length= hpg/only-paths-to 1)
-                         (car hpg/only-paths-to)
-                       (h/read-hyperdrive :predicate
-                         (lambda (hyperdrive)
-                           (cl-member hyperdrive hpg/only-paths-to
-                                      :test #'h/equal-p))))))
+  (interactive (list (or current-prefix-arg
+                         ;; HACK: Skip prompt if `current-prefix-arg'.
+                         (if (length= hpg/only-paths-to 1)
+                             (car hpg/only-paths-to)
+                           (h/read-hyperdrive :predicate
+                             (lambda (hyperdrive)
+                               (cl-member hyperdrive hpg/only-paths-to
+                                          :test #'h/equal-p)))))
+                     current-prefix-arg))
   (setf hpg/only-paths-to
-        (cl-delete hyperdrive hpg/only-paths-to :test #'h/equal-p))
+        (and (not delete-all-p)
+             (cl-delete hyperdrive hpg/only-paths-to :test #'h/equal-p)))
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
 
