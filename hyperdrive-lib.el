@@ -744,7 +744,7 @@ use it."
        (he/api 'get entry :noquery t :queue queue
          ;; TODO: Refactor to use :as 'response-with-buffer.
          :then (pcase-lambda ((cl-struct plz-response body))
-                 (condition-case err
+                 (condition-case _
                      (with-temp-buffer
                        (insert body)
                        (goto-char (point-min))
