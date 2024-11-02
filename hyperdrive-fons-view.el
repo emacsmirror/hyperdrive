@@ -34,7 +34,6 @@
 
 (require 'cl-lib)
 (require 'map)
-(require 'thunk)
 
 (require 'hyperdrive-fons)
 
