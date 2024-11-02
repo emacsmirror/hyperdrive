@@ -206,8 +206,7 @@ When BLOCKEDP but not ALL-BLOCKED-P, include \\+`blocked' which
 are also \\+`sources'.
 
 When BLOCKEDP and ALL-BLOCKED-P, include all \\+`blocked'."
-  (let ((copy-merge-relations (make-hash-table :test 'equal))
-        types)
+  (let ((copy-merge-relations (make-hash-table :test 'equal)))
     (maphash
      (lambda (id merge-relation)
        (let ((blocker-relation (map-elt merge-relation 'blockers))
