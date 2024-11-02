@@ -443,7 +443,9 @@
 (transient-define-suffix h/menu-peer-graph ()
   :description "Peer graph"
   (interactive)
-  (h/peer-graph-menu h/peer-graph-topic (h/menu--scope)))
+  (h/peer-graph-menu
+   (h/peer-graph-context-topic :force-prompt current-prefix-arg)
+   (h/menu--scope)))
 
 (transient-define-suffix h/menu-hyperdrive-copy-url ()
   :description "Copy URL"
