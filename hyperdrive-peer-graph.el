@@ -151,7 +151,7 @@ Reload data and redisplay graph."
 (defcustom hpg/default-topic "_default"
   "Special topic name used as a fallback when no topic is specified.")
 
-(defcustom hpg/display-buffer-action '(display-buffer-full-frame)
+(defcustom hpg/display-buffer-action '(display-buffer-reuse-window)
   "Display buffer action for hyperdrive peer graph.
 Passed to `display-buffer', which see."
   :type display-buffer--action-custom-type)
