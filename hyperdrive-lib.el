@@ -699,37 +699,64 @@ Accepts HYPERDRIVE, PATH, and VERSION, an existent range start."
   ;; TODO: Send request with entry version set to (1- next-version-range-start) for perf
   (he/api 'head entry :headers '(("X-Wait-On-Version-Data" . t))))
 
-(defun h/fill-metadata (hyperdrive)
-  "Fill HYPERDRIVE's public metadata and return it.
-Sends a synchronous request to get the latest contents of
-HYPERDRIVE's public metadata file."
+(cl-defun h/fill-metadata (hyperdrive &key then queue)
+  "Fill HYPERDRIVE's public metadata and persist HYPERDRIVE.
+Sends a request to get the latest contents of HYPERDRIVE's public
+metadata file.  If THEN is nil or \\+`sync', the request will be
+synchronous, and errors will be demoted.  Otherwise, THEN may be
+a function to be called with no arguments regardless of the
+success or failure of loading and parsing metadata.  When QUEUE,
+use it."
   (declare (indent defun))
-  (pcase-let*
-      ((entry (he/create
-               :hyperdrive hyperdrive
-               :path "/.well-known/host-meta.json"
-               ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
-               :version nil))
-       (metadata (condition-case err
-                     ;; TODO: Refactor to use :as 'response-with-buffer and call he/fill
-                     (pcase-let
-                         (((cl-struct plz-response body)
-                           (he/api 'get entry :noquery t)))
-                       (with-temp-buffer
-                         (insert body)
-                         (goto-char (point-min))
-                         (json-read)))
+  (pcase-let* ((entry (he/create
+                       :hyperdrive hyperdrive
+                       :path "/.well-known/host-meta.json"
+                       ;; Don't fill hyperdrive struct with old metadata
+                       :version nil)))
+    (pcase then
+      ((or 'nil 'sync)
+       (let ((metadata
+              (condition-case err
+                  ;; TODO: Refactor to use :as 'response-with-buffer.
+                  (pcase-let
+                      (((cl-struct plz-response body) (he/api 'get entry)))
+                    (with-temp-buffer
+                      (insert body)
+                      (goto-char (point-min))
+                      (setf (h/metadata hyperdrive) (json-read))
+                      (h/persist hyperdrive)))
+                (json-error
+                 (let ((inhibit-message t))
+                   (h/message "Error parsing JSON metadata file: %s"
+                              (he/url entry))))
+                (plz-error
+                 (pcase (plz-response-status (plz-error-response (caddr err)))
+                   ;; FIXME: If plz-error is a curl-error, this block will fail.
+                   (404 nil)
+                   (_ (let ((inhibit-message t))
+                        (h/message "Error loading metadata file: %s: %S"
+                                   (he/url entry) err))))))))))
+      (_
+       (he/api 'get entry :noquery t :queue queue
+         ;; TODO: Refactor to use :as 'response-with-buffer.
+         :then (pcase-lambda ((cl-struct plz-response body))
+                 (condition-case err
+                     (with-temp-buffer
+                       (insert body)
+                       (goto-char (point-min))
+                       (setf (h/metadata hyperdrive) (json-read))
+                       (h/persist hyperdrive)
+                       (funcall then))
                    (json-error
-                    (h/message "Error parsing JSON metadata file: %s"
-                               (he/url entry)))
-                   (plz-error
-                    (pcase (plz-response-status (plz-error-response (caddr err)))
-                      ;; FIXME: If plz-error is a curl-error, this block will fail.
-                      (404 nil)
-                      (_ (signal (car err) (cdr err))))))))
-    (setf (h/metadata hyperdrive) metadata)
-    (h/persist hyperdrive)
-    hyperdrive))
+                    (let ((inhibit-message t))
+                      (h/message "Error parsing JSON metadata file: %s"
+                                 (he/url entry)))
+                    (funcall then))))
+         :else (lambda (plz-error)
+                 (let ((inhibit-message t))
+                   (h/message "Error loading metadata file: %s: %S"
+                              (he/url entry) plz-error)
+                   (funcall then))))))))
 
 (cl-defun h/purge-no-prompt (hyperdrive &key then else)
   "Purge all data corresponding to HYPERDRIVE, then call THEN with response.
