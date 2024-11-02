@@ -139,13 +139,6 @@ May be any string listed here:
 
 ;;;; Mode
 
-(defvar-keymap hyperdrive-fons-view-mode-map
-  :parent special-mode-map
-  :doc "Local keymap for `hyperdrive-fons-view-mode' buffers."
-  ;; It's easy to accidentally trigger drag events when clicking.
-  "<drag-mouse-1>" #'hyperdrive-fons-view-follow-link
-  "<mouse-1>" #'hyperdrive-fons-view-follow-link)
-
 (define-derived-mode hyperdrive-fons-view-mode special-mode
   `("Hyperdrive-fons-view"
     ;; TODO: Add more to lighter, e.g. menu to change params.
