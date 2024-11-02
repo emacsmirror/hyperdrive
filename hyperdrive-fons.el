@@ -8,6 +8,7 @@
 (require 'cl-lib)
 (require 'map)
 (require 'thunk)
+(require 'compat)
 
 ;;;; Types
 
