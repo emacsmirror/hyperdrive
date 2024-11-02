@@ -440,6 +440,7 @@
   (interactive)
   (h/describe-hyperdrive (h/menu--scope)))
 
+(defvar h/peer-graph-menu)
 (transient-define-suffix h/menu-peer-graph ()
   :description "Peer graph"
   (interactive)
