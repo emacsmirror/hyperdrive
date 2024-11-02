@@ -720,27 +720,26 @@ use it."
                        :version nil)))
     (pcase then
       ((or 'nil 'sync)
-       (let ((metadata
-              (condition-case err
-                  ;; TODO: Refactor to use :as 'response-with-buffer.
-                  (pcase-let
-                      (((cl-struct plz-response body) (he/api 'get entry)))
-                    (with-temp-buffer
-                      (insert body)
-                      (goto-char (point-min))
-                      (setf (h/metadata hyperdrive) (json-read))
-                      (h/persist hyperdrive)))
-                (json-error
-                 (let ((inhibit-message t))
-                   (h/message "Error parsing JSON metadata file: %s"
-                              (he/url entry))))
-                (plz-error
-                 (pcase (plz-response-status (plz-error-response (caddr err)))
-                   ;; FIXME: If plz-error is a curl-error, this block will fail.
-                   (404 nil)
-                   (_ (let ((inhibit-message t))
-                        (h/message "Error loading metadata file: %s: %S"
-                                   (he/url entry) err))))))))))
+       (condition-case err
+           ;; TODO: Refactor to use :as 'response-with-buffer.
+           (pcase-let
+               (((cl-struct plz-response body) (he/api 'get entry)))
+             (with-temp-buffer
+               (insert body)
+               (goto-char (point-min))
+               (setf (h/metadata hyperdrive) (json-read))
+               (h/persist hyperdrive)))
+         (json-error
+          (let ((inhibit-message t))
+            (h/message "Error parsing JSON metadata file: %s"
+                       (he/url entry))))
+         (plz-error
+          (pcase (plz-response-status (plz-error-response (caddr err)))
+            ;; FIXME: If plz-error is a curl-error, this block will fail.
+            (404 nil)
+            (_ (let ((inhibit-message t))
+                 (h/message "Error loading metadata file: %s: %S"
+                            (he/url entry) err)))))))
       (_
        (he/api 'get entry :noquery t :queue queue
          ;; TODO: Refactor to use :as 'response-with-buffer.
