@@ -69,16 +69,16 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
-(defun h/fons-view-blend-with-background (name alpha)
+(defun hyperdrive-fons-view-blend-with-background (name alpha)
   "Return hex of color NAME blended with background with ALPHA."
   (apply #'color-rgb-to-hex
-         `(,@(h/fons-view-blend
+         `(,@(hyperdrive-fons-view-blend
               (color-name-to-rgb name)
               (color-name-to-rgb (face-attribute 'default :background))
               alpha)
            2)))
 
-(defun h/fons-view-blend (a b &optional alpha)
+(defun hyperdrive-fons-view-blend (a b &optional alpha)
   "Blend the two colors A and B with ALPHA.
 A and B should be lists (RED GREEN BLUE), where each element is
 between 0.0 and 1.0, inclusive.  ALPHA controls the influence A
