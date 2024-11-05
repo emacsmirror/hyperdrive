@@ -215,10 +215,8 @@ When BLOCKEDP and ALL-BLOCKED-P, include all \\+`blocked'."
          (when (and blockersp blocker-relation)
            (setf (map-elt (gethash id copy-merge-relations) 'blockers)
                  blocker-relation))
-         (when (and sourcesp
-                    source-relation
-                    (or blockedp
-                        (not (fons-relation-blocked-p source-relation))))
+         (when (and sourcesp source-relation
+                    (or blockedp (not blocked-relation)))
            (setf (map-elt (gethash id copy-merge-relations) 'sources)
                  source-relation))
          (when (and blockedp
