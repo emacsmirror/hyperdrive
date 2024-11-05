@@ -1,4 +1,4 @@
-;;; hyperdrive-peer-graph.el --- Visualize fons relations  -*- lexical-binding: t; -*-
+;;; hyperdrive-peer-graph.el --- View graph of sources, blockers, and blocked  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 USHIN, Inc.
 
