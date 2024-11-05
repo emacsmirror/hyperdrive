@@ -16,16 +16,6 @@
 ;; ensure that they are not persisted in `command-history' by `savehist'; see
 ;; similar workaround in Ement.el.
 
-(cl-defstruct fons-user
-  (id nil :documentation "Should uniquely identify the user."
-      :type string)
-  (blocked nil :type list
-           :documentation "List of user IDs that are blocked by this user.")
-  (blockers nil :type list
-            :documentation "List of user IDs that are blockers for this user.")
-  (sources nil :type list
-           :documentation "Map keyed by topic with each value being a list of user IDs."))
-
 (cl-defstruct fons-hop from to)
 (cl-defstruct fons-path hops)
 (cl-defstruct fons-relation from to paths
