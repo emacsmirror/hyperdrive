@@ -20,10 +20,7 @@
 
 ;;; Commentary:
 
-;; This library implements a graphviz-based view for `fons' relations data.
-
-;; Some of the code is borrowed from `org-graph-view':
-;; https://github.com/alphapapa/org-graph-view, which is GPLv3+ licensed.
+;; This file adds a visualizer for sources, blockers, and blocked.
 
 ;;; Code:
 
