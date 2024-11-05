@@ -151,6 +151,21 @@ May be any string listed here:
 
 ;;;; Functions
 
+(cl-defun hyperdrive-fons-view--window-dimensions (&optional (window (selected-window)))
+  "Return (WIDTH HEIGHT DPI) for WINDOW.
+WIDTH and HEIGHT are in inches."
+  (with-selected-window window
+    (pcase-let* (((map ('geometry `(,_ ,_ ,monitor-width-px ,monitor-height-px))
+                       ('mm-size `(,monitor-width-mm ,monitor-height-mm)))
+                  (car (display-monitor-attributes-list)))
+                 (width-in (* 0.04 monitor-width-mm))
+                 (height-in (* 0.04 monitor-height-mm))
+                 (width-res (/ monitor-width-px width-in))
+                 (height-res (/ monitor-height-px height-in))
+                 (width-in (/  (window-text-width nil t) width-res))
+                 (height-in (/ (window-text-height nil t) height-res)))
+      (list width-in height-in (/ (+ width-res height-res) 2)))))
+
 (cl-defun hyperdrive-fons-view
     (merge-relations root &key (layout hyperdrive-fons-view-layout) focus-ids label-fun)
   "View MERGE-RELATIONS from ROOT."
