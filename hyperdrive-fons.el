@@ -65,13 +65,7 @@ list of BLOCKERs, as in `fons-blocked'."
                            (to-relation
                             (and (not (equal root to))
                                  (ensure-relation to)))
-                           (paths-to-to
-                            (if paths-to-from
-                                ;; `extended-paths' may return nil if the only
-                                ;; paths to TO are circular.
-                                (extended-paths paths-to-from hop)
-                              ;; On the 1st hop, paths-to-from is nil.
-                              (list (make-fons-path :hops (list hop))))))
+                           (paths-to-to (extended-paths paths-to-from hop)))
                   (cl-callf append (fons-relation-paths to-relation) paths-to-to)
                   (when (and (within-max-hops-p to-relation)
                              (not (gethash to blocked)))
@@ -85,11 +79,13 @@ list of BLOCKERs, as in `fons-blocked'."
                 (funcall finally relations)))))
          (extended-paths (paths hop)
            "Return list of PATHS extended by HOP without circular hops."
-           (cl-loop
-            for path in paths
-            unless (circular-p path hop)
-            collect (make-fons-path
-                     :hops (append (fons-path-hops path) (list hop)))))
+           (if paths
+               (cl-loop
+                for path in paths
+                unless (circular-p path hop)
+                collect (make-fons-path
+                         :hops (append (fons-path-hops path) (list hop))))
+             (list (make-fons-path :hops (list hop)))))
          (circular-p (path last-hop)
            "Return non-nil when HOP circles back to any hop in PATH."
            (cl-some (lambda (hop)
