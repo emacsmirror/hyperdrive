@@ -49,7 +49,7 @@ recursed into and whose relations will be flagged as blocked.
 The hash table values of BLOCKED are unused, but they may be a
 list of BLOCKERs, as in `fons-blocked'."
   (unless (and (integerp max-hops) (cl-plusp max-hops))
-    (error "MAX-HOPS must be an positive integer"))
+    (error "MAX-HOPS must be a positive integer"))
   (when (gethash root blocked)
     (error "BLOCKED must not contain ROOT"))
   (let ((relations (make-hash-table :test 'equal))
