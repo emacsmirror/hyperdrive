@@ -88,13 +88,11 @@ list of BLOCKERs, as in `fons-blocked'."
                  (append paths (fons-relation-paths relation))))
          (extended-paths (paths hop)
            "Return list of PATHS extended by HOP without circular hops."
-           (remq nil
-                 (mapcar
-                  (lambda (path)
-                    (unless (circular-p path hop)
-                      (make-fons-path
-                       :hops (append (fons-path-hops path) (list hop)))))
-                  paths)))
+           (cl-loop
+            for path in paths
+            unless (circular-p path hop)
+            collect (make-fons-path
+                     :hops (append (fons-path-hops path) (list hop)))))
          (circular-p (path last-hop)
            "Return non-nil when HOP circles back to any hop in PATH."
            (cl-some (lambda (hop)
