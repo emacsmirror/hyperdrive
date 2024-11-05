@@ -72,7 +72,7 @@ list of BLOCKERs, as in `fons-blocked'."
                                 (extended-paths paths-to-from hop)
                               ;; On the 1st hop, paths-to-from is nil.
                               (list (make-fons-path :hops (list hop))))))
-                  (update-relation to-relation paths-to-to)
+                  (cl-callf append (fons-relation-paths to-relation) paths-to-to)
                   (when (and (within-max-hops-p to-relation)
                              (not (gethash to blocked)))
                     (add-relations-from (fons-relation-to to-relation)
@@ -83,9 +83,6 @@ list of BLOCKERs, as in `fons-blocked'."
                              (setf (fons-relation-blocked-p relation) t)))
                          relations)
                 (funcall finally relations)))))
-         (update-relation (relation paths)
-           (setf (fons-relation-paths relation)
-                 (append paths (fons-relation-paths relation))))
          (extended-paths (paths hop)
            "Return list of PATHS extended by HOP without circular hops."
            (cl-loop
