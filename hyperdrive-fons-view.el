@@ -206,11 +206,6 @@ graphviz string, and replaces it with the rendered output."
         	      href (list 'help-echo href))))
             (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
-(defun hyperdrive-fons-view--format-hop (hop color)
-  "Return graphviz-string for HOP."
-  (format "%s -> %s [color=\"%s\" penwidth=2];\n"
-          (fons-hop-from hop) (fons-hop-to hop) color))
-
 (cl-defun hyperdrive-fons-view--format-graph
     (relations &key root-name focus-ids layout (label-fun #'identity))
   "Return a graphviz-string string for RELATIONS."
@@ -234,6 +229,9 @@ graphviz string, and replaces it with the rendered output."
                                   (cl-loop for (key value) on pairs by #'cddr
                                            collect (format "%s=\"%s\"" key value))
                                   ",")))
+                (format-hop (hop color)
+                  (format "%s -> %s [color=\"%s\" penwidth=2];\n"
+                          (fons-hop-from hop) (fons-hop-to hop) color))
                 (format-to (to relation)
                   (insert
                    (format
@@ -275,9 +273,9 @@ graphviz string, and replaces it with the rendered output."
                        "ratio" "fill"
                        "mindist" "0")
           (dolist (hop (fons-relations-hops relations 'sources))
-            (insert (hyperdrive-fons-view--format-hop hop sources-edge-color)))
+            (insert (format-hop hop sources-edge-color)))
           (dolist (hop (fons-relations-hops relations 'blockers))
-            (insert (hyperdrive-fons-view--format-hop hop blockers-edge-color)))
+            (insert (format-hop hop blockers-edge-color)))
           (when (catch 'blocker-paths-exist-p
                   ;; Only display block hops when blockers are displayed.
                   (maphash (lambda (_id relation)
@@ -285,8 +283,7 @@ graphviz string, and replaces it with the rendered output."
                                (throw 'blocker-paths-exist-p t)))
                            relations))
             (dolist (hop (fons-relations-hops relations 'blocked))
-              (insert (hyperdrive-fons-view--format-hop
-                       hop blocked-edge-color))))
+              (insert (format-hop hop blocked-edge-color))))
           (format-root root-name)
           (maphash #'format-to relations)
           (insert "}"))
