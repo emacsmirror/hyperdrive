@@ -38,7 +38,7 @@
 
 ;;;; Functions:
 
-(defun hpg/data (hyperdrive topic &key then)
+(defun hpg/data (hyperdrive &key then)
   "Load peer graph data for HYPERDRIVE on TOPIC then call THEN.
 THEN will be called with the parsed JSON hash table as its sole
 argument.  If error, demote it and call THEN with nil argument."
@@ -51,10 +51,9 @@ argument.  If error, demote it and call THEN with nil argument."
       :then (lambda (response)
               (condition-case err
                   ;; TODO: When plz adds :as 'response-with-buffer, use that.
-                  (funcall then (map-elt (json-parse-string
-                                          (plz-response-body response)
-                                          :array-type 'list)
-                                         topic))
+                  (funcall then (json-parse-string
+                                 (plz-response-body response)
+                                 :array-type 'list))
                 (json-error
                  (h/message "Error parsing peer graph data: %s\n%S"
                             (he/url entry) err)
@@ -73,12 +72,14 @@ argument.  If error, demote it and call THEN with nil argument."
 (defun hpg/hops-fn (from topic then)
   "Asynchronously get hops from FROM about TOPIC.
 Call THEN with a list of TOs."
-  (hpg/data (h/create :public-key from) topic :then then))
+  (hpg/data (h/create :public-key from)
+            :then (lambda (data) (funcall then (map-elt data topic)))))
 
 (cl-defun hpg/blocked-fn (blocker then)
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
-  (hpg/data (h/create :public-key blocker) "_blocked" :then then))
+  (hpg/data (h/create :public-key blocker)
+            :then (lambda (data) (funcall then (map-elt data "_blocked")))))
 
 (defun hpg/label-fun (public-key)
   "Return display string for PUBLIC-KEY."
