@@ -175,12 +175,12 @@ updated RELATIONS hash table as its sole argument."
       (maphash #'map-relation copy-relations)
       copy-relations)))
 
-(cl-defun fons-filter-only-paths-to (ids relations)
+(cl-defun fons-filter-paths-only-to (ids relations)
   "Return RELATIONS with only paths to IDS.
-`fons-filter-only-paths-to' must be applied after other filter
+`fons-filter-paths-only-to' must be applied after other filter
 functions to ensure the exclusion of nodes which form a longer
 path to one of the IDS."
-  (unless ids (cl-return-from fons-filter-only-paths-to relations))
+  (unless ids (cl-return-from fons-filter-paths-only-to relations))
   ;; TODO: Refactor with `cl-loop'.
   (let ((copy-relations (make-hash-table :test 'equal))
         blocker-ids)

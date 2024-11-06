@@ -158,7 +158,7 @@ Reload data and redisplay graph."
 (defvar hpg/show-all-blocked-p nil)
 
 (defvar hpg/shortest-path-p t)
-(defvar hpg/only-paths-to nil)
+(defvar hpg/paths-only-to nil)
 
 (defcustom hpg/buffer-name "*hyperdrive-peer-graph-view*"
   "Buffer name to show peer graph."
@@ -198,10 +198,10 @@ Passed to `display-buffer', which see."
    ("r" hpg/set-root-hyperdrive)
    ("t" hpg/set-topic)
    ("g" "Reload" hpg/reload)]
-  ["Only paths to"
-   (:info #'hpg/format-only-paths-to :format "%d")
-   ("o a" "Add" hpg/only-paths-to-add)
-   ("o r" "Remove" hpg/only-paths-to-remove)]
+  ["Paths only to"
+   (:info #'hpg/format-paths-only-to :format "%d")
+   ("o a" "Add" hpg/paths-only-to-add)
+   ("o r" "Remove" hpg/paths-only-to-remove)]
   [["Sources"
     ("s s" hpg/set-show-sources-p)
     ("s m" hpg/set-sources-max-hops)]
@@ -306,7 +306,7 @@ Passed to `display-buffer', which see."
   (with-current-buffer (get-buffer-create hpg/buffer-name)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
-                 :focus-ids (mapcar #'h/public-key hpg/only-paths-to)
+                 :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
                  :label-fun #'hpg/label-fun)
     (hpg/mode)
     (pop-to-buffer (current-buffer) hpg/display-buffer-action)))
@@ -372,47 +372,47 @@ Passed to `display-buffer', which see."
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
 
-(defun hpg/format-only-paths-to ()
+(defun hpg/format-paths-only-to ()
   (string-join
    (mapcar (lambda (hyperdrive)
              (format "     - %s" (h//format hyperdrive)))
-           hpg/only-paths-to)
+           hpg/paths-only-to)
    "\n"))
 
-(transient-define-suffix hpg/only-paths-to-add (hyperdrive)
-  "Add HYPERDRIVE to `hpg/only-paths-to' and reload.
-Only drives not in `hpg/only-paths-to' are offered for completion."
+(transient-define-suffix hpg/paths-only-to-add (hyperdrive)
+  "Add HYPERDRIVE to `hpg/paths-only-to' and reload.
+Only drives not in `hpg/paths-only-to' are offered for completion."
   :transient t
   :inapt-if-not #'hpg/loaded-relations
   (interactive
    (list (h/read-hyperdrive :predicate
            (lambda (hyperdrive)
-             (unless (cl-member hyperdrive hpg/only-paths-to :test #'h/equal-p)
+             (unless (cl-member hyperdrive hpg/paths-only-to :test #'h/equal-p)
                (catch 'break
                  (maphash (lambda (id _)
                             (when (string= (h/public-key hyperdrive) id)
                               (throw 'break t)))
                           hpg/relations)))))))
-  (push hyperdrive hpg/only-paths-to)
+  (push hyperdrive hpg/paths-only-to)
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
 
-(transient-define-suffix hpg/only-paths-to-remove (hyperdrive allp)
-  "Remove HYPERDRIVE from `hpg/only-paths-to' and reload."
+(transient-define-suffix hpg/paths-only-to-remove (hyperdrive allp)
+  "Remove HYPERDRIVE from `hpg/paths-only-to' and reload."
   :transient t
   :inapt-if-not #'hpg/loaded-relations
   (interactive (list (or current-prefix-arg
                          ;; HACK: Skip prompt if `current-prefix-arg'.
-                         (if (length= hpg/only-paths-to 1)
-                             (car hpg/only-paths-to)
+                         (if (length= hpg/paths-only-to 1)
+                             (car hpg/paths-only-to)
                            (h/read-hyperdrive :predicate
                              (lambda (hyperdrive)
-                               (cl-member hyperdrive hpg/only-paths-to
+                               (cl-member hyperdrive hpg/paths-only-to
                                           :test #'h/equal-p)))))
                      current-prefix-arg))
-  (setf hpg/only-paths-to
+  (setf hpg/paths-only-to
         (and (not allp)
-             (cl-delete hyperdrive hpg/only-paths-to :test #'h/equal-p)))
+             (cl-delete hyperdrive hpg/paths-only-to :test #'h/equal-p)))
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
 
@@ -447,9 +447,9 @@ hops to traverse for sources and blockers, respectively."
       :all-blocked-p (and hpg/show-blocked-p hpg/show-all-blocked-p)))
   (when hpg/shortest-path-p
     (cl-callf fons-filter-shortest-path relations))
-  ;; Apply `hpg/only-paths-to' last
-  (cl-callf2 fons-filter-only-paths-to
-      (mapcar #'h/public-key hpg/only-paths-to) relations)
+  ;; Apply `hpg/paths-only-to' last
+  (cl-callf2 fons-filter-paths-only-to
+      (mapcar #'h/public-key hpg/paths-only-to) relations)
   relations)
 
 (defun hpg/refresh-menu ()
