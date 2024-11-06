@@ -143,14 +143,13 @@ to one of the IDS."
     ;; For each ID which is a source, keep the source relation for all IDs which
     ;; are part of a path to it.
     (dolist (id ids)
-      (when-let (sources (map-elt (gethash id merge-relations) 'sources))
-        (setf (map-elt (gethash id copy-merge-relations) 'sources) sources)
-        (dolist (path (fons-relation-paths sources))
-          (pcase-dolist ((cl-struct fons-hop from) (fons-path-hops path))
-            (when-let* ((merge-relation (gethash from merge-relations))
-                        (sources (map-elt merge-relation 'sources)))
-              (setf (map-elt (gethash from copy-merge-relations) 'sources)
-                    sources))))))
+      (dolist (path (fons-relation-paths
+                     (map-elt (gethash id merge-relations) 'sources)))
+        (pcase-dolist ((cl-struct fons-hop to) (fons-path-hops path))
+          (when-let* ((merge-relation (gethash to merge-relations))
+                      (sources (map-elt merge-relation 'sources)))
+            (setf (map-elt (gethash to copy-merge-relations) 'sources)
+                  sources)))))
     ;; For each ID which is blocked, add the blocked relation.  Also track the
     ;; `blocker-id's of the blockers which block ID.
     (dolist (id ids)
@@ -161,14 +160,13 @@ to one of the IDS."
     ;; For each ID which is a blocker and for each blocker which blocked an ID,
     ;; keep the blocker relation for all IDs which are part of a path to it.
     (dolist (id (delete-dups (append ids blocker-ids)))
-      (when-let (blockers (map-elt (gethash id merge-relations) 'blockers))
-        (setf (map-elt (gethash id copy-merge-relations) 'blockers) blockers)
-        (dolist (path (fons-relation-paths blockers))
-          (pcase-dolist ((cl-struct fons-hop from) (fons-path-hops path))
-            (when-let* ((merge-relation (gethash from merge-relations))
-                        (blockers (map-elt merge-relation 'blockers)))
-              (setf (map-elt (gethash from copy-merge-relations) 'blockers)
-                    blockers))))))
+      (dolist (path (fons-relation-paths
+                     (map-elt (gethash id merge-relations) 'blockers)))
+        (pcase-dolist ((cl-struct fons-hop to) (fons-path-hops path))
+          (when-let* ((merge-relation (gethash to merge-relations))
+                      (blockers (map-elt merge-relation 'blockers)))
+            (setf (map-elt (gethash to copy-merge-relations) 'blockers)
+                  blockers)))))
     copy-merge-relations))
 
 (cl-defun fons-filter-to-types
