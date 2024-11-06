@@ -149,9 +149,16 @@ Reload data and redisplay graph."
 (defvar hpg/topic nil)
 (defvar hpg/relations nil)
 
-;; TODO: Make default max hops customizable
-(defvar hpg/sources-max-hops 3)
-(defvar hpg/blockers-max-hops 3)
+(defcustom hpg/sources-max-hops-default 3
+  "Default number of hops to jump for sources."
+  :type 'integer)
+
+(defcustom hpg/blockers-max-hops-default 3
+  "Default number of hops to jump for blockers."
+  :type 'integer)
+
+(defvar hpg/sources-max-hops hpg/sources-max-hops-default)
+(defvar hpg/blockers-max-hops hpg/blockers-max-hops-default)
 
 (defvar hpg/show-sources-p t)
 (defvar hpg/show-blockers-p t)
