@@ -481,15 +481,11 @@ Blank string defaults to `hyperdrive-peer-graph-default-topic'."
   "Return `hyperdrive-peer-graph-root-hyperdrive' or prompt for drive.
 With FORCE-PROMPT, or interactively with universal prefix
 argument \\[universal-argument], always prompt."
-  (cl-labels ((read-hyperdrive ()
-                (h/read-hyperdrive :default (or (and h/current-entry
-                                                     (he/hyperdrive h/current-entry))
-                                                hpg/root-hyperdrive))))
-    (cond (force-prompt (read-hyperdrive))
-          (hpg/root-hyperdrive)
-          ((and-let* ((obj (transient-active-prefix 'h/menu-hyperdrive)))
-             (oref obj scope)))
-          ((read-hyperdrive)))))
+  (if (and hpg/root-hyperdrive (not force-prompt))
+      hpg/root-hyperdrive
+    (h/read-hyperdrive :default (or (and h/current-entry
+                                         (he/hyperdrive h/current-entry))
+                                    hpg/root-hyperdrive))))
 
 (defun hpg/loaded-relations ()
   "Return `hyperdrive-peer-graph-relations' if loaded."
