@@ -470,7 +470,7 @@ hops to traverse for sources and blockers, respectively."
     (and (not (string-blank-p topic))
          topic)))
 
-(cl-defun hyperdrive-peer-graph-context-topic (&key force-prompt)
+(cl-defun hpg/context-topic (&key force-prompt)
   "Return `hyperdrive-peer-graph-topic'.
 With FORCE-PROMPT, or interactively with universal prefix
 argument \\[universal-argument], always prompt.
