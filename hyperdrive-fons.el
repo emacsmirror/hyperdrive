@@ -114,7 +114,6 @@ list of BLOCKERs, as in `fons-blocked'."
                (when-let*
                    ((relation (map-elt merge-relation type))
                     (shortest-hops-length
-                     ;; TODO(review): Merge `cl-loop', `cl-remove-if' for speed?
                      (cl-loop for path in (fons-relation-paths relation)
                               minimize (length (fons-path-hops path))))
                     (new-paths
