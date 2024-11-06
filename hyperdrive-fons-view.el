@@ -167,11 +167,11 @@ WIDTH and HEIGHT are in inches."
       (list width-in height-in (/ (+ width-res height-res) 2)))))
 
 (cl-defun hyperdrive-fons-view
-    (merge-relations root &key (layout hyperdrive-fons-view-layout) focus-ids label-fun)
-  "View MERGE-RELATIONS from ROOT."
+    (relations root &key (layout hyperdrive-fons-view-layout) focus-ids label-fun)
+  "View RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
-    merge-relations :root-name root :focus-ids focus-ids
+    relations :root-name root :focus-ids focus-ids
     :layout layout :label-fun label-fun)))
 
 (defun hyperdrive-fons-view--graphviz (type)
@@ -220,8 +220,8 @@ graphviz string, and replaces it with the rendered output."
           (fons-hop-from hop) (fons-hop-to hop) color))
 
 (cl-defun hyperdrive-fons-view--format-graph
-    (merge-relations &key root-name focus-ids layout (label-fun #'identity))
-  "Return a graphviz-string string for MERGE-RELATIONS."
+    (relations &key root-name focus-ids layout (label-fun #'identity))
+  "Return a graphviz-string string for RELATIONS."
   (let ((sources-node-color (hyperdrive-fons-view-blend-with-background
                              hyperdrive-fons-view-sources-color 0.25))
         (sources-edge-color (hyperdrive-fons-view-blend-with-background
@@ -242,7 +242,7 @@ graphviz string, and replaces it with the rendered output."
                                   (cl-loop for (key value) on pairs by #'cddr
                                            collect (format "%s=\"%s\"" key value))
                                   ",")))
-                (format-to (to merge-relation)
+                (format-to (to relation)
                   (insert
                    (format
                     "%s [label=%s, href=\"%s\", shape=\"%s\", color=\"%s\", style=\"filled\", penwidth=\"4\", fillcolor=\"%s;0.5:%s\"];\n"
@@ -252,15 +252,15 @@ graphviz string, and replaces it with the rendered output."
                       "ellipse")
                     "grey"
                     ;; Prioritize blocked > source > blocker
-                    (pcase (mapcar #'car merge-relation)
-                      ((pred (memq 'blocked)) blocked-node-color)
-                      ((pred (memq 'sources)) sources-node-color)
-                      ((pred (memq 'blockers)) blockers-node-color))
+                    (cond
+                     ((fons-relation-blocked-paths relation) blocked-node-color)
+                     ((fons-relation-source-paths relation) sources-node-color)
+                     ((fons-relation-blocker-paths relation) blockers-node-color))
                     ;; Prioritize blocker > blocked > source
-                    (pcase (mapcar #'car merge-relation)
-                      ((pred (memq 'blockers)) blockers-node-color)
-                      ((pred (memq 'blocked)) blocked-node-color)
-                      ((pred (memq 'sources)) sources-node-color)))))
+                    (cond
+                     ((fons-relation-blocker-paths relation) blockers-node-color)
+                     ((fons-relation-blocked-paths relation) blocked-node-color)
+                     ((fons-relation-source-paths relation) sources-node-color)))))
                 (format-root (root)
                   (insert (format
                            "%s [label=%s, href=\"%s\", shape=\"invhouse\", penwidth=\"4\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
@@ -282,21 +282,21 @@ graphviz string, and replaces it with the rendered output."
                        "margin" "0"
                        "ratio" "fill"
                        "mindist" "0")
-          (dolist (hop (fons-merge-relations-hops merge-relations 'sources))
+          (dolist (hop (fons-relations-hops relations 'sources))
             (insert (hyperdrive-fons-view--format-hop hop sources-edge-color)))
-          (dolist (hop (fons-merge-relations-hops merge-relations 'blockers))
+          (dolist (hop (fons-relations-hops relations 'blockers))
             (insert (hyperdrive-fons-view--format-hop hop blockers-edge-color)))
-          (when (catch 'blocker-relation-exists-p
+          (when (catch 'blocker-paths-exist-p
                   ;; Only display block hops when blockers are displayed.
-                  (maphash (lambda (_id merge-relation)
-                             (when (map-elt merge-relation 'blockers)
-                               (throw 'blocker-relation-exists-p t)))
-                           merge-relations))
-            (dolist (hop (fons-merge-relations-hops merge-relations 'blocked))
+                  (maphash (lambda (_id relation)
+                             (when (fons-relation-blocker-paths relation)
+                               (throw 'blocker-paths-exist-p t)))
+                           relations))
+            (dolist (hop (fons-relations-hops relations 'blocked))
               (insert (hyperdrive-fons-view--format-hop
                        hop blocked-edge-color))))
           (format-root root-name)
-          (maphash #'format-to merge-relations)
+          (maphash #'format-to relations)
           (insert "}"))
         (buffer-string)))))
 

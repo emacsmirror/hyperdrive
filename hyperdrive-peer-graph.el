@@ -144,7 +144,7 @@ Reload data and redisplay graph."
 
 (defvar hpg/root-hyperdrive nil)
 (defvar hpg/topic nil)
-(defvar hpg/merge-relations nil)
+(defvar hpg/relations nil)
 
 ;; TODO: Make default max hops customizable
 (defvar hpg/sources-max-hops 3)
@@ -178,7 +178,7 @@ Passed to `display-buffer', which see."
   (if (and (equal topic hpg/topic)
            hpg/root-hyperdrive
            (h/equal-p hyperdrive hpg/root-hyperdrive)
-           (hpg/loaded-merge-relations))
+           (hpg/loaded-relations))
       (hpg/display-graph)
     (setf hpg/topic topic)
     (setf hpg/root-hyperdrive hyperdrive)
@@ -218,22 +218,21 @@ Passed to `display-buffer', which see."
   (transient-setup 'hyperdrive-peer-graph-menu nil nil :scope hyperdrive))
 
 (defun hpg/load ()
-  "Load `hpg/merge-relations' and redisplay graph."
+  "Load `hpg/relations' and redisplay graph."
   ;; TODO: Refill name and color metadata.
   ;; TODO: If called in rapid succession, stop the requests from the first call.
-  (setf hpg/merge-relations
-        (hpg/merge-relations
+  (setf hpg/relations
+        (hpg/relations
          (h/public-key hpg/root-hyperdrive)
          (or hpg/topic hpg/default-topic)
          :sources-max-hops hpg/sources-max-hops
          :blockers-max-hops hpg/blockers-max-hops
          :finally
-         (lambda (merge-relations)
-           (setf hpg/merge-relations merge-relations)
+         (lambda (relations)
+           (setf hpg/relations relations)
            (h/fill-metadata-all
             (cons hpg/root-hyperdrive
-                  (mapcar #'h/url-hyperdrive
-                          (hash-table-keys hpg/merge-relations)))
+                  (mapcar #'h/url-hyperdrive (hash-table-keys hpg/relations)))
             :finally (lambda ()
                        (hpg/display-graph)
                        (hpg/refresh-menu))))))
@@ -244,7 +243,7 @@ Passed to `display-buffer', which see."
   :description
   (lambda ()
     (format "Root: %s" (if hpg/root-hyperdrive
-                           (h//format-hyperdrive hpg/root-hyperdrive)
+                           (h//format hpg/root-hyperdrive)
                          (propertize "unset" 'face))))
   (interactive)
   (setf hpg/root-hyperdrive (h/read-hyperdrive :default hpg/root-hyperdrive))
@@ -287,7 +286,7 @@ Passed to `display-buffer', which see."
   (hpg/load))
 
 (transient-define-suffix hpg/reload ()
-  :inapt-if-not #'hpg/loaded-merge-relations
+  :inapt-if-not #'hpg/loaded-relations
   :transient t
   (interactive)
   (hpg/load))
@@ -303,7 +302,7 @@ Passed to `display-buffer', which see."
 (defun hpg/display-graph ()
   "Open buffer displaying hyperdrive peer graph."
   (with-current-buffer (get-buffer-create hpg/buffer-name)
-    (h/fons-view (hpg/filter hpg/merge-relations)
+    (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
                  :focus-ids (mapcar #'h/public-key hpg/only-paths-to)
                  :label-fun #'hpg/label-fun)
@@ -382,7 +381,7 @@ Passed to `display-buffer', which see."
   "Add HYPERDRIVE to `hpg/only-paths-to' and reload.
 Only drives not in `hpg/only-paths-to' are offered for completion."
   :transient t
-  :inapt-if-not #'hpg/loaded-merge-relations
+  :inapt-if-not #'hpg/loaded-relations
   (interactive
    (list (h/read-hyperdrive :predicate
            (lambda (hyperdrive)
@@ -391,7 +390,7 @@ Only drives not in `hpg/only-paths-to' are offered for completion."
                  (maphash (lambda (id _)
                             (when (string= (h/public-key hyperdrive) id)
                               (throw 'break t)))
-                          hpg/merge-relations)))))))
+                          hpg/relations)))))))
   (push hyperdrive hpg/only-paths-to)
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
@@ -399,7 +398,7 @@ Only drives not in `hpg/only-paths-to' are offered for completion."
 (transient-define-suffix hpg/only-paths-to-delete (hyperdrive delete-all-p)
   "Delete HYPERDRIVE from `hpg/only-paths-to' and reload."
   :transient t
-  :inapt-if-not #'hpg/loaded-merge-relations
+  :inapt-if-not #'hpg/loaded-relations
   (interactive (list (or current-prefix-arg
                          ;; HACK: Skip prompt if `current-prefix-arg'.
                          (if (length= hpg/only-paths-to 1)
@@ -415,41 +414,41 @@ Only drives not in `hpg/only-paths-to' are offered for completion."
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
 
-(cl-defun hpg/merge-relations (root topic &key finally sources-max-hops blockers-max-hops)
-  "Load merge-relations from ROOT about TOPIC and call FINALLY.
+(cl-defun hpg/relations (root topic &key finally sources-max-hops blockers-max-hops)
+  "Load relations from ROOT about TOPIC and call FINALLY.
 FINALLY should be a function which accepts a single argument, a
-\\+`merge-relations' hash table, as in `fons-merge-relations'.
+hash table of `fons-relation' structs keyed by public key.
 SOURCES-MAX-HOPS and BLOCKERS-MAX-HOPS are the maximum number of
 hops to traverse for sources and blockers, respectively."
   (fons-relations
-   root :hops-fn #'hpg/hops-fn :topic "_blockers" :max-hops blockers-max-hops
+   root :hops-fn #'hpg/hops-fn :topic "_blockers" :type 'blockers
+   :max-hops blockers-max-hops
    :finally
-   (lambda (blockers)
+   (lambda (relations)
      (fons-blocked
-      blockers :blocked-fn #'hpg/blocked-fn :finally
-      (lambda (blocked)
+      relations :blocked-fn #'hpg/blocked-fn :finally
+      (lambda (relations)
         (fons-relations
-         root :hops-fn #'hpg/hops-fn :topic topic
-         :blocked blocked :max-hops sources-max-hops :finally
-         (lambda (sources)
-           (funcall finally
-                    (fons-merge-relations sources blockers blocked)))))))))
+         root :relations relations :hops-fn #'hpg/hops-fn :topic topic
+         :type 'sources :max-hops sources-max-hops :finally
+         (lambda (relations)
+           (funcall finally relations))))))))
 
-(defun hpg/filter (merge-relations)
-  "Return filtered MERGE-RELATIONS."
+(defun hpg/filter (relations)
+  "Return filtered RELATIONS."
   ;; TODO: Make filters customizable
   (unless (and hpg/show-sources-p hpg/show-blockers-p hpg/show-blocked-p hpg/show-all-blocked-p)
-    (cl-callf fons-filter-to-types merge-relations
+    (cl-callf fons-filter-to-types relations
       :sourcesp hpg/show-sources-p
       :blockersp hpg/show-blockers-p
       :blockedp hpg/show-blocked-p
       :all-blocked-p (and hpg/show-blocked-p hpg/show-all-blocked-p)))
   (when hpg/shortest-path-p
-    (cl-callf fons-filter-shortest-path merge-relations))
+    (cl-callf fons-filter-shortest-path relations))
   ;; Apply `hpg/only-paths-to' last
   (cl-callf2 fons-filter-only-paths-to
-      (mapcar #'h/public-key hpg/only-paths-to) merge-relations)
-  merge-relations)
+      (mapcar #'h/public-key hpg/only-paths-to) relations)
+  relations)
 
 (defun hpg/refresh-menu ()
   "Refresh `hyperdrive-peer-graph-menu' if it's open."
@@ -485,10 +484,10 @@ argument \\[universal-argument], always prompt."
                                          (he/hyperdrive h/current-entry))
                                     hpg/root-hyperdrive))))
 
-(defun hpg/loaded-merge-relations ()
-  "Return `hyperdrive-peer-graph-merge-relations' if loaded."
-  (and (not (processp hpg/merge-relations))
-       hpg/merge-relations))
+(defun hpg/loaded-relations ()
+  "Return `hyperdrive-peer-graph-relations' if loaded."
+  (and (not (processp hpg/relations))
+       hpg/relations))
 
 ;;; Footer:
 
