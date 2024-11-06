@@ -141,14 +141,6 @@ May be any string listed here:
   (setq-local mouse-wheel-tilt-scroll t))
 ;; FIXME: Prevent image from scrolling off the bottom of the screen.
 
-;;;; Commands
-
-(defun hyperdrive-fons-view-follow-link (event)
-  "Follow link at EVENT's position."
-  (interactive "e")
-  (let ((id (cadadr event)))
-    (message "You clicked on %s!" id)))
-
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view--window-dimensions (&optional (window (selected-window)))
