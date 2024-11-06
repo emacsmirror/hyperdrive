@@ -176,8 +176,7 @@ Passed to `display-buffer', which see."
 
 (defun hyperdrive-peer-graph (topic hyperdrive)
   "Show menu for HYPERDRIVE peer graph."
-  (interactive (list (hpg/context-topic :force-prompt current-prefix-arg)
-                     (hpg/context-root-hyperdrive :force-prompt current-prefix-arg)))
+  (interactive (hpg/interactive-args))
   (if (and (equal topic hpg/topic)
            hpg/root-hyperdrive
            (h/equal-p hyperdrive hpg/root-hyperdrive)
@@ -186,6 +185,11 @@ Passed to `display-buffer', which see."
     (setf hpg/topic topic)
     (setf hpg/root-hyperdrive hyperdrive)
     (hpg/load)))
+
+(defun hpg/interactive-args ()
+  "Return list of interactive args for `hyperdrive-peer-graph'."
+  (list (hpg/context-topic :force-prompt current-prefix-arg)
+        (hpg/context-root-hyperdrive :force-prompt current-prefix-arg)))
 
 ;;;###autoload (autoload 'hyperdrive-peer-graph-menu "hyperdrive-peer-graph" nil t)
 (transient-define-prefix hyperdrive-peer-graph-menu (topic hyperdrive)
@@ -215,8 +219,7 @@ Passed to `display-buffer', which see."
   ["Options"
    ("S" hpg/set-shortest-path-p)]
 
-  (interactive (list (hpg/context-topic :force-prompt current-prefix-arg)
-                     (hpg/context-root-hyperdrive :force-prompt current-prefix-arg)))
+  (interactive (hpg/interactive-args))
   (h/peer-graph topic hyperdrive)
   (transient-setup 'hyperdrive-peer-graph-menu nil nil :scope hyperdrive))
 
