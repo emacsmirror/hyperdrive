@@ -141,10 +141,9 @@ relations hash table as its sole argument."
 
 (cl-defun fons-filter-only-paths-to (ids relations)
   "Return RELATIONS with only paths to IDS.
-When used in conjunction with `fons-filter-shortest-path',
-`fons-filter-only-paths-to' must be applied second, and not vice
-versa, to ensure the exclusion of nodes which form a longer path
-to one of the IDS."
+`fons-filter-only-paths-to' must be applied after other filter
+functions to ensure the exclusion of nodes which form a longer
+path to one of the IDS."
   (unless ids (cl-return-from fons-filter-only-paths-to relations))
   ;; TODO: Refactor with `cl-loop'.
   (let ((copy-relations (make-hash-table :test 'equal))
