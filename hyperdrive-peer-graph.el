@@ -481,7 +481,6 @@ Blank string defaults to `hyperdrive-peer-graph-default-topic'."
   "Return `hyperdrive-peer-graph-root-hyperdrive' or prompt for drive.
 With FORCE-PROMPT, or interactively with universal prefix
 argument \\[universal-argument], always prompt."
-  (interactive (list current-prefix-arg))
   (cl-labels ((read-hyperdrive ()
                 (h/read-hyperdrive :default (or (and h/current-entry
                                                      (he/hyperdrive h/current-entry))
