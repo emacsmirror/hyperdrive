@@ -25,7 +25,7 @@
 ;;; Code:
 
 (require 'hyperdrive-fons-view)
-(require 'hyperdrive-vars)
+(require 'hyperdrive-lib)
 
 ;;;; Variables:
 
