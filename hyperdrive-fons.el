@@ -98,8 +98,7 @@ list of BLOCKERs, as in `fons-blocked'."
          (ensure-relation (to)
            "Add relation from ROOT to TO if none exists, then return it."
            (or (gethash to relations)
-               (puthash to (make-fons-relation :from root :to to)
-                        relations))))
+               (puthash to (make-fons-relation :from root :to to) relations))))
       (add-relations-from root))))
 
 (defun fons-filter-shortest-path (merge-relations)
