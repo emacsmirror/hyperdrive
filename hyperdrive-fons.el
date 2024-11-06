@@ -113,6 +113,37 @@ relations hash table as its sole argument."
                (puthash to (make-fons-relation :from root :to to) relations))))
       (add-relations-from root))))
 
+(cl-defun fons-blocked (relations &key blocked-fn finally)
+  "Add blocked to RELATIONS hash table and call FINALLY.
+
+Add blocked for each relation in RELATIONS which has non-nil
+\\+`blocker-paths'.  BLOCKED-FN is a function that accepts two
+arguments, BLOCKER and a function which should be called
+asynchronously with a list of blocked IDs by BLOCKER.
+
+FINALLY is a callback function which will be called with the
+updated RELATIONS hash table as its sole argument."
+  (let ((pending (hash-table-count relations)))
+    (maphash (lambda (id relation)
+               (if (fons-relation-blocker-paths relation)
+                   (funcall
+                    blocked-fn id
+                    (lambda (&optional blocks)
+                      (dolist (block blocks)
+                        (let ((path (make-fons-path
+                                     :hops (list (make-fons-hop
+                                                  :from id :to block))))
+                              (blocked-relation
+                               (or (gethash block relations)
+                                   (setf (gethash block relations)
+                                         (make-fons-relation
+                                          :from id :to block)))))
+                          (push path (fons-relation-blocked-paths blocked-relation))))
+                      (when (zerop (cl-decf pending))
+                        (funcall finally relations))))
+                 (cl-decf pending)))
+             relations)))
+
 (defun fons-filter-shortest-path (relations)
   "Return RELATIONS with only shortest paths."
   (let ((copy-relations (copy-hash-table relations)))
@@ -218,37 +249,6 @@ When BLOCKEDP and ALL-BLOCKED-P, include all \\+`blocked'."
            (setf (gethash id copy-relations) copy-relation))))
      relations)
     copy-relations))
-
-(cl-defun fons-blocked (relations &key blocked-fn finally)
-  "Add blocked to RELATIONS hash table and call FINALLY.
-
-Add blocked for each relation in RELATIONS which has non-nil
-\\+`blocker-paths'.  BLOCKED-FN is a function that accepts two
-arguments, BLOCKER and a function which should be called
-asynchronously with a list of blocked IDs by BLOCKER.
-
-FINALLY is a callback function which will be called with the
-updated RELATIONS hash table as its sole argument."
-  (let ((pending (hash-table-count relations)))
-    (maphash (lambda (id relation)
-               (if (fons-relation-blocker-paths relation)
-                   (funcall
-                    blocked-fn id
-                    (lambda (&optional blocks)
-                      (dolist (block blocks)
-                        (let ((path (make-fons-path
-                                     :hops (list (make-fons-hop
-                                                  :from id :to block))))
-                              (blocked-relation
-                               (or (gethash block relations)
-                                   (setf (gethash block relations)
-                                         (make-fons-relation
-                                          :from id :to block)))))
-                          (push path (fons-relation-blocked-paths blocked-relation))))
-                      (when (zerop (cl-decf pending))
-                        (funcall finally relations))))
-                 (cl-decf pending)))
-             relations)))
 
 (defun fons-relations-hops (relations type)
   "Return hops of TYPE for RELATIONS.
