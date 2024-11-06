@@ -218,7 +218,6 @@ Passed to `display-buffer', which see."
     ("x a" hpg/set-show-all-blocked-p)]]
   ["Options"
    ("S" hpg/set-shortest-path-p)]
-
   (interactive (hpg/interactive-args))
   (h/peer-graph topic hyperdrive)
   (transient-setup 'hyperdrive-peer-graph-menu nil nil :scope hyperdrive))
