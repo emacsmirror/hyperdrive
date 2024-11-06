@@ -127,6 +127,8 @@ Reload data and redisplay graph."
      (setf hpg/root-hyperdrive (h/url-hyperdrive public-key))
      (hpg/load))))
 
+;; TODO: Add menu bar interface.
+
 (defun hpg/menu-bar (event)
   "Pop up `hyperdrive-peer-graph' menu bar."
   (interactive "e")
