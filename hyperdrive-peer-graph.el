@@ -201,7 +201,7 @@ Passed to `display-buffer', which see."
   ["Only paths to"
    (:info #'hpg/format-only-paths-to :format "%d")
    ("o a" "Add" hpg/only-paths-to-add)
-   ("o d" "Delete" hpg/only-paths-to-delete)]
+   ("o r" "Remove" hpg/only-paths-to-remove)]
   [["Sources"
     ("s s" hpg/set-show-sources-p)
     ("s m" hpg/set-sources-max-hops)]
@@ -397,8 +397,8 @@ Only drives not in `hpg/only-paths-to' are offered for completion."
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
 
-(transient-define-suffix hpg/only-paths-to-delete (hyperdrive delete-all-p)
-  "Delete HYPERDRIVE from `hpg/only-paths-to' and reload."
+(transient-define-suffix hpg/only-paths-to-remove (hyperdrive allp)
+  "Remove HYPERDRIVE from `hpg/only-paths-to' and reload."
   :transient t
   :inapt-if-not #'hpg/loaded-relations
   (interactive (list (or current-prefix-arg
@@ -411,7 +411,7 @@ Only drives not in `hpg/only-paths-to' are offered for completion."
                                           :test #'h/equal-p)))))
                      current-prefix-arg))
   (setf hpg/only-paths-to
-        (and (not delete-all-p)
+        (and (not allp)
              (cl-delete hyperdrive hpg/only-paths-to :test #'h/equal-p)))
   (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
     (hpg/display-graph)))
