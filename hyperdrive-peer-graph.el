@@ -385,8 +385,7 @@ Only drives not in `hpg/only-paths-to' are offered for completion."
   (interactive
    (list (h/read-hyperdrive :predicate
            (lambda (hyperdrive)
-             (unless (cl-member hyperdrive hpg/only-paths-to
-                                :test #'h/equal-p)
+             (unless (cl-member hyperdrive hpg/only-paths-to :test #'h/equal-p)
                (catch 'break
                  (maphash (lambda (id _)
                             (when (string= (h/public-key hyperdrive) id)
