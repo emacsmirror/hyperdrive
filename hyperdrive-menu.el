@@ -440,9 +440,19 @@
   (interactive)
   (h/describe-hyperdrive (h/menu--scope)))
 
+(defvar h/peer-graph-root-hyperdrive)
+(defvar h/peer-graph-topic)
+(defvar h/peer-graph-sources-max-hops)
+(defvar h/peer-graph-blockers-max-hops)
 (transient-define-suffix h/menu-peer-graph ()
   :description "Peer graph"
   (interactive)
+  (require 'hyperdrive-peer-graph)
+  (unless (eq h/peer-graph-root-hyperdrive (h/menu--scope))
+    (setf h/peer-graph-root-hyperdrive (h/menu--scope))
+    (setf h/peer-graph-topic (h/peer-graph-read-topic))
+    (setf h/peer-graph-sources-max-hops (h/peer-graph-read-max-hops 'sources))
+    (setf h/peer-graph-blockers-max-hops (h/peer-graph-read-max-hops 'blockers)))
   (call-interactively #'h/peer-graph-menu))
 
 (transient-define-suffix h/menu-hyperdrive-copy-url ()
