@@ -494,6 +494,27 @@ argument \\[universal-argument], always prompt."
                                          (he/hyperdrive h/current-entry))
                                     hpg/root-hyperdrive))))
 
+(defvar hpg/max-hops-history nil
+  "Minibuffer history of `hyperdrive-peer-graph-read-max-hops'.")
+
+(defun hpg/read-max-hops (type)
+  "Read max hops for \\+`sources' or \\+`blockers' TYPE."
+  (let ((default (pcase type
+                   ('sources hpg/sources-max-hops)
+                   ('blockers hpg/blockers-max-hops))))
+    (read-number (format "Max hops for %s" type) default
+                 hpg/max-hops-history)))
+
+(defun hpg/context-max-hops (type &key force-prompt)
+  "Return `hyperdrive-peer-graph-sources-max-hops' or prompt.
+With FORCE-PROMPT, or interactively with universal prefix
+argument \\[universal-argument], always prompt."
+  (if force-prompt
+      (hpg/read-max-hops type)
+    (pcase type
+      ('sources hpg/sources-max-hops)
+      ('blockers hpg/blockers-max-hops))))
+
 (defun hpg/loaded-relations ()
   "Return `hyperdrive-peer-graph-relations' if loaded."
   (and (not (processp hpg/relations))
