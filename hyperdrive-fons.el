@@ -1,5 +1,10 @@
 ;;; hyperdrive-fons.el ---      -*- lexical-binding: t; -*-
 
+;;; Commentary:
+
+;; This library implements functions for working with sources, blockers, and
+;; blocked.  This data model is useful for exploring a network of sources of
+;; information, such as in a peer-to-peer application like `hyperdrive'.
 
 ;;; Code:
 
