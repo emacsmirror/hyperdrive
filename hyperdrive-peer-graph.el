@@ -222,7 +222,7 @@ argument \\[universal-argument], always prompt."
                            :force-prompt current-prefix-arg))
          (topic (hpg/context-topic :force-prompt current-prefix-arg))
          (topic-or-root-changed
-          (not (and (eq topic hpg/topic)
+          (not (and (equal topic hpg/topic)
                     (eq root-hyperdrive hpg/root-hyperdrive))))
          (sources-max-hops (hpg/context-max-hops
                             'sources :force-prompt (or current-prefix-arg
