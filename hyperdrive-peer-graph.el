@@ -181,7 +181,8 @@ Reload data and redisplay graph."
 Passed to `display-buffer', which see."
   :type display-buffer--action-custom-type)
 
-(defun hyperdrive-peer-graph (topic hyperdrive)
+(defun hyperdrive-peer-graph
+    (topic hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
   (if (and (equal topic hpg/topic)
@@ -191,15 +192,30 @@ Passed to `display-buffer', which see."
       (hpg/display-graph)
     (setf hpg/topic topic)
     (setf hpg/root-hyperdrive hyperdrive)
+    (setf hpg/sources-max-hops sources-max-hops)
+    (setf hpg/blockers-max-hops blockers-max-hops)
     (hpg/load)))
 
 (defun hpg/interactive-args ()
   "Return list of interactive args for `hyperdrive-peer-graph'."
-  (list (hpg/context-topic :force-prompt current-prefix-arg)
-        (hpg/context-root-hyperdrive :force-prompt current-prefix-arg)))
+  (let* ((root-hyperdrive (hpg/context-root-hyperdrive
+                           :force-prompt current-prefix-arg))
+         (topic (hpg/context-topic :force-prompt current-prefix-arg))
+         (topic-or-root-changed
+          (not (and (eq topic hpg/topic)
+                    (eq root-hyperdrive hpg/root-hyperdrive))))
+         (sources-max-hops (hpg/context-max-hops
+                            'sources :force-prompt (or current-prefix-arg
+                                                       topic-or-root-changed)))
+         (blockers-max-hops (hpg/context-max-hops
+                             'blockers
+                             :force-prompt (or current-prefix-arg
+                                               topic-or-root-changed))))
+    (list topic root-hyperdrive sources-max-hops blockers-max-hops)))
 
 ;;;###autoload (autoload 'hyperdrive-peer-graph-menu "hyperdrive-peer-graph" nil t)
-(transient-define-prefix hyperdrive-peer-graph-menu (topic hyperdrive)
+(transient-define-prefix hyperdrive-peer-graph-menu
+  (topic hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   ;; TODO: Update info manual link
   :info-manual "(hyperdrive)"
@@ -226,7 +242,7 @@ Passed to `display-buffer', which see."
   ["Options"
    ("S" hpg/set-shortest-path-p)]
   (interactive (hpg/interactive-args))
-  (h/peer-graph topic hyperdrive)
+  (h/peer-graph topic hyperdrive sources-max-hops blockers-max-hops)
   (transient-setup 'hyperdrive-peer-graph-menu nil nil :scope hyperdrive))
 
 (defun hpg/load ()
