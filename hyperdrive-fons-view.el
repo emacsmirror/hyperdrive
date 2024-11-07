@@ -159,11 +159,11 @@ WIDTH and HEIGHT are in inches."
       (list width-in height-in (/ (+ width-res height-res) 2)))))
 
 (cl-defun hyperdrive-fons-view
-    (relations root &key (layout hyperdrive-fons-view-layout) focus-ids label-fun)
+    (relations root &key topics (layout hyperdrive-fons-view-layout) focus-ids label-fun)
   "View RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
-    relations :root-name root :focus-ids focus-ids
+    relations :root-name root :topics topics :focus-ids focus-ids
     :layout layout :label-fun label-fun)))
 
 (defun hyperdrive-fons-view--graphviz (type)
@@ -207,7 +207,7 @@ graphviz string, and replaces it with the rendered output."
             (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
 (cl-defun hyperdrive-fons-view--format-graph
-    (relations &key root-name focus-ids layout (label-fun #'identity))
+    (relations &key root-name topics focus-ids layout (label-fun #'identity))
   "Return a graphviz-string string for RELATIONS."
   (let ((sources-node-color (hyperdrive-fons-view-blend-with-background
                              hyperdrive-fons-view-sources-color 0.25))
@@ -272,8 +272,10 @@ graphviz string, and replaces it with the rendered output."
                        "margin" "0"
                        "ratio" "fill"
                        "mindist" "0")
-          (dolist (hop (fons-relations-hops relations 'sources))
-            (insert (format-hop hop sources-edge-color)))
+          (dolist (topic topics)
+            ;; TODO: Group nodes and edges by topic
+            (dolist (hop (fons-relations-hops relations 'sources topic))
+              (insert (format-hop hop sources-edge-color))))
           (dolist (hop (fons-relations-hops relations 'blockers))
             (insert (format-hop hop blockers-edge-color)))
           (when (catch 'blocker-paths-exist-p

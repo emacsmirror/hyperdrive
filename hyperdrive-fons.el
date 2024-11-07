@@ -23,7 +23,11 @@
 
 (cl-defstruct fons-hop from to)
 (cl-defstruct fons-path hops)
-(cl-defstruct fons-relation from to source-paths blocker-paths blocked-paths)
+(cl-defstruct fons-relation from to
+              ;; TODO: Rename to source-topics
+              (source-paths nil :documentation "Alist mapping topics to lists of identifiers.")
+              (blocker-paths nil :documentation "List of identifiers.")
+              (blocked-paths nil :documentation "List of identifiers."))
 
 ;;;; Variables
 
@@ -33,20 +37,20 @@
 
 ;;;; Functions
 
-(defun fons-relation-paths-of-type (type relation)
+(defun fons-relation-paths-of-type (type relation &optional topic)
   "Return paths of TYPE for RELATION."
   (pcase type
-    ('sources (fons-relation-source-paths relation))
+    ('sources (map-elt (fons-relation-source-paths relation) topic))
     ('blockers (fons-relation-blocker-paths relation))
     ('blocked (fons-relation-blocked-paths relation))))
 
-(gv-define-setter fons-relation-paths-of-type (paths type relation)
+(gv-define-setter fons-relation-paths-of-type (paths type relation &optional topic)
   `(pcase ,type
-     ('sources (setf (fons-relation-source-paths ,relation) ,paths))
+     ('sources (setf (map-elt (fons-relation-source-paths ,relation) ,topic) ,paths))
      ('blockers (setf (fons-relation-blocker-paths ,relation) ,paths))
      ('blocked (setf (fons-relation-blocked-paths ,relation) ,paths))))
 
-(cl-defun fons-relations (root &key relations hops-fn type finally (max-hops 3))
+(cl-defun fons-relations (root &key relations hops-fn type topic finally (max-hops 3))
   "Calculate hash table of relations and call FINALLY.
 
 Table is keyed by `fons-relation-to' and its values are
@@ -60,8 +64,9 @@ HOPS-FN is the function that accepts two arguments, FROM and a
 function which should be called asynchronously with a list of TOs
 from FROM.  Recurses up to MAX-HOPS times.
 
-With TYPE \\+`sources', add paths to `fons-relation-source-paths'.
-With TYPE \\+`blockers', add paths to `fons-relation-blocker-paths'.
+With TYPE \\+`sources', add paths to TOPIC within
+`fons-relation-source-paths'.  With TYPE \\+`blockers', add paths
+to `fons-relation-blocker-paths'.
 
 FINALLY is a callback function which will be called with the
 relations hash table as its sole argument."
@@ -86,7 +91,7 @@ relations hash table as its sole argument."
                             (and (not (equal root to))
                                  (ensure-relation to)))
                            (paths-to-to (extended-paths paths-to-from hop)))
-                  (cl-callf append (fons-relation-paths-of-type type to-relation)
+                  (cl-callf append (fons-relation-paths-of-type type to-relation topic)
                     paths-to-to)
                   (when (and (within-max-hops-p to-relation)
                              (not (fons-relation-blocked-paths
@@ -111,7 +116,7 @@ relations hash table as its sole argument."
          (within-max-hops-p (relation)
            (cl-some (lambda (path)
                       (length< (fons-path-hops path) max-hops))
-                    (fons-relation-paths-of-type type relation)))
+                    (fons-relation-paths-of-type type relation topic)))
          (ensure-relation (to)
            "Add relation from ROOT to TO if none exists, then return it."
            (or (gethash to relations)
@@ -157,16 +162,21 @@ updated RELATIONS hash table as its sole argument."
     (cl-labels
         ((map-relation (id relation)
            (thunk-let ((copy-relation (compat-call copy-tree relation t)))
-             (dolist (type '(sources blockers))
-               ;; Skip `blocked', since its paths are always one hop.
-               (when-let*
-                   ((paths (fons-relation-paths-of-type type relation))
-                    (shortest-paths (shortest-paths paths)))
+             ;; Skip `blocked', since its paths are always one hop.
+             (pcase-dolist (`(,topic . ,paths) (fons-relation-source-paths relation))
+               (when-let ((shortest-paths (shortest-paths paths)))
                  (unless (eq shortest-paths paths)
-                   (setf (fons-relation-paths-of-type type copy-relation)
+                   (setf (map-elt (fons-relation-source-paths copy-relation)
+                                  topic)
                          shortest-paths)
-                   (setf (gethash id copy-relations)
-                         copy-relation))))))
+                   (setf (gethash id copy-relations) copy-relation))))
+             (when-let*
+                 ((paths (fons-relation-blocker-paths relation))
+                  (shortest-paths (shortest-paths paths)))
+               (unless (eq shortest-paths paths)
+                 (setf (fons-relation-blocker-paths copy-relation)
+                       shortest-paths)
+                 (setf (gethash id copy-relations) copy-relation)))))
          (shortest-hops-length (paths)
            (cl-loop for path in paths
                     minimize (length (fons-path-hops path))))
@@ -190,16 +200,21 @@ path to one of the IDS."
                   (or (gethash id copy-relations)
                       (make-fons-relation :from (fons-relation-from relation)
                                           :to (fons-relation-to relation)))))
-      ;; For each ID which is a source, keep the source paths for all IDs which
-      ;; are part of a path to it.
+      ;; For each ID which is a source, for each topic in sources, keep the
+      ;; source paths for all IDs which are part of a path to it.
       (dolist (id ids)
-        (dolist (path (fons-relation-source-paths (gethash id relations)))
-          (pcase-dolist ((cl-struct fons-hop to) (fons-path-hops path))
-            (when-let* ((relation (gethash to relations))
-                        (source-paths (fons-relation-source-paths relation))
-                        (copy-relation (safe-copy-relation to relation)))
-              (setf (fons-relation-source-paths copy-relation) source-paths)
-              (setf (gethash to copy-relations) copy-relation)))))
+        (pcase-dolist (`(,topic . ,paths) (fons-relation-source-paths
+                                           (gethash id relations)))
+          (dolist (path paths)
+            (pcase-dolist ((cl-struct fons-hop to) (fons-path-hops path))
+              (when-let*
+                  ((relation (gethash to relations))
+                   (source-paths (map-elt (fons-relation-source-paths relation)
+                                          topic))
+                   (copy-relation (safe-copy-relation to relation)))
+                (setf (map-elt (fons-relation-source-paths copy-relation) topic)
+                      source-paths)
+                (setf (gethash to copy-relations) copy-relation))))))
       ;; For each ID which is blocked, add the blocked relation.  Also track the
       ;; `blocker-id's of the blockers which block ID.
       (dolist (id ids)
@@ -257,12 +272,12 @@ When BLOCKEDP and ALL-BLOCKED-P, include all \\+`blocked'."
      relations)
     copy-relations))
 
-(defun fons-relations-hops (relations type)
-  "Return hops of TYPE for RELATIONS.
+(defun fons-relations-hops (relations type &optional topic)
+  "Return hops of TYPE for RELATIONS optionally about TOPIC.
 RELATIONS may be a hash table of `fons-relations' structs."
   (let (hops)
     (cl-labels ((map-relation (_to relation)
-                  (mapc #'map-path (fons-relation-paths-of-type type relation)))
+                  (mapc #'map-path (fons-relation-paths-of-type type relation topic)))
                 (map-path (path)
                   (mapc #'map-hop (fons-path-hops path)))
                 (map-hop (hop)

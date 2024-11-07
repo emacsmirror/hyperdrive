@@ -139,12 +139,15 @@ Call THEN with a list of block IDs."
     (format "<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>"
             (h//format-preferred hyperdrive) (h//preferred-format hyperdrive))))
 
-(cl-defun hpg/relations (root topic &key finally sources-max-hops blockers-max-hops)
-  "Load relations from ROOT about TOPIC and call FINALLY.
-FINALLY should be a function which accepts a single argument, a
-hash table of `fons-relation' structs keyed by public key.
-SOURCES-MAX-HOPS and BLOCKERS-MAX-HOPS are the maximum number of
-hops to traverse for sources and blockers, respectively."
+(cl-defun hpg/relations (root topics &key finally sources-max-hops blockers-max-hops)
+  ;; TODO: Handle nil topics as all topics from ROOT.
+  "Load relations from ROOT about TOPICS and call FINALLY.
+If TOPICS is nil, get relations for all topics for which ROOT has
+hops.  FINALLY should be a function which accepts a single
+argument, a hash table of `fons-relation' structs keyed by public
+key.  SOURCES-MAX-HOPS and BLOCKERS-MAX-HOPS are the maximum
+number of hops to traverse for sources and blockers,
+respectively."
   (fons-relations root
     :hops-fn #'hpg/blockers-hops-fn :type 'blockers
     :max-hops blockers-max-hops :finally
@@ -152,11 +155,15 @@ hops to traverse for sources and blockers, respectively."
       (fons-blocked relations
         :hops-fn #'hpg/blocked-hops-fn :finally
         (lambda (relations)
-          (fons-relations root
-            :relations relations :type 'sources :max-hops sources-max-hops
-            :hops-fn (apply-partially #'hpg/sources-hops-fn topic) :finally
-            (lambda (relations)
-              (funcall finally relations))))))))
+          (let ((pending-topics 0))
+            (dolist (topic topics)
+              (cl-incf pending-topics)
+              (fons-relations root
+                :relations relations :type 'sources :topic topic :max-hops sources-max-hops
+                :hops-fn (apply-partially #'hpg/sources-hops-fn topic) :finally
+                (lambda (relations)
+                  (when (zerop (cl-decf pending-topics))
+                    (funcall finally relations)))))))))))
 
 (defun hpg/filter (relations)
   "Return filtered RELATIONS."
@@ -265,7 +272,8 @@ argument \\[universal-argument], always prompt."
   (setf hpg/relations
         (hpg/relations
          (h/public-key hpg/root-hyperdrive)
-         (or hpg/topic hpg/default-topic)
+         ;; TODO: Add CRM for multiple topics
+         (list (or hpg/topic hpg/default-topic))
          :sources-max-hops hpg/sources-max-hops
          :blockers-max-hops hpg/blockers-max-hops
          :finally
@@ -292,6 +300,8 @@ argument \\[universal-argument], always prompt."
   (with-current-buffer (get-buffer-create hpg/buffer-name)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
+                 ;; TODO: Add CRM for multiple topics
+                 :topics (list (or hpg/topic hpg/default-topic))
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
                  :label-fun #'hpg/label-fun)
     (hpg/mode)
