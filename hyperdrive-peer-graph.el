@@ -337,7 +337,7 @@ Reload data and redisplay graph."
     ((and (rx (group (= 52 alphanumeric))) public-key)
      (let ((hyperdrive (h/url-hyperdrive public-key)))
        (popup-menu
-        `("" ; Empty string appears necessary
+        `("Hyperdrive peer graph"
           ["Open hyperdrive"
            (lambda ()
              (interactive)
