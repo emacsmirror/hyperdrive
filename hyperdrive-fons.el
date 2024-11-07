@@ -195,6 +195,10 @@ path to one of the IDS."
   (unless ids (cl-return-from fons-filter-paths-only-to relations))
   ;; TODO: Refactor with `cl-loop'.
   (let ((copy-relations (make-hash-table :test 'equal))
+        ;; Remove IDS which aren't in RELATIONS anyway.
+        (relation-ids (cl-remove-if-not
+                       (lambda (id) (gethash id relations))
+                       ids))
         blocker-ids)
     (cl-labels ((safe-copy-relation (id relation)
                   (or (gethash id copy-relations)
@@ -202,7 +206,7 @@ path to one of the IDS."
                                           :to (fons-relation-to relation)))))
       ;; For each ID which is a source, for each topic in sources, keep the
       ;; source paths for all IDs which are part of a path to it.
-      (dolist (id ids)
+      (dolist (id relation-ids)
         (pcase-dolist (`(,topic . ,paths) (fons-relation-source-paths
                                            (gethash id relations)))
           (dolist (path paths)
@@ -217,7 +221,7 @@ path to one of the IDS."
                 (setf (gethash to copy-relations) copy-relation))))))
       ;; For each ID which is blocked, add the blocked relation.  Also track the
       ;; `blocker-id's of the blockers which block ID.
-      (dolist (id ids)
+      (dolist (id relation-ids)
         (when-let ((relation (gethash id relations))
                    (blocked-paths (fons-relation-blocked-paths relation))
                    (copy-relation (safe-copy-relation id relation)))
@@ -227,7 +231,7 @@ path to one of the IDS."
             (push (fons-hop-from (car (fons-path-hops path))) blocker-ids))))
       ;; For each ID which is a blocker and for each blocker which blocked an ID,
       ;; keep the blocker relation for all IDs which are part of a path to it.
-      (dolist (id (delete-dups (append ids blocker-ids)))
+      (dolist (id (delete-dups (append relation-ids blocker-ids)))
         (dolist (path (fons-relation-blocker-paths (gethash id relations)))
           (pcase-dolist ((cl-struct fons-hop to) (fons-path-hops path))
             (when-let* ((relation (gethash to relations))
