@@ -79,6 +79,7 @@ Passed to `display-buffer', which see."
 THEN will be called with the parsed JSON hash table as its sole
 argument.  If error, demote it and call THEN with nil argument."
   (declare (indent defun))
+  ;; TODO: Add else handler so that we can replace the loading screen.
   ;; TODO: Add a queue limit.
   ;; TODO: `hpg/data' may be called multiple times for the same hyperdrive in a
   ;; single call to `fons-relations'.  If performance becomes an issue, memoize.
