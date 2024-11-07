@@ -129,6 +129,7 @@ asynchronously with a list of blocked IDs by BLOCKER.
 
 FINALLY is a callback function which will be called with the
 updated RELATIONS hash table as its sole argument."
+  (declare (indent defun))
   (let ((pending (hash-table-count relations)))
     (maphash (lambda (id relation)
                (if (fons-relation-blocker-paths relation)
