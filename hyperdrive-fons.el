@@ -135,25 +135,25 @@ FINALLY is a callback function which will be called with the
 updated RELATIONS hash table as its sole argument."
   (declare (indent defun))
   (let ((pending-relations (hash-table-count relations)))
-    (maphash (lambda (id relation)
-               (if (fons-relation-blocker-paths relation)
-                   (funcall
-                    hops-fn id
-                    (lambda (&optional blocks)
-                      (dolist (block blocks)
-                        (let ((path (make-fons-path
-                                     :hops (list (make-fons-hop
-                                                  :from id :to block))))
-                              (blocked-relation
-                               (or (gethash block relations)
-                                   (setf (gethash block relations)
-                                         (make-fons-relation
-                                          :from id :to block)))))
-                          (push path (fons-relation-blocked-paths blocked-relation))))
-                      (when (zerop (cl-decf pending-relations))
-                        (funcall finally relations))))
-                 (cl-decf pending-relations)))
-             relations)))
+    (cl-labels ((map-relation (id relation)
+                  (if (fons-relation-blocker-paths relation)
+                      (funcall
+                       hops-fn id
+                       (lambda (&optional blocks)
+                         (dolist (block blocks)
+                           (let ((path (make-fons-path
+                                        :hops (list (make-fons-hop
+                                                     :from id :to block))))
+                                 (blocked-relation
+                                  (or (gethash block relations)
+                                      (setf (gethash block relations)
+                                            (make-fons-relation
+                                             :from id :to block)))))
+                             (push path (fons-relation-blocked-paths blocked-relation))))
+                         (when (zerop (cl-decf pending-relations))
+                           (funcall finally relations))))
+                    (cl-decf pending-relations))))
+      (maphash #'map-relation relations))))
 
 (defun fons-filter-shortest-path (relations)
   "Return RELATIONS with only shortest paths."
