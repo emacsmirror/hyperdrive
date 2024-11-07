@@ -123,7 +123,7 @@ relations hash table as its sole argument."
                (puthash to (make-fons-relation :from root :to to) relations))))
       (add-relations-from root))))
 
-(cl-defun fons-blocked (relations &key hops-fn finally)
+(cl-defun fons-blocked (root relations &key hops-fn finally)
   "Add blocked to RELATIONS hash table and call FINALLY.
 
 Add blocked for each relation in RELATIONS which has non-nil
@@ -134,25 +134,28 @@ asynchronously with a list of blocked IDs by BLOCKER.
 FINALLY is a callback function which will be called with the
 updated RELATIONS hash table as its sole argument."
   (declare (indent defun))
-  (let ((pending-relations (hash-table-count relations)))
+  (let ((pending-relations (1+ (hash-table-count relations))))
     (cl-labels ((map-relation (id relation)
                   (if (fons-relation-blocker-paths relation)
-                      (funcall
-                       hops-fn id
-                       (lambda (&optional blocks)
-                         (dolist (block blocks)
-                           (let ((path (make-fons-path
-                                        :hops (list (make-fons-hop
-                                                     :from id :to block))))
-                                 (blocked-relation
-                                  (or (gethash block relations)
-                                      (setf (gethash block relations)
-                                            (make-fons-relation
-                                             :from id :to block)))))
-                             (push path (fons-relation-blocked-paths blocked-relation))))
-                         (when (zerop (cl-decf pending-relations))
-                           (funcall finally relations))))
-                    (cl-decf pending-relations))))
+                      (add-blocked-for id)
+                    (cl-decf pending-relations)))
+                (add-blocked-for (id)
+                  (funcall
+                   hops-fn id
+                   (lambda (&optional blocks)
+                     (dolist (block blocks)
+                       (let ((path (make-fons-path
+                                    :hops (list (make-fons-hop
+                                                 :from id :to block))))
+                             (blocked-relation
+                              (or (gethash block relations)
+                                  (setf (gethash block relations)
+                                        (make-fons-relation
+                                         :from id :to block)))))
+                         (push path (fons-relation-blocked-paths blocked-relation))))
+                     (when (zerop (cl-decf pending-relations))
+                       (funcall finally relations))))))
+      (add-blocked-for root)
       (maphash #'map-relation relations))))
 
 (defun fons-filter-shortest-path (relations)

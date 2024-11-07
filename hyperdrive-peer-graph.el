@@ -152,7 +152,7 @@ respectively."
     :hops-fn #'hpg/blockers-hops-fn :type 'blockers
     :max-hops blockers-max-hops :finally
     (lambda (relations)
-      (fons-blocked relations
+      (fons-blocked root relations
         :hops-fn #'hpg/blocked-hops-fn :finally
         (lambda (relations)
           (let ((pending-topics 0))
