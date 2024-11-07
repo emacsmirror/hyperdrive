@@ -76,8 +76,8 @@ STATUS is one of:
 (h/mirror-define-key status ()
   (pcase-let (((cl-struct hyperdrive-mirror-item (status item-status)) item))
     (pcase-exhaustive item-status
-      (`new "New locally")
-      (`newer "Newer locally")
+      ('new "New locally")
+      ('newer "Newer locally")
       ('older "Older locally")
       ('same "Same"))))
 
