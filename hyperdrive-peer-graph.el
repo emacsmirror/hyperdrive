@@ -110,19 +110,20 @@ argument.  If error, demote it and call THEN with nil argument."
   "Asynchronously get source hops from FROM about TOPIC.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
-    :then (lambda (data) (funcall then (map-elt data topic)))))
+    :then (pcase-lambda ((map ("sources" sources)))
+            (funcall then (map-elt sources topic)))))
 
 (defun hpg/blockers-hops-fn (from then)
   "Asynchronously get blocker hops from FROM.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
-    :then (lambda (data) (funcall then (map-elt data "_blockers")))))
+    :then (lambda (data) (funcall then (map-elt data "blockers")))))
 
 (cl-defun hpg/blocked-hops-fn (blocker then)
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
   (hpg/data (h/create :public-key blocker)
-    :then (lambda (data) (funcall then (map-elt data "_blocked")))))
+    :then (lambda (data) (funcall then (map-elt data "blocked")))))
 
 (defun hpg/label-fun (public-key)
   "Return display string for PUBLIC-KEY."

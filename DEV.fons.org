@@ -246,22 +246,24 @@ We could implement the Appleseed algo in Elisp:
                 // NOTE: Uppercase letters represent placeholder values.
                 {
                   "version": "0.1",
-                  "_blocked": [
+                  "blocked": [
                     "PUBLIC_KEY1",
                     "PUBLIC_KEY2"
                   ],
-                  "_blockers": [
+                  "blockers": [
                     "PUBLIC_KEY1",
                     "PUBLIC_KEY2"
                   ],
-                  "_default": [
-                    "PUBLIC_KEY1",
-                    "PUBLIC_KEY2"
-                  ],
-                  "FOOSBALL": [
-                    "PUBLIC_KEY1",
-                    "PUBLIC_KEY2"
-                  ]
+                  "sources": {
+                    "_default": [
+                      "PUBLIC_KEY1",
+                      "PUBLIC_KEY2"
+                    ],
+                    "FOOSBALL": [
+                      "PUBLIC_KEY1",
+                      "PUBLIC_KEY2"
+                    ]
+                  }
                 }
               #+end_src
 
