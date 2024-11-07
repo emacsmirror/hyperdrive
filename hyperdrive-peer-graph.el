@@ -78,6 +78,7 @@ Passed to `display-buffer', which see."
   "Load peer graph data for HYPERDRIVE on TOPIC then call THEN.
 THEN will be called with the parsed JSON hash table as its sole
 argument.  If error, demote it and call THEN with nil argument."
+  (declare (indent defun))
   ;; TODO: Add a queue limit.
   ;; TODO: `hpg/data' may be called multiple times for the same hyperdrive in a
   ;; single call to `fons-relations'.  If performance becomes an issue, memoize.
@@ -109,13 +110,13 @@ argument.  If error, demote it and call THEN with nil argument."
   "Asynchronously get hops from FROM about TOPIC.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
-            :then (lambda (data) (funcall then (map-elt data topic)))))
+    :then (lambda (data) (funcall then (map-elt data topic)))))
 
 (cl-defun hpg/blocked-fn (blocker then)
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
   (hpg/data (h/create :public-key blocker)
-            :then (lambda (data) (funcall then (map-elt data "_blocked")))))
+    :then (lambda (data) (funcall then (map-elt data "_blocked")))))
 
 (defun hpg/label-fun (public-key)
   "Return display string for PUBLIC-KEY."
