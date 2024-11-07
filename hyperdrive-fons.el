@@ -161,18 +161,19 @@ updated RELATIONS hash table as its sole argument."
                ;; Skip `blocked', since its paths are always one hop.
                (when-let*
                    ((paths (fons-relation-paths-of-type type relation))
-                    (shortest-hops-length
-                     (cl-loop for path in paths
-                              minimize (length (fons-path-hops path))))
-                    (new-paths
-                     (cl-remove-if
-                      (apply-partially #'< shortest-hops-length) paths
-                      :key (lambda (path) (length (fons-path-hops path))))))
-                 (unless (eq new-paths paths)
+                    (shortest-paths (shortest-paths paths)))
+                 (unless (eq shortest-paths paths)
                    (setf (fons-relation-paths-of-type type copy-relation)
-                         new-paths)
+                         shortest-paths)
                    (setf (gethash id copy-relations)
-                         copy-relation)))))))
+                         copy-relation))))))
+         (shortest-hops-length (paths)
+           (cl-loop for path in paths
+                    minimize (length (fons-path-hops path))))
+         (shortest-paths (paths)
+           (cl-remove-if
+            (apply-partially #'< (shortest-hops-length paths)) paths
+            :key (lambda (path) (length (fons-path-hops path))))))
       (maphash #'map-relation copy-relations)
       copy-relations)))
 
