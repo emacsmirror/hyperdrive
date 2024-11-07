@@ -69,13 +69,13 @@ relations hash table as its sole argument."
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS must be a positive integer"))
   (let ((relations (or relations (make-hash-table :test 'equal)))
-        (pending 0))
+        (pending-relations 0))
     (when-let* ((root-relation (gethash root relations))
                 ((fons-relation-blocked-paths root-relation)))
       (error "ROOT must not be blocked"))
     (cl-labels
         ((add-relations-from (from &optional paths-to-from)
-           (cl-incf pending)
+           (cl-incf pending-relations)
            (funcall
             hops-fn from
             (lambda (tos)
@@ -93,7 +93,7 @@ relations hash table as its sole argument."
                                    (gethash to relations))))
                     (add-relations-from (fons-relation-to to-relation)
                                         paths-to-to))))
-              (when (zerop (cl-decf pending)) (funcall finally relations)))))
+              (when (zerop (cl-decf pending-relations)) (funcall finally relations)))))
          (extended-paths (paths hop)
            "Return list of PATHS extended by HOP without circular hops."
            (if paths
@@ -129,7 +129,7 @@ asynchronously with a list of blocked IDs by BLOCKER.
 FINALLY is a callback function which will be called with the
 updated RELATIONS hash table as its sole argument."
   (declare (indent defun))
-  (let ((pending (hash-table-count relations)))
+  (let ((pending-relations (hash-table-count relations)))
     (maphash (lambda (id relation)
                (if (fons-relation-blocker-paths relation)
                    (funcall
@@ -145,9 +145,9 @@ updated RELATIONS hash table as its sole argument."
                                          (make-fons-relation
                                           :from id :to block)))))
                           (push path (fons-relation-blocked-paths blocked-relation))))
-                      (when (zerop (cl-decf pending))
+                      (when (zerop (cl-decf pending-relations))
                         (funcall finally relations))))
-                 (cl-decf pending)))
+                 (cl-decf pending-relations)))
              relations)))
 
 (defun fons-filter-shortest-path (relations)

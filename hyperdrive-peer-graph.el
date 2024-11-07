@@ -85,7 +85,7 @@ argument.  If error, demote it and call THEN with nil argument."
   ;; single call to `fons-relations'.  If performance becomes an issue, memoize.
   (let ((entry (he//create :hyperdrive hyperdrive :path hpg/data-filename)))
     (he/api 'get entry :noquery t
-      ;; Despite error, always call THEN so `pending' gets decremented.
+      ;; Despite error, always call THEN so `pending-relations' gets decremented.
       :then (lambda (response)
               (condition-case err
                   ;; TODO: When plz adds :as 'response-with-buffer, use that.
