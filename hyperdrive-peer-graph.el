@@ -106,13 +106,19 @@ argument.  If error, demote it and call THEN with nil argument."
                  (h/message "Error getting peer graph data: %s" (he/url entry) plz-error)
                  (funcall then nil)))))))
 
-(defun hpg/hops-fn (from topic then)
-  "Asynchronously get hops from FROM about TOPIC.
+(defun hpg/sources-hops-fn (topic from then)
+  "Asynchronously get source hops from FROM about TOPIC.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
     :then (lambda (data) (funcall then (map-elt data topic)))))
 
-(cl-defun hpg/blocked-fn (blocker then)
+(defun hpg/blockers-hops-fn (from then)
+  "Asynchronously get blocker hops from FROM.
+Call THEN with a list of TOs."
+  (hpg/data (h/create :public-key from)
+    :then (lambda (data) (funcall then (map-elt data "_blockers")))))
+
+(cl-defun hpg/blocked-hops-fn (blocker then)
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
   (hpg/data (h/create :public-key blocker)
@@ -137,19 +143,18 @@ FINALLY should be a function which accepts a single argument, a
 hash table of `fons-relation' structs keyed by public key.
 SOURCES-MAX-HOPS and BLOCKERS-MAX-HOPS are the maximum number of
 hops to traverse for sources and blockers, respectively."
-  (fons-relations
-   root :hops-fn #'hpg/hops-fn :topic "_blockers" :type 'blockers
-   :max-hops blockers-max-hops
-   :finally
-   (lambda (relations)
-     (fons-blocked
-      relations :blocked-fn #'hpg/blocked-fn :finally
-      (lambda (relations)
-        (fons-relations
-         root :relations relations :hops-fn #'hpg/hops-fn :topic topic
-         :type 'sources :max-hops sources-max-hops :finally
-         (lambda (relations)
-           (funcall finally relations))))))))
+  (fons-relations root
+    :hops-fn #'hpg/blockers-hops-fn :type 'blockers
+    :max-hops blockers-max-hops :finally
+    (lambda (relations)
+      (fons-blocked relations
+        :blocked-fn #'hpg/blocked-hops-fn :finally
+        (lambda (relations)
+          (fons-relations root
+            :relations relations :type 'sources :max-hops sources-max-hops
+            :hops-fn (apply-partially #'hpg/sources-hops-fn topic) :finally
+            (lambda (relations)
+              (funcall finally relations))))))))
 
 (defun hpg/filter (relations)
   "Return filtered RELATIONS."

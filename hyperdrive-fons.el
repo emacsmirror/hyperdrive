@@ -46,8 +46,7 @@
      ('blockers (setf (fons-relation-blocker-paths ,relation) ,paths))
      ('blocked (setf (fons-relation-blocked-paths ,relation) ,paths))))
 
-(cl-defun fons-relations
-    (root &key relations hops-fn topic type finally (max-hops 3))
+(cl-defun fons-relations (root &key relations hops-fn type finally (max-hops 3))
   "Calculate hash table of relations and call FINALLY.
 
 Table is keyed by `fons-relation-to' and its values are
@@ -57,9 +56,9 @@ RELATIONS may be nil or an existing RELATIONS hash table to use.
 If a relation in RELATIONS has `fons-relation-blocked-paths', its
 `fons-relation-to' will not be recursed into.
 
-HOPS-FN is the function that accepts three arguments, FROM,
-TOPIC, and a function which should be called asynchronously with
-a list of TOs from FROM.  Recurses up to MAX-HOPS times.
+HOPS-FN is the function that accepts two arguments, FROM and a
+function which should be called asynchronously with a list of TOs
+from FROM.  Recurses up to MAX-HOPS times.
 
 With TYPE \\+`sources', add paths to `fons-relation-source-paths'.
 With TYPE \\+`blockers', add paths to `fons-relation-blocker-paths'.
@@ -78,7 +77,7 @@ relations hash table as its sole argument."
         ((add-relations-from (from &optional paths-to-from)
            (cl-incf pending)
            (funcall
-            hops-fn from topic
+            hops-fn from
             (lambda (tos)
               (dolist (to tos)
                 (when-let ((hop (make-fons-hop :from from :to to))
