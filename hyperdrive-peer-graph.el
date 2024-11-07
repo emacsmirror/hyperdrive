@@ -148,7 +148,7 @@ hops to traverse for sources and blockers, respectively."
     :max-hops blockers-max-hops :finally
     (lambda (relations)
       (fons-blocked relations
-        :blocked-fn #'hpg/blocked-hops-fn :finally
+        :hops-fn #'hpg/blocked-hops-fn :finally
         (lambda (relations)
           (fons-relations root
             :relations relations :type 'sources :max-hops sources-max-hops

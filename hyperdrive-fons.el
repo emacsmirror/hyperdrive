@@ -118,11 +118,11 @@ relations hash table as its sole argument."
                (puthash to (make-fons-relation :from root :to to) relations))))
       (add-relations-from root))))
 
-(cl-defun fons-blocked (relations &key blocked-fn finally)
+(cl-defun fons-blocked (relations &key hops-fn finally)
   "Add blocked to RELATIONS hash table and call FINALLY.
 
 Add blocked for each relation in RELATIONS which has non-nil
-\\+`blocker-paths'.  BLOCKED-FN is a function that accepts two
+\\+`blocker-paths'.  HOPS-FUN is a function that accepts two
 arguments, BLOCKER and a function which should be called
 asynchronously with a list of blocked IDs by BLOCKER.
 
@@ -133,7 +133,7 @@ updated RELATIONS hash table as its sole argument."
     (maphash (lambda (id relation)
                (if (fons-relation-blocker-paths relation)
                    (funcall
-                    blocked-fn id
+                    hops-fn id
                     (lambda (&optional blocks)
                       (dolist (block blocks)
                         (let ((path (make-fons-path
