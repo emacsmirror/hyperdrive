@@ -77,10 +77,10 @@ relations hash table as its sole argument."
     (cl-return-from fons-relations (funcall finally relations)))
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS for TYPE `%s' must be a non-negative integer" type))
+  (when-let* ((root-relation (gethash root relations))
+              ((fons-relation-blocked-paths root-relation)))
+    (error "ROOT must not be blocked"))
   (let ((pending-relations 0))
-    (when-let* ((root-relation (gethash root relations))
-                ((fons-relation-blocked-paths root-relation)))
-      (error "ROOT must not be blocked"))
     (cl-labels
         ((add-relations-from (from &optional paths-to-from)
            (cl-incf pending-relations)
