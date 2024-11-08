@@ -73,8 +73,10 @@ to `fons-relation-blocker-paths'.
 FINALLY is a callback function which will be called with the
 relations hash table as its sole argument."
   (declare (indent defun))
+  (when (zerop max-hops)
+    (cl-return-from fons-relations (funcall finally relations)))
   (unless (and (integerp max-hops) (cl-plusp max-hops))
-    (error "MAX-HOPS for TYPE `%s' must be a positive integer" type))
+    (error "MAX-HOPS for TYPE `%s' must be a non-negative integer" type))
   (let ((pending-relations 0))
     (when-let* ((root-relation (gethash root relations))
                 ((fons-relation-blocked-paths root-relation)))
