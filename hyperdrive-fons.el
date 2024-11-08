@@ -72,7 +72,7 @@ FINALLY is a callback function which will be called with the
 relations hash table as its sole argument."
   (declare (indent defun))
   (unless (and (integerp max-hops) (cl-plusp max-hops))
-    (error "MAX-HOPS must be a positive integer"))
+    (error "MAX-HOPS for TYPE `%s' must be a positive integer" type))
   (let ((relations (or relations (make-hash-table :test 'equal)))
         (pending-relations 0))
     (when-let* ((root-relation (gethash root relations))
