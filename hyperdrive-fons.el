@@ -50,7 +50,9 @@
      ('blockers (setf (fons-relation-blocker-paths ,relation) ,paths))
      ('blocked (setf (fons-relation-blocked-paths ,relation) ,paths))))
 
-(cl-defun fons-relations (root &key relations hops-fn type topic finally (max-hops 3))
+(cl-defun fons-relations
+    ( root &key (relations (make-hash-table :test 'equal))
+      hops-fn type topic finally (max-hops 3))
   "Calculate hash table of relations and call FINALLY.
 
 Table is keyed by `fons-relation-to' and its values are
@@ -73,8 +75,7 @@ relations hash table as its sole argument."
   (declare (indent defun))
   (unless (and (integerp max-hops) (cl-plusp max-hops))
     (error "MAX-HOPS for TYPE `%s' must be a positive integer" type))
-  (let ((relations (or relations (make-hash-table :test 'equal)))
-        (pending-relations 0))
+  (let ((pending-relations 0))
     (when-let* ((root-relation (gethash root relations))
                 ((fons-relation-blocked-paths root-relation)))
       (error "ROOT must not be blocked"))
