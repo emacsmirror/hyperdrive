@@ -26,6 +26,7 @@
 
 (require 'hyperdrive-fons-view)
 (require 'hyperdrive-lib)
+(require 'taxy-magit-section)
 
 ;;;; Variables:
 
@@ -285,6 +286,150 @@ argument \\[universal-argument], always prompt."
                                                root-changed))))
     (list root-hyperdrive sources-max-hops blockers-max-hops)))
 
+;; FIXME: Shortest path should refresh graph, but it doesn't.
+
+;;;; Peer List
+
+(defun fons-shortest-hops-length (type relation)
+  "Return the minimum number of TYPE hops in RELATION."
+  (cl-loop for path in (fons-relation-paths-of-type type relation)
+           minimize (length (fons-path-hops path))))
+
+(defun fons-shortest-sources-hops-length (relation)
+  "Return the minimum number of source hops in RELATION."
+  (fons-shortest-hops-length 'sources relation))
+
+(defun hpg/taxy-format-shortest-sources-hops-length (relation)
+  (number-to-string (fons-shortest-sources-hops-length relation)))
+
+
+
+(defvar hpg/sources-taxy
+  (make-taxy-magit-section
+   :name (propertize "Sources" 'face 'success)
+   :predicate #'ignore
+   :take (lambda (peer taxy)
+           (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
+             peer taxy :key-name-fn #'hpg/format-hops))))
+
+;; TODO: Combine taxy defvars, use defun?
+(defvar hpg/blockers-taxy
+  (make-taxy-magit-section
+   ;; TODO: Use separate face.
+   :name (propertize "Blockers" 'face 'warning)
+   :predicate #'ignore
+   :take (lambda (peer taxy)
+           (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
+             peer taxy :key-name-fn #'hpg/format-hops))))
+
+(defvar hpg/blocked-taxy
+  (make-taxy-magit-section
+   :name (propertize "Blocked" 'face 'error)
+   :predicate #'ignore
+   :take (lambda (peer taxy)
+           (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
+             peer taxy :key-name-fn #'hpg/format-hops))))
+
+(defun hpg/format-hops (hops)
+  "Return formatted string for HOPS, which is an integer."
+  (if (= 1 hops) "1 hop" (format "%d hops" hops)))
+
+;; (taxy-plain
+;;  (taxy-mapcar #'hpg/format-relation-to
+;;    (taxy-fill (hash-table-values hpg/relations)
+;;               (taxy-emptied hpg/taxy2))))
+
+(defun hpg/source-p (relation)
+  "Return non-nil if RELATION is a source.
+Return non-nil if RELATION has source paths and either has no
+blocked paths or has a one-hop source path."
+  (pcase-let (((cl-struct fons-relation source-paths blocked-paths) relation))
+    (or (and source-paths (not blocked-paths))
+        (cl-loop for path in source-paths
+                 ;; TODO: Make this customizable (include N-hop relations)?
+                 thereis (= 1 (length (fons-path-hops path)))))))
+
+(defun hpg/blocker-p (relation)
+  "Return non-nil if RELATION has blocker paths."
+
+  (pcase-let (((cl-struct fons-relation source-paths blocked-paths) relation))
+    (or (and source-paths (not blocked-paths))
+        (cl-loop for path in source-paths
+                 ;; TODO: Make this customizable (include N-hop relations)?
+                 thereis (= 1 (length (fons-path-hops path)))))))
+
+(defun hpg/taxy-test ()
+  (interactive)
+  (with-current-buffer (get-buffer-create
+                        (format "*hyperdrive-peer-list %s*"
+                                (hyperdrive--format-preferred
+                                 hpg/root-hyperdrive)))
+
+    (with-silent-modifications
+      (let* ((relations (hash-table-values hpg/relations))
+             (sources (cl-remove-if-not #'hpg/source-p relations))
+             (blockers (cl-remove-if-not #'fons-relation-blocker-paths
+                                         relations))
+             (blocked (cl-remove-if-not #'fons-relation-blocked-paths
+                                        relations)))
+        (magit-section-mode)
+        (erase-buffer)
+        (thread-last hpg/sources-taxy
+                     taxy-emptied
+                     (taxy-fill sources)
+                     (taxy-mapcar #'hpg/format-relation-to)
+                     taxy-magit-section-insert)
+        (thread-last hpg/blockers-taxy
+                     taxy-emptied
+                     (taxy-fill blockers)
+                     (taxy-mapcar #'hpg/format-relation-to)
+                     taxy-magit-section-insert)
+        (thread-last hpg/blocked-taxy
+                     taxy-emptied
+                     (taxy-fill blocked)
+                     (taxy-mapcar #'hpg/format-relation-to)
+                     taxy-magit-section-insert)
+        (pop-to-buffer (current-buffer))))))
+
+(defvar hpg/taxy
+  (make-taxy-magit-section
+   :name "Peers"
+   :predicate #'ignore
+   :taxys
+   (list
+    (make-taxy-magit-section
+     :name "Sources"
+     :predicate #'ignore;; (apply-partially #'fons-relation-paths-of-type 'sources)
+     :then #'identity
+     :taxys
+     (list
+      (make-taxy-magit-section
+       :name "Sources"
+       :predicate
+       (lambda (relation)
+         (fons-relation-source-paths relation))
+       :then #'identity))
+     )
+    (make-taxy-magit-section
+     :name "Blockers"
+     :predicate (apply-partially #'fons-relation-paths-of-type 'blockers)
+     :then #'identity)
+    (make-taxy-magit-section
+     :name "Blocked"
+     :predicate (apply-partially #'fons-relation-paths-of-type 'blocked)
+     :then #'identity))))
+
+(defun fons-relation-type (relation type-priorities)
+  (catch 'type
+    (dolist (type type-priorities)
+      (when (fons-relation-paths-of-type type relation)
+        (throw 'type type)))))
+
+(defun hpg/format-relation-to (relation)
+  ;; FIXME: Render text properties in `taxy-magit-section'.
+  (substring-no-properties
+   (h//format-preferred (h/url-hyperdrive (fons-relation-to relation)))))
+
 ;;;; Peer Graph
 
 (defun hyperdrive-peer-graph
@@ -319,9 +464,15 @@ argument \\[universal-argument], always prompt."
                        (hpg/refresh-menu))))))
   (hpg/display-loading-buffer))
 
+(defun hpg/get-buffer-create ()
+  "Return hyperdrive peer graph buffer with mode enabled."
+  (with-current-buffer (get-buffer-create hpg/buffer-name)
+    (hpg/mode)
+    (current-buffer)))
+
 (defun hpg/display-loading-buffer ()
   "Open loading buffer for hyperdrive peer graph."
-  (with-current-buffer (get-buffer-create hpg/buffer-name)
+  (with-current-buffer (hpg/get-buffer-create)
     (with-silent-modifications
       (erase-buffer)
       (insert "Loading hyperdrive peer graph data...")
@@ -330,7 +481,7 @@ argument \\[universal-argument], always prompt."
 
 (defun hpg/display-graph ()
   "Open buffer displaying hyperdrive peer graph."
-  (with-current-buffer (get-buffer-create hpg/buffer-name)
+  (with-current-buffer (hpg/get-buffer-create)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
