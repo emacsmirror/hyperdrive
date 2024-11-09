@@ -291,10 +291,10 @@ graphviz string, and replaces it with the rendered output."
           (insert "}"))
         (buffer-string)))))
 
-(cl-defun hyperdrive-fons-view--svg (hops-graph)
+(cl-defun hyperdrive-fons-view--svg (graph)
   "Return SVG string for Graphviz GRAPH."
   (with-temp-buffer
-    (insert hops-graph)
+    (insert graph)
     (hyperdrive-fons-view--graphviz "svg")
     (buffer-string)))
 
