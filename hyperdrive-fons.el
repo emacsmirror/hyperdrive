@@ -38,9 +38,14 @@
 ;;;; Functions
 
 (defun fons-relation-paths-of-type (type relation &optional topic)
-  "Return paths of TYPE for RELATION."
+  "Return paths of TYPE for RELATION.
+If TYPE is \\+`sources' and TOPIC is non-nil, return list of
+sources for TOPIC.  If TYPE is \\+`sources' and TOPIC is nil,
+return alist of sources."
   (pcase type
-    ('sources (map-elt (fons-relation-source-paths relation) topic))
+    ('sources (if topic
+                  (map-elt (fons-relation-source-paths relation) topic)
+                (fons-relation-source-paths relation)))
     ('blockers (fons-relation-blocker-paths relation))
     ('blocked (fons-relation-blocked-paths relation))))
 
