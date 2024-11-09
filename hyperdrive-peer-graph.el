@@ -33,7 +33,7 @@
   "Customization of the hyperdrive peer graph."
   :group 'hyperdrive)
 
-(defcustom hpg/default-topic "_default"
+(defcustom hpg/default-topics '("_default")
   "Special topic name used as a fallback when no topic is specified."
   :type 'string)
 
@@ -58,7 +58,7 @@ Passed to `display-buffer', which see."
   "Hyperdrive filename to search for peer graph data.")
 
 (defvar hpg/root-hyperdrive nil)
-(defvar hpg/topic nil)
+(defvar hpg/topics nil)
 (defvar hpg/relations nil)
 
 (defvar hpg/sources-max-hops hpg/sources-max-hops-default)
@@ -183,22 +183,23 @@ respectively."
 
 ;;;;; Reading user input
 
-(defvar hpg/topic-history nil
+(defvar hpg/topics-history nil
   "Minibuffer history of `hyperdrive-peer-graph-read-topic'.")
 
-(defun hpg/read-topic ()
+(defun hpg/read-topics ()
   "Read topic string or nil with blank string."
-  (let ((topic (read-string "Topic (leave blank for default topic): "
-                            nil hpg/topic-history)))
+  ;; FIXME: Add CRM for multiple topics
+  (let ((topic (read-string "Topics (leave blank for default topic): "
+                            nil hpg/topics-history)))
     (and (not (string-blank-p topic))
-         topic)))
+         (list topic))))
 
-(cl-defun hpg/context-topic (&key force-prompt)
-  "Return `hyperdrive-peer-graph-topic'.
+(cl-defun hpg/context-topics (&key force-prompt)
+  "Return `hyperdrive-peer-graph-topics'.
 With FORCE-PROMPT, or interactively with universal prefix
 argument \\[universal-argument], always prompt.
-Blank string defaults to `hyperdrive-peer-graph-default-topic'."
-  (if force-prompt (hpg/read-topic) hpg/topic))
+Blank string defaults to `hyperdrive-peer-graph-default-topics'."
+  (if force-prompt (hpg/read-topics) hpg/topics))
 
 (cl-defun hpg/context-root-hyperdrive (&key force-prompt)
   "Return `hyperdrive-peer-graph-root-hyperdrive' or prompt for drive.
@@ -235,31 +236,31 @@ argument \\[universal-argument], always prompt."
   "Return list of interactive args for `hyperdrive-peer-graph'."
   (let* ((root-hyperdrive (hpg/context-root-hyperdrive
                            :force-prompt current-prefix-arg))
-         (topic (hpg/context-topic :force-prompt current-prefix-arg))
-         (topic-or-root-changed
-          (not (and (equal topic hpg/topic)
+         (topics (hpg/context-topics :force-prompt current-prefix-arg))
+         (topics-or-root-changed
+          (not (and (equal topics hpg/topics)
                     (eq root-hyperdrive hpg/root-hyperdrive))))
          (sources-max-hops (hpg/context-max-hops
                             'sources :force-prompt (or current-prefix-arg
-                                                       topic-or-root-changed)))
+                                                       topics-or-root-changed)))
          (blockers-max-hops (hpg/context-max-hops
                              'blockers
                              :force-prompt (or current-prefix-arg
-                                               topic-or-root-changed))))
-    (list topic root-hyperdrive sources-max-hops blockers-max-hops)))
+                                               topics-or-root-changed))))
+    (list topics root-hyperdrive sources-max-hops blockers-max-hops)))
 
 ;;;; Peer Graph
 
 (defun hyperdrive-peer-graph
-    (topic hyperdrive sources-max-hops blockers-max-hops)
+    (topics hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
-  (if (and (equal topic hpg/topic)
+  (if (and (equal topics hpg/topics)
            hpg/root-hyperdrive
            (h/equal-p hyperdrive hpg/root-hyperdrive)
            (hpg/loaded-relations))
       (hpg/display-graph)
-    (setf hpg/topic topic)
+    (setf hpg/topics topics)
     (setf hpg/root-hyperdrive hyperdrive)
     (setf hpg/sources-max-hops sources-max-hops)
     (setf hpg/blockers-max-hops blockers-max-hops)
@@ -271,8 +272,7 @@ argument \\[universal-argument], always prompt."
   (setf hpg/relations
         (hpg/relations
          (h/public-key hpg/root-hyperdrive)
-         ;; TODO: Add CRM for multiple topics
-         (list (or hpg/topic hpg/default-topic))
+         (or hpg/topics hpg/default-topics)
          :sources-max-hops hpg/sources-max-hops
          :blockers-max-hops hpg/blockers-max-hops
          :finally
@@ -299,8 +299,7 @@ argument \\[universal-argument], always prompt."
   (with-current-buffer (get-buffer-create hpg/buffer-name)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
-                 ;; TODO: Add CRM for multiple topics
-                 :topics (list (or hpg/topic hpg/default-topic))
+                 :topics (or hpg/topics hpg/default-topics)
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
                  :label-fun #'hpg/label-fun)
     (hpg/mode)
@@ -364,7 +363,7 @@ Reload data and redisplay graph."
 
 ;;;###autoload (autoload 'hyperdrive-peer-graph-menu "hyperdrive-peer-graph" nil t)
 (transient-define-prefix hyperdrive-peer-graph-menu
-  (topic hyperdrive sources-max-hops blockers-max-hops)
+  (topics hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   ;; TODO: Update info manual link
   :info-manual "(hyperdrive)"
@@ -373,7 +372,7 @@ Reload data and redisplay graph."
    :pad-keys t
    ;; TODO: When changing `hpg/root-hyperdrive', reset local variables to default values?
    ("r" hpg/set-root-hyperdrive)
-   ("t" hpg/set-topic)
+   ("t" hpg/set-topics)
    ("g" "Reload" hpg/reload)]
   ["Paths only to"
    (:info #'hpg/format-paths-only-to :format "%d")
@@ -391,7 +390,7 @@ Reload data and redisplay graph."
   ["Options"
    ("S" hpg/set-shortest-path-p)]
   (interactive (hpg/interactive-args))
-  (h/peer-graph topic hyperdrive sources-max-hops blockers-max-hops)
+  (h/peer-graph topics hyperdrive sources-max-hops blockers-max-hops)
   (transient-setup 'hyperdrive-peer-graph-menu nil nil :scope hyperdrive))
 
 (transient-define-suffix hpg/set-root-hyperdrive ()
@@ -405,16 +404,16 @@ Reload data and redisplay graph."
   (setf hpg/root-hyperdrive (h/read-hyperdrive :default hpg/root-hyperdrive))
   (hpg/load))
 
-(transient-define-suffix hpg/set-topic ()
+(transient-define-suffix hpg/set-topics ()
   :transient t
   :description
   (lambda ()
-    (format "Topic: %s"
-            (if hpg/topic
-                (propertize hpg/topic 'face 'transient-argument)
+    (format "Topics: %s"
+            (if hpg/topics
+                (propertize (string-join hpg/topics ", ") 'face 'transient-argument)
               (propertize "Default" 'face 'transient-inactive-value))))
   (interactive)
-  (setf hpg/topic (hpg/read-topic))
+  (setf hpg/topics (hpg/read-topics))
   (hpg/load))
 
 (transient-define-suffix hpg/set-sources-max-hops ()
