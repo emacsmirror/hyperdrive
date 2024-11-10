@@ -225,11 +225,9 @@ respectively."
 
 (defun hpg/read-topics ()
   "Read topic string or nil with blank string."
-  ;; FIXME: Add CRM for multiple topics
-  (let ((topic (read-string "Topics (leave blank for default topic): "
-                            nil hpg/topics-history)))
-    (and (not (string-blank-p topic))
-         (list topic))))
+  (completing-read-multiple
+   "Topics (leave blank for default topic): "
+   (hpg/topics-for hpg/root-hyperdrive) nil hpg/topics-history))
 
 (cl-defun hpg/context-topics (&key force-prompt)
   "Return `hyperdrive-peer-graph-topics'.
