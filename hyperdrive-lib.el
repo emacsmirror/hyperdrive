@@ -713,11 +713,10 @@ a function to be called with no arguments regardless of the
 success or failure of loading and parsing metadata.  When QUEUE,
 use it."
   (declare (indent defun))
-  (pcase-let* ((entry (he/create
-                       :hyperdrive hyperdrive
-                       :path "/.well-known/host-meta.json"
-                       ;; Don't fill hyperdrive struct with old metadata
-                       :version nil)))
+  (let ((entry (he/create :hyperdrive hyperdrive
+                          :path "/.well-known/host-meta.json"
+                          ;; Don't fill hyperdrive struct with old metadata
+                          :version nil)))
     (pcase then
       ((or 'nil 'sync)
        (condition-case err
