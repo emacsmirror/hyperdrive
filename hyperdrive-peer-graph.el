@@ -159,6 +159,10 @@ Call THEN with a list of block IDs."
   (hpg/data (h/create :public-key blocker)
     :then (lambda (data) (funcall then (map-elt data "blocked")))))
 
+(defun hpg/topics-for (hyperdrive)
+  "Synchronously return source topics for HYPERDRIVE."
+  (hash-table-keys (map-elt (hpg/data hyperdrive) "sources")))
+
 (defun hpg/label-fun (public-key)
   "Return display string for PUBLIC-KEY."
   (let ((hyperdrive (h/url-hyperdrive public-key))
