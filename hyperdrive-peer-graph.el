@@ -74,24 +74,31 @@ Passed to `display-buffer', which see."
 
 ;;;; Functions:
 
-(defun hpg/data (hyperdrive &key then)
+(defvar hpg/data-cache (make-hash-table :test 'equal)
+  "Hash table mapping public keys to JSON hops.")
+
+(cl-defun hpg/data (hyperdrive &key then)
   "Load peer graph data for HYPERDRIVE on TOPIC then call THEN.
 THEN will be called with the parsed JSON hash table as its sole
 argument.  If error, demote it and call THEN with nil argument."
   (declare (indent defun))
   ;; TODO: Add else handler so that we can replace the loading screen.
   ;; TODO: Add a queue limit.
-  ;; TODO: `hpg/data' may be called multiple times for the same hyperdrive in a
-  ;; single call to `fons-relations'.  If performance becomes an issue, memoize.
+  (when-let ((data (gethash (h/public-key hyperdrive) hpg/data-cache)))
+    ;; TODO: The first time a drive is requested, only request and parse once.
+    (cl-return-from hpg/data
+      (run-at-time 0 nil (lambda () (funcall then data)))))
   (let ((entry (he//create :hyperdrive hyperdrive :path hpg/data-filename)))
     (he/api 'get entry :noquery t
       ;; Despite error, always call THEN so `pending-relations' gets decremented.
       :then (lambda (response)
               (condition-case err
                   ;; TODO: When plz adds :as 'response-with-buffer, use that.
-                  (funcall then (json-parse-string
-                                 (plz-response-body response)
-                                 :array-type 'list))
+                  (let ((data (json-parse-string
+                               (plz-response-body response)
+                               :array-type 'list)))
+                    (puthash (h/public-key hyperdrive) data hpg/data-cache)
+                    (funcall then data))
                 (json-error
                  (h/message "Error parsing peer graph data: %s\n%S"
                             (he/url entry) err)
@@ -308,6 +315,7 @@ argument \\[universal-argument], always prompt."
 (defun hpg/loaded-relations ()
   "Return `hyperdrive-peer-graph-relations' if loaded."
   (and (not (processp hpg/relations))
+       (not (timerp hpg/relations))
        hpg/relations))
 
 ;;;; Minor mode
@@ -315,6 +323,7 @@ argument \\[universal-argument], always prompt."
 (defun hpg/revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-describe-mode' buffer.
 Reload data and redisplay graph."
+  (clrhash hpg/data-cache)
   (hpg/load))
 
 (defvar-keymap hpg/mode-map
@@ -444,7 +453,7 @@ Reload data and redisplay graph."
   :inapt-if-not #'hpg/loaded-relations
   :transient t
   (interactive)
-  (hpg/load))
+  (hpg/revert-buffer))
 
 (transient-define-suffix hpg/set-shortest-path-p ()
   :transient t
