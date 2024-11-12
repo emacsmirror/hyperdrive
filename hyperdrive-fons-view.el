@@ -265,12 +265,12 @@ graphviz string, and replaces it with the rendered output."
           (insert "digraph fonsrelationview {\n")
           (insert "edge" (format-val-list "color" (face-attribute 'default :foreground)) ";\n")
           (insert "node" (format-val-list "fontname" (face-attribute 'default :family)
-				          "nodesep" "1"
 				          "mindist" "1")
 	          ";\n")
           (insert-vals "layout" layout
                        "bgcolor" (face-attribute 'default :background)
                        "overlap" hyperdrive-fons-view-overlap
+                       "nodesep""1"
                        "margin" "0"
                        "ratio" "fill"
                        "mindist" "0")
