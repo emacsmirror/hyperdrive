@@ -161,12 +161,12 @@ WIDTH and HEIGHT are in inches."
       (list width-in height-in (/ (+ width-res height-res) 2)))))
 
 (cl-defun hyperdrive-fons-view
-    (relations root &key topics (layout hyperdrive-fons-view-layout) focus-ids label-fun)
+    (relations root &key topics (layout hyperdrive-fons-view-layout) focus-ids label-fun insert-relation-fun)
   "View RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
     relations :root-name root :topics topics :focus-ids focus-ids
-    :layout layout :label-fun label-fun)))
+    :layout layout :label-fun label-fun :insert-relation-fun insert-relation-fun)))
 
 (defun hyperdrive-fons-view--graphviz (type)
   "Run Graphviz for TYPE on current buffer.
@@ -209,7 +209,7 @@ graphviz string, and replaces it with the rendered output."
             (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
 (cl-defun hyperdrive-fons-view--format-graph
-    (relations &key root-name topics focus-ids layout (label-fun #'identity))
+    (relations &key root-name topics focus-ids layout (label-fun #'identity) insert-relation-fun)
   "Return a graphviz-string string for RELATIONS."
   (let ((sources-node-color (hyperdrive-fons-view-blend-with
                              hyperdrive-fons-view-sources-color 0.25 :background))
@@ -232,32 +232,23 @@ graphviz string, and replaces it with the rendered output."
                                            collect (format "%s=\"%s\"" key value))
                                   ",")))
                 (format-hop (hop type &optional topic)
-                  (format "%s:%s -> %s:%s [color=\"%s\"];\n"
+                  (format "%s_%s -> %s_%s [color=\"%s\"];\n"
+                          (pcase type
+                            ('sources (format "sources_%s" topic))
+                            ((or 'blockers 'blocked) "blockers"))
                           (fons-hop-from hop)
                           (pcase type
-                            ('sources (format "%s_out_%s" 'sources topic))
-                            ('blockers "blockers_out")
-                            ('blocked "blockers_out"))
+                            ('sources (format "sources_%s" topic))
+                            ((or 'blockers 'blocked) type))
                           (fons-hop-to hop)
-                          (pcase type
-                            ('sources (format "%s_in_%s" 'sources topic))
-                            ('blockers "blockers_in")
-                            ('blocked "blocked_in"))
                           (pcase type
                             ('sources sources-edge-color)
                             ('blockers blockers-edge-color)
-                            ('blocked blocked-edge-color)))
-                  )
+                            ('blocked blocked-edge-color))))
                 (format-to (to relation)
-                  (insert
-                   (format
-                    ;; FIXME: Don't hardcode color=grey.
-                    "%s [label=%s, href=\"%s\", color=\"grey\", shape=\"none\", margin=\"0\", style=\"filled\"];\n"
-                    to (funcall label-fun to :relation relation) to)))
+                  (funcall insert-relation-fun to relations root-name topics))
                 (format-root (root)
-                  (insert (format
-                           "%s [label=%s, href=\"%s\", shape=\"none\", margin=\"0\", color=\"white\", style=\"filled\"];\n"
-                           root (funcall label-fun root :topics topics) root))
+                  (funcall insert-relation-fun root relations root-name topics)
                   (insert (format "{ rank=\"source\"; %s; }\n" root))
                   (insert (format "root=\"%s\"\n" root-name))))
       (with-temp-buffer

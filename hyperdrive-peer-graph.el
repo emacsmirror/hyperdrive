@@ -163,6 +163,62 @@ Call THEN with a list of block IDs."
   "Synchronously return source topics for HYPERDRIVE."
   (hash-table-keys (map-elt (hpg/data hyperdrive) "sources")))
 
+(defun hpg/insert-relation (public-key relations root topics)
+  "Return string to insert for RELATION."
+  (pcase-let*
+      ((hyperdrive (h/url-hyperdrive public-key))
+       (rootp (equal public-key root))
+       ((or (guard rootp)
+            (cl-struct
+             fons-relation to blocker-paths blocked-paths source-paths))
+        (gethash public-key relations))
+       ;; Display the value with no prefix.
+       (h/formats '((petname . "%s")
+                    (nickname . "%s")
+                    (public-key . "%s")
+                    ;; FIXME: Don't hardcode short key length.
+                    (short-key . "%.8s…")
+                    (seed . "%s")
+                    (domains . "%s")))
+       (cluster-label
+        (format "<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>"
+                (h//format-preferred hyperdrive) (h//preferred-format hyperdrive))))
+    (insert (format "subgraph cluster_%s {\n" to))
+    (insert (format "color=\"white\";\n"))
+    (insert (format "label=%s;\n" cluster-label))
+    (if rootp
+        (progn
+          (insert
+           (format
+            ;; FIXME: href
+            "blockers_%s [label=\"blocker\", href=\"blocker\", color=\"white\"];\n"
+            public-key))
+          (pcase-dolist (topic topics)
+            (insert
+             (format
+              ;; FIXME: href
+              "sources_%s_%s [label=\"%s\", href=\"blocked\", color=\"white\"];\n"
+              topic public-key topic))))
+      (when blocker-paths
+        (insert
+         (format
+          ;; FIXME: href
+          "blockers_%s [label=\"blocker\", href=\"blocker\", color=\"white\"];\n"
+          public-key)))
+      (when blocked-paths
+        (insert
+         (format
+          ;; FIXME: href
+          "blocked_%s [label=\"blocked\", href=\"blocked\", color=\"white\"];\n"
+          public-key)))
+      (pcase-dolist (`(,topic . ,_paths) source-paths)
+        (insert
+         (format
+          ;; FIXME: href
+          "sources_%s_%s [label=\"%s\", href=\"blocked\", color=\"white\"];\n"
+          topic public-key topic))))
+    (insert "}")))
+
 (cl-defun hpg/label-fun (public-key &key relation topics)
   "Return display string for PUBLIC-KEY and RELATION.
 If RELATION is nil, treat PUBLIC-KEY as root.  In that case,
@@ -395,7 +451,8 @@ argument \\[universal-argument], always prompt."
                  (h/public-key hpg/root-hyperdrive)
                  :topics (or hpg/topics hpg/default-topics)
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
-                 :label-fun #'hpg/label-fun)
+                 :label-fun #'hpg/label-fun
+                 :insert-relation-fun #'hpg/insert-relation)
     (hpg/mode)
     (pop-to-buffer (current-buffer) hpg/display-buffer-action)))
 
