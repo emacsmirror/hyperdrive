@@ -69,12 +69,14 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
-(defun hyperdrive-fons-view-blend-with-background (name alpha)
-  "Return hex of color NAME blended with background with ALPHA."
+(defun hyperdrive-fons-view-blend-with (name alpha attr)
+  "Return hex of color NAME blended with attr with ALPHA.
+TYPE may be a face attribute, like `:foreground' or
+ `:background'."
   (apply #'color-rgb-to-hex
          `(,@(hyperdrive-fons-view-blend
               (color-name-to-rgb name)
-              (color-name-to-rgb (face-attribute 'default :background))
+              (color-name-to-rgb (face-attribute 'default attr))
               alpha)
            2)))
 
@@ -209,18 +211,18 @@ graphviz string, and replaces it with the rendered output."
 (cl-defun hyperdrive-fons-view--format-graph
     (relations &key root-name topics focus-ids layout (label-fun #'identity))
   "Return a graphviz-string string for RELATIONS."
-  (let ((sources-node-color (hyperdrive-fons-view-blend-with-background
-                             hyperdrive-fons-view-sources-color 0.25))
-        (sources-edge-color (hyperdrive-fons-view-blend-with-background
-                             hyperdrive-fons-view-sources-color 0.75))
-        (blockers-node-color (hyperdrive-fons-view-blend-with-background
-                              hyperdrive-fons-view-blockers-color 0.25))
-        (blockers-edge-color (hyperdrive-fons-view-blend-with-background
-                              hyperdrive-fons-view-blockers-color 0.75))
-        (blocked-node-color (hyperdrive-fons-view-blend-with-background
-                             hyperdrive-fons-view-blocked-color 0.25))
-        (blocked-edge-color (hyperdrive-fons-view-blend-with-background
-                             hyperdrive-fons-view-blocked-color 0.75)))
+  (let ((sources-node-color (hyperdrive-fons-view-blend-with
+                             hyperdrive-fons-view-sources-color 0.25 :background))
+        (sources-edge-color (hyperdrive-fons-view-blend-with
+                             hyperdrive-fons-view-sources-color 0.5 :foreground))
+        (blockers-node-color (hyperdrive-fons-view-blend-with
+                              hyperdrive-fons-view-blockers-color 0.25 :background))
+        (blockers-edge-color (hyperdrive-fons-view-blend-with
+                              hyperdrive-fons-view-blockers-color 0.5 :foreground))
+        (blocked-node-color (hyperdrive-fons-view-blend-with
+                             hyperdrive-fons-view-blocked-color 0.25 :background))
+        (blocked-edge-color (hyperdrive-fons-view-blend-with
+                             hyperdrive-fons-view-blocked-color 0.5 :foreground)))
     (cl-labels ((insert-vals (&rest pairs)
                   (cl-loop for (key value) on pairs by #'cddr
                            do (insert (format "%s=\"%s\"" key value) "\n")))
