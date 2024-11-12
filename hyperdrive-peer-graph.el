@@ -219,78 +219,6 @@ Call THEN with a list of block IDs."
           topic public-key topic))))
     (insert "}")))
 
-(cl-defun hpg/label-fun (public-key &key relation topics)
-  "Return display string for PUBLIC-KEY and RELATION.
-If RELATION is nil, treat PUBLIC-KEY as root.  In that case,
-TOPICS will be displayed in root's label."
-  (let* ((hyperdrive (h/url-hyperdrive public-key))
-         ;; Display the value with no prefix.
-         (h/formats '((petname . "%s")
-                      (nickname . "%s")
-                      (public-key . "%s")
-                      ;; FIXME: Don't hardcode short key length.
-                      (short-key . "%.8s…")
-                      (seed . "%s")
-                      (domains . "%s")))
-         (label
-          `(table nil
-                  (tr nil
-                      ;; TODO: Insert user color here.
-                      ;; FIXME: Set bgcolor appropriately.
-                      (td ((bgcolor . "black") (colspan . "3"))
-                          ,(h//format-preferred hyperdrive) (br)
-                          (font ((point-size . "10"))
-                                ,(format "%s"
-                                         (h//preferred-format hyperdrive))))))))
-    (if relation
-        ;; Not root.
-        (progn
-          (when (fons-relation-blocker-paths relation)
-            (dom-append-child
-             ;; FIXME: Use blockers-node-color.
-             label '(tr nil
-                        (td ((port . "blockers_in") (width . "0")) "")
-                        (td (;; (port . "blockers")
-                             (bgcolor . "#00003f")) "blocker")
-                        (td ((port . "blockers_out") (width . "0")) ""))))
-          (when (fons-relation-blocked-paths relation)
-            (dom-append-child
-             ;; FIXME: Use blocked-node-color.
-             label '(tr nil
-                        (td ((port . "blocked_in") (width . "0")) "")
-                        (td (;; (port . "blocked")
-                             (bgcolor . "#3f0000")) "blocked")
-                        (td ((port . "blocked_out") (width . "0")) ""))))
-          (pcase-dolist (`(,topic . ,_paths) (fons-relation-source-paths relation))
-            (dom-append-child
-             ;; FIXME: Use sources-node-color.
-             label `(tr nil
-                        (td ((port . ,(format "sources_in_%s" topic)) (width . "0")) "")
-                        (td (;; (port . ,(format "sources_%s" topic))
-                             (bgcolor . "#003f00"))
-                            ,topic)
-                        (td ((port . ,(format "sources_out_%s" topic)) (width . "0")) "")))))
-      ;; Root.
-      (dom-append-child
-       ;; FIXME: Use blockers-node-color.
-       label '(tr nil
-                  (td ((port . "blockers_in") (width . "0")) "")
-                  (td (;; (port . "blockers")
-                       (bgcolor . "#00003f")) "blocker")
-                  (td ((port . "blockers_out") (width . "0")) "")))
-      (dolist (topic topics)
-        (dom-append-child
-         ;; FIXME: Use sources-node-color.
-         label `(tr nil
-                    (td ((port . ,(format "sources_in_%s" topic)) (width . "0")) "")
-                    (td (;; (port . ,(format "sources_%s" topic))
-                         (bgcolor . "#003f00"))
-                        ,topic)
-                    (td ((port . ,(format "sources_out_%s" topic)) (width . "0")) "")))))
-    (with-temp-buffer
-      (dom-print label)
-      (format "<%s>" (buffer-string)))))
-
 (cl-defun hpg/relations (root topics &key finally sources-max-hops blockers-max-hops)
   ;; TODO: Handle nil topics as all topics from ROOT.
   "Load relations from ROOT about TOPICS and call FINALLY.
@@ -451,7 +379,6 @@ argument \\[universal-argument], always prompt."
                  (h/public-key hpg/root-hyperdrive)
                  :topics (or hpg/topics hpg/default-topics)
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
-                 :label-fun #'hpg/label-fun
                  :insert-relation-fun #'hpg/insert-relation)
     (hpg/mode)
     (pop-to-buffer (current-buffer) hpg/display-buffer-action)))

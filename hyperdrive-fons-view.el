@@ -161,12 +161,12 @@ WIDTH and HEIGHT are in inches."
       (list width-in height-in (/ (+ width-res height-res) 2)))))
 
 (cl-defun hyperdrive-fons-view
-    (relations root &key topics (layout hyperdrive-fons-view-layout) focus-ids label-fun insert-relation-fun)
+    (relations root &key topics (layout hyperdrive-fons-view-layout) focus-ids insert-relation-fun)
   "View RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
     relations :root-name root :topics topics :focus-ids focus-ids
-    :layout layout :label-fun label-fun :insert-relation-fun insert-relation-fun)))
+    :layout layout :insert-relation-fun insert-relation-fun)))
 
 (defun hyperdrive-fons-view--graphviz (type)
   "Run Graphviz for TYPE on current buffer.
@@ -209,7 +209,7 @@ graphviz string, and replaces it with the rendered output."
             (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
 (cl-defun hyperdrive-fons-view--format-graph
-    (relations &key root-name topics focus-ids layout (label-fun #'identity) insert-relation-fun)
+    (relations &key root-name topics focus-ids layout insert-relation-fun)
   "Return a graphviz-string string for RELATIONS."
   (let ((sources-node-color (hyperdrive-fons-view-blend-with
                              hyperdrive-fons-view-sources-color 0.25 :background))
