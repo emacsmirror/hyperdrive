@@ -184,6 +184,7 @@ Call THEN with a list of block IDs."
         (format "<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>"
                 (h//format-preferred hyperdrive) (h//preferred-format hyperdrive))))
     (insert (format "subgraph cluster_%s {\n" public-key))
+    (insert (format "href=\"%s\"" public-key))
     (insert (format "label=%s;\n" cluster-label))
     (if rootp
         (progn
