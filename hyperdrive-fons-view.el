@@ -232,7 +232,7 @@ graphviz string, and replaces it with the rendered output."
                                            collect (format "%s=\"%s\"" key value))
                                   ",")))
                 (format-hop (hop type &optional topic)
-                  (format "%s:%s -> %s:%s [color=\"%s\" penwidth=2];\n"
+                  (format "%s:%s -> %s:%s [color=\"%s\"];\n"
                           (fons-hop-from hop)
                           (pcase type
                             ('sources (format "%s_out_%s" 'sources topic))
@@ -256,7 +256,7 @@ graphviz string, and replaces it with the rendered output."
                     to (funcall label-fun to :relation relation) to)))
                 (format-root (root)
                   (insert (format
-                           "%s [label=%s, href=\"%s\", shape=\"none\", penwidth=\"4\", margin=\"0\", color=\"white\", style=\"filled\"];\n"
+                           "%s [label=%s, href=\"%s\", shape=\"none\", margin=\"0\", color=\"white\", style=\"filled\"];\n"
                            root (funcall label-fun root :topics topics) root))
                   (insert (format "{ rank=\"source\"; %s; }\n" root))
                   (insert (format "root=\"%s\"\n" root-name))))
