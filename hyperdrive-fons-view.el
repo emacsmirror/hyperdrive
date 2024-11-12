@@ -271,6 +271,7 @@ graphviz string, and replaces it with the rendered output."
                        "bgcolor" (face-attribute 'default :background)
                        "overlap" hyperdrive-fons-view-overlap
                        "nodesep""1"
+                       "ranksep""1"
                        "margin" "0"
                        "ratio" "fill"
                        "mindist" "0")
