@@ -249,7 +249,6 @@ graphviz string, and replaces it with the rendered output."
                   (funcall insert-relation-fun to relations root-name topics))
                 (format-root (root)
                   (funcall insert-relation-fun root relations root-name topics)
-                  (insert (format "{ rank=\"source\"; %s; }\n" root))
                   (insert (format "root=\"%s\"\n" root-name))))
       (with-temp-buffer
         (save-excursion
