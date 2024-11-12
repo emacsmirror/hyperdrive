@@ -231,33 +231,33 @@ graphviz string, and replaces it with the rendered output."
                                   (cl-loop for (key value) on pairs by #'cddr
                                            collect (format "%s=\"%s\"" key value))
                                   ",")))
-                (format-hop (hop color)
-                  (format "%s -> %s [color=\"%s\" penwidth=2];\n"
-                          (fons-hop-from hop) (fons-hop-to hop) color))
+                (format-hop (hop type &optional topic)
+                  (format "%s:%s -> %s:%s [color=\"%s\" penwidth=2];\n"
+                          (fons-hop-from hop)
+                          (pcase type
+                            ('sources (format "%s_out_%s" 'sources topic))
+                            ('blockers "blockers_out")
+                            ('blocked "blockers_out"))
+                          (fons-hop-to hop)
+                          (pcase type
+                            ('sources (format "%s_in_%s" 'sources topic))
+                            ('blockers "blockers_in")
+                            ('blocked "blocked_in"))
+                          (pcase type
+                            ('sources sources-edge-color)
+                            ('blockers blockers-edge-color)
+                            ('blocked blocked-edge-color)))
+                  )
                 (format-to (to relation)
                   (insert
                    (format
-                    "%s [label=%s, href=\"%s\", shape=\"%s\", color=\"%s\", style=\"filled\", penwidth=\"4\", fillcolor=\"%s;0.5:%s\"];\n"
-                    to (funcall label-fun to) to
-                    (if (member to focus-ids)
-                        "house"
-                      "ellipse")
-                    "grey"
-                    ;; Prioritize blocked > source > blocker
-                    (cond
-                     ((fons-relation-blocked-paths relation) blocked-node-color)
-                     ((fons-relation-source-paths relation) sources-node-color)
-                     ((fons-relation-blocker-paths relation) blockers-node-color))
-                    ;; Prioritize blocker > blocked > source
-                    (cond
-                     ((fons-relation-blocker-paths relation) blockers-node-color)
-                     ((fons-relation-blocked-paths relation) blocked-node-color)
-                     ((fons-relation-source-paths relation) sources-node-color)))))
+                    ;; FIXME: Don't hardcode color=grey.
+                    "%s [label=%s, href=\"%s\", color=\"grey\", shape=\"none\", margin=\"0\", style=\"filled\"];\n"
+                    to (funcall label-fun to :relation relation) to)))
                 (format-root (root)
                   (insert (format
-                           "%s [label=%s, href=\"%s\", shape=\"invhouse\", penwidth=\"4\", color=\"%s\", style=\"filled\", fillcolor=\"%s;0.5:%s\"];\n"
-                           root (funcall label-fun root) root "grey"
-                           sources-node-color blockers-node-color))
+                           "%s [label=%s, href=\"%s\", shape=\"none\", penwidth=\"4\", margin=\"0\", color=\"white\", style=\"filled\"];\n"
+                           root (funcall label-fun root :topics topics) root))
                   (insert (format "{ rank=\"source\"; %s; }\n" root))
                   (insert (format "root=\"%s\"\n" root-name))))
       (with-temp-buffer
@@ -278,9 +278,9 @@ graphviz string, and replaces it with the rendered output."
           (dolist (topic topics)
             ;; TODO: Group nodes and edges by topic
             (dolist (hop (fons-relations-hops relations 'sources topic))
-              (insert (format-hop hop sources-edge-color))))
+              (insert (format-hop hop 'sources topic))))
           (dolist (hop (fons-relations-hops relations 'blockers))
-            (insert (format-hop hop blockers-edge-color)))
+            (insert (format-hop hop 'blockers)))
           (when (catch 'blocker-paths-exist-p
                   ;; Only display block hops when blockers are displayed.
                   (maphash (lambda (_id relation)
@@ -288,7 +288,7 @@ graphviz string, and replaces it with the rendered output."
                                (throw 'blocker-paths-exist-p t)))
                            relations))
             (dolist (hop (fons-relations-hops relations 'blocked))
-              (insert (format-hop hop blocked-edge-color))))
+              (insert (format-hop hop 'blocked))))
           (format-root root-name)
           (maphash #'format-to relations)
           (insert "}"))
