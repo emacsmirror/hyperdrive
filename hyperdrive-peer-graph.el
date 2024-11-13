@@ -33,10 +33,6 @@
   "Customization of the hyperdrive peer graph."
   :group 'hyperdrive)
 
-(defcustom hpg/default-topics '("_default")
-  "Special topic name used as a fallback when no topic is specified."
-  :type 'string)
-
 (defcustom hpg/sources-max-hops-default 3
   "Default number of hops to jump for sources."
   :type 'integer)
@@ -277,14 +273,14 @@ respectively."
 (defun hpg/read-topics ()
   "Read topic string or nil with blank string."
   (completing-read-multiple
-   "Topics (leave blank for default topic): "
+   "Topics (leave blank for all topics): "
    (hpg/topics-for hpg/root-hyperdrive) nil hpg/topics-history))
 
 (cl-defun hpg/context-topics (&key force-prompt)
   "Return `hyperdrive-peer-graph-topics'.
 With FORCE-PROMPT, or interactively with universal prefix
 argument \\[universal-argument], always prompt.
-Blank string defaults to `hyperdrive-peer-graph-default-topics'."
+Blank string defaults to all topics."
   (if force-prompt (hpg/read-topics) hpg/topics))
 
 (cl-defun hpg/context-root-hyperdrive (&key force-prompt)
@@ -358,7 +354,7 @@ argument \\[universal-argument], always prompt."
   (setf hpg/relations
         (hpg/relations
          (h/public-key hpg/root-hyperdrive)
-         (or hpg/topics hpg/default-topics)
+         (or hpg/topics (hpg/topics-for hpg/root-hyperdrive))
          :sources-max-hops hpg/sources-max-hops
          :blockers-max-hops hpg/blockers-max-hops
          :finally
@@ -385,7 +381,7 @@ argument \\[universal-argument], always prompt."
   (with-current-buffer (get-buffer-create hpg/buffer-name)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
-                 :topics (or hpg/topics hpg/default-topics)
+                 :topics (or hpg/topics (hpg/topics-for hpg/root-hyperdrive))
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
                  :insert-relation-fun #'hpg/insert-relation)
     (hpg/mode)
@@ -499,7 +495,7 @@ Reload data and redisplay graph."
     (format "Topics: %s"
             (if hpg/topics
                 (propertize (string-join hpg/topics ", ") 'face 'transient-argument)
-              (propertize "Default" 'face 'transient-inactive-value))))
+              (propertize "All" 'face 'transient-inactive-value))))
   (interactive)
   (setf hpg/topics (hpg/read-topics))
   (hpg/load))
