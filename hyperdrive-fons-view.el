@@ -264,7 +264,6 @@ graphviz string, and replaces it with the rendered output."
                        "overlap" hyperdrive-fons-view-overlap
                        "compound" "true"
                        "ranksep""1"
-                       "margin" "0"
                        "ratio" "fill"
                        "mindist" "0")
           (dolist (topic topics)
