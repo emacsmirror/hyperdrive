@@ -184,48 +184,48 @@ Call THEN with a list of block IDs."
         (format "<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>"
                 (h//format-preferred hyperdrive) (h//preferred-format hyperdrive))))
     (insert (format "subgraph cluster_%s {\n" public-key))
-    (insert (format "href=\"%s\"" public-key))
-    (insert (format "label=%s;\n" cluster-label))
+    (insert (format "  href=\"%s\"\n" public-key))
+    (insert (format "  label=%s;\n" cluster-label))
     (if rootp
         (progn
           ;; TODO: Use blocker color
-          (insert (format "color=\"blue\";\n"))
+          (insert (format "  color=\"blue\";\n"))
           (insert
            (format
             ;; FIXME: href
-            "blockers_%s [label=\"blocker\", href=\"blocker\", shape=\"point\", style=\"invis\"];\n"
+            "  blockers_%s [label=\"blocker\", href=\"blocker\", shape=\"point\", style=\"invis\"];\n"
             public-key))
           (pcase-dolist (topic topics)
             (insert
              (format
               ;; FIXME: href
-              "sources_%s_%s [label=\"%s\", href=\"blocked\", color=\"green\"];\n"
+              "  sources_%s_%s [label=\"%s\", href=\"blocked\", color=\"green\"];\n"
               topic public-key topic))))
       ;; NOTE: Color may be overridden by blocker color.
-      (insert (format "color=\"white\";\n"))
+      (insert (format "  color=\"white\";\n"))
       (pcase-dolist (`(,topic . ,_paths) source-paths)
         ;; TODO: Use sources color
         (insert
          (format
           ;; FIXME: href
-          "sources_%s_%s [label=\"%s\", href=\"blocked\", color=\"%s\"];\n"
+          "  sources_%s_%s [label=\"%s\", href=\"blocked\", color=\"%s\"];\n"
           topic public-key topic (if blocked-paths "red" "green"))))
       (when blocker-paths
         ;; TODO: Use blocker color
-        (insert (format "color=\"blue\";\n"))
+        (insert (format "  color=\"blue\";\n"))
         (insert
          (format
           ;; FIXME: href
-          "blockers_%s [label=\"blocker\", shape=\"point\", style=\"invis\"];\n"
+          "  blockers_%s [label=\"blocker\", shape=\"point\", style=\"invis\"];\n"
           public-key)))
       (when blocked-paths
         ;; TODO: Use blocked color
         (insert
          (format
           ;; FIXME: href
-          "blocked_%s [label=\"blocked\", shape=\"point\", style=\"invis\"];\n"
+          "  blocked_%s [label=\"blocked\", shape=\"point\", style=\"invis\"];\n"
           public-key))))
-    (insert "}")))
+    (insert "}\n\n")))
 
 (cl-defun hpg/relations (root topics &key finally sources-max-hops blockers-max-hops)
   ;; TODO: Handle nil topics as all topics from ROOT.
