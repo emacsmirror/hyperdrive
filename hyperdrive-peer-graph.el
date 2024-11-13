@@ -216,14 +216,14 @@ Call THEN with a list of block IDs."
         (insert
          (format
           ;; FIXME: href
-          "blockers_%s [label=\"blocker\", href=\"blocker\", shape=\"point\", style=\"invis\"];\n"
+          "blockers_%s [label=\"blocker\", shape=\"point\", style=\"invis\"];\n"
           public-key)))
       (when blocked-paths
         ;; TODO: Use blocked color
         (insert
          (format
           ;; FIXME: href
-          "blocked_%s [label=\"blocked\", href=\"blocked\", shape=\"point\", style=\"invis\"];\n"
+          "blocked_%s [label=\"blocked\", shape=\"point\", style=\"invis\"];\n"
           public-key))))
     (insert "}")))
 
