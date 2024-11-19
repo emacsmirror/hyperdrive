@@ -374,6 +374,7 @@ argument \\[universal-argument], always prompt."
     (with-silent-modifications
       (erase-buffer)
       (insert "Loading hyperdrive peer graph data...")
+      (hpg/mode)
       (display-buffer (current-buffer) hpg/display-buffer-action))))
 
 (defun hpg/display-graph ()
@@ -384,7 +385,6 @@ argument \\[universal-argument], always prompt."
                  :topics (or hpg/topics (hpg/topics-for hpg/root-hyperdrive))
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
                  :insert-relation-fun #'hpg/insert-relation)
-    (hpg/mode)
     (pop-to-buffer (current-buffer) hpg/display-buffer-action)))
 
 (defun hpg/loaded-relations ()
