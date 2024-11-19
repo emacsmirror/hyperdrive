@@ -194,37 +194,31 @@ node, and TOPICS may be a list of topics."
           (dom-append-child
            ;; FIXME: Use blockers-node-color.
            label '(tr nil
-                      (td ((port . "blockers_in") (width . "0")) "")
-                      (td ((bgcolor . "#00003f")) "blocker")
-                      (td ((port . "blockers_out") (width . "0")) "")))
+                      (td ((port . "blockers") (bgcolor . "#00003f")) "blocker")))
           (dolist (topic topics)
             (dom-append-child
              ;; FIXME: Use sources-node-color.
              label `(tr nil
-                        (td ((port . ,(format "sources_in_%s" topic)) (width . "0")) "")
-                        (td ((bgcolor . "#003f00")) ,topic)
-                        (td ((port . ,(format "sources_out_%s" topic)) (width . "0")) "")))))
+                        (td ((port . ,(format "sources_%s" topic))
+                             (bgcolor . "#003f00"))
+                            ,topic)))))
       (when blocker-paths
         (dom-append-child
          ;; FIXME: Use blockers-node-color.
          label '(tr nil
-                    (td ((port . "blockers_in") (width . "0")) "")
-                    (td ((bgcolor . "#00003f")) "blocker")
-                    (td ((port . "blockers_out") (width . "0")) ""))))
+                    (td ((port . "blockers") (bgcolor . "#00003f")) "blocker"))))
       (when blocked-paths
         (dom-append-child
          ;; FIXME: Use blocked-node-color.
          label '(tr nil
-                    (td ((port . "blocked_in") (width . "0")) "")
-                    (td ((bgcolor . "#3f0000")) "blocked")
-                    (td ((port . "blocked_out") (width . "0")) ""))))
+                    (td ((port . "blocked") (bgcolor . "#3f0000")) "blocked"))))
       (pcase-dolist (`(,topic . ,_paths) source-paths)
         (dom-append-child
          ;; FIXME: Use sources-node-color.
          label `(tr nil
-                    (td ((port . ,(format "sources_in_%s" topic)) (width . "0")) "")
-                    (td ((bgcolor . "#003f00")) ,topic)
-                    (td ((port . ,(format "sources_out_%s" topic)) (width . "0")) "")))))
+                    (td ((port . ,(format "sources_%s" topic))
+                         (bgcolor . "#003f00"))
+                        ,topic)))))
     (insert (format "%s [label=<\n  " public-key))
     (dom-print label)
     ;; FIXME: Don't hardcode color=grey.

@@ -232,17 +232,13 @@ graphviz string, and replaces it with the rendered output."
                                            collect (format "%s=\"%s\"" key value))
                                   ",")))
                 (format-hop (hop type &optional topic)
-                  (format "%s:%s -> %s:%s [color=\"%s\"];\n"
+                  (format "%s:%s -> %s [color=\"%s\"];\n"
                           (fons-hop-from hop)
                           (pcase type
-                            ('sources (format "%s_out_%s" 'sources topic))
-                            ('blockers "blockers_out")
-                            ('blocked "blockers_out"))
+                            ('sources (format "sources_%s" topic))
+                            ('blockers "blockers")
+                            ('blocked "blockers"))
                           (fons-hop-to hop)
-                          (pcase type
-                            ('sources (format "%s_in_%s" 'sources topic))
-                            ('blockers "blockers_in")
-                            ('blocked "blocked_in"))
                           (pcase type
                             ('sources sources-edge-color)
                             ('blockers blockers-edge-color)
