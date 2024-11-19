@@ -232,21 +232,21 @@ graphviz string, and replaces it with the rendered output."
                                            collect (format "%s=\"%s\"" key value))
                                   ",")))
                 (format-hop (hop type &optional topic)
-                  (pcase-let (((cl-struct fons-hop from to) hop))
-                    (pcase type
-                      ('sources
-                       (format "%s_%s -> %s_%s [color=\"%s\"];\n"
-                               (format "sources_%s" topic) from
-                               (format "sources_%s" topic) to
-                               sources-edge-color))
-                      ('blockers
-                       (format "%s_%s -> %s_%s [color=\"%s\", ltail=\"cluster_%s\", lhead=\"cluster_%s\"];\n"
-                               "blockers" from "blockers"
-                               to blockers-edge-color from to))
-                      ('blocked
-                       (format "%s_%s -> %s_%s [color=\"%s\", ltail=\"cluster_%s\", lhead=\"cluster_%s\"];\n"
-                               "blockers" from "blocked"
-                               to blocked-edge-color from to)))))
+                  (format "%s:%s -> %s:%s [color=\"%s\"];\n"
+                          (fons-hop-from hop)
+                          (pcase type
+                            ('sources (format "%s_out_%s" 'sources topic))
+                            ('blockers "blockers_out")
+                            ('blocked "blockers_out"))
+                          (fons-hop-to hop)
+                          (pcase type
+                            ('sources (format "%s_in_%s" 'sources topic))
+                            ('blockers "blockers_in")
+                            ('blocked "blocked_in"))
+                          (pcase type
+                            ('sources sources-edge-color)
+                            ('blockers blockers-edge-color)
+                            ('blocked blocked-edge-color))))
                 (format-to (to relation)
                   (funcall insert-relation-fun to relations root-name topics))
                 (format-root (root)

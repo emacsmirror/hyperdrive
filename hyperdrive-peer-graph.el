@@ -159,8 +159,11 @@ Call THEN with a list of block IDs."
   "Synchronously return source topics for HYPERDRIVE."
   (hash-table-keys (map-elt (hpg/data hyperdrive) "sources")))
 
-(defun hpg/insert-relation (public-key relations root topics)
-  "Return string to insert for RELATION."
+(cl-defun hpg/insert-relation (public-key relations root topics)
+  "Insert display string for PUBLIC-KEY in current buffer.
+RELATION may be a hash table of `fons-relation' structs mapped by
+\\+`public-key', ROOT may be the \\+`public-key' of the root
+node, and TOPICS may be a list of topics."
   (pcase-let*
       ((hyperdrive (h/url-hyperdrive public-key))
        (rootp (equal public-key root))
@@ -176,52 +179,56 @@ Call THEN with a list of block IDs."
                     (short-key . "%.8s…")
                     (seed . "%s")
                     (domains . "%s")))
-       (cluster-label
-        (format "<%s<br/><FONT POINT-SIZE=\"10\">%s</FONT>>"
-                (h//format-preferred hyperdrive) (h//preferred-format hyperdrive))))
-    (insert (format "subgraph cluster_%s {\n" public-key))
-    (insert (format "  href=\"%s\"\n" public-key))
-    (insert (format "  label=%s;\n" cluster-label))
+       (label
+        `(table nil
+                (tr nil
+                    ;; TODO: Insert user color here.
+                    ;; FIXME: Set bgcolor appropriately.
+                    (td ((bgcolor . "black") (colspan . "3"))
+                        ,(h//format-preferred hyperdrive) (br)
+                        (font ((point-size . "10"))
+                              ,(format "%s"
+                                       (h//preferred-format hyperdrive))))))))
     (if rootp
         (progn
-          ;; TODO: Use blocker color
-          (insert (format "  color=\"blue\";\n"))
-          (insert
-           (format
-            ;; FIXME: href
-            "  blockers_%s [label=\"blocker\", href=\"blocker\", shape=\"point\", style=\"invis\"];\n"
-            public-key))
-          (pcase-dolist (topic topics)
-            (insert
-             (format
-              ;; FIXME: href
-              "  sources_%s_%s [label=\"%s\", href=\"blocked\", color=\"green\"];\n"
-              topic public-key topic))))
-      ;; NOTE: Color may be overridden by blocker color.
-      (insert (format "  color=\"white\";\n"))
-      (pcase-dolist (`(,topic . ,_paths) source-paths)
-        ;; TODO: Use sources color
-        (insert
-         (format
-          ;; FIXME: href
-          "  sources_%s_%s [label=\"%s\", href=\"blocked\", color=\"%s\"];\n"
-          topic public-key topic (if blocked-paths "red" "green"))))
+          (dom-append-child
+           ;; FIXME: Use blockers-node-color.
+           label '(tr nil
+                      (td ((port . "blockers_in") (width . "0")) "")
+                      (td ((bgcolor . "#00003f")) "blocker")
+                      (td ((port . "blockers_out") (width . "0")) "")))
+          (dolist (topic topics)
+            (dom-append-child
+             ;; FIXME: Use sources-node-color.
+             label `(tr nil
+                        (td ((port . ,(format "sources_in_%s" topic)) (width . "0")) "")
+                        (td ((bgcolor . "#003f00")) ,topic)
+                        (td ((port . ,(format "sources_out_%s" topic)) (width . "0")) "")))))
       (when blocker-paths
-        ;; TODO: Use blocker color
-        (insert (format "  color=\"blue\";\n"))
-        (insert
-         (format
-          ;; FIXME: href
-          "  blockers_%s [label=\"blocker\", shape=\"point\", style=\"invis\"];\n"
-          public-key)))
+        (dom-append-child
+         ;; FIXME: Use blockers-node-color.
+         label '(tr nil
+                    (td ((port . "blockers_in") (width . "0")) "")
+                    (td ((bgcolor . "#00003f")) "blocker")
+                    (td ((port . "blockers_out") (width . "0")) ""))))
       (when blocked-paths
-        ;; TODO: Use blocked color
-        (insert
-         (format
-          ;; FIXME: href
-          "  blocked_%s [label=\"blocked\", shape=\"point\", style=\"invis\"];\n"
-          public-key))))
-    (insert "}\n\n")))
+        (dom-append-child
+         ;; FIXME: Use blocked-node-color.
+         label '(tr nil
+                    (td ((port . "blocked_in") (width . "0")) "")
+                    (td ((bgcolor . "#3f0000")) "blocked")
+                    (td ((port . "blocked_out") (width . "0")) ""))))
+      (pcase-dolist (`(,topic . ,_paths) source-paths)
+        (dom-append-child
+         ;; FIXME: Use sources-node-color.
+         label `(tr nil
+                    (td ((port . ,(format "sources_in_%s" topic)) (width . "0")) "")
+                    (td ((bgcolor . "#003f00")) ,topic)
+                    (td ((port . ,(format "sources_out_%s" topic)) (width . "0")) "")))))
+    (insert (format "%s [label=<\n  " public-key))
+    (dom-print label)
+    ;; FIXME: Don't hardcode color=grey.
+    (insert (format "\n>, href=\"%s\", color=\"grey\", shape=\"none\", margin=\"0\", style=\"filled\"];\n" public-key))))
 
 (cl-defun hpg/relations (root topics &key finally sources-max-hops blockers-max-hops)
   ;; TODO: Handle nil topics as all topics from ROOT.
