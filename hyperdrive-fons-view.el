@@ -92,7 +92,7 @@ has on the result and should be between 0.0 and 1.0, inclusive."
     (nreverse blend)))
 
 ;; TODO: Reload image on defcustom change
-(defcustom hyperdrive-fons-view-sources-color "green"
+(defcustom hyperdrive-fons-view-sources-color (face-foreground 'success nil t)
   "Source edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -100,7 +100,7 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blockers-color "blue"
+(defcustom hyperdrive-fons-view-blockers-color (face-foreground 'warning nil t)
   "Blocker edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -108,7 +108,7 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocked-color "red"
+(defcustom hyperdrive-fons-view-blocked-color (face-foreground 'error nil t)
   "Blocked edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
