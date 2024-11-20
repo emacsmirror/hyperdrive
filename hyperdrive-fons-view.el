@@ -69,28 +69,6 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
-(defun hyperdrive-fons-view-blend-with (name alpha attr)
-  "Return hex of color NAME blended with attr with ALPHA.
-TYPE may be a face attribute, like `:foreground' or
- `:background'."
-  (apply #'color-rgb-to-hex
-         `(,@(hyperdrive-fons-view-blend
-              (color-name-to-rgb name)
-              (color-name-to-rgb (face-attribute 'default attr))
-              alpha)
-           2)))
-
-(defun hyperdrive-fons-view-blend (a b &optional alpha)
-  "Blend the two colors A and B with ALPHA.
-A and B should be lists (RED GREEN BLUE), where each element is
-between 0.0 and 1.0, inclusive.  ALPHA controls the influence A
-has on the result and should be between 0.0 and 1.0, inclusive."
-  (setq alpha (or alpha 0.5))
-  (let (blend)
-    (dotimes (i 3)
-      (push (+ (* (nth i a) alpha) (* (nth i b) (- 1 alpha))) blend))
-    (nreverse blend)))
-
 ;; TODO: Reload image on defcustom change
 (defcustom hyperdrive-fons-view-sources-color (face-foreground 'success nil t)
   "Source edge and node color.
@@ -211,76 +189,64 @@ graphviz string, and replaces it with the rendered output."
 (cl-defun hyperdrive-fons-view--format-graph
     (relations &key root-name focus-ids layout insert-relation-fun)
   "Return a graphviz-string string for RELATIONS."
-  (let ((sources-node-color (hyperdrive-fons-view-blend-with
-                             hyperdrive-fons-view-sources-color 0.25 :background))
-        (sources-edge-color (hyperdrive-fons-view-blend-with
-                             hyperdrive-fons-view-sources-color 0.5 :foreground))
-        (blockers-node-color (hyperdrive-fons-view-blend-with
-                              hyperdrive-fons-view-blockers-color 0.25 :background))
-        (blockers-edge-color (hyperdrive-fons-view-blend-with
-                              hyperdrive-fons-view-blockers-color 0.5 :foreground))
-        (blocked-node-color (hyperdrive-fons-view-blend-with
-                             hyperdrive-fons-view-blocked-color 0.25 :background))
-        (blocked-edge-color (hyperdrive-fons-view-blend-with
-                             hyperdrive-fons-view-blocked-color 0.5 :foreground)))
-    (cl-labels ((insert-vals (&rest pairs)
-                  (cl-loop for (key value) on pairs by #'cddr
-                           do (insert (format "%s=\"%s\"" key value) "\n")))
-                (format-val-list (&rest pairs)
-                  (format "[%s]" (string-join
-                                  (cl-loop for (key value) on pairs by #'cddr
-                                           collect (format "%s=\"%s\"" key value))
-                                  ",")))
-                (format-hop (hop type)
-                  (format "%s:%s -> %s [color=\"%s\"];\n"
-                          (fons-hop-from hop)
-                          (pcase type
-                            ('sources "sources")
-                            ('blockers "blockers")
-                            ;; Source port for blocked relation is "blockers"
-                            ('blocked "blockers"))
-                          (fons-hop-to hop)
-                          (pcase type
-                            ('sources hyperdrive-fons-view-sources-color)
-                            ('blockers hyperdrive-fons-view-blockers-color)
-                            ('blocked hyperdrive-fons-view-blocked-color))))
-                (format-to (to relation)
-                  (funcall insert-relation-fun to relations root-name))
-                (format-root (root)
-                  (funcall insert-relation-fun root relations root-name)
-                  (insert (format "root=\"%s\"\n" root-name))))
-      (with-temp-buffer
-        (save-excursion
-          (insert "digraph fonsrelationview {\n")
-          (insert "edge" (format-val-list "color" (face-attribute 'default :foreground)) ";\n")
-          (insert "node" (format-val-list "fontname" (face-attribute 'default :family)
-				          "mindist" "1")
-	          ";\n")
-          (insert-vals "layout" layout
-                       "bgcolor" (face-attribute 'default :background)
-                       "overlap" hyperdrive-fons-view-overlap
-                       "compound" "true"
-                       ;; "ranksep""1"
-                       ;; "margin" "0"
-                       "ratio" "fill"
-                       "mindist" "0")
-          (dolist (hop (fons-relations-hops relations 'sources))
-            (insert (format-hop hop 'sources)))
-          (dolist (hop (fons-relations-hops relations 'blockers))
-            (insert (format-hop hop 'blockers)))
-          (when (catch 'blocker-paths-exist-p
-                  ;; Only display block hops when blockers are displayed.
-                  (maphash (lambda (_id relation)
-                             (when (fons-relation-blocker-paths relation)
-                               (throw 'blocker-paths-exist-p t)))
-                           relations))
-            (dolist (hop (fons-relations-hops relations 'blocked))
-              (insert (format-hop hop 'blocked))))
-          (format-root root-name)
-          (maphash #'format-to relations)
-          (insert "}"))
-        ;; (message "%s" (buffer-string))
-        (buffer-string)))))
+  (cl-labels ((insert-vals (&rest pairs)
+                (cl-loop for (key value) on pairs by #'cddr
+                         do (insert (format "%s=\"%s\"" key value) "\n")))
+              (format-val-list (&rest pairs)
+                (format "[%s]" (string-join
+                                (cl-loop for (key value) on pairs by #'cddr
+                                         collect (format "%s=\"%s\"" key value))
+                                ",")))
+              (format-hop (hop type)
+                (format "%s:%s -> %s [color=\"%s\"];\n"
+                        (fons-hop-from hop)
+                        (pcase type
+                          ('sources "sources")
+                          ('blockers "blockers")
+                          ;; Source port for blocked relation is "blockers"
+                          ('blocked "blockers"))
+                        (fons-hop-to hop)
+                        (pcase type
+                          ('sources hyperdrive-fons-view-sources-color)
+                          ('blockers hyperdrive-fons-view-blockers-color)
+                          ('blocked hyperdrive-fons-view-blocked-color))))
+              (format-to (to relation)
+                (funcall insert-relation-fun to relations root-name))
+              (format-root (root)
+                (funcall insert-relation-fun root relations root-name)
+                (insert (format "root=\"%s\"\n" root-name))))
+    (with-temp-buffer
+      (save-excursion
+        (insert "digraph fonsrelationview {\n")
+        (insert "edge" (format-val-list "color" (face-attribute 'default :foreground)) ";\n")
+        (insert "node" (format-val-list "fontname" (face-attribute 'default :family)
+				        "mindist" "1")
+	        ";\n")
+        (insert-vals "layout" layout
+                     "bgcolor" (face-attribute 'default :background)
+                     "overlap" hyperdrive-fons-view-overlap
+                     "compound" "true"
+                     ;; "ranksep""1"
+                     ;; "margin" "0"
+                     "ratio" "fill"
+                     "mindist" "0")
+        (dolist (hop (fons-relations-hops relations 'sources))
+          (insert (format-hop hop 'sources)))
+        (dolist (hop (fons-relations-hops relations 'blockers))
+          (insert (format-hop hop 'blockers)))
+        (when (catch 'blocker-paths-exist-p
+                ;; Only display block hops when blockers are displayed.
+                (maphash (lambda (_id relation)
+                           (when (fons-relation-blocker-paths relation)
+                             (throw 'blocker-paths-exist-p t)))
+                         relations))
+          (dolist (hop (fons-relations-hops relations 'blocked))
+            (insert (format-hop hop 'blocked))))
+        (format-root root-name)
+        (maphash #'format-to relations)
+        (insert "}"))
+      ;; (message "%s" (buffer-string))
+      (buffer-string))))
 
 (cl-defun hyperdrive-fons-view--svg (graph)
   "Return SVG string for Graphviz GRAPH."
