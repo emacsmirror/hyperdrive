@@ -184,27 +184,22 @@ RELATION may be a hash table of `fons-relation' structs mapped by
     (if rootp
         (progn
           (dom-append-child
-           label `(tr nil (td ((port . "blockers"))
-                              (font ((color . ,h/fons-view-blockers-color))
+           label `(tr nil (td nil (font ((color . ,h/fons-view-blockers-color))
                                     "blocker"))))
           (dom-append-child
-           label `(tr nil (td ((port . "sources"))
-                              (font ((color . ,h/fons-view-sources-color))
+           label `(tr nil (td nil (font ((color . ,h/fons-view-sources-color))
                                     "source")))))
       (when blocker-paths
         (dom-append-child
-         label `(tr nil (td ((port . "blockers"))
-                            (font ((color . ,h/fons-view-blockers-color))
+         label `(tr nil (td nil (font ((color . ,h/fons-view-blockers-color))
                                   "blocker")))))
       (when blocked-paths
         (dom-append-child
-         label `(tr nil (td ((port . "blocked"))
-                            (font ((color . ,h/fons-view-blocked-color))
+         label `(tr nil (td nil (font ((color . ,h/fons-view-blocked-color))
                                   "blocked")))))
       (when source-paths
         (dom-append-child
-         label `(tr nil (td ((port . "sources"))
-                            (font ((color . ,h/fons-view-sources-color))
+         label `(tr nil (td nil (font ((color . ,h/fons-view-sources-color))
                                   "source"))))))
     (insert (format "%s [label=<\n  " public-key))
     (dom-print label)

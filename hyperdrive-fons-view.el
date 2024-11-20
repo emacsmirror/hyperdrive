@@ -198,14 +198,8 @@ graphviz string, and replaces it with the rendered output."
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
               (format-hop (hop type)
-                (format "%s:%s -> %s [color=\"%s\"];\n"
-                        (fons-hop-from hop)
-                        (pcase type
-                          ('sources "sources")
-                          ('blockers "blockers")
-                          ;; Source port for blocked relation is "blockers"
-                          ('blocked "blockers"))
-                        (fons-hop-to hop)
+                (format "%s -> %s [color=\"%s\"];\n"
+                        (fons-hop-from hop) (fons-hop-to hop)
                         (pcase type
                           ('sources hyperdrive-fons-view-sources-color)
                           ('blockers hyperdrive-fons-view-blockers-color)
