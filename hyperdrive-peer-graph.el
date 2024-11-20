@@ -177,7 +177,7 @@ RELATION may be a hash table of `fons-relation' structs mapped by
                 (tr nil
                     ;; TODO: Insert user color here.
                     ;; FIXME: Set bgcolor appropriately.
-                    (td ((bgcolor . "black") (colspan . "3"))
+                    (td ((bgcolor . "black"))
                         ,(h//format-preferred hyperdrive) (br)
                         (font ((point-size . "10"))
                               ,(format "%s"
