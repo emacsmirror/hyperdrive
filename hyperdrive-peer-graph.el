@@ -54,7 +54,6 @@ Passed to `display-buffer', which see."
   "Hyperdrive filename to search for peer graph data.")
 
 (defvar hpg/root-hyperdrive nil)
-(defvar hpg/topics nil)
 (defvar hpg/relations nil)
 
 (defvar hpg/sources-max-hops hpg/sources-max-hops-default)
@@ -74,7 +73,7 @@ Passed to `display-buffer', which see."
   "Hash table mapping public keys to JSON hops.")
 
 (cl-defun hpg/data (hyperdrive &key then)
-  "Return peer graph data for HYPERDRIVE on TOPIC then call THEN.
+  "Return peer graph data for HYPERDRIVE then call THEN.
 THEN will be called with the parsed JSON hash table as its sole
 argument.  If error, demote it and call THEN with nil argument.
 If THEN is nil or \\+`sync', the request will be synchronous, and
@@ -136,12 +135,11 @@ errors will be demoted.  If data for HYPERDRIVE is already in
                       (h/message "Error getting peer graph data: %s" (he/url entry) plz-error)
                       (funcall then nil)))))))))
 
-(defun hpg/sources-hops-fn (topic from then)
-  "Asynchronously get source hops from FROM about TOPIC.
+(defun hpg/sources-hops-fn (from then)
+  "Asynchronously get source hops from FROM.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
-    :then (pcase-lambda ((map ("sources" sources)))
-            (funcall then (map-elt sources topic)))))
+    :then (lambda (data) (funcall then (map-elt data "sources")))))
 
 (defun hpg/blockers-hops-fn (from then)
   "Asynchronously get blocker hops from FROM.
@@ -155,15 +153,10 @@ Call THEN with a list of block IDs."
   (hpg/data (h/create :public-key blocker)
     :then (lambda (data) (funcall then (map-elt data "blocked")))))
 
-(defun hpg/topics-for (hyperdrive)
-  "Synchronously return source topics for HYPERDRIVE."
-  (hash-table-keys (map-elt (hpg/data hyperdrive) "sources")))
-
-(cl-defun hpg/insert-relation (public-key relations root topics)
+(cl-defun hpg/insert-relation (public-key relations root)
   "Insert display string for PUBLIC-KEY in current buffer.
 RELATION may be a hash table of `fons-relation' structs mapped by
-\\+`public-key', ROOT may be the \\+`public-key' of the root
-node, and TOPICS may be a list of topics."
+\\+`public-key'.  ROOT is the \\+`public-key' of the root node."
   (pcase-let*
       ((hyperdrive (h/url-hyperdrive public-key))
        (rootp (equal public-key root))
@@ -193,46 +186,38 @@ node, and TOPICS may be a list of topics."
         (progn
           (dom-append-child
            ;; FIXME: Use blockers-node-color.
-           label '(tr nil
-                      (td ((port . "blockers") (bgcolor . "#00003f")) "blocker")))
-          (dolist (topic topics)
-            (dom-append-child
-             ;; FIXME: Use sources-node-color.
-             label `(tr nil
-                        (td ((port . ,(format "sources_%s" topic))
-                             (bgcolor . "#003f00"))
-                            ,topic)))))
+           label '(tr nil (td ((port . "blockers") (bgcolor . "#00003f"))
+                              "blocker")))
+          (dom-append-child
+           ;; FIXME: Use sources-node-color.
+           label `(tr nil (td ((port . "sources") (bgcolor . "#003f00"))
+                              "source"))))
       (when blocker-paths
         (dom-append-child
          ;; FIXME: Use blockers-node-color.
-         label '(tr nil
-                    (td ((port . "blockers") (bgcolor . "#00003f")) "blocker"))))
+         label '(tr nil (td ((port . "blockers") (bgcolor . "#00003f"))
+                            "blocker"))))
       (when blocked-paths
         (dom-append-child
          ;; FIXME: Use blocked-node-color.
-         label '(tr nil
-                    (td ((port . "blocked") (bgcolor . "#3f0000")) "blocked"))))
-      (pcase-dolist (`(,topic . ,_paths) source-paths)
+         label '(tr nil (td ((port . "blocked") (bgcolor . "#3f0000"))
+                            "blocked"))))
+      (when source-paths
         (dom-append-child
          ;; FIXME: Use sources-node-color.
-         label `(tr nil
-                    (td ((port . ,(format "sources_%s" topic))
-                         (bgcolor . "#003f00"))
-                        ,topic)))))
+         label `(tr nil (td ((port . "sources") (bgcolor . "#003f00"))
+                            "source")))))
     (insert (format "%s [label=<\n  " public-key))
     (dom-print label)
     ;; FIXME: Don't hardcode color=grey.
     (insert (format "\n>, href=\"%s\", color=\"grey\", shape=\"none\", margin=\"0\", style=\"filled\"];\n" public-key))))
 
-(cl-defun hpg/relations (root topics &key finally sources-max-hops blockers-max-hops)
-  ;; TODO: Handle nil topics as all topics from ROOT.
-  "Load relations from ROOT about TOPICS and call FINALLY.
-If TOPICS is nil, get relations for all topics for which ROOT has
-hops.  FINALLY should be a function which accepts a single
-argument, a hash table of `fons-relation' structs keyed by public
-key.  SOURCES-MAX-HOPS and BLOCKERS-MAX-HOPS are the maximum
-number of hops to traverse for sources and blockers,
-respectively."
+(cl-defun hpg/relations (root &key finally sources-max-hops blockers-max-hops)
+  "Load relations from ROOT and call FINALLY.
+FINALLY should be a function which accepts a single argument, a
+hash table of `fons-relation' structs keyed by public key.
+SOURCES-MAX-HOPS and BLOCKERS-MAX-HOPS are the maximum number of
+hops to traverse for sources and blockers, respectively."
   (fons-relations root
     :hops-fn #'hpg/blockers-hops-fn :type 'blockers
     :max-hops blockers-max-hops :finally
@@ -240,15 +225,9 @@ respectively."
       (fons-blocked root relations
         :hops-fn #'hpg/blocked-hops-fn :finally
         (lambda (relations)
-          (let ((pending-topics 0))
-            (dolist (topic topics)
-              (cl-incf pending-topics)
-              (fons-relations root
-                :relations relations :type 'sources :topic topic :max-hops sources-max-hops
-                :hops-fn (apply-partially #'hpg/sources-hops-fn topic) :finally
-                (lambda (relations)
-                  (when (zerop (cl-decf pending-topics))
-                    (funcall finally relations)))))))))))
+          (fons-relations root
+            :relations relations :type 'sources :max-hops sources-max-hops
+            :hops-fn #'hpg/sources-hops-fn :finally finally))))))
 
 (defun hpg/filter (relations)
   "Return filtered RELATIONS."
@@ -267,22 +246,6 @@ respectively."
   relations)
 
 ;;;;; Reading user input
-
-(defvar hpg/topics-history nil
-  "Minibuffer history of `hyperdrive-peer-graph-read-topic'.")
-
-(defun hpg/read-topics ()
-  "Read topic string or nil with blank string."
-  (completing-read-multiple
-   "Topics (leave blank for all topics): "
-   (hpg/topics-for hpg/root-hyperdrive) nil hpg/topics-history))
-
-(cl-defun hpg/context-topics (&key force-prompt)
-  "Return `hyperdrive-peer-graph-topics'.
-With FORCE-PROMPT, or interactively with universal prefix
-argument \\[universal-argument], always prompt.
-Blank string defaults to all topics."
-  (if force-prompt (hpg/read-topics) hpg/topics))
 
 (cl-defun hpg/context-root-hyperdrive (&key force-prompt)
   "Return `hyperdrive-peer-graph-root-hyperdrive' or prompt for drive.
@@ -319,31 +282,26 @@ argument \\[universal-argument], always prompt."
   "Return list of interactive args for `hyperdrive-peer-graph'."
   (let* ((root-hyperdrive (hpg/context-root-hyperdrive
                            :force-prompt current-prefix-arg))
-         (topics (hpg/context-topics :force-prompt current-prefix-arg))
-         (topics-or-root-changed
-          (not (and (equal topics hpg/topics)
-                    (eq root-hyperdrive hpg/root-hyperdrive))))
+         (root-changed (not (eq root-hyperdrive hpg/root-hyperdrive)))
          (sources-max-hops (hpg/context-max-hops
                             'sources :force-prompt (or current-prefix-arg
-                                                       topics-or-root-changed)))
+                                                       root-changed)))
          (blockers-max-hops (hpg/context-max-hops
                              'blockers
                              :force-prompt (or current-prefix-arg
-                                               topics-or-root-changed))))
-    (list topics root-hyperdrive sources-max-hops blockers-max-hops)))
+                                               root-changed))))
+    (list root-hyperdrive sources-max-hops blockers-max-hops)))
 
 ;;;; Peer Graph
 
 (defun hyperdrive-peer-graph
-    (topics hyperdrive sources-max-hops blockers-max-hops)
+    (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
-  (if (and (equal topics hpg/topics)
-           hpg/root-hyperdrive
+  (if (and hpg/root-hyperdrive
            (h/equal-p hyperdrive hpg/root-hyperdrive)
            (hpg/loaded-relations))
       (hpg/display-graph)
-    (setf hpg/topics topics)
     (setf hpg/root-hyperdrive hyperdrive)
     (setf hpg/sources-max-hops sources-max-hops)
     (setf hpg/blockers-max-hops blockers-max-hops)
@@ -355,7 +313,6 @@ argument \\[universal-argument], always prompt."
   (setf hpg/relations
         (hpg/relations
          (h/public-key hpg/root-hyperdrive)
-         (or hpg/topics (hpg/topics-for hpg/root-hyperdrive))
          :sources-max-hops hpg/sources-max-hops
          :blockers-max-hops hpg/blockers-max-hops
          :finally
@@ -383,7 +340,6 @@ argument \\[universal-argument], always prompt."
   (with-current-buffer (get-buffer-create hpg/buffer-name)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
-                 :topics (or hpg/topics (hpg/topics-for hpg/root-hyperdrive))
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
                  :insert-relation-fun #'hpg/insert-relation)
     (pop-to-buffer (current-buffer) hpg/display-buffer-action)))
@@ -448,7 +404,7 @@ Reload data and redisplay graph."
 
 ;;;###autoload (autoload 'hyperdrive-peer-graph-menu "hyperdrive-peer-graph" nil t)
 (transient-define-prefix hyperdrive-peer-graph-menu
-  (topics hyperdrive sources-max-hops blockers-max-hops)
+  (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   ;; TODO: Update info manual link
   :info-manual "(hyperdrive)"
@@ -457,7 +413,6 @@ Reload data and redisplay graph."
    :pad-keys t
    ;; TODO: When changing `hpg/root-hyperdrive', reset local variables to default values?
    ("r" hpg/set-root-hyperdrive)
-   ("t" hpg/set-topics)
    ("g" "Reload" hpg/reload)]
   ["Paths only to"
    (:info #'hpg/format-paths-only-to :format "%d")
@@ -475,7 +430,7 @@ Reload data and redisplay graph."
   ["Options"
    ("S" hpg/set-shortest-path-p)]
   (interactive (hpg/interactive-args))
-  (h/peer-graph topics hyperdrive sources-max-hops blockers-max-hops)
+  (h/peer-graph hyperdrive sources-max-hops blockers-max-hops)
   (transient-setup 'hyperdrive-peer-graph-menu nil nil :scope hyperdrive))
 
 (transient-define-suffix hpg/set-root-hyperdrive ()
@@ -487,18 +442,6 @@ Reload data and redisplay graph."
                          (propertize "unset" 'face))))
   (interactive)
   (setf hpg/root-hyperdrive (h/read-hyperdrive :default hpg/root-hyperdrive))
-  (hpg/load))
-
-(transient-define-suffix hpg/set-topics ()
-  :transient t
-  :description
-  (lambda ()
-    (format "Topics: %s"
-            (if hpg/topics
-                (propertize (string-join hpg/topics ", ") 'face 'transient-argument)
-              (propertize "All" 'face 'transient-inactive-value))))
-  (interactive)
-  (setf hpg/topics (hpg/read-topics))
   (hpg/load))
 
 (transient-define-suffix hpg/set-sources-max-hops ()

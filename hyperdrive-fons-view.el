@@ -161,12 +161,12 @@ WIDTH and HEIGHT are in inches."
       (list width-in height-in (/ (+ width-res height-res) 2)))))
 
 (cl-defun hyperdrive-fons-view
-    (relations root &key topics (layout hyperdrive-fons-view-layout) focus-ids insert-relation-fun)
+    (relations root &key (layout hyperdrive-fons-view-layout) focus-ids insert-relation-fun)
   "View RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
-    relations :root-name root :topics topics :focus-ids focus-ids
-    :layout layout :insert-relation-fun insert-relation-fun)))
+    relations :root-name root :focus-ids focus-ids :layout layout
+    :insert-relation-fun insert-relation-fun)))
 
 (defun hyperdrive-fons-view--graphviz (type)
   "Run Graphviz for TYPE on current buffer.
@@ -209,7 +209,7 @@ graphviz string, and replaces it with the rendered output."
             (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
 (cl-defun hyperdrive-fons-view--format-graph
-    (relations &key root-name topics focus-ids layout insert-relation-fun)
+    (relations &key root-name focus-ids layout insert-relation-fun)
   "Return a graphviz-string string for RELATIONS."
   (let ((sources-node-color (hyperdrive-fons-view-blend-with
                              hyperdrive-fons-view-sources-color 0.25 :background))
@@ -231,12 +231,13 @@ graphviz string, and replaces it with the rendered output."
                                   (cl-loop for (key value) on pairs by #'cddr
                                            collect (format "%s=\"%s\"" key value))
                                   ",")))
-                (format-hop (hop type &optional topic)
+                (format-hop (hop type)
                   (format "%s:%s -> %s [color=\"%s\"];\n"
                           (fons-hop-from hop)
                           (pcase type
-                            ('sources (format "sources_%s" topic))
+                            ('sources "sources")
                             ('blockers "blockers")
+                            ;; Source port for blocked relation is "blockers"
                             ('blocked "blockers"))
                           (fons-hop-to hop)
                           (pcase type
@@ -244,9 +245,9 @@ graphviz string, and replaces it with the rendered output."
                             ('blockers blockers-edge-color)
                             ('blocked blocked-edge-color))))
                 (format-to (to relation)
-                  (funcall insert-relation-fun to relations root-name topics))
+                  (funcall insert-relation-fun to relations root-name))
                 (format-root (root)
-                  (funcall insert-relation-fun root relations root-name topics)
+                  (funcall insert-relation-fun root relations root-name)
                   (insert (format "root=\"%s\"\n" root-name))))
       (with-temp-buffer
         (save-excursion
@@ -260,12 +261,11 @@ graphviz string, and replaces it with the rendered output."
                        "overlap" hyperdrive-fons-view-overlap
                        "compound" "true"
                        ;; "ranksep""1"
+                       ;; "margin" "0"
                        "ratio" "fill"
                        "mindist" "0")
-          (dolist (topic topics)
-            ;; TODO: Group nodes and edges by topic
-            (dolist (hop (fons-relations-hops relations 'sources topic))
-              (insert (format-hop hop 'sources topic))))
+          (dolist (hop (fons-relations-hops relations 'sources))
+            (insert (format-hop hop 'sources)))
           (dolist (hop (fons-relations-hops relations 'blockers))
             (insert (format-hop hop 'blockers)))
           (when (catch 'blocker-paths-exist-p
@@ -279,6 +279,7 @@ graphviz string, and replaces it with the rendered output."
           (format-root root-name)
           (maphash #'format-to relations)
           (insert "}"))
+        ;; (message "%s" (buffer-string))
         (buffer-string)))))
 
 (cl-defun hyperdrive-fons-view--svg (graph)
