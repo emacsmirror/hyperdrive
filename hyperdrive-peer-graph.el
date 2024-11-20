@@ -173,11 +173,10 @@ RELATION may be a hash table of `fons-relation' structs mapped by
                     (seed . "%s")
                     (domains . "%s")))
        (label
-        `(table nil
+        `(table ((cellborder . "0") (color . ,(face-attribute 'default :foreground)))
                 (tr nil
                     ;; TODO: Insert user color here.
-                    ;; FIXME: Set bgcolor appropriately.
-                    (td ((bgcolor . "black"))
+                    (td ((bgcolor . ,(face-attribute 'default :background)))
                         ,(h//format-preferred hyperdrive) (br)
                         (font ((point-size . "10"))
                               ,(format "%s"
@@ -185,32 +184,31 @@ RELATION may be a hash table of `fons-relation' structs mapped by
     (if rootp
         (progn
           (dom-append-child
-           ;; FIXME: Use blockers-node-color.
-           label '(tr nil (td ((port . "blockers") (bgcolor . "#00003f"))
-                              "blocker")))
+           label `(tr nil (td ((port . "blockers"))
+                              (font ((color . ,h/fons-view-blockers-color))
+                                    "blocker"))))
           (dom-append-child
-           ;; FIXME: Use sources-node-color.
-           label `(tr nil (td ((port . "sources") (bgcolor . "#003f00"))
-                              "source"))))
+           label `(tr nil (td ((port . "sources"))
+                              (font ((color . ,h/fons-view-sources-color))
+                                    "source")))))
       (when blocker-paths
         (dom-append-child
-         ;; FIXME: Use blockers-node-color.
-         label '(tr nil (td ((port . "blockers") (bgcolor . "#00003f"))
-                            "blocker"))))
+         label `(tr nil (td ((port . "blockers"))
+                            (font ((color . ,h/fons-view-blockers-color))
+                                  "blocker")))))
       (when blocked-paths
         (dom-append-child
-         ;; FIXME: Use blocked-node-color.
-         label '(tr nil (td ((port . "blocked") (bgcolor . "#3f0000"))
-                            "blocked"))))
+         label `(tr nil (td ((port . "blocked"))
+                            (font ((color . ,h/fons-view-blocked-color))
+                                  "blocked")))))
       (when source-paths
         (dom-append-child
-         ;; FIXME: Use sources-node-color.
-         label `(tr nil (td ((port . "sources") (bgcolor . "#003f00"))
-                            "source")))))
+         label `(tr nil (td ((port . "sources"))
+                            (font ((color . ,h/fons-view-sources-color))
+                                  "source"))))))
     (insert (format "%s [label=<\n  " public-key))
     (dom-print label)
-    ;; FIXME: Don't hardcode color=grey.
-    (insert (format "\n>, href=\"%s\", color=\"grey\", shape=\"none\", margin=\"0\", style=\"filled\"];\n" public-key))))
+    (insert (format "\n>, href=\"%s\", color=\"%s\", bgcolor=\"%s\", shape=\"none\", margin=\"0\", style=\"filled\"];\n" public-key (face-attribute 'default :background)  (face-attribute 'default :background)))))
 
 (cl-defun hpg/relations (root &key finally sources-max-hops blockers-max-hops)
   "Load relations from ROOT and call FINALLY.
