@@ -241,9 +241,9 @@ graphviz string, and replaces it with the rendered output."
                             ('blocked "blockers"))
                           (fons-hop-to hop)
                           (pcase type
-                            ('sources sources-edge-color)
-                            ('blockers blockers-edge-color)
-                            ('blocked blocked-edge-color))))
+                            ('sources hyperdrive-fons-view-sources-color)
+                            ('blockers hyperdrive-fons-view-blockers-color)
+                            ('blocked hyperdrive-fons-view-blocked-color))))
                 (format-to (to relation)
                   (funcall insert-relation-fun to relations root-name))
                 (format-root (root)
