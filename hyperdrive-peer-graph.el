@@ -75,7 +75,7 @@ Passed to `display-buffer', which see."
 
 (cl-defun hpg/data (hyperdrive &key then)
   "Return peer graph data for HYPERDRIVE then call THEN.
-THEN will be called with the parsed JSON hash table as its sole
+THEN will be called with the parsed JSON object as its sole
 argument.  If error, demote it and call THEN with nil argument.
 If THEN is nil or \\+`sync', the request will be synchronous, and
 errors will be demoted.  If data for HYPERDRIVE is already in
@@ -89,70 +89,58 @@ errors will be demoted.  If data for HYPERDRIVE is already in
       (pcase then
         ((or 'nil 'sync) data)
         (_ (run-at-time 0 nil (lambda () (funcall then data)))))))
-  (let ((entry (he//create :hyperdrive hyperdrive :path hpg/data-filename)))
-    (pcase then
-      ((or 'nil 'sync)
-       (condition-case err
-           ;; TODO: Refactor to use :as 'response-with-buffer.
-           (let ((data (json-parse-string
-                        (plz-response-body (he/api 'get entry))
-                        :array-type 'list)))
+  (let ((commands `((query ((gte . ("ushin" "peers"))
+                            (lt . ("ushin" "peers" "\uffff")))))))
+    (cl-labels
+        ((entries (json)
+           (let (data)
+             (mapc (pcase-lambda
+                     ((map ('key (rx "ushin" 0 "peers" 0
+                                     (let public-key (= 52 alphanumeric))
+                                     0 (let type (+ alphanumeric))))))
+                     (when public-key
+                       (pcase-exhaustive type
+                         ("source" (push public-key (map-elt data 'sources)))
+                         ("blocker" (push public-key (map-elt data 'blockers)))
+                         ("blocked" (push public-key (map-elt data 'blocked))))))
+                   (cdaddr (aref json 0)))
              (puthash (h/public-key hyperdrive) data hpg/data-cache)
-             data)
-         (json-error
-          (let ((inhibit-message t))
-            (h/message "Error parsing peer graph data: %s\n%S"
-                       (he/url entry) err)))
-         (plz-error
-          (pcase (plz-response-status (plz-error-response (caddr err)))
-            ;; FIXME: If plz-error is a curl-error, this block will fail.
-            (404
-             (h/message "No peer graph data found: %s" (he/url entry)))
-            (_ (let ((inhibit-message t))
+             data)))
+      (pcase then
+        ((or 'nil 'sync)
+         (condition-case err
+             (entries (h//bee-exec hyperdrive commands :then then))
+           (error
+            ;; Despite error, call THEN so `pending-relations' gets decremented.
+            (let ((inhibit-message t))
+              (h/message "Error getting peer graph data for hyperdrive %s: %S"
+                         (h/url hyperdrive) err)
+              (funcall then nil)))))
 
-                 (h/message "Error getting peer graph data: %s" (he/url entry) plz-error)))))))
-      (_ (he/api 'get entry :noquery t
-           ;; Despite error, always call THEN so `pending-relations' gets decremented.
-           :then (lambda (response)
-                   (condition-case err
-                       ;; TODO: When plz adds :as 'response-with-buffer, use that.
-                       (let ((data (json-parse-string
-                                    (plz-response-body response)
-                                    :array-type 'list)))
-                         (puthash (h/public-key hyperdrive) data hpg/data-cache)
-                         (funcall then data))
-                     (json-error
-                      (h/message "Error parsing peer graph data: %s\n%S"
-                                 (he/url entry) err)
-                      (funcall then nil))))
+        (_
+         (h//bee-exec hyperdrive commands
+           :then (lambda (json) (funcall then (entries json)))
            :else (lambda (plz-error)
-                   (pcase (plz-response-status (plz-error-response plz-error))
-                     ;; FIXME: If plz-error is a curl-error, this block will fail.
-                     (404
-                      (h/message "No peer graph data found: %s" (he/url entry))
-                      (funcall then nil))
-                     (_
-                      ;; TODO: Put error in another buffer.  Check error 500 for malformed URLs?
-                      (h/message "Error getting peer graph data: %s" (he/url entry) plz-error)
-                      (funcall then nil)))))))))
+                   (h/message "Error getting peer graph data: %s" (he/url entry) plz-error)
+                   (funcall then nil))))))))
 
 (defun hpg/sources-hops-fn (from then)
   "Asynchronously get source hops from FROM.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
-    :then (lambda (data) (funcall then (map-elt data "sources")))))
+    :then (lambda (data) (funcall then (map-elt data 'sources)))))
 
 (defun hpg/blockers-hops-fn (from then)
   "Asynchronously get blocker hops from FROM.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
-    :then (lambda (data) (funcall then (map-elt data "blockers")))))
+    :then (lambda (data) (funcall then (map-elt data 'blockers)))))
 
 (cl-defun hpg/blocked-hops-fn (blocker then)
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
   (hpg/data (h/create :public-key blocker)
-    :then (lambda (data) (funcall then (map-elt data "blocked")))))
+    :then (lambda (data) (funcall then (map-elt data 'blocked)))))
 
 (cl-defun hpg/insert-relation (public-key relations root)
   "Insert display string for PUBLIC-KEY in current buffer.
