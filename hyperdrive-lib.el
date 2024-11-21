@@ -1100,13 +1100,18 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
 (cl-defun h/put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
-  (let ((entry (he/create :hyperdrive hyperdrive
-                          :path "/.well-known/host-meta.json")))
+  (h/put-json hyperdrive
+    :data (h/metadata hyperdrive)
+    :path "/.well-known/host-meta.json"
+    :then then))
+
+(cl-defun h/put-json (hyperdrive &key data path then)
+  "Put DATA as JSON into HYPERDRIVE at PATH, then call THEN."
+  (declare (indent defun))
+  (let ((entry (he/create :hyperdrive hyperdrive :path path)))
     ;; TODO: Is it okay to always encode the JSON object as UTF-8?
-    (h/write entry :body (encode-coding-string
-                          (json-encode (h/metadata hyperdrive)) 'utf-8)
-      :then then)
-    hyperdrive))
+    (h/write entry :body (encode-coding-string (json-encode data) 'utf-8)
+      :then then)))
 
 (cl-defun h/persist (hyperdrive &key purge)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'.
