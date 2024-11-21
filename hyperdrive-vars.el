@@ -329,7 +329,7 @@ This hook is called by `hyperdrive--gateway-wait-for-dead' after
 (defface h/domain '((t :inherit font-lock-keyword-face))
   "Applied to hyperdrive domains.")
 
-(defface h/nickname '((t :inherit font-lock-warning-face))
+(defface h/nickname '((t :inherit shadow))
   "Applied to hyperdrive nicknames.")
 
 (defface h/public-key '((t :inherit font-lock-function-name-face))
