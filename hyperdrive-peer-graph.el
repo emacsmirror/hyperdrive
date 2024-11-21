@@ -301,9 +301,6 @@ argument \\[universal-argument], always prompt."
   (h//format-preferred
    (h/url-hyperdrive
     (fons-relation-to
-     ;; We already called `taxy-mapcar' and so `item' is bound to the return
-     ;; value of `hpg/format-relation-to' instead of the relation itself.
-     ;; TODO: Is there a way to avoid the `gethash' call?
      item))))
 
 (hpg/define-column "Source" ()
@@ -362,10 +359,6 @@ A blocked hop includes the number of hops to the blocker."
   "Return formatted string for HOPS, which is an integer."
   (if (= 1 hops) "1 hop" (format "%d hops" hops)))
 
-;; (taxy-plain
-;;  (taxy-mapcar #'hpg/format-relation-to
-;;    (taxy-fill (hash-table-values hpg/relations)
-;;               (taxy-emptied hpg/taxy2))))
 
 (defun hpg/source-p (relation)
   "Return non-nil if RELATION is a source.
@@ -445,11 +438,6 @@ blocked paths or has a one-hop source path."
     (dolist (type type-priorities)
       (when (fons-relation-paths-of-type type relation)
         (throw 'type type)))))
-
-(defun hpg/format-relation-to (relation)
-  ;; FIXME: Render text properties in `taxy-magit-section'.
-  (substring-no-properties
-   (h//format-preferred (h/url-hyperdrive (fons-relation-to relation)))))
 
 ;;;; Peer Graph
 
