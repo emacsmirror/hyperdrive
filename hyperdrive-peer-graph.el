@@ -305,24 +305,24 @@ argument \\[universal-argument], always prompt."
 
 (hpg/define-column "Source" ()
   ;; HACK: Since item is already filtered to one type, get original relation.
-  (if (fons-relation-source-paths
-       (gethash (fons-relation-to item) hpg/relations))
+  (if (fons-relation-direct-p
+       'sources (gethash (fons-relation-to item) hpg/relations))
       (propertize "Yes" 'face 'bold)
-    (propertize "No" 'face 'shadow)))
+    (propertize "Unset" 'face 'shadow)))
 
 (hpg/define-column "Blocker" ()
   ;; HACK: Since item is already filtered to one type, get original relation.
-  (if (fons-relation-blocker-paths
-       (gethash (fons-relation-to item) hpg/relations))
+  (if (fons-relation-direct-p
+       'blockers (gethash (fons-relation-to item) hpg/relations))
       (propertize "Yes" 'face 'bold)
-    (propertize "No" 'face 'shadow)))
+    (propertize "Unset" 'face 'shadow)))
 
 (hpg/define-column "Blocked" ()
   ;; HACK: Since item is already filtered to one type, get original relation.
-  (if (fons-relation-blocked-paths
-       (gethash (fons-relation-to item) hpg/relations))
+  (if (fons-relation-direct-p
+       'blocked (gethash (fons-relation-to item) hpg/relations))
       (propertize "Yes" 'face 'bold)
-    (propertize "No" 'face 'shadow)))
+    (propertize "Unset" 'face 'shadow)))
 
 (unless hpg/columns
   (setq-default hpg/columns (get 'hpg/columns 'standard-value)))
@@ -359,6 +359,11 @@ A blocked hop includes the number of hops to the blocker."
   "Return formatted string for HOPS, which is an integer."
   (if (= 1 hops) "1 hop" (format "%d hops" hops)))
 
+(defun fons-relation-direct-p (type relation)
+  "Return non-nil if RELATION is direct from root for TYPE."
+  (cl-loop for path in (fons-relation-paths-of-type type relation)
+           thereis (equal (h/public-key hpg/root-hyperdrive)
+                    (fons-hop-from (car (last (fons-path-hops path)))))))
 
 (defun hpg/source-p (relation)
   "Return non-nil if RELATION is a source.
