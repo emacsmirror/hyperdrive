@@ -306,7 +306,15 @@ argument \\[universal-argument], always prompt."
 (defun fons-shortest-blocked-hops-length (relation)
   "Return the minimum number of blocked hops in RELATION.
 A blocked hop includes the number of hops to the blocker."
-  (fons-shortest-hops-length 'blocked relation))
+  (when-let* ((blocked-paths (fons-relation-blocked-paths relation))
+              (blockers
+               (mapcar (lambda (path)
+                         (gethash (fons-hop-from (car (fons-path-hops path)))
+                                  hpg/relations))
+                       blocked-paths)))
+    (1+ (cl-loop
+         for blocker in blockers
+         minimize (fons-shortest-hops-length 'blockers blocker)))))
 
 (defvar hpg/sources-taxy
   (make-taxy-magit-section
