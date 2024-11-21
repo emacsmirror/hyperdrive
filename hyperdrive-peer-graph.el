@@ -385,10 +385,17 @@ blocked paths or has a one-hop source path."
     (let (format-table column-sizes)
       (cl-labels ((format-item (item)
                     (gethash item format-table))
-                  (make-fn (&rest args)
+                  (make-fn (type &rest args)
                     (apply #'make-taxy-magit-section
-                           :make #'make-fn
+                           :make (lambda (&rest args)
+                                   (apply #'make-fn type args))
                            :format-fn #'format-item
+                           :heading-face-fn
+                           (lambda (_)
+                             (pcase type
+                               ('sources 'hyperdrive-fons-source)
+                               ('blockers 'hyperdrive-fons-blocker)
+                               ('blocked 'hyperdrive-fons-blocked)))
                            :level-indent 2
                            :item-indent 0
                            args)))
@@ -398,16 +405,19 @@ blocked paths or has a one-hop source path."
                          hpg/relations :blockedp t :all-blocked-p t))
                (sources-taxy
                 (thread-last
-                  (make-fn :name (propertize "Sources" 'face 'hyperdrive-fons-source)
-                           :take (lambda (peer taxy)
-                                   (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
-                                     peer taxy :key-name-fn #'hpg/format-hops)))
+                  (make-fn
+                   'sources
+                   :name "Sources"
+                   :take (lambda (peer taxy)
+                           (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
+                             peer taxy :key-name-fn #'hpg/format-hops)))
                   taxy-emptied
                   (taxy-fill (hash-table-values sources))))
                (blockers-taxy
                 (thread-last
                   (make-fn
-                   :name (propertize "Blockers" 'face 'hyperdrive-fons-blocker)
+                   'blockers
+                   :name "Blockers"
                    :take (lambda (peer taxy)
                            (taxy-take-keyed (list #'fons-shortest-blockers-hops-length)
                              peer taxy :key-name-fn #'hpg/format-hops)))
@@ -415,10 +425,12 @@ blocked paths or has a one-hop source path."
                   (taxy-fill (hash-table-values blockers))))
                (blocked-taxy
                 (thread-last
-                  (make-fn :name (propertize "Blocked" 'face 'hyperdrive-fons-blocked)
-                           :take (lambda (peer taxy)
-                                   (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
-                                     peer taxy :key-name-fn #'hpg/format-hops)))
+                  (make-fn
+                   'blocked
+                   :name "Blocked"
+                   :take (lambda (peer taxy)
+                           (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
+                             peer taxy :key-name-fn #'hpg/format-hops)))
                   taxy-emptied
                   (taxy-fill (hash-table-values blocked))))
                (taxy (make-taxy-magit-section
