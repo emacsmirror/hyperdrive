@@ -286,7 +286,6 @@ argument \\[universal-argument], always prompt."
                                                root-changed))))
     (list root-hyperdrive sources-max-hops blockers-max-hops)))
 
-;; FIXME: Shortest path should refresh graph, but it doesn't.
 
 ;;;; Peer List
 
