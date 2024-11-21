@@ -69,8 +69,17 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
+(defface hyperdrive-fons-source '((t :inherit success))
+  "Applied to sources.")
+
+(defface hyperdrive-fons-blocker '((t :inherit warning))
+  "Applied to blockers.")
+
+(defface hyperdrive-fons-blocked '((t :inherit error))
+  "Applied to blocked.")
+
 ;; TODO: Reload image on defcustom change
-(defcustom hyperdrive-fons-view-sources-color (face-foreground 'success nil t)
+(defcustom hyperdrive-fons-view-sources-color (face-foreground 'hyperdrive-fons-source nil t)
   "Source edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -78,7 +87,7 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blockers-color (face-foreground 'warning nil t)
+(defcustom hyperdrive-fons-view-blockers-color (face-foreground 'hyperdrive-fons-blocker nil t)
   "Blocker edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -86,7 +95,7 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocked-color (face-foreground 'error nil t)
+(defcustom hyperdrive-fons-view-blocked-color (face-foreground 'hyperdrive-fons-blocked nil t)
   "Blocked edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
