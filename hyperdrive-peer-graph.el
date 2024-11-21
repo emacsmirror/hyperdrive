@@ -306,22 +306,28 @@ argument \\[universal-argument], always prompt."
   ;; HACK: Since item is already filtered to one type, get original relation.
   (if (fons-relation-direct-p
        'sources (gethash (fons-relation-to item) hpg/relations))
-      (propertize "Source" 'face 'hpg/source)
-    (propertize "------" 'face 'shadow)))
+      (buttonize "[Source]"
+                 (lambda (_) (message "Click!")))
+    (buttonize "[      ]"
+               (lambda (_) (message "Click!")))))
 
 (hpg/define-column "Blocker" ()
   ;; HACK: Since item is already filtered to one type, get original relation.
   (if (fons-relation-direct-p
        'blockers (gethash (fons-relation-to item) hpg/relations))
-      (propertize "Blocker" 'face 'hpg/blocker)
-    (propertize "------" 'face 'shadow)))
+      (buttonize "[Blocker]"
+                 (lambda (_) (message "Click!")))
+    (buttonize "[       ]"
+               (lambda (_) (message "Click!")))))
 
 (hpg/define-column "Blocked" ()
   ;; HACK: Since item is already filtered to one type, get original relation.
   (if (fons-relation-direct-p
        'blocked (gethash (fons-relation-to item) hpg/relations))
-      (propertize "Blocked" 'face 'hpg/blocked)
-    (propertize "-------" 'face 'shadow)))
+      (buttonize "[Blocked]"
+                 (lambda (_) (message "Click!")))
+    (buttonize "[     ]"
+               (lambda (_) (message "Click!")))))
 
 (unless hpg/columns
   (setq-default hpg/columns (get 'hpg/columns 'standard-value)))
