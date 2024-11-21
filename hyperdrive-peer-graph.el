@@ -296,18 +296,21 @@ argument \\[universal-argument], always prompt."
            minimize (length (fons-path-hops path))))
 
 (defun fons-shortest-sources-hops-length (relation)
-  "Return the minimum number of source hops in RELATION."
+  "Return the shortest number of source hops for RELATION."
   (fons-shortest-hops-length 'sources relation))
 
-(defun hpg/taxy-format-shortest-sources-hops-length (relation)
-  (number-to-string (fons-shortest-sources-hops-length relation)))
+(defun fons-shortest-blockers-hops-length (relation)
+  "Return the minimum number of blocker hops in RELATION."
+  (fons-shortest-hops-length 'blockers relation))
 
-
+(defun fons-shortest-blocked-hops-length (relation)
+  "Return the minimum number of blocked hops in RELATION.
+A blocked hop includes the number of hops to the blocker."
+  (fons-shortest-hops-length 'blocked relation))
 
 (defvar hpg/sources-taxy
   (make-taxy-magit-section
    :name (propertize "Sources" 'face 'success)
-   :predicate #'ignore
    :take (lambda (peer taxy)
            (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
              peer taxy :key-name-fn #'hpg/format-hops))))
@@ -317,17 +320,15 @@ argument \\[universal-argument], always prompt."
   (make-taxy-magit-section
    ;; TODO: Use separate face.
    :name (propertize "Blockers" 'face 'warning)
-   :predicate #'ignore
    :take (lambda (peer taxy)
-           (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
+           (taxy-take-keyed (list #'fons-shortest-blockers-hops-length)
              peer taxy :key-name-fn #'hpg/format-hops))))
 
 (defvar hpg/blocked-taxy
   (make-taxy-magit-section
    :name (propertize "Blocked" 'face 'error)
-   :predicate #'ignore
    :take (lambda (peer taxy)
-           (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
+           (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
              peer taxy :key-name-fn #'hpg/format-hops))))
 
 (defun hpg/format-hops (hops)
@@ -347,15 +348,7 @@ blocked paths or has a one-hop source path."
     (or (and source-paths (not blocked-paths))
         (cl-loop for path in source-paths
                  ;; TODO: Make this customizable (include N-hop relations)?
-                 thereis (= 1 (length (fons-path-hops path)))))))
-
-(defun hpg/blocker-p (relation)
-  "Return non-nil if RELATION has blocker paths."
-
-  (pcase-let (((cl-struct fons-relation source-paths blocked-paths) relation))
-    (or (and source-paths (not blocked-paths))
-        (cl-loop for path in source-paths
-                 ;; TODO: Make this customizable (include N-hop relations)?
+                 ;; TODO: Move this logic into `fons-filter-to-types'.
                  thereis (= 1 (length (fons-path-hops path)))))))
 
 (defun hpg/taxy-test ()
@@ -364,60 +357,32 @@ blocked paths or has a one-hop source path."
                         (format "*hyperdrive-peer-list %s*"
                                 (hyperdrive--format-preferred
                                  hpg/root-hyperdrive)))
-
     (with-silent-modifications
-      (let* ((relations (hash-table-values hpg/relations))
-             (sources (cl-remove-if-not #'hpg/source-p relations))
-             (blockers (cl-remove-if-not #'fons-relation-blocker-paths
-                                         relations))
-             (blocked (cl-remove-if-not #'fons-relation-blocked-paths
-                                        relations)))
+      (let* ((sources (fons-filter-to-types hpg/relations :sourcesp t))
+             (blockers (fons-filter-to-types hpg/relations :blockersp t))
+             (blocked (fons-filter-to-types
+                       hpg/relations :blockedp t :all-blocked-p t))
+             (sources-taxy
+              (thread-last hpg/sources-taxy
+                           taxy-emptied
+                           (taxy-fill (hash-table-values sources))
+                           (taxy-mapcar #'hpg/format-relation-to)))
+             (blockers-taxy
+              (thread-last hpg/blockers-taxy
+                           taxy-emptied
+                           (taxy-fill (hash-table-values blockers))
+                           (taxy-mapcar #'hpg/format-relation-to)))
+             (blocked-taxy
+              (thread-last hpg/blocked-taxy
+                           taxy-emptied
+                           (taxy-fill (hash-table-values blocked))
+                           (taxy-mapcar #'hpg/format-relation-to)))
+             (taxy (make-taxy-magit-section
+                    :taxys (list sources-taxy blockers-taxy blocked-taxy))))
         (magit-section-mode)
         (erase-buffer)
-        (thread-last hpg/sources-taxy
-                     taxy-emptied
-                     (taxy-fill sources)
-                     (taxy-mapcar #'hpg/format-relation-to)
-                     taxy-magit-section-insert)
-        (thread-last hpg/blockers-taxy
-                     taxy-emptied
-                     (taxy-fill blockers)
-                     (taxy-mapcar #'hpg/format-relation-to)
-                     taxy-magit-section-insert)
-        (thread-last hpg/blocked-taxy
-                     taxy-emptied
-                     (taxy-fill blocked)
-                     (taxy-mapcar #'hpg/format-relation-to)
-                     taxy-magit-section-insert)
+        (taxy-magit-section-insert taxy :initial-depth -1)
         (pop-to-buffer (current-buffer))))))
-
-(defvar hpg/taxy
-  (make-taxy-magit-section
-   :name "Peers"
-   :predicate #'ignore
-   :taxys
-   (list
-    (make-taxy-magit-section
-     :name "Sources"
-     :predicate #'ignore;; (apply-partially #'fons-relation-paths-of-type 'sources)
-     :then #'identity
-     :taxys
-     (list
-      (make-taxy-magit-section
-       :name "Sources"
-       :predicate
-       (lambda (relation)
-         (fons-relation-source-paths relation))
-       :then #'identity))
-     )
-    (make-taxy-magit-section
-     :name "Blockers"
-     :predicate (apply-partially #'fons-relation-paths-of-type 'blockers)
-     :then #'identity)
-    (make-taxy-magit-section
-     :name "Blocked"
-     :predicate (apply-partially #'fons-relation-paths-of-type 'blocked)
-     :then #'identity))))
 
 (defun fons-relation-type (relation type-priorities)
   (catch 'type
