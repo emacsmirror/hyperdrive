@@ -307,7 +307,25 @@ argument \\[universal-argument], always prompt."
      item))))
 
 (hpg/define-column "Source" ()
-  "Yes")
+  ;; HACK: Since item is already filtered to one type, get original relation.
+  (if (fons-relation-source-paths
+       (gethash (fons-relation-to item) hpg/relations))
+      (propertize "Yes" 'face 'bold)
+    (propertize "No" 'face 'shadow)))
+
+(hpg/define-column "Blocker" ()
+  ;; HACK: Since item is already filtered to one type, get original relation.
+  (if (fons-relation-blocker-paths
+       (gethash (fons-relation-to item) hpg/relations))
+      (propertize "Yes" 'face 'bold)
+    (propertize "No" 'face 'shadow)))
+
+(hpg/define-column "Blocked" ()
+  ;; HACK: Since item is already filtered to one type, get original relation.
+  (if (fons-relation-blocked-paths
+       (gethash (fons-relation-to item) hpg/relations))
+      (propertize "Yes" 'face 'bold)
+    (propertize "No" 'face 'shadow)))
 
 (unless hpg/columns
   (setq-default hpg/columns (get 'hpg/columns 'standard-value)))
