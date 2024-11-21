@@ -124,6 +124,16 @@ errors will be demoted.  If data for HYPERDRIVE is already in
                    (h/message "Error getting peer graph data: %s" (he/url entry) plz-error)
                    (funcall then nil))))))))
 
+(cl-defun hpg/mark (&key from to type bool)
+  "Mark TO hyperdrive as TYPE from FROM according to BOOL."
+  (h//bee-exec from
+    (if bool
+        ;; TODO: Consider storing source, blocker, and blocked data inside
+        ;; ("ushin" "peers" ,(h/public-key to)) key to save hyperbee space.  The
+        ;; downside is that it would require a specialized cas function.
+        `((put ("ushin" "peers" ,(h/public-key to) ,type) t))
+      `((del ("ushin" "peers" ,(h/public-key to) ,type))))))
+
 (defun hpg/sources-hops-fn (from then)
   "Asynchronously get source hops from FROM.
 Call THEN with a list of TOs."
