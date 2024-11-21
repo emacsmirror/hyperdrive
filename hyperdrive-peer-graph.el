@@ -290,6 +290,30 @@ argument \\[universal-argument], always prompt."
 
 ;;;; Peer List
 
+;;;;; Columns
+
+;; These forms define the columns used to display items with `taxy-magit-section'.
+
+(eval-and-compile
+  (taxy-magit-section-define-column-definer "hyperdrive-peer-graph"))
+
+(hpg/define-column "Peer" ()
+  (h//format-preferred
+   (h/url-hyperdrive
+    (fons-relation-to
+     ;; We already called `taxy-mapcar' and so `item' is bound to the return
+     ;; value of `hpg/format-relation-to' instead of the relation itself.
+     ;; TODO: Is there a way to avoid the `gethash' call?
+     item))))
+
+(hpg/define-column "Source" ()
+  "Yes")
+
+(unless hpg/columns
+  (setq-default hpg/columns (get 'hpg/columns 'standard-value)))
+
+;;;;; Functions
+
 (defun fons-shortest-hops-length (type relation)
   "Return the minimum number of TYPE hops in RELATION."
   (cl-loop for path in (fons-relation-paths-of-type type relation)
@@ -315,29 +339,6 @@ A blocked hop includes the number of hops to the blocker."
     (1+ (cl-loop
          for blocker in blockers
          minimize (fons-shortest-hops-length 'blockers blocker)))))
-
-(defvar hpg/sources-taxy
-  (make-taxy-magit-section
-   :name (propertize "Sources" 'face 'success)
-   :take (lambda (peer taxy)
-           (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
-             peer taxy :key-name-fn #'hpg/format-hops))))
-
-;; TODO: Combine taxy defvars, use defun?
-(defvar hpg/blockers-taxy
-  (make-taxy-magit-section
-   ;; TODO: Use separate face.
-   :name (propertize "Blockers" 'face 'warning)
-   :take (lambda (peer taxy)
-           (taxy-take-keyed (list #'fons-shortest-blockers-hops-length)
-             peer taxy :key-name-fn #'hpg/format-hops))))
-
-(defvar hpg/blocked-taxy
-  (make-taxy-magit-section
-   :name (propertize "Blocked" 'face 'error)
-   :take (lambda (peer taxy)
-           (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
-             peer taxy :key-name-fn #'hpg/format-hops))))
 
 (defun hpg/format-hops (hops)
   "Return formatted string for HOPS, which is an integer."
@@ -365,32 +366,61 @@ blocked paths or has a one-hop source path."
                         (format "*hyperdrive-peer-list %s*"
                                 (hyperdrive--format-preferred
                                  hpg/root-hyperdrive)))
-    (with-silent-modifications
-      (let* ((sources (fons-filter-to-types hpg/relations :sourcesp t))
-             (blockers (fons-filter-to-types hpg/relations :blockersp t))
-             (blocked (fons-filter-to-types
-                       hpg/relations :blockedp t :all-blocked-p t))
-             (sources-taxy
-              (thread-last hpg/sources-taxy
-                           taxy-emptied
-                           (taxy-fill (hash-table-values sources))
-                           (taxy-mapcar #'hpg/format-relation-to)))
-             (blockers-taxy
-              (thread-last hpg/blockers-taxy
-                           taxy-emptied
-                           (taxy-fill (hash-table-values blockers))
-                           (taxy-mapcar #'hpg/format-relation-to)))
-             (blocked-taxy
-              (thread-last hpg/blocked-taxy
-                           taxy-emptied
-                           (taxy-fill (hash-table-values blocked))
-                           (taxy-mapcar #'hpg/format-relation-to)))
-             (taxy (make-taxy-magit-section
-                    :taxys (list sources-taxy blockers-taxy blocked-taxy))))
-        (magit-section-mode)
-        (erase-buffer)
-        (taxy-magit-section-insert taxy :initial-depth -1)
-        (pop-to-buffer (current-buffer))))))
+    (let (format-table column-sizes)
+      (cl-labels ((format-item (item)
+                    (gethash item format-table))
+                  (make-fn (&rest args)
+                    (apply #'make-taxy-magit-section
+                           :make #'make-fn
+                           :format-fn #'format-item
+                           :level-indent 2
+                           :item-indent 0
+                           args)))
+        (let* ((sources (fons-filter-to-types hpg/relations :sourcesp t))
+               (blockers (fons-filter-to-types hpg/relations :blockersp t))
+               (blocked (fons-filter-to-types
+                         hpg/relations :blockedp t :all-blocked-p t))
+               (sources-taxy
+                (thread-last
+                  (make-fn :name (propertize "Sources" 'face 'success)
+                           :take (lambda (peer taxy)
+                                   (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
+                                     peer taxy :key-name-fn #'hpg/format-hops)))
+                  taxy-emptied
+                  (taxy-fill (hash-table-values sources))))
+               (blockers-taxy
+                (thread-last
+                  (make-fn
+                   ;; TODO: Use separate face.
+                   :name (propertize "Blockers" 'face 'warning)
+                   :take (lambda (peer taxy)
+                           (taxy-take-keyed (list #'fons-shortest-blockers-hops-length)
+                             peer taxy :key-name-fn #'hpg/format-hops)))
+                  taxy-emptied
+                  (taxy-fill (hash-table-values blockers))))
+               (blocked-taxy
+                (thread-last
+                  (make-fn :name (propertize "Blocked" 'face 'error)
+                           :take (lambda (peer taxy)
+                                   (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
+                                     peer taxy :key-name-fn #'hpg/format-hops)))
+                  taxy-emptied
+                  (taxy-fill (hash-table-values blocked))))
+               (taxy (make-taxy-magit-section
+                      :taxys (list sources-taxy blockers-taxy blocked-taxy)))
+               (format-cons (taxy-magit-section-format-items
+                             hpg/columns hpg/column-formatters taxy))
+               (taxy-magit-section-insert-indent-items nil))
+          (magit-section-mode)
+          (setf format-table (car format-cons))
+          (setf column-sizes (cdr format-cons))
+          (setf header-line-format (taxy-magit-section-format-header
+                                    column-sizes hpg/column-formatters))
+          (with-silent-modifications
+            (erase-buffer)
+            (save-excursion
+              (taxy-magit-section-insert taxy :initial-depth -1))
+            (pop-to-buffer (current-buffer))))))))
 
 (defun fons-relation-type (relation type-priorities)
   (catch 'type
