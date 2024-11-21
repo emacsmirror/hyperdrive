@@ -186,22 +186,22 @@ RELATION may be a hash table of `fons-relation' structs mapped by
         (progn
           (dom-append-child
            label `(tr nil (td nil (font ((color . ,h/fons-view-blockers-color))
-                                    "blocker"))))
+                                        "blocker"))))
           (dom-append-child
            label `(tr nil (td nil (font ((color . ,h/fons-view-sources-color))
-                                    "source")))))
+                                        "source")))))
       (when blocker-paths
         (dom-append-child
          label `(tr nil (td nil (font ((color . ,h/fons-view-blockers-color))
-                                  "blocker")))))
+                                      "blocker")))))
       (when blocked-paths
         (dom-append-child
          label `(tr nil (td nil (font ((color . ,h/fons-view-blocked-color))
-                                  "blocked")))))
+                                      "blocked")))))
       (when source-paths
         (dom-append-child
          label `(tr nil (td nil (font ((color . ,h/fons-view-sources-color))
-                                  "source"))))))
+                                      "source"))))))
     (insert (format "%s [label=<\n  " public-key))
     (dom-print label)
     (insert (format "\n>, href=\"%s\", color=\"%s\", bgcolor=\"%s\", shape=\"none\", margin=\"0\", style=\"filled\"];\n" public-key (face-attribute 'default :background)  (face-attribute 'default :background)))))
