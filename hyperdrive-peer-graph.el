@@ -402,6 +402,7 @@ blocked paths or has a one-hop source path."
     (hpg/reload-list)))
 
 (cl-defun hpg/reload-list ()
+  ;; TODO: Restore point.
   (hpg/list-display-loading-buffer)
   (hpg/load :finally (lambda ()
                        (hpg/display-list)
