@@ -539,7 +539,7 @@ Does not load graph data."
                        (hpg/refresh-menu))))
 
 (cl-defun hpg/load (&key finally)
-  "Load `hpg/relations' and call FINALLY."
+  "Load `hpg/relations' and call FINALLY with no arguments."
   ;; TODO: If called in rapid succession, stop the requests from the first call.
   (setf hpg/relations
         (hpg/relations
