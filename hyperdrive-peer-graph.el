@@ -679,8 +679,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                     (propertize "%d" 'face 'transient-argument))
             hpg/sources-max-hops))
   (interactive)
-  (setf hpg/sources-max-hops
-        (read-number "Max hops for sources: " hpg/sources-max-hops))
+  (setf hpg/sources-max-hops (hpg/read-max-hops 'sources))
   (hpg/reload-graph))
 
 (transient-define-suffix hpg/set-blockers-max-hops ()
@@ -691,8 +690,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                     (propertize "%d" 'face 'transient-argument))
             hpg/blockers-max-hops))
   (interactive)
-  (setf hpg/blockers-max-hops
-        (read-number "Max hops for blockers: " hpg/blockers-max-hops))
+  (setf hpg/blockers-max-hops (hpg/read-max-hops 'blockers))
   (hpg/reload-graph))
 
 (transient-define-suffix hpg/menu-display-graph ()
