@@ -349,6 +349,50 @@ without confirmation."
   (interactive nil h/mode)
   (h/revert-buffer nil (not (buffer-modified-p))))
 
+;;;; h/context-menu-mode
+
+;;;###autoload
+(define-minor-mode hyperdrive-context-menu-mode
+  "Global minor mode to add hyperdrive to `context-menu-mode'."
+  :global nil
+  :group 'hyperdrive
+  :lighter " hyperdrive-context-menu"
+  (if h/context-menu-mode
+      (progn
+        (context-menu-mode +1)  ; Ensure `context-menu-mode' is on.
+        (add-hook 'context-menu-functions #'h/context-menu-function))
+    (remove-hook 'context-menu-functions #'h/context-menu-function)))
+
+(cl-defun h/at-point (&optional event)
+  "Return `hyperdrive' at point, optionally given EVENT."
+  (unless (listp event)  ;; Avoid errors.
+    (cl-return-from h/at-point))
+  (when-let (hyperdrive (get-text-property (point) 'hyperdrive))
+    (cl-return-from h/at-point hyperdrive))
+  (pcase (cadadr event)  ;; Image id from peer graph image map
+    ((and (rx (group (= 52 alphanumeric))) public-key)
+     (h/url-hyperdrive public-key))))
+
+(defun h/open-at-point (event)
+  "Open hyperdrive at point for EVENT."
+  (interactive "event")
+  (save-excursion
+    (mouse-set-point event)
+    (h/open (he//create :hyperdrive (h/at-point event) :path "/"))))
+
+(defun h/context-menu-function (menu click)
+  "Insert items into context MENU for CLICK."
+  (save-excursion
+    (mouse-set-point click)
+    (when (h/at-point click)
+      (keymap-set-after menu "<hyperdrive-separator>" menu-bar-separator)
+      (keymap-set-after menu "<hyperdrive-open>"
+        '(menu-item "Open hyperdrive"
+                    ;; highlight-symbol-at-mouse
+                    h/open-at-point
+                    :help "Open hyperdrive"))))
+  menu)
+
 ;;;; h/mode
 
 (defvar-local h/mode--state nil
