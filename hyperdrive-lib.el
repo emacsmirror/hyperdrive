@@ -1477,6 +1477,16 @@ version."
           (and-let* ((local-entry (buffer-local-value 'h/current-entry buffer)))
             (he/equal-p entry local-entry any-version-p))))))
 
+(cl-defun h/at-point (&optional event)
+  "Return `hyperdrive' at point, optionally given EVENT."
+  (unless (listp event)  ;; Avoid errors.
+    (cl-return-from h/at-point))
+  (when-let (hyperdrive (get-text-property (point) 'hyperdrive))
+    (cl-return-from h/at-point hyperdrive))
+  (pcase (cadadr event)  ;; Image id from peer graph image map
+    ((and (rx (group (= 52 alphanumeric))) public-key)
+     (h/url-hyperdrive public-key))))
+
 (defun h//format-entry (entry &optional format formats)
   "Return ENTRY formatted according to FORMAT.
 FORMAT is a `format-spec' specifier string which maps to specifications
