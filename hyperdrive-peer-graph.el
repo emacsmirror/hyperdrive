@@ -128,7 +128,7 @@ errors will be demoted.  If data for HYPERDRIVE is already in
                    (h/message "Error getting peer graph data: %s" (he/url entry) plz-error)
                    (funcall then nil))))))))
 
-(cl-defun hpg/mark (&key from to type bool)
+(cl-defun hpg/set-relation (&key from to type bool)
   "Mark TO hyperdrive as TYPE from FROM according to BOOL."
   (h//bee-exec from
     (if bool
@@ -324,9 +324,10 @@ Also set the global variables after reading."
                   hpg/root-hyperdrive 'sources (gethash (fons-relation-to item) hpg/relations))))
     (buttonize (if directp "[Source]" "[      ]")
                (lambda (_)
-                 (hpg/mark :from hpg/root-hyperdrive
-                           :to (h/url-hyperdrive (fons-relation-to item))
-                           :type 'source :bool (not directp))
+                 (hpg/set-relation
+                  :from hpg/root-hyperdrive
+                  :to (h/url-hyperdrive (fons-relation-to item))
+                  :type 'source :bool (not directp))
                  (hpg/revert-buffers)))))
 
 (hpg/define-column "Blocker" ()
@@ -335,9 +336,10 @@ Also set the global variables after reading."
                   hpg/root-hyperdrive 'blockers (gethash (fons-relation-to item) hpg/relations))))
     (buttonize (if directp "[Blocker]" "[      ]")
                (lambda (_)
-                 (hpg/mark :from hpg/root-hyperdrive
-                           :to (h/url-hyperdrive (fons-relation-to item))
-                           :type 'blocker :bool (not directp))
+                 (hpg/set-relation
+                  :from hpg/root-hyperdrive
+                  :to (h/url-hyperdrive (fons-relation-to item))
+                  :type 'blocker :bool (not directp))
                  (hpg/revert-buffers)))))
 
 (hpg/define-column "Blocked" ()
@@ -346,9 +348,10 @@ Also set the global variables after reading."
                   hpg/root-hyperdrive 'blocked (gethash (fons-relation-to item) hpg/relations))))
     (buttonize (if directp "[Blocked]" "[      ]")
                (lambda (_)
-                 (hpg/mark :from hpg/root-hyperdrive
-                           :to (h/url-hyperdrive (fons-relation-to item))
-                           :type 'blocked :bool (not directp))
+                 (hpg/set-relation
+                  :from hpg/root-hyperdrive
+                  :to (h/url-hyperdrive (fons-relation-to item))
+                  :type 'blocked :bool (not directp))
                  (hpg/revert-buffers)))))
 
 (unless hpg/columns
