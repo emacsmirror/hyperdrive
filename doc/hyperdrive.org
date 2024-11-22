@@ -90,7 +90,11 @@ With [[info:use-package][use-package]]:
 #+begin_src emacs-lisp
   (use-package hyperdrive
     :bind ("C-c h" . hyperdrive-menu)
-    :init (hyperdrive-menu-bar-mode 1))
+    :init
+    (hyperdrive-menu-bar-mode +1)
+    :config
+    (context-menu-mode +1)
+    (hyperdrive-context-menu-mode +1))
 #+end_src
 
 * Usage
@@ -132,6 +136,25 @@ that ~menu-bar-mode~ is enabled (it is enabled by default).
 
 If you have disabled ~menu-bar-mode~, you can still use the hyperdrive
 menu bar by pressing ~C-mouse-3~ in a hyperdrive file or directory.
+
+** Context menu support
+#+findex: context-menu-mode
+
+If you enable ~hyperdrive-context-menu-mode~, either in your
+configuration (see [[*Example configuration]]) or with ~M-x
+hyperdrive-context-menu-mode~, "Hyperdrive"-related menu items should
+appear when you right-click on hyperdrive names, like ~petname:foo~.
+If you don't see hyperdrive context menu items when you right-click on
+hyperdrive names, please check that ~context-menu-mode~ is enabled (it
+is enabled automatically by ~hyperdrive-context-menu-mode~).
+
+- Command: hyperdrive-context-menu-mode ::
+
+  Enable the "Hyperdrive" right-click context menu.
+
+If you have disabled ~context-menu-mode~, you can still use the
+context menu bar by putting point on a hyperdrive name and pressing
+~S-<f10>~.
 
 ** Hyperdrive menu command
 

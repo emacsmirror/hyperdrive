@@ -79,6 +79,7 @@ Usage
 
 * Install the gateway::
 * Menu bar support::
+* Context menu support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
 * Open a hyperdrive::
@@ -273,7 +274,11 @@ With @ref{Top,use-package,,use-package,}:
 @lisp
 (use-package hyperdrive
   :bind ("C-c h" . hyperdrive-menu)
-  :init (hyperdrive-menu-bar-mode 1))
+  :init
+  (hyperdrive-menu-bar-mode +1)
+  :config
+  (context-menu-mode +1)
+  (hyperdrive-context-menu-mode +1))
 @end lisp
 
 @node Usage
@@ -290,6 +295,7 @@ On the network it still may be there.
 @menu
 * Install the gateway::
 * Menu bar support::
+* Context menu support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
 * Open a hyperdrive::
@@ -344,6 +350,27 @@ Enable the ``Hyperdrive'' menu bar.
 
 If you have disabled @code{menu-bar-mode}, you can still use the hyperdrive
 menu bar by pressing @code{C-mouse-3} in a hyperdrive file or directory.
+
+@node Context menu support
+@section Context menu support
+
+@findex context-menu-mode
+
+If you enable @code{hyperdrive-context-menu-mode}, either in your
+configuration (see @ref{Example configuration}) or with @code{M-x
+hyperdrive-context-menu-mode}, ``Hyperdrive''-related menu items should
+appear when you right-click on hyperdrive names, like @code{petname:foo}.
+If you don't see hyperdrive context menu items when you right-click on
+hyperdrive names, please check that @code{context-menu-mode} is enabled (it
+is enabled automatically by @code{hyperdrive-context-menu-mode}).
+
+@deffn Command hyperdrive-context-menu-mode
+Enable the ``Hyperdrive'' right-click context menu.
+@end deffn
+
+If you have disabled @code{context-menu-mode}, you can still use the
+context menu bar by putting point on a hyperdrive name and pressing
+@code{S-<f10>}.
 
 @node Hyperdrive menu command
 @section Hyperdrive menu command
