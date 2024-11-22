@@ -524,7 +524,7 @@ blocked paths or has a one-hop source path."
 ;;;; Minor mode
 
 (defun hpg/revert-buffer (&optional _ignore-auto _noconfirm)
-  "Revert `hyperdrive-describe-mode' buffer.
+  "Revert `hyperdrive-peer-graph-mode' buffer.
 Reload data and redisplay graph."
   (clrhash hpg/data-cache)
   (hpg/reload-graph))
