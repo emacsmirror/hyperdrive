@@ -634,7 +634,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
   (interactive "e")
   (when-let ((hyperdrive (h/at-point event)))
     (setf hpg/root-hyperdrive hyperdrive)
-    (hpg/reload-graph)))
+    (hpg/revert-buffers)))
 
 ;;;; Transient UI
 
