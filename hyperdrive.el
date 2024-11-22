@@ -376,11 +376,9 @@ without confirmation."
     (mouse-set-point click)
     (when (h/at-point click)
       (keymap-set-after menu "<hyperdrive-separator>" menu-bar-separator)
-      (keymap-set-after menu "<hyperdrive-open>"
-        '(menu-item "Open hyperdrive"
-                    ;; highlight-symbol-at-mouse
-                    h/open-at-point
-                    :help "Open hyperdrive"))))
+      (keymap-set-after menu "<hyperdrive-open-at-point>"
+        '(menu-item "Open hyperdrive" h/open-at-point
+                    :help "Open hyperdrive at point"))))
   menu)
 
 ;;;; h/mode
