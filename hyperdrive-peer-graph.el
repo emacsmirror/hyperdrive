@@ -580,8 +580,10 @@ Does not load graph data."
 Reload data and redisplays `hyperdrive-peer-graph-mode' and
 `hyperdrive-peer-graph-list-mode' buffers."
   (clrhash hpg/data-cache)
-  (hpg/reload-graph)
-  (hpg/reload-list))
+  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
+    (hpg/reload-graph))
+  (when-let ((buffer-window (get-buffer-window hpg/list-buffer-name)))
+    (hpg/reload-list)))
 
 (defvar-keymap hpg/mode-map
   ;; TODO: Enable these right click actions even when `context-menu-mode'.
