@@ -606,10 +606,9 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
 (defun hpg/view-follow-link (event)
   "Follow link at EVENT's position."
   (interactive "e")
-  (pcase (cadadr event)  ;; Image id from image map
-    ((and (rx (group (= 52 alphanumeric))) public-key)
-     (setf hpg/root-hyperdrive (h/url-hyperdrive public-key))
-     (hpg/reload-graph))))
+  (when-let ((hyperdrive (h/at-point event)))
+    (setf hpg/root-hyperdrive hyperdrive)
+    (hpg/reload-graph)))
 
 ;;;; Transient UI
 
