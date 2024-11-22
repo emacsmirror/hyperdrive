@@ -129,7 +129,22 @@ errors will be demoted.  If data for HYPERDRIVE is already in
                    (funcall then nil))))))))
 
 (cl-defun hpg/set-relation (&key from to type bool)
-  "Mark TO hyperdrive as TYPE from FROM according to BOOL."
+  "Mark TO hyperdrive as TYPE from FROM according to BOOL.
+Interactively, with universal prefix argument
+\\[universal-argument], remove direct relation."
+  (interactive
+   (let* ((from (h/read-hyperdrive :predicate #'h/writablep
+                  :default hpg/root-hyperdrive
+                  :prompt "From hyperdrive"))
+          (to (h/read-hyperdrive
+                :predicate (lambda (hyperdrive)
+                             (not (h/equal-p hyperdrive from)))
+                :default (or (and h/current-entry
+                                  (he/hyperdrive h/current-entry)))
+                :prompt "To hyperdrive"))
+          (type (hpg/read-relation-type))
+          (bool (not current-prefix-arg)))
+     (list :from from :to to :type type :bool bool)))
   (h//bee-exec from
     (if bool
         ;; TODO: Consider storing source, blocker, and blocked data inside
