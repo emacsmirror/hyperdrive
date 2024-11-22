@@ -42,8 +42,12 @@
   "Default number of hops to jump for blockers."
   :type 'integer)
 
-(defcustom hpg/buffer-name "*hyperdrive-peer-graph-view*"
+(defcustom hpg/buffer-name "*hyperdrive-peer-graph*"
   "Buffer name to show peer graph."
+  :type 'string)
+
+(defcustom hpg/list-buffer-name "*hyperdrive-peer-graph-list*"
+  "Buffer name to show peer graph list."
   :type 'string)
 
 (defcustom hpg/display-buffer-action '(display-buffer-reuse-window)
@@ -382,12 +386,44 @@ blocked paths or has a one-hop source path."
                  ;; TODO: Move this logic into `fons-filter-to-types'.
                  thereis (= 1 (length (fons-path-hops path)))))))
 
-(defun hpg/taxy-test ()
-  (interactive)
-  (with-current-buffer (get-buffer-create
-                        (format "*hyperdrive-peer-list %s*"
-                                (hyperdrive--format-preferred
-                                 hpg/root-hyperdrive)))
+(defun hpg/list (hyperdrive sources-max-hops blockers-max-hops)
+  "Show menu for HYPERDRIVE peer graph."
+  (interactive (hpg/interactive-args))
+  (if (and hpg/root-hyperdrive
+           (h/equal-p hyperdrive hpg/root-hyperdrive)
+           (hpg/loaded-relations))
+      (hpg/display-list)
+    (setf hpg/root-hyperdrive hyperdrive)
+    (setf hpg/sources-max-hops sources-max-hops)
+    (setf hpg/blockers-max-hops blockers-max-hops)
+    (hpg/reload-list)))
+
+(cl-defun hpg/reload-list ()
+  (hpg/list-display-loading-buffer)
+  (hpg/load :finally (lambda ()
+                       (hpg/display-list)
+                       (hpg/refresh-menu))))
+
+(defun hpg/list-display-loading-buffer ()
+  "Open loading buffer for hyperdrive peer graph."
+  (with-current-buffer (hpg/list-get-buffer-create)
+    (with-silent-modifications
+      (erase-buffer)
+      ;; Show empty list template when loading data.
+      (insert "Loading hyperdrive peer graph data...")
+      ;; TODO: Add `hpg/list-display-buffer-action'
+      (display-buffer (current-buffer) hpg/display-buffer-action))))
+
+(defun hpg/list-get-buffer-create ()
+  "Return hyperdrive peer graph list buffer with mode enabled."
+  (with-current-buffer (get-buffer-create hpg/list-buffer-name)
+    (hpg/list-mode)
+    (current-buffer)))
+
+(defun hpg/display-list ()
+  "Open hyperdrive peer list.
+Does not load graph data."
+  (with-current-buffer (hpg/list-get-buffer-create)
     (let (format-table column-sizes)
       (cl-labels ((format-item (item)
                     (gethash item format-table))
@@ -444,7 +480,6 @@ blocked paths or has a one-hop source path."
                (format-cons (taxy-magit-section-format-items
                              hpg/columns hpg/column-formatters taxy))
                (taxy-magit-section-insert-indent-items nil))
-          (magit-section-mode)
           (setf format-table (car format-cons))
           (setf column-sizes (cdr format-cons))
           (setf header-line-format (taxy-magit-section-format-header
@@ -454,6 +489,32 @@ blocked paths or has a one-hop source path."
             (save-excursion
               (taxy-magit-section-insert taxy :initial-depth -1))
             (pop-to-buffer (current-buffer))))))))
+
+;;;;; Minor mode
+
+(defun hpg/list-revert-buffer (&optional _ignore-auto _noconfirm)
+  "Revert `hyperdrive-peer-graph-list-mode' buffer.
+Reload data and redisplay list."
+  (clrhash hpg/data-cache)
+  (hpg/reload-list))
+
+(defvar-keymap hpg/list-mode-map
+  :parent magit-section-mode-map
+  :doc "Local keymap for `hyperdrive-peer-graph-list-mode' buffers."
+  ;; It's easy to accidentally trigger drag events when clicking.
+  ;; "<drag-mouse-1>" #'hpg/view-follow-link
+  ;; "<mouse-1>" #'hpg/view-follow-link
+  ;; "<drag-mouse-3>" #'hpg/menu-bar
+  ;; "<mouse-3>" #'hpg/menu-bar
+  ;; "?" #'hpg/menu
+  )
+
+(define-derived-mode hpg/list-mode magit-section-mode
+  '("Hyperdrive-peer-graph")
+  "Major mode for viewing Hyperdrive peer graph."
+  :group 'hyperdrive
+  :interactive nil
+  (setq-local revert-buffer-function #'hpg/list-revert-buffer))
 
 ;;;; Peer Graph
 
