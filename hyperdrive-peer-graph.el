@@ -275,7 +275,8 @@ argument \\[universal-argument], always prompt."
       ('blockers hpg/blockers-max-hops))))
 
 (defun hpg/interactive-args ()
-  "Return list of interactive args for `hyperdrive-peer-graph'."
+  "Return list of interactive args for `hyperdrive-peer-graph'.
+Also set the global variables after reading."
   (let* ((root-hyperdrive (hpg/context-root-hyperdrive
                            :force-prompt current-prefix-arg))
          (root-changed (not (eq root-hyperdrive hpg/root-hyperdrive)))
@@ -286,6 +287,9 @@ argument \\[universal-argument], always prompt."
                              'blockers
                              :force-prompt (or current-prefix-arg
                                                root-changed))))
+    (setf hpg/root-hyperdrive root-hyperdrive)
+    (setf hpg/sources-max-hops sources-max-hops)
+    (setf hpg/blockers-max-hops blockers-max-hops)
     (list root-hyperdrive sources-max-hops blockers-max-hops)))
 
 
@@ -396,9 +400,6 @@ blocked paths or has a one-hop source path."
            (h/equal-p hyperdrive hpg/root-hyperdrive)
            (hpg/loaded-relations))
       (hpg/display-list)
-    (setf hpg/root-hyperdrive hyperdrive)
-    (setf hpg/sources-max-hops sources-max-hops)
-    (setf hpg/blockers-max-hops blockers-max-hops)
     (hpg/reload-list)))
 
 (cl-defun hpg/reload-list ()
@@ -530,9 +531,6 @@ Reload data and redisplay list."
            (h/equal-p hyperdrive hpg/root-hyperdrive)
            (hpg/loaded-relations))
       (hpg/display-graph)
-    (setf hpg/root-hyperdrive hyperdrive)
-    (setf hpg/sources-max-hops sources-max-hops)
-    (setf hpg/blockers-max-hops blockers-max-hops)
     (hpg/reload-graph)))
 
 (cl-defun hpg/reload-graph ()
