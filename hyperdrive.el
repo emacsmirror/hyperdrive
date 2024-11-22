@@ -370,6 +370,25 @@ without confirmation."
     (mouse-set-point event)
     (h/open (he//create :hyperdrive (h/at-point event) :path "/"))))
 
+(defvar h/peer-graph-root-hyperdrive)
+(declare-function h/peer-graph-read-relation-type "hyperdrive-peer-graph")
+(declare-function h/peer-graph-set-relation "hyperdrive-peer-graph")
+(defun h/peer-graph-set-relation-to-hyperdrive-at-point (event)
+  "Set relation to hyperdrive at point for EVENT."
+  (interactive "event")
+  (require 'hyperdrive-peer-graph)
+  (save-excursion
+    (mouse-set-point event)
+    (let* ((to (h/at-point event))
+           (from (h/read-hyperdrive
+                   :predicate (lambda (hyperdrive)
+                                (not (h/equal-p hyperdrive to)))
+                   :default hyperdrive-peer-graph-root-hyperdrive
+                   :prompt "From hyperdrive"))
+           (type (hyperdrive-peer-graph-read-relation-type))
+           (bool (not current-prefix-arg)))
+      (hyperdrive-peer-graph-set-relation :from from :to to :type type :bool bool))))
+
 (defun h/context-menu-function (menu click)
   "Insert items into context MENU for CLICK."
   (save-excursion
@@ -378,7 +397,11 @@ without confirmation."
       (keymap-set-after menu "<hyperdrive-separator>" menu-bar-separator)
       (keymap-set-after menu "<hyperdrive-open-at-point>"
         '(menu-item "Open hyperdrive" h/open-at-point
-                    :help "Open hyperdrive at point"))))
+                    :help "Open hyperdrive at point"))
+      (keymap-set-after menu "<hyperdrive-peer-graph-set-relation-to-hyperdrive-at-point>"
+        '(menu-item "Set relation to"
+                    h/peer-graph-set-relation-to-hyperdrive-at-point
+                    :help "Set relation to hyperdrive at point"))))
   menu)
 
 ;;;; h/mode
