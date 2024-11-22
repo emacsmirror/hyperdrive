@@ -420,6 +420,17 @@ without confirmation."
                   (h/peer-graph-read-max-hops 'sources)
                   (h/peer-graph-read-max-hops 'blockers))))
 
+(declare-function h/peer-graph-list "hyperdrive-peer-graph")
+(defun h/peer-graph-list-at-point (event)
+  "Open peer graph list for hyperdrive at point for EVENT."
+  (interactive "event")
+  (require 'hyperdrive-peer-graph)
+  (save-excursion
+    (mouse-set-point event)
+    (h/peer-graph-list (h/at-point event)
+                       (h/peer-graph-read-max-hops 'sources)
+                       (h/peer-graph-read-max-hops 'blockers))))
+
 (defun h/context-menu-function (menu click)
   "Insert items into context MENU for CLICK."
   (save-excursion
@@ -432,6 +443,9 @@ without confirmation."
       (keymap-set-after menu "<hyperdrive-peer-graph-at-point>"
         '(menu-item "Peer graph" h/peer-graph-at-point
                     :help "Open peer graph for hyperdrive at point"))
+      (keymap-set-after menu "<hyperdrive-peer-graph-list-at-point>"
+        '(menu-item "Peer list" h/peer-graph-list-at-point
+                    :help "Open peer list for hyperdrive at point"))
       (keymap-set-after menu "<hyperdrive-peer-graph-set-relation-to-hyperdrive-at-point>"
         '(menu-item "Set relation to"
                     h/peer-graph-set-relation-to-hyperdrive-at-point
