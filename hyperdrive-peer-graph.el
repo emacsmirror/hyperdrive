@@ -642,6 +642,8 @@ Reload data and redisplay graph."
    :pad-keys t
    ;; TODO: When changing `hpg/root-hyperdrive', reset local variables to default values?
    ("r" hpg/set-root-hyperdrive)
+   ("L" "Display list" hpg/menu-display-list)
+   ("G" "Display graph" hpg/menu-display-graph)
    ("g" "Reload" hpg/reload)]
   ["Paths only to"
    (:info #'hpg/format-paths-only-to :format "%d")
@@ -696,6 +698,18 @@ Reload data and redisplay graph."
   (setf hpg/blockers-max-hops
         (read-number "Max hops for blockers: " hpg/blockers-max-hops))
   (hpg/reload-graph))
+
+(transient-define-suffix hpg/menu-display-graph ()
+  :inapt-if-not #'hpg/loaded-relations
+  :transient t
+  (interactive)
+  (hpg/display-graph))
+
+(transient-define-suffix hpg/menu-display-list ()
+  :inapt-if-not #'hpg/loaded-relations
+  :transient t
+  (interactive)
+  (hpg/display-list))
 
 (transient-define-suffix hpg/reload ()
   :inapt-if-not #'hpg/loaded-relations
