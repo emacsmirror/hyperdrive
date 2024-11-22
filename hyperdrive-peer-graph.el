@@ -312,7 +312,8 @@ argument \\[universal-argument], always prompt."
                (lambda (_)
                  (hpg/mark :from hpg/root-hyperdrive
                            :to (h/url-hyperdrive (fons-relation-to item))
-                           :type 'source :bool (not directp))))))
+                           :type 'source :bool (not directp))
+                 (hpg/list-revert-buffer)))))
 
 (hpg/define-column "Blocker" ()
   (let ((directp (fons-relation-direct-p
@@ -322,7 +323,8 @@ argument \\[universal-argument], always prompt."
                (lambda (_)
                  (hpg/mark :from hpg/root-hyperdrive
                            :to (h/url-hyperdrive (fons-relation-to item))
-                           :type 'blocker :bool (not directp))))))
+                           :type 'blocker :bool (not directp))
+                 (hpg/list-revert-buffer)))))
 
 (hpg/define-column "Blocked" ()
   (let ((directp (fons-relation-direct-p
@@ -332,7 +334,8 @@ argument \\[universal-argument], always prompt."
                (lambda (_)
                  (hpg/mark :from hpg/root-hyperdrive
                            :to (h/url-hyperdrive (fons-relation-to item))
-                           :type 'blocked :bool (not directp))))))
+                           :type 'blocked :bool (not directp))
+                 (hpg/list-revert-buffer)))))
 
 (unless hpg/columns
   (setq-default hpg/columns (get 'hpg/columns 'standard-value)))
