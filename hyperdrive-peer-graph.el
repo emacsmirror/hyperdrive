@@ -317,7 +317,7 @@ Also set the global variables after reading."
                  (hpg/mark :from hpg/root-hyperdrive
                            :to (h/url-hyperdrive (fons-relation-to item))
                            :type 'source :bool (not directp))
-                 (hpg/list-revert-buffer)))))
+                 (hpg/revert-buffers)))))
 
 (hpg/define-column "Blocker" ()
   (let ((directp (fons-relation-direct-p
@@ -328,7 +328,7 @@ Also set the global variables after reading."
                  (hpg/mark :from hpg/root-hyperdrive
                            :to (h/url-hyperdrive (fons-relation-to item))
                            :type 'blocker :bool (not directp))
-                 (hpg/list-revert-buffer)))))
+                 (hpg/revert-buffers)))))
 
 (hpg/define-column "Blocked" ()
   (let ((directp (fons-relation-direct-p
@@ -339,7 +339,7 @@ Also set the global variables after reading."
                  (hpg/mark :from hpg/root-hyperdrive
                            :to (h/url-hyperdrive (fons-relation-to item))
                            :type 'blocked :bool (not directp))
-                 (hpg/list-revert-buffer)))))
+                 (hpg/revert-buffers)))))
 
 (unless hpg/columns
   (setq-default hpg/columns (get 'hpg/columns 'standard-value)))
@@ -491,12 +491,6 @@ Does not load graph data."
 
 ;;;;; Minor mode
 
-(defun hpg/list-revert-buffer (&optional _ignore-auto _noconfirm)
-  "Revert `hyperdrive-peer-graph-list-mode' buffer.
-Reload data and redisplay list."
-  (clrhash hpg/data-cache)
-  (hpg/reload-list))
-
 (defvar-keymap hpg/list-mode-map
   :parent magit-section-mode-map
   :doc "Local keymap for `hyperdrive-peer-graph-list-mode' buffers."
@@ -513,7 +507,7 @@ Reload data and redisplay list."
   "Major mode for viewing Hyperdrive peer graph."
   :group 'hyperdrive
   :interactive nil
-  (setq-local revert-buffer-function #'hpg/list-revert-buffer))
+  (setq-local revert-buffer-function #'hpg/revert-buffers))
 
 ;;;; Peer Graph
 
@@ -580,11 +574,13 @@ Reload data and redisplay list."
 
 ;;;;; Minor mode
 
-(defun hpg/revert-buffer (&optional _ignore-auto _noconfirm)
-  "Revert `hyperdrive-peer-graph-mode' buffer.
-Reload data and redisplay graph."
+(defun hpg/revert-buffers (&optional _ignore-auto _noconfirm)
+  "Revert peer graph buffers.
+Reload data and redisplays `hyperdrive-peer-graph-mode' and
+`hyperdrive-peer-graph-list-mode' buffers."
   (clrhash hpg/data-cache)
-  (hpg/reload-graph))
+  (hpg/reload-graph)
+  (hpg/reload-list))
 
 (defvar-keymap hpg/mode-map
   ;; TODO: Enable these right click actions even when `context-menu-mode'.
@@ -602,7 +598,7 @@ Reload data and redisplay graph."
   "Major mode for viewing Hyperdrive peer graph."
   :group 'hyperdrive
   :interactive nil
-  (setq-local revert-buffer-function #'hpg/revert-buffer))
+  (setq-local revert-buffer-function #'hpg/revert-buffers))
 
 ;;;;; Graph commands
 
@@ -715,7 +711,7 @@ Reload data and redisplay graph."
   :inapt-if-not #'hpg/loaded-relations
   :transient t
   (interactive)
-  (hpg/revert-buffer))
+  (hpg/revert-buffers))
 
 (transient-define-suffix hpg/set-shortest-path-p ()
   :transient t
