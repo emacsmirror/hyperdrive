@@ -151,7 +151,8 @@ Interactively, with universal prefix argument
         ;; ("ushin" "peers" ,(h/public-key to)) key to save hyperbee space.  The
         ;; downside is that it would require a specialized cas function.
         `((put ("ushin" "peers" ,(h/public-key to) ,type) t))
-      `((del ("ushin" "peers" ,(h/public-key to) ,type))))))
+      `((del ("ushin" "peers" ,(h/public-key to) ,type)))))
+  (hpg/revert-buffers))
 
 (defun hpg/sources-hops-fn (from then)
   "Asynchronously get source hops from FROM.
@@ -342,8 +343,7 @@ Also set the global variables after reading."
                  (hpg/set-relation
                   :from hpg/root-hyperdrive
                   :to (h/url-hyperdrive (fons-relation-to item))
-                  :type 'source :bool (not directp))
-                 (hpg/revert-buffers)))))
+                  :type 'source :bool (not directp))))))
 
 (hpg/define-column "Blocker" ()
   (let ((directp (fons-relation-direct-p
@@ -354,8 +354,7 @@ Also set the global variables after reading."
                  (hpg/set-relation
                   :from hpg/root-hyperdrive
                   :to (h/url-hyperdrive (fons-relation-to item))
-                  :type 'blocker :bool (not directp))
-                 (hpg/revert-buffers)))))
+                  :type 'blocker :bool (not directp))))))
 
 (hpg/define-column "Blocked" ()
   (let ((directp (fons-relation-direct-p
@@ -366,8 +365,7 @@ Also set the global variables after reading."
                  (hpg/set-relation
                   :from hpg/root-hyperdrive
                   :to (h/url-hyperdrive (fons-relation-to item))
-                  :type 'blocked :bool (not directp))
-                 (hpg/revert-buffers)))))
+                  :type 'blocked :bool (not directp))))))
 
 (unless hpg/columns
   (setq-default hpg/columns (get 'hpg/columns 'standard-value)))
