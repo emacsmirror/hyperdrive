@@ -474,10 +474,16 @@ blocked paths or has a one-hop source path."
     (setf hpg/root-hyperdrive hyperdrive)
     (setf hpg/sources-max-hops sources-max-hops)
     (setf hpg/blockers-max-hops blockers-max-hops)
-    (hpg/load)))
+    (hpg/reload-graph)))
 
-(defun hpg/load ()
-  "Load `hpg/relations' and redisplay graph."
+(cl-defun hpg/reload-graph ()
+  (hpg/display-loading-buffer)
+  (hpg/load :finally (lambda ()
+                       (hpg/display-graph)
+                       (hpg/refresh-menu))))
+
+(cl-defun hpg/load (&key finally)
+  "Load `hpg/relations' and call FINALLY."
   ;; TODO: If called in rapid succession, stop the requests from the first call.
   (setf hpg/relations
         (hpg/relations
@@ -490,10 +496,7 @@ blocked paths or has a one-hop source path."
            (h/fill-metadata-all
             (cons hpg/root-hyperdrive
                   (mapcar #'h/url-hyperdrive (hash-table-keys hpg/relations)))
-            :finally (lambda ()
-                       (hpg/display-graph)
-                       (hpg/refresh-menu))))))
-  (hpg/display-loading-buffer))
+            :finally finally)))))
 
 (defun hpg/get-buffer-create ()
   "Return hyperdrive peer graph buffer with mode enabled."
@@ -531,7 +534,7 @@ blocked paths or has a one-hop source path."
   "Revert `hyperdrive-describe-mode' buffer.
 Reload data and redisplay graph."
   (clrhash hpg/data-cache)
-  (hpg/load))
+  (hpg/reload-graph))
 
 (defvar-keymap hpg/mode-map
   :parent special-mode-map
@@ -558,7 +561,7 @@ Reload data and redisplay graph."
   (pcase (cadadr event)  ;; Image id from image map
     ((and (rx (group (= 52 alphanumeric))) public-key)
      (setf hpg/root-hyperdrive (h/url-hyperdrive public-key))
-     (hpg/load))))
+     (hpg/reload-graph))))
 
 ;; TODO: Add menu bar interface.
 
@@ -617,7 +620,7 @@ Reload data and redisplay graph."
                          (propertize "unset" 'face))))
   (interactive)
   (setf hpg/root-hyperdrive (h/read-hyperdrive :default hpg/root-hyperdrive))
-  (hpg/load))
+  (hpg/reload-graph))
 
 (transient-define-suffix hpg/set-sources-max-hops ()
   :transient t
@@ -629,7 +632,7 @@ Reload data and redisplay graph."
   (interactive)
   (setf hpg/sources-max-hops
         (read-number "Max hops for sources: " hpg/sources-max-hops))
-  (hpg/load))
+  (hpg/reload-graph))
 
 (transient-define-suffix hpg/set-blockers-max-hops ()
   :transient t
@@ -641,7 +644,7 @@ Reload data and redisplay graph."
   (interactive)
   (setf hpg/blockers-max-hops
         (read-number "Max hops for blockers: " hpg/blockers-max-hops))
-  (hpg/load))
+  (hpg/reload-graph))
 
 (transient-define-suffix hpg/reload ()
   :inapt-if-not #'hpg/loaded-relations
