@@ -389,6 +389,22 @@ without confirmation."
            (bool (not current-prefix-arg)))
       (hyperdrive-peer-graph-set-relation :from from :to to :type type :bool bool))))
 
+(defun h/peer-graph-set-relation-from-hyperdrive-at-point (event)
+  "Set relation to hyperdrive at point for EVENT."
+  (interactive "event")
+  (require 'hyperdrive-peer-graph)
+  (save-excursion
+    (mouse-set-point event)
+    (let* ((from (h/at-point event))
+           (to (h/read-hyperdrive
+                 :predicate (lambda (hyperdrive)
+                              (not (h/equal-p hyperdrive from)))
+                 :default hyperdrive-peer-graph-root-hyperdrive
+                 :prompt "From hyperdrive"))
+           (type (hyperdrive-peer-graph-read-relation-type))
+           (bool (not current-prefix-arg)))
+      (hyperdrive-peer-graph-set-relation :from from :to to :type type :bool bool))))
+
 (defun h/context-menu-function (menu click)
   "Insert items into context MENU for CLICK."
   (save-excursion
@@ -401,7 +417,11 @@ without confirmation."
       (keymap-set-after menu "<hyperdrive-peer-graph-set-relation-to-hyperdrive-at-point>"
         '(menu-item "Set relation to"
                     h/peer-graph-set-relation-to-hyperdrive-at-point
-                    :help "Set relation to hyperdrive at point"))))
+                    :help "Set relation to hyperdrive at point"))
+      (keymap-set-after menu "<hyperdrive-peer-graph-set-relation-from-hyperdrive-at-point>"
+        '(menu-item "Set relation from"
+                    h/peer-graph-set-relation-from-hyperdrive-at-point
+                    :help "Set relation from hyperdrive at point"))))
   menu)
 
 ;;;; h/mode
