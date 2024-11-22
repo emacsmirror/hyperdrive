@@ -261,7 +261,7 @@ argument \\[universal-argument], always prompt."
   (let ((default (pcase type
                    ('sources hpg/sources-max-hops)
                    ('blockers hpg/blockers-max-hops))))
-    (read-number (format "Max hops for %s" type) default
+    (read-number (format "Max hops for %s: " type) default
                  hpg/max-hops-history)))
 
 (defun hpg/context-max-hops (type &key force-prompt)
