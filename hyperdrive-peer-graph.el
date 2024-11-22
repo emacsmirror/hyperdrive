@@ -521,7 +521,7 @@ blocked paths or has a one-hop source path."
        (not (timerp hpg/relations))
        hpg/relations))
 
-;;;; Minor mode
+;;;;; Minor mode
 
 (defun hpg/revert-buffer (&optional _ignore-auto _noconfirm)
   "Revert `hyperdrive-peer-graph-mode' buffer.
