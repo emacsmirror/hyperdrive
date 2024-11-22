@@ -455,12 +455,6 @@ blocked paths or has a one-hop source path."
               (taxy-magit-section-insert taxy :initial-depth -1))
             (pop-to-buffer (current-buffer))))))))
 
-(defun fons-relation-type (relation type-priorities)
-  (catch 'type
-    (dolist (type type-priorities)
-      (when (fons-relation-paths-of-type type relation)
-        (throw 'type type)))))
-
 ;;;; Peer Graph
 
 (defun hyperdrive-peer-graph
