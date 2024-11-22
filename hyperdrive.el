@@ -389,6 +389,9 @@ without confirmation."
            (bool (not current-prefix-arg)))
       (hyperdrive-peer-graph-set-relation :from from :to to :type type :bool bool))))
 
+;; TODO: Group `h/peer-graph-set-relation-to-hyperdrive-at-point' and
+;; `h/peer-graph-set-relation-from-hyperdrive-at-point' into one submenu.
+
 (defun h/peer-graph-set-relation-from-hyperdrive-at-point (event)
   "Set relation to hyperdrive at point for EVENT."
   (interactive "event")

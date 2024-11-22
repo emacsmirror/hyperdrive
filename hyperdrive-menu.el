@@ -272,6 +272,8 @@
 (defvar h/mirror-filter nil)
 (defvar h/mirror-confirm t)
 
+;; TODO: Mark peer as source, blocker, blocked in hyperdrive-menu-hyperdrive
+
 ;;;###autoload (autoload 'hyperdrive-menu-hyperdrive "hyperdrive-menu" nil t)
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for HYPERDRIVE."
