@@ -667,6 +667,9 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
   ["Options"
    ("S" hpg/set-shortest-path-p)]
   (interactive (hpg/interactive-args))
+  (setf hpg/root-hyperdrive hyperdrive)
+  (setf hpg/sources-max-hops sources-max-hops)
+  (setf hpg/blockers-max-hops blockers-max-hops)
   (hpg/load :finally (lambda () (hpg/refresh-menu)))
   (transient-setup 'hyperdrive-peer-graph-menu nil nil :scope hyperdrive))
 
