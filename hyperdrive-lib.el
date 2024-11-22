@@ -963,9 +963,10 @@ case, when PREDICATE, only offer hyperdrives matching it."
   ;; Otherwise, prompt for drive.
   (h/read-hyperdrive :predicate predicate))
 
-(cl-defun h/read-hyperdrive (&key predicate default)
+(cl-defun h/read-hyperdrive (&key predicate default (prompt "Hyperdrive"))
   "Read hyperdrive from among those which match PREDICATE.
-DEFAULT is the default hyperdrive."
+DEFAULT is the default hyperdrive.  Prompt with PROMPT, which
+will be passed to `format-prompt' along with formatted DEFAULT."
   (declare (indent defun))
   (when (zerop (hash-table-count h/hyperdrives))
     (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
@@ -980,7 +981,7 @@ DEFAULT is the default hyperdrive."
                            (funcall predicate current-hyperdrive)
                            (he/hyperdrive h/current-entry))))
          (formatted-default (and default (h//format-hyperdrive default)))
-         (prompt (format-prompt "Hyperdrive" formatted-default))
+         (prompt (format-prompt prompt formatted-default))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (h//format-hyperdrive hyperdrive) hyperdrive))
                              hyperdrives))
