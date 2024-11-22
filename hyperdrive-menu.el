@@ -444,6 +444,7 @@
 (defvar h/peer-graph-sources-max-hops)
 (defvar h/peer-graph-blockers-max-hops)
 (transient-define-suffix h/menu-peer-graph ()
+  ;; NOTE: This intermediate transient is needed to set `hpg/root-hyperdrive'.
   :description "Peer graph"
   (interactive)
   (require 'hyperdrive-peer-graph)
