@@ -592,8 +592,6 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
   ;; It's easy to accidentally trigger drag events when clicking.
   "<drag-mouse-1>" #'hpg/view-follow-link
   "<mouse-1>" #'hpg/view-follow-link
-  "<drag-mouse-3>" #'hpg/menu-bar
-  "<mouse-3>" #'hpg/menu-bar
   "?" #'hpg/menu)
 
 (define-derived-mode hpg/mode h/fons-view-mode
@@ -612,21 +610,6 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
     ((and (rx (group (= 52 alphanumeric))) public-key)
      (setf hpg/root-hyperdrive (h/url-hyperdrive public-key))
      (hpg/reload-graph))))
-
-;; TODO: Add menu bar interface.
-
-(defun hpg/menu-bar (event)
-  "Pop up `hyperdrive-peer-graph' menu bar."
-  (interactive "e")
-  (pcase (cadadr event)  ;; Image id from image map
-    ((and (rx (group (= 52 alphanumeric))) public-key)
-     (let ((hyperdrive (h/url-hyperdrive public-key)))
-       (popup-menu
-        `("Hyperdrive peer graph"
-          ["Open hyperdrive"
-           (lambda ()
-             (interactive)
-             (h/open (he//create :hyperdrive ,hyperdrive :path "/")))]))))))
 
 ;;;; Transient UI
 
