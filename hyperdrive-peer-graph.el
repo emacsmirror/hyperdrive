@@ -522,12 +522,9 @@ Does not load graph data."
   :parent magit-section-mode-map
   :doc "Local keymap for `hyperdrive-peer-graph-list-mode' buffers."
   ;; It's easy to accidentally trigger drag events when clicking.
-  ;; "<drag-mouse-1>" #'hpg/view-follow-link
-  ;; "<mouse-1>" #'hpg/view-follow-link
-  ;; "<drag-mouse-3>" #'hpg/menu-bar
-  ;; "<mouse-3>" #'hpg/menu-bar
-  ;; "?" #'hpg/menu
-  )
+  "<drag-mouse-1>" #'hpg/view-follow-link
+  "<mouse-1>" #'hpg/view-follow-link
+  "?" #'hpg/menu)
 
 (define-derived-mode hpg/list-mode magit-section-mode
   '("Hyperdrive-peer-graph")
