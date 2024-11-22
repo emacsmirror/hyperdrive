@@ -380,7 +380,7 @@ A blocked hop includes the number of hops to the blocker."
   "Return non-nil if RELATION is direct from root for TYPE."
   (cl-loop for path in (fons-relation-paths-of-type type relation)
            thereis (equal (h/public-key hpg/root-hyperdrive)
-                    (fons-hop-from (car (last (fons-path-hops path)))))))
+                          (fons-hop-from (car (last (fons-path-hops path)))))))
 
 (defun hpg/source-p (relation)
   "Return non-nil if RELATION is a source.
