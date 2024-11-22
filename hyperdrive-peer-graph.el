@@ -510,7 +510,6 @@ blocked paths or has a one-hop source path."
     (with-silent-modifications
       (erase-buffer)
       (insert "Loading hyperdrive peer graph data...")
-      (hpg/mode)
       (display-buffer (current-buffer) hpg/display-buffer-action))))
 
 (defun hpg/display-graph ()
