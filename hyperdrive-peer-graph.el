@@ -243,6 +243,16 @@ hops to traverse for sources and blockers, respectively."
 
 ;;;;; Reading user input
 
+(defun hpg/read-relation-type ()
+  "Return one of \\+`source', \\+`blocker', or \\+`blocked'."
+  (let ((string (completing-read
+                 (format-prompt "Relation type" "source")
+                 '(source blocker blocked) nil t nil nil "source")))
+    (pcase string
+      ("source" 'source)
+      ("blocker" 'blocker)
+      ("blocked" 'blocked))))
+
 (cl-defun hpg/context-root-hyperdrive (&key force-prompt)
   "Return `hyperdrive-peer-graph-root-hyperdrive' or prompt for drive.
 With FORCE-PROMPT, or interactively with universal prefix
