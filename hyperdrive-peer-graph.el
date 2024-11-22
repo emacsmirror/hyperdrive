@@ -321,7 +321,7 @@ Also set the global variables after reading."
 (hpg/define-column "Source" ()
   (let ((directp (fons-relation-direct-p
                   ;; HACK: Item is already filtered to one type: get original relation.
-                  'sources (gethash (fons-relation-to item) hpg/relations))))
+                  hpg/root-hyperdrive 'sources (gethash (fons-relation-to item) hpg/relations))))
     (buttonize (if directp "[Source]" "[      ]")
                (lambda (_)
                  (hpg/mark :from hpg/root-hyperdrive
@@ -332,7 +332,7 @@ Also set the global variables after reading."
 (hpg/define-column "Blocker" ()
   (let ((directp (fons-relation-direct-p
                   ;; HACK: Item is already filtered to one type: get original relation.
-                  'blockers (gethash (fons-relation-to item) hpg/relations))))
+                  hpg/root-hyperdrive 'blockers (gethash (fons-relation-to item) hpg/relations))))
     (buttonize (if directp "[Blocker]" "[      ]")
                (lambda (_)
                  (hpg/mark :from hpg/root-hyperdrive
@@ -343,7 +343,7 @@ Also set the global variables after reading."
 (hpg/define-column "Blocked" ()
   (let ((directp (fons-relation-direct-p
                   ;; HACK: Item is already filtered to one type: get original relation.
-                  'blockeds (gethash (fons-relation-to item) hpg/relations))))
+                  hpg/root-hyperdrive 'blocked (gethash (fons-relation-to item) hpg/relations))))
     (buttonize (if directp "[Blocked]" "[      ]")
                (lambda (_)
                  (hpg/mark :from hpg/root-hyperdrive

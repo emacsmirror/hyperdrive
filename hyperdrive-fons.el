@@ -285,10 +285,10 @@ RELATIONS may be a hash table of `fons-relations' structs."
       (maphash #'map-relation relations)
       hops)))
 
-(defun fons-relation-direct-p (type relation)
-  "Return non-nil if RELATION is direct from root for TYPE."
+(defun fons-relation-direct-p (root type relation)
+  "Return non-nil if RELATION is direct from ROOT for TYPE."
   (cl-loop for path in (fons-relation-paths-of-type type relation)
-           thereis (equal (h/public-key hpg/root-hyperdrive)
+           thereis (equal (h/public-key root)
                           (fons-hop-from (car (last (fons-path-hops path)))))))
 
 ;;;; Footer
