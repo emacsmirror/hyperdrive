@@ -335,7 +335,9 @@ argument \\[universal-argument], always prompt."
                    hpg/root-hyperdrive 'sources
                    ;; Item is filtered to one type: get original relation.
                    (gethash (fons-relation-to item) hpg/relations)))
-         (text (if directp "[Source]" "[      ]")))
+         (text (if directp
+                   (propertize "[Source]" 'face 'h/fons-source)
+                 "[      ]")))
     (buttonize text
                (lambda (_)
                  (hpg/set-relation
@@ -348,7 +350,9 @@ argument \\[universal-argument], always prompt."
                    hpg/root-hyperdrive 'blockers
                    ;; Item is filtered to one type: get original relation.
                    (gethash (fons-relation-to item) hpg/relations)))
-         (text (if directp "[Blocker]" "[      ]")))
+         (text (if directp
+                   (propertize "[Blocker]" 'face 'h/fons-blocker)
+                 "[       ]")))
     (buttonize text
                (lambda (_)
                  (hpg/set-relation
@@ -361,7 +365,9 @@ argument \\[universal-argument], always prompt."
                    hpg/root-hyperdrive 'blocked
                    ;; Item is filtered to one type: get original relation.
                    (gethash (fons-relation-to item) hpg/relations)))
-         (text (if directp "[Blocked]" "[      ]")))
+         (text (if directp
+                   (propertize "[Blocked]" 'face 'h/fons-blocker)
+                 "[      ]")))
     (buttonize text
                (lambda (_)
                  (hpg/set-relation
