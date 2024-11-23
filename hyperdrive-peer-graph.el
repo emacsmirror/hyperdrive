@@ -422,13 +422,6 @@ blocked paths or has a one-hop source path."
   ;; TODO: Add `hpg/list-display-buffer-action'
   (pop-to-buffer hpg/list-buffer-name hpg/display-buffer-action))
 
-(cl-defun hpg/reload-list ()
-  ;; TODO: Restore point.
-  (hpg/list-draw-loading-buffer)
-  (hpg/load :finally (lambda ()
-                       (hpg/draw-list)
-                       (hpg/refresh-menu))))
-
 (defun hpg/list-draw-loading-buffer ()
   "Draw loading buffer for hyperdrive peer graph."
   (with-current-buffer (hpg/list-get-buffer-create)
@@ -552,12 +545,6 @@ Does not load graph data."
             (equal blockers-max-hops hpg/blockers-max-hops)
             (hpg/loaded-relations))))
 
-(cl-defun hpg/reload-graph ()
-  (hpg/draw-loading-buffer)
-  (hpg/load :finally (lambda ()
-                       (hpg/draw-graph)
-                       (hpg/refresh-menu))))
-
 (cl-defun hpg/load (&key finally)
   "Load `hpg/relations' and call FINALLY with no arguments."
   ;; TODO: If called in rapid succession, stop the requests from the first call.
@@ -608,8 +595,18 @@ Does not load graph data."
 Reload data and redisplays `hyperdrive-peer-graph-mode' and
 `hyperdrive-peer-graph-list-mode' buffers."
   (clrhash hpg/data-cache)
-  (hpg/reload-graph)
-  (hpg/reload-list))
+  ;; TODO: How should we handle refreshing the graph/list when it's not visible?
+  ;; Should we display an "outdated" warning?
+  (when (get-buffer-window hpg/buffer-name 'visible)
+    (hpg/draw-loading-buffer))
+  (when (get-buffer-window hpg/list-buffer-name 'visible)
+    (hpg/list-draw-loading-buffer))
+  (hpg/load :finally (lambda ()
+                       (when (get-buffer-window hpg/buffer-name 'visible)
+                         (hpg/draw-graph))
+                       (when (get-buffer-window hpg/list-buffer-name 'visible)
+                         (hpg/draw-list))
+                       (hpg/refresh-menu))))
 
 (defvar-keymap hpg/mode-map
   :parent special-mode-map
