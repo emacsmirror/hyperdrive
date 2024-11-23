@@ -238,7 +238,9 @@ graphviz string, and replaces it with the rendered output."
         (dolist (hop (fons-relations-hops relations 'blockers))
           (insert (format-hop hop 'blockers)))
         (when (catch 'blocker-paths-exist-p
-                ;; Only display block hops when blockers are displayed.
+                ;; `relations' might be filtered to exclude blockers.  Only
+                ;; display blocked hops when blockers are displayed.  Blocked
+                ;; nodes may still be displayed.
                 (maphash (lambda (_id relation)
                            (when (fons-relation-blocker-paths relation)
                              (throw 'blocker-paths-exist-p t)))
