@@ -440,6 +440,7 @@ blocked paths or has a one-hop source path."
   "Open hyperdrive peer list.
 Does not load graph data."
   ;; TODO: Handle empty `hpg/relations'.
+  ;; TODO: Restore point.
   (with-current-buffer (hpg/list-get-buffer-create)
     (let (format-table column-sizes)
       (cl-labels ((format-item (item)
