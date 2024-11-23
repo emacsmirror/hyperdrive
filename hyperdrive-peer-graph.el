@@ -145,13 +145,17 @@ Interactively, with universal prefix argument
           (type (hpg/read-relation-type))
           (bool (not current-prefix-arg)))
      (list :from from :to to :type type :bool bool)))
-  (h//bee-exec from
-    (if bool
-        ;; TODO: Consider storing source, blocker, and blocked data inside
-        ;; ("ushin" "peers" ,(h/public-key to)) key to save hyperbee space.  The
-        ;; downside is that it would require a specialized cas function.
-        `((put ("ushin" "peers" ,(h/public-key to) ,type) t))
-      `((del ("ushin" "peers" ,(h/public-key to) ,type)))))
+  (condition-case err
+      (h//bee-exec from
+        (if bool
+            ;; TODO: Consider storing source, blocker, and blocked data inside
+            ;; ("ushin" "peers" ,(h/public-key to)) key to save hyperbee space.  The
+            ;; downside is that it would require a specialized cas function.
+            `((put ("ushin" "peers" ,(h/public-key to) ,type) t))
+          `((del ("ushin" "peers" ,(h/public-key to) ,type)))))
+    (error (h/error "Unable to %s relation from %s to %s as %s: %S"
+                    (if bool "set" "unset") (h/url from) (h/url to) type
+                    (error-message-string err))))
   (hpg/revert-buffers))
 
 (defun hpg/sources-hops-fn (from then)
