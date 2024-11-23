@@ -412,9 +412,7 @@ blocked paths or has a one-hop source path."
 (defun hpg/list (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
-  (unless (and hpg/root-hyperdrive
-               (h/equal-p hyperdrive hpg/root-hyperdrive)
-               (hpg/loaded-relations))
+  (when (hpg/need-refresh-p hyperdrive sources-max-hops blockers-max-hops)
     (setf hpg/root-hyperdrive hyperdrive)
     (setf hpg/sources-max-hops sources-max-hops)
     (setf hpg/blockers-max-hops blockers-max-hops)
@@ -535,14 +533,20 @@ Does not load graph data."
 (defun hyperdrive-peer-graph (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
-  (unless (and hpg/root-hyperdrive
-               (h/equal-p hyperdrive hpg/root-hyperdrive)
-               (hpg/loaded-relations))
+  (when (hpg/need-refresh-p hyperdrive sources-max-hops blockers-max-hops)
     (setf hpg/root-hyperdrive hyperdrive)
     (setf hpg/sources-max-hops sources-max-hops)
     (setf hpg/blockers-max-hops blockers-max-hops)
     (hpg/revert-buffers))
   (pop-to-buffer hpg/buffer-name hpg/display-buffer-action))
+
+(defun hpg/need-refresh-p (hyperdrive sources-max-hops blockers-max-hops)
+  "Return non-nil if the graph data parameters have changed."
+  (not (and hpg/root-hyperdrive
+            (h/equal-p hyperdrive hpg/root-hyperdrive)
+            (equal sources-max-hops hpg/sources-max-hops)
+            (equal blockers-max-hops hpg/blockers-max-hops)
+            (hpg/loaded-relations))))
 
 (cl-defun hpg/reload-graph ()
   (hpg/draw-loading-buffer)
