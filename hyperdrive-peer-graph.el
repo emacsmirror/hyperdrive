@@ -530,7 +530,15 @@ Does not load graph data."
           (with-silent-modifications
             (erase-buffer)
             (save-excursion
-              (taxy-magit-section-insert taxy :initial-depth -1))))))))
+              (taxy-magit-section-insert taxy :initial-depth -1)
+              ;; HACK: Delete first line displaying top-level taxy.  A more
+              ;; correct solution would be to not render the top-level taxy.
+              ;; This hack means that `magit-section-show-level-1' and
+              ;; `magit-section-show-level-1-all' result in the buffer appearing
+              ;; empty and the other `magit-section-show-level-*' commands show
+              ;; one fewer levels than expected.
+              (goto-char (point-min))
+              (delete-line))))))))
 
 ;;;;; Minor mode
 
