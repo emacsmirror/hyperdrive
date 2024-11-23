@@ -201,13 +201,7 @@ RELATION may be a hash table of `fons-relation' structs mapped by
                               ,(format "%s"
                                        (h//preferred-format hyperdrive))))))))
     (if rootp
-        (progn
-          (dom-append-child
-           label `(tr nil (td nil (font ((color . ,h/fons-view-blockers-color))
-                                        "blocker"))))
-          (dom-append-child
-           label `(tr nil (td nil (font ((color . ,h/fons-view-sources-color))
-                                        "source")))))
+        (dom-append-child label `(tr nil (td nil (b nil "root"))))
       (when source-paths
         (dom-append-child
          label `(tr nil (td nil (font ((color . ,h/fons-view-sources-color))
