@@ -986,6 +986,7 @@ will be passed to `format-prompt' along with formatted DEFAULT."
                                (cons (h//format-hyperdrive hyperdrive) hyperdrive))
                              hyperdrives))
          (completion-styles (cons 'substring completion-styles))
+         (input-public-key-p)
          (selected
           (completing-read
            prompt
@@ -994,8 +995,14 @@ will be passed to `format-prompt' along with formatted DEFAULT."
                  '(metadata (category . hyperdrive))
                (complete-with-action
                 action candidates string predicate)))
-           nil 'require-match nil nil formatted-default)))
+           nil (lambda (input)
+                 (or (map-elt input candidates)
+                     ;; Looks like input contains a public-key.
+                     (setf input-public-key-p
+                           (string-match h//public-key-re input))))
+           nil nil formatted-default)))
     (or (alist-get selected candidates nil nil #'equal)
+        (and input-public-key-p (h/url-hyperdrive (match-string 1 selected)))
         (h/user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
 
 (cl-defun h//format-hyperdrive
