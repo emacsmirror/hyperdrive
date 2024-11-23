@@ -611,7 +611,6 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
     (hpg/reload-list)))
 
 (defvar-keymap hpg/mode-map
-  ;; TODO: Enable these right click actions even when `context-menu-mode'.
   :parent special-mode-map
   :doc "Local keymap for `hyperdrive-peer-graph-mode' buffers."
   ;; It's easy to accidentally trigger drag events when clicking.
