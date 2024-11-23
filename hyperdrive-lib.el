@@ -1123,7 +1123,7 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
     (h/write entry :body (encode-coding-string (json-encode data) 'utf-8)
       :then then)))
 
-(cl-defun h//bee-exec (hyperdrive commands &key then (else #'ignore))
+(cl-defun h//bee-exec (hyperdrive commands &key then else)
   "Run COMMANDS on HYPERDRIVE's hyperbee, then call THEN.
 If THEN is nil or \\+`sync', return immediately.
 If command fails, call ELSE."
@@ -1131,18 +1131,12 @@ If command fails, call ELSE."
   (let ((url (format "hyper://%s/$/bee" (hyperdrive-public-key hyperdrive))))
     (pcase then
       ((or 'nil 'sync)
-       (condition-case err
-           ;; TODO: Refactor to use :as 'response-with-buffer.
-           (h/api 'post url
-             :body (json-encode-array commands)
-             :headers '((content-type . "application/json"))
-             ;; TODO: Update latest-version and x-drive-size.
-             :as #'json-read)
-         (error
-          (let ((inhibit-message t))
-            (h/message "Error running hyperbee commands %S on %s: %S"
-                       commands url err)))))
-
+       ;; TODO: Refactor to use :as 'response-with-buffer.
+       (h/api 'post url
+         :body (json-encode-array commands)
+         :headers '((content-type . "application/json"))
+         ;; TODO: Update latest-version and x-drive-size.
+         :as #'json-read))
       (_
        (h/api 'post url
          :body (json-encode-array commands)
@@ -1150,7 +1144,10 @@ If command fails, call ELSE."
          ;; TODO: Update latest-version and x-drive-size.
          :as #'json-read
          :then then
-         :else else)))))
+         :else (or else
+                   (lambda (plz-error)
+                     (h/error "Error running hyperbee commands %S on %s: %S"
+                              commands url plz-error))))))))
 
 (cl-defun h/persist (hyperdrive &key purge)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'.
