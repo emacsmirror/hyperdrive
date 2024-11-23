@@ -381,16 +381,22 @@ argument \\[universal-argument], always prompt."
   "Return the minimum number of blocker hops in RELATION."
   (fons-shortest-hops-length 'blockers relation))
 
-(defun fons-shortest-blocked-hops-length (relation)
+(cl-defun fons-shortest-blocked-hops-length (relation)
   "Return the minimum number of blocked hops in RELATION.
 A blocked hop includes the number of hops to the blocker."
   ;; TODO: Generalize this function so it doesn't rely on `hpg/...' variables.
-  (when-let* ((blocked-paths (fons-relation-blocked-paths relation))
-              (blockers
-               (mapcar (lambda (path)
-                         (gethash (fons-hop-from (car (fons-path-hops path)))
-                                  hpg/relations))
-                       blocked-paths)))
+  (when-let*
+      ((blocked-paths (fons-relation-blocked-paths relation))
+       (blockers
+        (mapcar (lambda (path)
+                  (let ((blocker-public-key
+                         (fons-hop-from (car (fons-path-hops path)))))
+                    (when (equal (h/public-key hpg/root-hyperdrive)
+                                 blocker-public-key)
+                      ;; Direct block from root: return 1.
+                      (cl-return-from fons-shortest-blocked-hops-length 1))
+                    (gethash blocker-public-key hpg/relations)))
+                blocked-paths)))
     (1+ (cl-loop
          for blocker in blockers
          minimize (fons-shortest-hops-length 'blockers blocker)))))
