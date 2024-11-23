@@ -488,8 +488,9 @@ Does not load graph data."
                    'sources
                    :name "Sources"
                    :take (lambda (peer taxy)
-                           (taxy-take-keyed (list #'fons-shortest-sources-hops-length)
-                             peer taxy :key-name-fn #'hpg/format-hops)))
+                           (taxy-take-keyed
+                            (list #'fons-shortest-sources-hops-length)
+                            peer taxy :key-name-fn #'hpg/format-hops)))
                   taxy-emptied
                   (taxy-fill (hash-table-values sources))))
                (blockers-taxy
@@ -498,8 +499,9 @@ Does not load graph data."
                    'blockers
                    :name "Blockers"
                    :take (lambda (peer taxy)
-                           (taxy-take-keyed (list #'fons-shortest-blockers-hops-length)
-                             peer taxy :key-name-fn #'hpg/format-hops)))
+                           (taxy-take-keyed
+                            (list #'fons-shortest-blockers-hops-length)
+                            peer taxy :key-name-fn #'hpg/format-hops)))
                   taxy-emptied
                   (taxy-fill (hash-table-values blockers))))
                (blocked-taxy
@@ -509,7 +511,7 @@ Does not load graph data."
                    :name "Blocked"
                    :take (lambda (peer taxy)
                            (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
-                             peer taxy :key-name-fn #'hpg/format-hops)))
+                                            peer taxy :key-name-fn #'hpg/format-hops)))
                   taxy-emptied
                   (taxy-fill (hash-table-values blocked))))
                (taxy (make-taxy-magit-section
