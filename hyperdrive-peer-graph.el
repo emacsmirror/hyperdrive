@@ -538,7 +538,11 @@ Does not load graph data."
               ;; empty and the other `magit-section-show-level-*' commands show
               ;; one fewer levels than expected.
               (goto-char (point-min))
-              (delete-line))))))))
+              (delete-line)
+              (insert (format "%s  %s\n\n"
+                              (propertize "Root:" 'face 'bold)
+                              (h//format-hyperdrive
+                               hpg/root-hyperdrive))))))))))
 
 ;;;;; Minor mode
 
