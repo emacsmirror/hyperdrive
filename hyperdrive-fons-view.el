@@ -237,16 +237,26 @@ graphviz string, and replaces it with the rendered output."
           (insert (format-hop hop 'sources)))
         (dolist (hop (fons-relations-hops relations 'blockers))
           (insert (format-hop hop 'blockers)))
-        (when (catch 'blocker-paths-exist-p
-                ;; `relations' might be filtered to exclude blockers.  Only
-                ;; display blocked hops when blockers are displayed.  Blocked
-                ;; nodes may still be displayed.
-                (maphash (lambda (_id relation)
-                           (when (fons-relation-blocker-paths relation)
-                             (throw 'blocker-paths-exist-p t)))
-                         relations))
+        (let ((blocker-paths-exist-p
+               (catch 'blocker-paths-exist-p
+                 ;; `relations' might be filtered to exclude blockers.  Only
+                 ;; display blocked hops when blockers are displayed.  Blocked
+                 ;; nodes may still be displayed without edges.
+                 (maphash (lambda (_id relation)
+                            (when (fons-relation-blocker-paths relation)
+                              (throw 'blocker-paths-exist-p t)))
+                          relations))))
           (dolist (hop (fons-relations-hops relations 'blocked))
-            (insert (format-hop hop 'blocked))))
+            (when (or blocker-paths-exist-p
+                      ;; NOTE: Without adding another argument to
+                      ;; `hyperdrive-fons-view--format-graph', there's no way to
+                      ;; distinguish between a `relations' table which has been
+                      ;; filtered to remove blocker paths and a table which
+                      ;; never had any blocker paths.  Therefore, this code
+                      ;; always shows direct blocked hops from root, even when
+                      ;; `hyperdrive-peer-graph-show-blockers-p' is nil.
+                      (equal root-name (fons-hop-from hop)))
+              (insert (format-hop hop 'blocked)))))
         (format-root root-name)
         (maphash #'format-to relations)
         (insert "}"))
