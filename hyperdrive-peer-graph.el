@@ -412,11 +412,13 @@ blocked paths or has a one-hop source path."
 (defun hpg/list (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
-  (when (hpg/need-refresh-p hyperdrive sources-max-hops blockers-max-hops)
-    (setf hpg/root-hyperdrive hyperdrive)
-    (setf hpg/sources-max-hops sources-max-hops)
-    (setf hpg/blockers-max-hops blockers-max-hops)
-    (hpg/revert-buffers))
+  (cond ((hpg/need-refresh-p hyperdrive sources-max-hops blockers-max-hops)
+         (setf hpg/root-hyperdrive hyperdrive)
+         (setf hpg/sources-max-hops sources-max-hops)
+         (setf hpg/blockers-max-hops blockers-max-hops)
+         (hpg/revert-buffers))
+        ((not (buffer-live-p (get-buffer hpg/list-buffer-name)))
+         (hpg/draw-list)))
   ;; TODO: Add `hpg/list-display-buffer-action'
   (pop-to-buffer hpg/list-buffer-name hpg/display-buffer-action))
 
@@ -533,11 +535,13 @@ Does not load graph data."
 (defun hyperdrive-peer-graph (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
-  (when (hpg/need-refresh-p hyperdrive sources-max-hops blockers-max-hops)
-    (setf hpg/root-hyperdrive hyperdrive)
-    (setf hpg/sources-max-hops sources-max-hops)
-    (setf hpg/blockers-max-hops blockers-max-hops)
-    (hpg/revert-buffers))
+  (cond ((hpg/need-refresh-p hyperdrive sources-max-hops blockers-max-hops)
+         (setf hpg/root-hyperdrive hyperdrive)
+         (setf hpg/sources-max-hops sources-max-hops)
+         (setf hpg/blockers-max-hops blockers-max-hops)
+         (hpg/revert-buffers))
+        ((not (buffer-live-p (get-buffer hpg/buffer-name)))
+         (hpg/draw-graph)))
   (pop-to-buffer hpg/buffer-name hpg/display-buffer-action))
 
 (defun hpg/need-refresh-p (hyperdrive sources-max-hops blockers-max-hops)
