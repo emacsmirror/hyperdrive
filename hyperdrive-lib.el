@@ -1150,7 +1150,7 @@ If command fails, call ELSE."
          ;; TODO: Update latest-version and x-drive-size.
          :as #'json-read
          :then then
-         :else #'else)))))
+         :else else)))))
 
 (cl-defun h/persist (hyperdrive &key purge)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'.
