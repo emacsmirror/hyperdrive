@@ -456,7 +456,7 @@ blocked paths or has a one-hop source path."
     (current-buffer)))
 
 (defun hpg/draw-list ()
-  "Open hyperdrive peer list.
+  "Draw hyperdrive peer list.
 Does not load graph data."
   ;; TODO: Handle empty `hpg/relations'.
   ;; TODO: Restore point.
@@ -600,14 +600,14 @@ Does not load graph data."
     (current-buffer)))
 
 (defun hpg/draw-loading-buffer ()
-  "Open loading buffer for hyperdrive peer graph."
+  "Draw loading buffer for hyperdrive peer graph."
   (with-current-buffer (hpg/get-buffer-create)
     (with-silent-modifications
       (erase-buffer)
       (insert "Loading hyperdrive peer graph data..."))))
 
 (defun hpg/draw-graph ()
-  "Open buffer displaying hyperdrive peer graph."
+  "Draw buffer displaying hyperdrive peer graph."
   (with-current-buffer (hpg/get-buffer-create)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
