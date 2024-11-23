@@ -681,10 +681,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
 (transient-define-suffix hpg/set-root-hyperdrive ()
   :transient t
   :description
-  (lambda ()
-    (format "Root: %s" (if hpg/root-hyperdrive
-                           (h//format hpg/root-hyperdrive)
-                         (propertize "unset" 'face))))
+  (lambda () (format "Root: %s" (h//format hpg/root-hyperdrive)))
   (interactive)
   (setf hpg/root-hyperdrive (h/read-hyperdrive :default hpg/root-hyperdrive))
   (hpg/revert-buffers))
