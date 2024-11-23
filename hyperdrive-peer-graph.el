@@ -742,7 +742,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
   :inapt-if-not #'hpg/loaded-relations
   :transient t
   (interactive)
-  (hpg/draw-list))
+  (hpg/list hpg/root-hyperdrive hpg/sources-max-hops hpg/blockers-max-hops))
 
 (transient-define-suffix hpg/reload ()
   :inapt-if-not #'hpg/loaded-relations
