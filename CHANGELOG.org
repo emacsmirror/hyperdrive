@@ -27,6 +27,8 @@ code since ~v0.4~, and more correctly handles edge cases and errors.
 - More colorful version descriptions in ~hyperdrive-menu~.
 - Hyperdrive nickname metadata are now loaded when opening any file,
   not just directories.
+- ~hyperdrive-read-hyperdrive~ now parses the hyperdrive from a URL or
+  public key and returns it.
 
 ** Fixed
 
