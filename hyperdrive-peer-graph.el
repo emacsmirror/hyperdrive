@@ -534,8 +534,7 @@ Does not load graph data."
 
 ;;;; Peer Graph
 
-(defun hyperdrive-peer-graph
-    (hyperdrive sources-max-hops blockers-max-hops)
+(defun hyperdrive-peer-graph (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
   (if (and hpg/root-hyperdrive
