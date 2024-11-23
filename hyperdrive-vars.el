@@ -451,6 +451,12 @@ Keys are regexps matched against MIME types.")
   (defconst h//hyper-prefix "hyper://"
     "Hyperdrive URL prefix."))
 
+(defconst h//public-key-re (rx (or bol (+ (not alphanumeric)))
+                               (group (= 52 alphanumeric))
+                               (or eol (+ (not alphanumeric))))
+  "Regexp to match public key.
+Capture group matches public key.")
+
 (defconst h//url-re
   (rx (eval h//hyper-prefix)
       (group (= 52 alphanumeric))
