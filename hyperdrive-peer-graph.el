@@ -338,12 +338,14 @@ argument \\[universal-argument], always prompt."
          (text (if directp
                    (propertize "[Source]" 'face 'h/fons-source)
                  "[      ]")))
-    (buttonize text
-               (lambda (_)
-                 (hpg/set-relation
-                  :from hpg/root-hyperdrive
-                  :to (h/url-hyperdrive (fons-relation-to item))
-                  :type 'source :bool (not directp))))))
+    (if (h/writablep hpg/root-hyperdrive)
+        (buttonize text
+                   (lambda (_)
+                     (hpg/set-relation
+                      :from hpg/root-hyperdrive
+                      :to (h/url-hyperdrive (fons-relation-to item))
+                      :type 'source :bool (not directp))))
+      text)))
 
 (hpg/define-column "Blocker" ()
   (let* ((directp (fons-relation-direct-p
@@ -353,12 +355,14 @@ argument \\[universal-argument], always prompt."
          (text (if directp
                    (propertize "[Blocker]" 'face 'h/fons-blocker)
                  "[       ]")))
-    (buttonize text
-               (lambda (_)
-                 (hpg/set-relation
-                  :from hpg/root-hyperdrive
-                  :to (h/url-hyperdrive (fons-relation-to item))
-                  :type 'blocker :bool (not directp))))))
+    (if (h/writablep hpg/root-hyperdrive)
+        (buttonize text
+                   (lambda (_)
+                     (hpg/set-relation
+                      :from hpg/root-hyperdrive
+                      :to (h/url-hyperdrive (fons-relation-to item))
+                      :type 'blocker :bool (not directp))))
+      text)))
 
 (hpg/define-column "Blocked" ()
   (let* ((directp (fons-relation-direct-p
@@ -368,12 +372,14 @@ argument \\[universal-argument], always prompt."
          (text (if directp
                    (propertize "[Blocked]" 'face 'h/fons-blocker)
                  "[      ]")))
-    (buttonize text
-               (lambda (_)
-                 (hpg/set-relation
-                  :from hpg/root-hyperdrive
-                  :to (h/url-hyperdrive (fons-relation-to item))
-                  :type 'blocked :bool (not directp))))))
+    (if (h/writablep hpg/root-hyperdrive)
+        (buttonize text
+                   (lambda (_)
+                     (hpg/set-relation
+                      :from hpg/root-hyperdrive
+                      :to (h/url-hyperdrive (fons-relation-to item))
+                      :type 'blocked :bool (not directp))))
+      text)))
 
 (unless hpg/columns
   (setq-default hpg/columns (get 'hpg/columns 'standard-value)))
