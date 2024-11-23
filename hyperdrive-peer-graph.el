@@ -412,31 +412,30 @@ blocked paths or has a one-hop source path."
 (defun hpg/list (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
-  (if (and hpg/root-hyperdrive
-           (h/equal-p hyperdrive hpg/root-hyperdrive)
-           (hpg/loaded-relations))
-      (hpg/display-list)
+  (unless (and hpg/root-hyperdrive
+               (h/equal-p hyperdrive hpg/root-hyperdrive)
+               (hpg/loaded-relations))
     (setf hpg/root-hyperdrive hyperdrive)
     (setf hpg/sources-max-hops sources-max-hops)
     (setf hpg/blockers-max-hops blockers-max-hops)
-    (hpg/reload-list)))
+    (hpg/revert-buffers))
+  ;; TODO: Add `hpg/list-display-buffer-action'
+  (pop-to-buffer hpg/list-buffer-name hpg/display-buffer-action))
 
 (cl-defun hpg/reload-list ()
   ;; TODO: Restore point.
-  (hpg/list-display-loading-buffer)
+  (hpg/list-draw-loading-buffer)
   (hpg/load :finally (lambda ()
-                       (hpg/display-list)
+                       (hpg/draw-list)
                        (hpg/refresh-menu))))
 
-(defun hpg/list-display-loading-buffer ()
-  "Open loading buffer for hyperdrive peer graph."
+(defun hpg/list-draw-loading-buffer ()
+  "Draw loading buffer for hyperdrive peer graph."
   (with-current-buffer (hpg/list-get-buffer-create)
     (with-silent-modifications
       (erase-buffer)
-      ;; Show empty list template when loading data.
-      (insert "Loading hyperdrive peer graph data...")
-      ;; TODO: Add `hpg/list-display-buffer-action'
-      (display-buffer (current-buffer) hpg/display-buffer-action))))
+      ;; TODO: Show empty list template when loading data.
+      (insert "Loading hyperdrive peer graph data..."))))
 
 (defun hpg/list-get-buffer-create ()
   "Return hyperdrive peer graph list buffer with mode enabled."
@@ -444,7 +443,7 @@ blocked paths or has a one-hop source path."
     (hpg/list-mode)
     (current-buffer)))
 
-(defun hpg/display-list ()
+(defun hpg/draw-list ()
   "Open hyperdrive peer list.
 Does not load graph data."
   ;; TODO: Handle empty `hpg/relations'.
@@ -512,8 +511,7 @@ Does not load graph data."
           (with-silent-modifications
             (erase-buffer)
             (save-excursion
-              (taxy-magit-section-insert taxy :initial-depth -1))
-            (pop-to-buffer (current-buffer))))))))
+              (taxy-magit-section-insert taxy :initial-depth -1))))))))
 
 ;;;;; Minor mode
 
@@ -537,19 +535,19 @@ Does not load graph data."
 (defun hyperdrive-peer-graph (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   (interactive (hpg/interactive-args))
-  (if (and hpg/root-hyperdrive
-           (h/equal-p hyperdrive hpg/root-hyperdrive)
-           (hpg/loaded-relations))
-      (hpg/display-graph)
+  (unless (and hpg/root-hyperdrive
+               (h/equal-p hyperdrive hpg/root-hyperdrive)
+               (hpg/loaded-relations))
     (setf hpg/root-hyperdrive hyperdrive)
     (setf hpg/sources-max-hops sources-max-hops)
     (setf hpg/blockers-max-hops blockers-max-hops)
-    (hpg/reload-graph)))
+    (hpg/revert-buffers))
+  (pop-to-buffer hpg/buffer-name hpg/display-buffer-action))
 
 (cl-defun hpg/reload-graph ()
-  (hpg/display-loading-buffer)
+  (hpg/draw-loading-buffer)
   (hpg/load :finally (lambda ()
-                       (hpg/display-graph)
+                       (hpg/draw-graph)
                        (hpg/refresh-menu))))
 
 (cl-defun hpg/load (&key finally)
@@ -574,22 +572,20 @@ Does not load graph data."
     (hpg/mode)
     (current-buffer)))
 
-(defun hpg/display-loading-buffer ()
+(defun hpg/draw-loading-buffer ()
   "Open loading buffer for hyperdrive peer graph."
   (with-current-buffer (hpg/get-buffer-create)
     (with-silent-modifications
       (erase-buffer)
-      (insert "Loading hyperdrive peer graph data...")
-      (display-buffer (current-buffer) hpg/display-buffer-action))))
+      (insert "Loading hyperdrive peer graph data..."))))
 
-(defun hpg/display-graph ()
+(defun hpg/draw-graph ()
   "Open buffer displaying hyperdrive peer graph."
   (with-current-buffer (hpg/get-buffer-create)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
                  :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
-                 :insert-relation-fun #'hpg/insert-relation)
-    (pop-to-buffer (current-buffer) hpg/display-buffer-action)))
+                 :insert-relation-fun #'hpg/insert-relation)))
 
 (defun hpg/loaded-relations ()
   "Return `hyperdrive-peer-graph-relations' if loaded."
@@ -604,10 +600,8 @@ Does not load graph data."
 Reload data and redisplays `hyperdrive-peer-graph-mode' and
 `hyperdrive-peer-graph-list-mode' buffers."
   (clrhash hpg/data-cache)
-  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
-    (hpg/reload-graph))
-  (when-let ((buffer-window (get-buffer-window hpg/list-buffer-name)))
-    (hpg/reload-list)))
+  (hpg/reload-graph)
+  (hpg/reload-list))
 
 (defvar-keymap hpg/mode-map
   :parent special-mode-map
@@ -680,7 +674,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                          (propertize "unset" 'face))))
   (interactive)
   (setf hpg/root-hyperdrive (h/read-hyperdrive :default hpg/root-hyperdrive))
-  (hpg/reload-graph))
+  (hpg/revert-buffers))
 
 (transient-define-suffix hpg/set-sources-max-hops ()
   :transient t
@@ -691,7 +685,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
             hpg/sources-max-hops))
   (interactive)
   (setf hpg/sources-max-hops (hpg/read-max-hops 'sources))
-  (hpg/reload-graph))
+  (hpg/revert-buffers))
 
 (transient-define-suffix hpg/set-blockers-max-hops ()
   :transient t
@@ -702,19 +696,19 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
             hpg/blockers-max-hops))
   (interactive)
   (setf hpg/blockers-max-hops (hpg/read-max-hops 'blockers))
-  (hpg/reload-graph))
+  (hpg/revert-buffers))
 
 (transient-define-suffix hpg/menu-display-graph ()
   :inapt-if-not #'hpg/loaded-relations
   :transient t
   (interactive)
-  (hpg/display-graph))
+  (h/peer-graph hpg/root-hyperdrive hpg/sources-max-hops hpg/blockers-max-hops))
 
 (transient-define-suffix hpg/menu-display-list ()
   :inapt-if-not #'hpg/loaded-relations
   :transient t
   (interactive)
-  (hpg/display-list))
+  (hpg/draw-list))
 
 (transient-define-suffix hpg/reload ()
   :inapt-if-not #'hpg/loaded-relations
@@ -731,8 +725,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/shortest-path-p)
-  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
-    (hpg/display-graph)))
+  (hpg/draw-graph))
 
 (transient-define-suffix hpg/set-show-sources-p ()
   :transient t
@@ -743,8 +736,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-sources-p)
-  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
-    (hpg/display-graph)))
+  (hpg/draw-graph))
 
 (transient-define-suffix hpg/set-show-blockers-p ()
   :transient t
@@ -755,8 +747,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-blockers-p)
-  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
-    (hpg/display-graph)))
+  (hpg/draw-graph))
 
 (transient-define-suffix hpg/set-show-blocked-p ()
   :transient t
@@ -767,8 +758,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-blocked-p)
-  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
-    (hpg/display-graph)))
+  (hpg/draw-graph))
 
 (transient-define-suffix hpg/set-show-all-blocked-p ()
   :transient t
@@ -780,8 +770,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-all-blocked-p)
-  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
-    (hpg/display-graph)))
+  (hpg/draw-graph))
 
 (defun hpg/format-paths-only-to ()
   (string-join
@@ -805,8 +794,7 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
                               (throw 'break t)))
                           hpg/relations)))))))
   (push hyperdrive hpg/paths-only-to)
-  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
-    (hpg/display-graph)))
+  (hpg/draw-graph))
 
 (transient-define-suffix hpg/paths-only-to-remove (hyperdrive allp)
   "Remove HYPERDRIVE from `hpg/paths-only-to' and reload."
@@ -824,8 +812,7 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
   (setf hpg/paths-only-to
         (and (not allp)
              (cl-delete hyperdrive hpg/paths-only-to :test #'h/equal-p)))
-  (when-let ((buffer-window (get-buffer-window hpg/buffer-name)))
-    (hpg/display-graph)))
+  (hpg/draw-graph))
 
 (defun hpg/refresh-menu ()
   "Refresh `hyperdrive-peer-graph-menu' if it's open."
