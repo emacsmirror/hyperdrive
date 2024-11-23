@@ -476,89 +476,153 @@ blocked paths or has a one-hop source path."
     (current-buffer)))
 
 (defun hpg/draw-list ()
-  "Draw hyperdrive peer list.
-Does not load graph data."
-  ;; TODO: Handle empty `hpg/relations'.
+  "Draw potentially empty hyperdrive peer list."
   ;; TODO: Restore point.
   (with-current-buffer (hpg/list-get-buffer-create)
-    (let (format-table column-sizes)
-      (cl-labels ((format-item (item)
-                    (gethash item format-table))
-                  (make-fn (type &rest args)
-                    (apply #'make-taxy-magit-section
-                           :make (lambda (&rest args)
-                                   (apply #'make-fn type args))
-                           :format-fn #'format-item
-                           :heading-face-fn
-                           (lambda (_)
-                             (pcase type
-                               ('sources 'hyperdrive-fons-source)
-                               ('blockers 'hyperdrive-fons-blocker)
-                               ('blocked 'hyperdrive-fons-blocked)))
-                           :level-indent 2
-                           :item-indent 0
-                           args)))
-        (let* ((sources (fons-filter-to-types hpg/relations :sourcesp t))
-               (blockers (fons-filter-to-types hpg/relations :blockersp t))
-               (blocked (fons-filter-to-types
-                         hpg/relations :blockedp t :all-blocked-p t))
-               (sources-taxy
-                (thread-last
-                  (make-fn
-                   'sources
-                   :name "Sources"
-                   :take (lambda (peer taxy)
-                           (taxy-take-keyed
-                            (list #'fons-shortest-sources-hops-length)
-                            peer taxy :key-name-fn #'hpg/format-hops)))
-                  taxy-emptied
-                  (taxy-fill (hash-table-values sources))))
-               (blockers-taxy
-                (thread-last
-                  (make-fn
-                   'blockers
-                   :name "Blockers"
-                   :take (lambda (peer taxy)
-                           (taxy-take-keyed
-                            (list #'fons-shortest-blockers-hops-length)
-                            peer taxy :key-name-fn #'hpg/format-hops)))
-                  taxy-emptied
-                  (taxy-fill (hash-table-values blockers))))
-               (blocked-taxy
-                (thread-last
-                  (make-fn
-                   'blocked
-                   :name "Blocked"
-                   :take (lambda (peer taxy)
-                           (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
-                                            peer taxy :key-name-fn #'hpg/format-hops)))
-                  taxy-emptied
-                  (taxy-fill (hash-table-values blocked))))
-               (taxy (make-taxy-magit-section
-                      :taxys (list sources-taxy blockers-taxy blocked-taxy)))
-               (format-cons (taxy-magit-section-format-items
-                             hpg/columns hpg/column-formatters taxy))
-               (taxy-magit-section-insert-indent-items nil))
-          (setf format-table (car format-cons))
-          (setf column-sizes (cdr format-cons))
-          (setf header-line-format (taxy-magit-section-format-header
-                                    column-sizes hpg/column-formatters))
-          (with-silent-modifications
-            (erase-buffer)
-            (save-excursion
-              (taxy-magit-section-insert taxy :initial-depth -1)
-              ;; HACK: Delete first line displaying top-level taxy.  A more
-              ;; correct solution would be to not render the top-level taxy.
-              ;; This hack means that `magit-section-show-level-1' and
-              ;; `magit-section-show-level-1-all' result in the buffer appearing
-              ;; empty and the other `magit-section-show-level-*' commands show
-              ;; one fewer levels than expected.
-              (goto-char (point-min))
-              (delete-line)
-              (insert (format "%s  %s\n\n"
-                              (propertize "Root:" 'face 'bold)
-                              (h//format-hyperdrive
-                               hpg/root-hyperdrive))))))))))
+    (with-silent-modifications
+      (save-excursion
+        (erase-buffer)
+        (widget-create
+         'push-button
+         :notify (lambda (&rest ignore)
+                   (setf hpg/root-hyperdrive
+                         (hpg/context-root-hyperdrive :force-prompt t))
+                   (hpg/revert-buffers))
+         "Set root hyperdrive")
+        (insert (format ":\n%s\n" (h//format-hyperdrive hpg/root-hyperdrive)))
+        (apply #'widget-create 'menu-choice
+               :tag "[Set sources max hops]"
+               :value hpg/sources-max-hops
+               :help-echo "Set sources max hops"
+               :notify (lambda (widget &rest ignore)
+                         (setf hpg/sources-max-hops (widget-value widget))
+                         (hpg/revert-buffers))
+               (mapcar (lambda (n)
+                         `(item :tag ,(number-to-string n) :value ,n))
+                       '(1 2 3 4 5 6)))
+        (apply #'widget-create 'menu-choice
+               :tag "[Set blockers max hops]"
+               :value hpg/blockers-max-hops
+               :help-echo "Set blockers max hops"
+               :notify (lambda (widget &rest ignore)
+                         (setf hpg/blockers-max-hops (widget-value widget))
+                         (hpg/revert-buffers))
+               (mapcar (lambda (n)
+                         `(item :tag ,(number-to-string n) :value ,n))
+                       '(1 2 3 4 5 6)))
+        (put-text-property (point-min) (point-max) 'keymap widget-keymap)
+        (insert "\n")
+        (if (hash-table-empty-p hpg/relations)
+            (hpg/list-draw-empty-relations)
+          (hpg/list-draw-taxy))))))
+
+(defun hpg/list-draw-taxy ()
+  "Insert hyperdrive peer list at point."
+  (let (format-table column-sizes)
+    (cl-labels ((format-item (item)
+                  (gethash item format-table))
+                (make-fn (type &rest args)
+                  (apply #'make-taxy-magit-section
+                         :make (lambda (&rest args)
+                                 (apply #'make-fn type args))
+                         :format-fn #'format-item
+                         :heading-face-fn
+                         (lambda (_)
+                           (pcase type
+                             ('sources 'hyperdrive-fons-source)
+                             ('blockers 'hyperdrive-fons-blocker)
+                             ('blocked 'hyperdrive-fons-blocked)))
+                         :level-indent 2
+                         :item-indent 0
+                         args)))
+      (let* ((sources (fons-filter-to-types hpg/relations :sourcesp t))
+             (blockers (fons-filter-to-types hpg/relations :blockersp t))
+             (blocked (fons-filter-to-types
+                       hpg/relations :blockedp t :all-blocked-p t))
+             (sources-taxy
+              (thread-last
+                (make-fn
+                 'sources
+                 :name "Sources"
+                 :take (lambda (peer taxy)
+                         (taxy-take-keyed
+                           (list #'fons-shortest-sources-hops-length)
+                           peer taxy :key-name-fn #'hpg/format-hops)))
+                taxy-emptied
+                (taxy-fill (hash-table-values sources))))
+             (blockers-taxy
+              (thread-last
+                (make-fn
+                 'blockers
+                 :name "Blockers"
+                 :take (lambda (peer taxy)
+                         (taxy-take-keyed
+                           (list #'fons-shortest-blockers-hops-length)
+                           peer taxy :key-name-fn #'hpg/format-hops)))
+                taxy-emptied
+                (taxy-fill (hash-table-values blockers))))
+             (blocked-taxy
+              (thread-last
+                (make-fn
+                 'blocked
+                 :name "Blocked"
+                 :take (lambda (peer taxy)
+                         (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
+                           peer taxy :key-name-fn #'hpg/format-hops)))
+                taxy-emptied
+                (taxy-fill (hash-table-values blocked))))
+             (taxy (make-taxy-magit-section
+                    :taxys (list sources-taxy blockers-taxy blocked-taxy)))
+             (format-cons (taxy-magit-section-format-items
+                           hpg/columns hpg/column-formatters taxy))
+             (taxy-magit-section-insert-indent-items nil))
+        (setf format-table (car format-cons))
+        (setf column-sizes (cdr format-cons))
+        (setf header-line-format (taxy-magit-section-format-header
+                                  column-sizes hpg/column-formatters))
+        (save-excursion
+          (taxy-magit-section-insert taxy :initial-depth -1))
+        ;; HACK: Delete first line of top-level taxy.  A correct solution would
+        ;; be to not render the top-level taxy.  This hack means that
+        ;; `magit-section-show-level-1' and `magit-section-show-level-1-all'
+        ;; result in the buffer appearing empty and the other commands
+        ;; `magit-section-show-level-*' show one fewer level than expected.
+        (delete-line)))))
+
+(defun hpg/list-draw-empty-relations ()
+  "Insert suggestion to include more peers at point."
+  (setf header-line-format nil)
+  (insert "No peers found.  You can:
+
+  - Click above to increase sources or blockers max hops.\n")
+  (when (h/writablep hpg/root-hyperdrive)
+    (insert
+     (format
+      "  - Mark a peer as %s or %s or %s."
+      (propertize
+       (buttonize
+        "[source]"
+        (lambda (_)
+          (apply #'hpg/set-relation
+                 (hpg/set-relation-interactive-args
+                  :from hpg/root-hyperdrive :type 'source :bool t))))
+       'face 'widget-button)
+      (propertize
+       (buttonize
+        "[blocker]"
+        (lambda (_)
+          (apply #'hpg/set-relation
+                 (hpg/set-relation-interactive-args
+                  :from hpg/root-hyperdrive :type 'blocker :bool t))))
+       'face 'widget-button)
+      (propertize
+       (buttonize
+        "[blocked]"
+        (lambda (_)
+          (apply #'hpg/set-relation
+                 (hpg/set-relation-interactive-args
+                  :from hpg/root-hyperdrive :type 'blocked :bool t))))
+       'face 'widget-button)))))
 
 ;;;;; Minor mode
 
