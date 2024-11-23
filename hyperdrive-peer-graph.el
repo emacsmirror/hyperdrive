@@ -125,7 +125,8 @@ errors will be demoted.  If data for HYPERDRIVE is already in
          (h//bee-exec hyperdrive commands
            :then (lambda (json) (funcall then (entries json)))
            :else (lambda (plz-error)
-                   (h/message "Error getting peer graph data: %s" (he/url entry) plz-error)
+                   (h/message "Error getting peer graph data for %s: %S"
+                              (h/url hyperdrive) plz-error)
                    (funcall then nil))))))))
 
 (cl-defun hpg/set-relation (&key from to type bool)
