@@ -331,10 +331,12 @@ argument \\[universal-argument], always prompt."
      item))))
 
 (hpg/define-column "Source" ()
-  (let ((directp (fons-relation-direct-p
-                  ;; HACK: Item is already filtered to one type: get original relation.
-                  hpg/root-hyperdrive 'sources (gethash (fons-relation-to item) hpg/relations))))
-    (buttonize (if directp "[Source]" "[      ]")
+  (let* ((directp (fons-relation-direct-p
+                   hpg/root-hyperdrive 'sources
+                   ;; Item is filtered to one type: get original relation.
+                   (gethash (fons-relation-to item) hpg/relations)))
+         (text (if directp "[Source]" "[      ]")))
+    (buttonize text
                (lambda (_)
                  (hpg/set-relation
                   :from hpg/root-hyperdrive
@@ -342,10 +344,12 @@ argument \\[universal-argument], always prompt."
                   :type 'source :bool (not directp))))))
 
 (hpg/define-column "Blocker" ()
-  (let ((directp (fons-relation-direct-p
-                  ;; HACK: Item is already filtered to one type: get original relation.
-                  hpg/root-hyperdrive 'blockers (gethash (fons-relation-to item) hpg/relations))))
-    (buttonize (if directp "[Blocker]" "[      ]")
+  (let* ((directp (fons-relation-direct-p
+                   hpg/root-hyperdrive 'blockers
+                   ;; Item is filtered to one type: get original relation.
+                   (gethash (fons-relation-to item) hpg/relations)))
+         (text (if directp "[Blocker]" "[      ]")))
+    (buttonize text
                (lambda (_)
                  (hpg/set-relation
                   :from hpg/root-hyperdrive
@@ -353,10 +357,12 @@ argument \\[universal-argument], always prompt."
                   :type 'blocker :bool (not directp))))))
 
 (hpg/define-column "Blocked" ()
-  (let ((directp (fons-relation-direct-p
-                  ;; HACK: Item is already filtered to one type: get original relation.
-                  hpg/root-hyperdrive 'blocked (gethash (fons-relation-to item) hpg/relations))))
-    (buttonize (if directp "[Blocked]" "[      ]")
+  (let* ((directp (fons-relation-direct-p
+                   hpg/root-hyperdrive 'blocked
+                   ;; Item is filtered to one type: get original relation.
+                   (gethash (fons-relation-to item) hpg/relations)))
+         (text (if directp "[Blocked]" "[      ]")))
+    (buttonize text
                (lambda (_)
                  (hpg/set-relation
                   :from hpg/root-hyperdrive
