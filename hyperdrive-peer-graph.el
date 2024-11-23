@@ -384,6 +384,7 @@ argument \\[universal-argument], always prompt."
 (defun fons-shortest-blocked-hops-length (relation)
   "Return the minimum number of blocked hops in RELATION.
 A blocked hop includes the number of hops to the blocker."
+  ;; TODO: Generalize this function so it doesn't rely on `hpg/...' variables.
   (when-let* ((blocked-paths (fons-relation-blocked-paths relation))
               (blockers
                (mapcar (lambda (path)
