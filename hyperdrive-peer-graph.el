@@ -251,6 +251,16 @@ hops to traverse for sources and blockers, respectively."
       (fons-blocked root relations
         :hops-fn #'hpg/blocked-hops-fn :finally
         (lambda (relations)
+          (when-let* ((root-public-key (h/public-key hpg/root-hyperdrive))
+                      (relation-to-root (gethash root-public-key relations))
+                      (blocked-paths-to-root
+                       (fons-relation-paths-of-type 'blocked relation-to-root)))
+            (pcase-dolist ((cl-struct fons-path hops) blocked-paths-to-root)
+              (h/message
+               "Ignoring blocked path to root %s from %s"
+               (h/url hpg/root-hyperdrive)
+               (h/url (h/url-hyperdrive (fons-hop-from (car hops)))))
+              (remhash root-public-key relations)))
           (fons-relations root
             :relations relations :type 'sources :max-hops sources-max-hops
             :hops-fn #'hpg/sources-hops-fn :finally finally))))))
