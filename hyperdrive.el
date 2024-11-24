@@ -379,15 +379,9 @@ without confirmation."
   (require 'hyperdrive-peer-graph)
   (save-excursion
     (mouse-set-point event)
-    (let* ((to (h/at-point event))
-           (from (h/read-hyperdrive
-                   :predicate (lambda (hyperdrive)
-                                (not (h/equal-p hyperdrive to)))
-                   :default hyperdrive-peer-graph-root-hyperdrive
-                   :prompt "From hyperdrive"))
-           (type (hyperdrive-peer-graph-read-relation-type))
-           (bool (not current-prefix-arg)))
-      (hyperdrive-peer-graph-set-relation :from from :to to :type type :bool bool))))
+    (apply #'hyperdrive-peer-graph-set-relation
+           (hyperdrive-peer-graph-set-relation-interactive-args
+            :to (h/at-point event)))))
 
 ;; TODO: Group `h/peer-graph-set-relation-to-hyperdrive-at-point' and
 ;; `h/peer-graph-set-relation-from-hyperdrive-at-point' into one submenu.
@@ -398,15 +392,9 @@ without confirmation."
   (require 'hyperdrive-peer-graph)
   (save-excursion
     (mouse-set-point event)
-    (let* ((from (h/at-point event))
-           (to (h/read-hyperdrive
-                 :predicate (lambda (hyperdrive)
-                              (not (h/equal-p hyperdrive from)))
-                 :default hyperdrive-peer-graph-root-hyperdrive
-                 :prompt "From hyperdrive"))
-           (type (hyperdrive-peer-graph-read-relation-type))
-           (bool (not current-prefix-arg)))
-      (hyperdrive-peer-graph-set-relation :from from :to to :type type :bool bool))))
+    (apply #'hyperdrive-peer-graph-set-relation
+           (hyperdrive-peer-graph-set-relation-interactive-args
+            :from (h/at-point event)))))
 
 (declare-function h/peer-graph "hyperdrive-peer-graph")
 (declare-function h/peer-graph-read-max-hops "hyperdrive-peer-graph")
