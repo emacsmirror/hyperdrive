@@ -217,8 +217,12 @@ RELATION may be a hash table of `fons-relation' structs mapped by
                     (short-key . "%.8s…")
                     (seed . "%s")
                     (domains . "%s")))
+       (focusp (cl-member (h/url-hyperdrive public-key)
+                     hpg/paths-only-to :test #'h/equal-p))
        (label
-        `(table ((cellborder . "0") (color . ,(face-attribute 'default :foreground)))
+        `(table ((border . ,(if focusp "4" "1"))
+                 (cellborder . "0")
+                 (color . ,(face-attribute 'default :foreground)))
                 (tr nil
                     ;; TODO: Insert user color here.
                     (td ((bgcolor . ,(face-attribute 'default :background)))
