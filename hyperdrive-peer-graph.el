@@ -134,17 +134,23 @@ errors will be demoted.  If data for HYPERDRIVE is already in
 Interactively, with universal prefix argument
 \\[universal-argument], remove direct relation."
   (interactive (hpg/set-relation-interactive-args))
-  (condition-case err
-      (h//bee-exec from
-        (if bool
-            ;; TODO: Consider storing source, blocker, and blocked data inside
-            ;; ("ushin" "peers" ,(h/public-key to)) key to save hyperbee space.  The
-            ;; downside is that it would require a specialized cas function.
-            `((put ("ushin" "peers" ,(h/public-key to) ,type) t))
-          `((del ("ushin" "peers" ,(h/public-key to) ,type)))))
-    (error (h/error "Unable to %s relation from %s to %s as %s: %S"
-                    (if bool "set" "unset") (h/url from) (h/url to) type
-                    (error-message-string err))))
+  ;; TODO: Consider storing source, blocker, and blocked data inside
+  ;; ("ushin" "peers" ,(h/public-key to)) key to save hyperbee space.
+  ;; The downside is that it would require a specialized cas function.
+  (let ((commands `((put ("ushin" "peers" ,(h/public-key to) ,type) t))))
+    (if bool
+        (pcase type
+          ;; `source' and `blocked' are mutually exclusive.
+          ('source (push `(del ("ushin" "peers" ,(h/public-key to) blocked) t)
+                         commands))
+          ('blocked (push `(del ("ushin" "peers" ,(h/public-key to) source) t)
+                          commands)))
+      (setf (caar commands) 'del))
+    (condition-case err
+        (h//bee-exec from commands)
+      (error (h/error "Unable to %s relation from %s to %s as %s: %S"
+                      (if bool "set" "unset") (h/url from) (h/url to) type
+                      (error-message-string err)))))
   (hpg/revert-buffers))
 
 (cl-defun hpg/set-relation-interactive-args (&key from to type bool)
