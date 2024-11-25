@@ -646,6 +646,10 @@ blocked paths or has a one-hop source path."
 
 ;;;;; Minor mode
 
+(defun hpg/list-revert-buffer-function (&optional _ignore-auto _noconfirm)
+  "Revert peer graph list buffers."
+  (hpg/revert-buffers))
+
 (defvar-keymap hpg/list-mode-map
   :parent magit-section-mode-map
   :doc "Local keymap for `hyperdrive-peer-graph-list-mode' buffers."
@@ -659,7 +663,7 @@ blocked paths or has a one-hop source path."
   "Major mode for viewing Hyperdrive peer graph."
   :group 'hyperdrive
   :interactive nil
-  (setq-local revert-buffer-function #'hpg/revert-buffers))
+  (setq-local revert-buffer-function #'hpg/list-revert-buffer-function))
 
 ;;;; Peer Graph
 
@@ -728,7 +732,7 @@ blocked paths or has a one-hop source path."
 
 ;;;;; Minor mode
 
-(defun hpg/revert-buffers (&optional _ignore-auto _noconfirm)
+(defun hpg/revert-buffers ()
   "Revert peer graph buffers.
 Reload data and redisplays `hyperdrive-peer-graph-mode' and
 `hyperdrive-peer-graph-list-mode' buffers."
@@ -746,6 +750,10 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                          (hpg/draw-list))
                        (hpg/refresh-menu))))
 
+(defun hpg/revert-buffer-function (&optional _ignore-auto _noconfirm)
+  "Revert peer graph buffers."
+  (hpg/revert-buffers))
+
 (defvar-keymap hpg/mode-map
   :parent special-mode-map
   :doc "Local keymap for `hyperdrive-peer-graph-mode' buffers."
@@ -759,7 +767,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
   "Major mode for viewing Hyperdrive peer graph."
   :group 'hyperdrive
   :interactive nil
-  (setq-local revert-buffer-function #'hpg/revert-buffers))
+  (setq-local revert-buffer-function #'hpg/revert-buffer-function))
 
 ;;;;; Graph commands
 
