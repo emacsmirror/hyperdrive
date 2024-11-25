@@ -656,6 +656,8 @@ blocked paths or has a one-hop source path."
   ;; It's easy to accidentally trigger drag events when clicking.
   "<drag-mouse-1>" #'hpg/view-follow-link
   "<mouse-1>" #'hpg/view-follow-link
+  "l" #'hpg/history-back
+  "r" #'hpg/history-forward
   "?" #'hpg/menu)
 
 (define-derived-mode hpg/list-mode magit-section-mode
@@ -730,10 +732,11 @@ blocked paths or has a one-hop source path."
        (not (timerp hpg/relations))
        hpg/relations))
 
-(defun hpg/revert-buffers ()
+(cl-defun hpg/revert-buffers (&key (update-history-p t))
   "Revert peer graph buffers.
 Reload data and redisplays `hyperdrive-peer-graph-mode' and
-`hyperdrive-peer-graph-list-mode' buffers."
+`hyperdrive-peer-graph-list-mode' buffers.  With
+UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
   (clrhash hpg/data-cache)
   ;; TODO: How should we handle refreshing the graph/list when it's not visible?
   ;; Should we display an "outdated" warning?
@@ -742,6 +745,7 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
   (when (get-buffer-window hpg/list-buffer-name 'visible)
     (hpg/list-draw-loading-buffer))
   (hpg/load :finally (lambda ()
+                       (when update-history-p (hpg/history-update))
                        (when (get-buffer-window hpg/buffer-name 'visible)
                          (hpg/draw-graph))
                        (when (get-buffer-window hpg/list-buffer-name 'visible)
@@ -760,6 +764,9 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
   ;; It's easy to accidentally trigger drag events when clicking.
   "<drag-mouse-1>" #'hpg/view-follow-link
   "<mouse-1>" #'hpg/view-follow-link
+  "l" #'hpg/history-back
+  "r" #'hpg/history-forward
+  ;; TODO: Add bindings to set max hops, etc.
   "?" #'hpg/menu)
 
 (define-derived-mode hpg/mode h/fons-view-mode
@@ -778,6 +785,73 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
     (setf hpg/root-hyperdrive hyperdrive)
     (hpg/revert-buffers)))
 
+;;;; History
+
+(defvar hpg/history '() "List of peer graph history elements.")
+(defvar hpg/history-position 0 "Index of current place in history.")
+
+(defun hpg/history-update ()
+  "Update `hyperdrive-peer-graph-history' list.
+Push an alist history item with the current values of
+
+- `hyperdrive-peer-graph-root-hyperdrive'
+- `hyperdrive-peer-graph-sources-max-hops'
+- `hyperdrive-peer-graph-blockers-max-hops'
+- `hyperdrive-peer-graph-show-sources-p'
+- `hyperdrive-peer-graph-show-blockers-p'
+- `hyperdrive-peer-graph-show-blocked-p'
+- `hyperdrive-peer-graph-show-all-blocked-p'
+- `hyperdrive-peer-graph-shortest-path-p'
+- `hyperdrive-peer-graph-paths-only-to'
+
+If `hyperdrive-peer-graph-root-hyperdrive' is
+`hyperdrive-equal-p' to the most recently pushed element, replace
+the latest element instead of pushing a new element."
+  (let* ((elt `((hpg/root-hyperdrive . ,hpg/root-hyperdrive)
+                (hpg/sources-max-hops . ,hpg/sources-max-hops)
+                (hpg/blockers-max-hops . ,hpg/blockers-max-hops)
+                (hpg/show-sources-p . ,hpg/show-sources-p)
+                (hpg/show-blockers-p . ,hpg/show-blockers-p)
+                (hpg/show-blocked-p . ,hpg/show-blocked-p)
+                (hpg/show-all-blocked-p . ,hpg/show-all-blocked-p)
+                (hpg/shortest-path-p . ,hpg/shortest-path-p)
+                (hpg/paths-only-to . ,hpg/paths-only-to)))
+         (current-history-item (nth hpg/history-position hpg/history))
+         (current-root (map-elt current-history-item 'hpg/root-hyperdrive)))
+    (if (and current-root (h/equal-p hpg/root-hyperdrive current-root))
+        (setf (nth hpg/history-position hpg/history) elt)
+      (setf hpg/history (cons elt (nthcdr hpg/history-position hpg/history)))
+      (setf hpg/history-position 0))))
+
+(defun hpg/history-back (&optional arg)
+  "Jump to previous item in `hyperdrive-peer-graph-history'.
+With numeric ARG, or interactively with universal prefix argument
+\\[universal-argument], jump ARG number of times."
+  (interactive "p")
+  (unless (car hpg/history) (h/user-error "Peer graph history empty"))
+  (let* ((len (length hpg/history))
+         (new-position (min (1- len) (+ hpg/history-position arg))))
+    (when (= new-position (1- len))
+      (h/message "At beginning of peer graph history"))
+    (mapc (pcase-lambda (`(,sym . ,val)) (set sym val))
+          (nth new-position hpg/history))
+    (setf hpg/history-position new-position)
+    (hpg/revert-buffers :update-history-p nil)))
+
+(defun hpg/history-forward (&optional arg)
+  "Jump to next item in `hyperdrive-peer-graph-history'.
+With numeric ARG, or interactively with universal prefix argument
+\\[universal-argument], jump ARG number of times."
+  (interactive "p")
+  (unless (car hpg/history) (h/user-error "Peer graph history empty"))
+  (let ((new-position (max 0 (- hpg/history-position arg))))
+    (when (= new-position 0)
+      (h/message "At end of peer graph history"))
+    (mapc (pcase-lambda (`(,sym . ,val)) (set sym val))
+          (nth new-position hpg/history))
+    (setf hpg/history-position new-position)
+    (hpg/revert-buffers :update-history-p nil)))
+
 ;;;; Transient UI
 
 ;;;###autoload (autoload 'hyperdrive-peer-graph-menu "hyperdrive-peer-graph" nil t)
@@ -793,7 +867,9 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
    ("r" hpg/set-root-hyperdrive)
    ("L" "Display list" hpg/menu-display-list)
    ("G" "Display graph" hpg/menu-display-graph)
-   ("g" "Reload" hpg/reload)]
+   ("g" "Reload" hpg/reload)
+   ("l" hpg/menu-history-back)
+   ("r" hpg/menu-history-forward)]
   ["Paths only to"
    (:info #'hpg/format-paths-only-to :format "%d")
    ("o a" "Add" hpg/paths-only-to-add)
@@ -863,6 +939,20 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
   :transient t
   (interactive)
   (hpg/revert-buffers))
+
+(transient-define-suffix hpg/menu-history-back ()
+  :inapt-if-not #'hpg/loaded-relations
+  :description "Back"
+  :transient t
+  (interactive)
+  (call-interactively #'hpg/history-back))
+
+(transient-define-suffix hpg/menu-history-forward ()
+  :inapt-if-not #'hpg/loaded-relations
+  :description "Forward"
+  :transient t
+  (interactive)
+  (call-interactively #'hpg/history-forward))
 
 (transient-define-suffix hpg/set-shortest-path-p ()
   :transient t
