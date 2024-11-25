@@ -611,13 +611,15 @@ blocked paths or has a one-hop source path."
 (defun hpg/list-draw-empty-relations ()
   "Insert suggestion to include more peers at point."
   (setf header-line-format nil)
-  (insert "No peers found.  You can:
-
-  - Click above to increase sources or blockers max hops.\n")
+  (insert "No peers found.\n")
+  (when (equal 0 hpg/sources-max-hops)
+    (insert "\n  - Click above to increase max hops for sources."))
+  (when (equal 0 hpg/blockers-max-hops)
+    (insert "\n  - Click above to increase max hops for blockers."))
   (when (h/writablep hpg/root-hyperdrive)
     (insert
      (format
-      "  - Mark a peer as %s or %s or %s."
+      "\n  - Mark a peer as %s or %s or %s."
       (propertize
        (buttonize
         "[source]"
