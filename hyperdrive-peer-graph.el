@@ -565,7 +565,8 @@ blocked paths or has a one-hop source path."
                            (list #'fons-shortest-sources-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
-                (taxy-fill (hash-table-values sources))))
+                (taxy-fill (hash-table-values sources))
+                (taxy-sort #'string< #'fons-relation-to)))
              (blockers-taxy
               (thread-last
                 (make-fn
@@ -576,7 +577,8 @@ blocked paths or has a one-hop source path."
                            (list #'fons-shortest-blockers-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
-                (taxy-fill (hash-table-values blockers))))
+                (taxy-fill (hash-table-values blockers))
+                (taxy-sort #'string< #'fons-relation-to)))
              (blocked-taxy
               (thread-last
                 (make-fn
@@ -586,7 +588,8 @@ blocked paths or has a one-hop source path."
                          (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
-                (taxy-fill (hash-table-values blocked))))
+                (taxy-fill (hash-table-values blocked))
+                (taxy-sort #'string< #'fons-relation-to)))
              (taxy (make-taxy-magit-section
                     :taxys (list sources-taxy blockers-taxy blocked-taxy)))
              (format-cons (taxy-magit-section-format-items
