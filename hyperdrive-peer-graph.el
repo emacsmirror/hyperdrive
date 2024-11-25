@@ -515,7 +515,7 @@ blocked paths or has a one-hop source path."
                          (hpg/revert-buffers))
                (mapcar (lambda (n)
                          `(item :tag ,(number-to-string n) :value ,n))
-                       '(1 2 3 4 5 6)))
+                       '(0 1 2 3 4 5 6)))
         (apply #'widget-create 'menu-choice
                :tag "[Set blockers max hops]"
                :value hpg/blockers-max-hops
@@ -525,7 +525,7 @@ blocked paths or has a one-hop source path."
                          (hpg/revert-buffers))
                (mapcar (lambda (n)
                          `(item :tag ,(number-to-string n) :value ,n))
-                       '(1 2 3 4 5 6)))
+                       '(0 1 2 3 4 5 6)))
         (put-text-property (point-min) (point-max) 'keymap widget-keymap)
         (insert "\n")
         (if (hash-table-empty-p hpg/relations)
