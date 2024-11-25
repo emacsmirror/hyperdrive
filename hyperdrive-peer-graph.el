@@ -730,8 +730,6 @@ blocked paths or has a one-hop source path."
        (not (timerp hpg/relations))
        hpg/relations))
 
-;;;;; Minor mode
-
 (defun hpg/revert-buffers ()
   "Revert peer graph buffers.
 Reload data and redisplays `hyperdrive-peer-graph-mode' and
@@ -749,6 +747,8 @@ Reload data and redisplays `hyperdrive-peer-graph-mode' and
                        (when (get-buffer-window hpg/list-buffer-name 'visible)
                          (hpg/draw-list))
                        (hpg/refresh-menu))))
+
+;;;;; Minor mode
 
 (defun hpg/revert-buffer-function (&optional _ignore-auto _noconfirm)
   "Revert peer graph buffers."
