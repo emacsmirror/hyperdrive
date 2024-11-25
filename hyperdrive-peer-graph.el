@@ -867,7 +867,7 @@ With numeric ARG, or interactively with universal prefix argument
   ["Hyperdrive peer graph"
    :pad-keys t
    ;; TODO: When changing `hpg/root-hyperdrive', reset local variables to default values?
-   ("r" hpg/set-root-hyperdrive)
+   ("R" hpg/set-root-hyperdrive)
    ("L" "Display list" hpg/menu-display-list)
    ("G" "Display graph" hpg/menu-display-graph)
    ("g" "Reload" hpg/reload)
