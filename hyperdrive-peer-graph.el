@@ -727,7 +727,6 @@ blocked paths or has a one-hop source path."
   (with-current-buffer (hpg/get-buffer-create)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
-                 :focus-ids (mapcar #'h/public-key hpg/paths-only-to)
                  :insert-relation-fun #'hpg/insert-relation)))
 
 (defun hpg/loaded-relations ()
