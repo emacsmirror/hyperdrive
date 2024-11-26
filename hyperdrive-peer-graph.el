@@ -278,14 +278,16 @@ hops to traverse for sources and blockers, respectively."
 (defun hpg/filter (relations)
   "Return filtered RELATIONS."
   ;; TODO: Make filters customizable
+  ;; Apply shortest path filter first.
+  (when hpg/shortest-path-p
+    (cl-callf fons-filter-shortest-path relations
+      (h/public-key hpg/root-hyperdrive)))
   (unless (and hpg/show-sources-p hpg/show-blockers-p hpg/show-blocked-p hpg/show-all-blocked-p)
     (cl-callf fons-filter-to-types relations
       :sourcesp hpg/show-sources-p
       :blockersp hpg/show-blockers-p
       :blockedp hpg/show-blocked-p
       :all-blocked-p (and hpg/show-blocked-p hpg/show-all-blocked-p)))
-  (when hpg/shortest-path-p
-    (cl-callf fons-filter-shortest-path relations))
   ;; Apply `hpg/paths-only-to' last
   (cl-callf2 fons-filter-paths-only-to
       (mapcar #'h/public-key hpg/paths-only-to) relations)

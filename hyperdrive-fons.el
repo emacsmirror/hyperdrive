@@ -157,28 +157,57 @@ updated RELATIONS hash table as its sole argument."
       (add-blocked-for root)
       (maphash #'map-relation relations))))
 
-(defun fons-filter-shortest-path (relations)
-  "Return RELATIONS with only shortest paths."
-  (let ((copy-relations (copy-hash-table relations)))
+(defun fons-filter-shortest-path (relations root)
+  "Return RELATIONS with only shortest paths.
+ROOT is used to determine the shortest blocked relation."
+  ;; Call `fons-filter-shortest-path' before `fons-filter-to-types' since
+  ;; getting the shortest blocked path requires knowing blocker paths.
+  (let ((copy-relations (copy-hash-table relations))
+        (blocker-hops-cache (make-hash-table :test 'equal)))
     ;; TODO(review) copying hash table and nested lists
     (cl-labels
         ((map-relation (id relation)
            (thunk-let ((copy-relation (compat-call copy-tree relation t)))
-             ;; Skip `blocked', since its paths are always one hop.
              (dolist (type '(sources blockers))
                (when-let* ((paths (fons-relation-paths-of-type type relation))
                            (shortest-paths (shortest-paths paths)))
                  (unless (eq shortest-paths paths)
                    (setf (fons-relation-paths-of-type type copy-relation)
                          shortest-paths)
-                   (setf (gethash id copy-relations) copy-relation))))))
+                   (setf (gethash id copy-relations) copy-relation))))
+             (when-let* ((paths (fons-relation-paths-of-type 'blocked relation))
+                         (shortest-paths (shortest-blocked-paths paths)))
+               (unless (eq shortest-paths paths)
+                 (setf (fons-relation-paths-of-type 'blocked relation)
+                       shortest-paths)
+                 (setf (gethash id copy-relations) copy-relation)))))
          (shortest-hops-length (paths)
            (cl-loop for path in paths
                     minimize (length (fons-path-hops path))))
          (shortest-paths (paths)
            (cl-remove-if
             (apply-partially #'< (shortest-hops-length paths)) paths
-            :key (lambda (path) (length (fons-path-hops path))))))
+            :key (lambda (path) (length (fons-path-hops path)))))
+         (shortest-blocked-paths (paths)
+           ;; TODO: There must be a better way to write this to not loop 3x.
+           (if-let ((direct-block-path
+                     (cl-find-if (lambda (id) (equal root id))
+                                 paths :key #'fons-blocked-path-blocker)))
+               (list direct-block-path)
+             (let ((shortest-blocker-hops-length
+                    (cl-loop for path in paths
+                             minimize (hops-to-blocker
+                                       (fons-blocked-path-blocker path)))))
+               (cl-remove-if
+                (apply-partially #'< shortest-blocker-hops-length) paths
+                :key (lambda (path)
+                       (hops-to-blocker (fons-blocked-path-blocker path)))))))
+         (hops-to-blocker (id)
+           (with-memoization (gethash id blocker-hops-cache)
+             ;; Blockers are already filtered to shortest paths.
+             ;; All paths have the same, shortest length.
+             (length (fons-path-hops (car (fons-relation-blocker-paths
+                                           (gethash id copy-relations))))))))
       (maphash #'map-relation copy-relations)
       copy-relations)))
 
