@@ -174,7 +174,6 @@ updated RELATIONS hash table as its sole argument."
                          shortest-paths)
                    (setf (gethash id copy-relations) copy-relation))))))
          (shortest-hops-length (paths)
-           ;; TODO: Replace with named function.
            (cl-loop for path in paths
                     minimize (length (fons-path-hops path))))
          (shortest-paths (paths)
