@@ -1082,7 +1082,10 @@ With numeric ARG, or interactively with universal prefix argument
   "Add HYPERDRIVE to `hpg/paths-only-to' and reload.
 Only drives not in `hpg/paths-only-to' are offered for completion."
   :transient t
-  :inapt-if-not #'hpg/loaded-relations
+  :inapt-if-not (lambda ()
+                  (and (hpg/loaded-relations)
+                       (/= (hash-table-count hpg/relations)
+                           (length hpg/paths-only-to))))
   (interactive
    (list (h/read-hyperdrive :prompt "Paths only to (add)"
            :predicate
