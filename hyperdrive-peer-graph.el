@@ -42,6 +42,26 @@
   "Default number of hops to jump for blockers."
   :type 'integer)
 
+(defcustom hpg/show-sources-p-default t
+  "Default setting to show sources."
+  :type 'boolean)
+
+(defcustom hpg/show-blockers-p-default t
+  "Default setting to show blockers."
+  :type 'boolean)
+
+(defcustom hpg/show-blocked-p-default t
+  "Default setting to show blocked."
+  :type 'boolean)
+
+(defcustom hpg/show-all-blocked-p-default nil
+  "Default setting to show all blocked, not just sources."
+  :type 'boolean)
+
+(defcustom hpg/shortest-path-p-default t
+  "Default setting to filter only to shortest paths."
+  :type 'boolean)
+
 (defcustom hpg/buffer-name "*hyperdrive-peer-graph*"
   "Buffer name to show peer graph."
   :type 'string)
@@ -68,12 +88,12 @@ Passed to `display-buffer', which see."
 (defvar hpg/sources-max-hops hpg/sources-max-hops-default)
 (defvar hpg/blockers-max-hops hpg/blockers-max-hops-default)
 
-(defvar hpg/show-sources-p t)
-(defvar hpg/show-blockers-p t)
-(defvar hpg/show-blocked-p t)
-(defvar hpg/show-all-blocked-p nil)
+(defvar hpg/show-sources-p hpg/show-sources-p-default)
+(defvar hpg/show-blockers-p hpg/show-blockers-p-default)
+(defvar hpg/show-blocked-p hpg/show-blocked-p-default)
+(defvar hpg/show-all-blocked-p hpg/show-all-blocked-p-default)
 
-(defvar hpg/shortest-path-p t)
+(defvar hpg/shortest-path-p hpg/shortest-path-p-default)
 (defvar hpg/paths-only-to nil)
 
 ;;;; Functions:
