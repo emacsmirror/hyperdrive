@@ -688,14 +688,8 @@ blocked paths or has a one-hop source path."
   (hpg/revert-buffers))
 
 (defvar-keymap hpg/list-mode-map
-  :parent magit-section-mode-map
-  :doc "Local keymap for `hyperdrive-peer-graph-list-mode' buffers."
-  ;; It's easy to accidentally trigger drag events when clicking.
-  "<drag-mouse-1>" #'hpg/view-follow-link
-  "<mouse-1>" #'hpg/view-follow-link
-  "l" #'hpg/history-back
-  "r" #'hpg/history-forward
-  "?" #'hpg/menu)
+  :parent hpg/mode-map
+  :doc "Local keymap for `hyperdrive-peer-graph-list-mode' buffers.")
 
 (define-derived-mode hpg/list-mode magit-section-mode
   '("Hyperdrive-peer-graph")
