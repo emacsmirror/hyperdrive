@@ -314,7 +314,9 @@ hops to traverse for sources and blockers, respectively."
       :all-blocked-p (and hpg/show-blocked-p hpg/show-all-blocked-p)))
   ;; Apply `hpg/paths-only-to' last
   (cl-callf2 fons-filter-paths-only-to
-      (mapcar #'h/public-key hpg/paths-only-to) relations)
+      (mapcar #'h/public-key hpg/paths-only-to)
+      relations
+    (h/public-key hpg/root-hyperdrive))
   relations)
 
 ;;;;; Reading user input
