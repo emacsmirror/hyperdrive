@@ -218,7 +218,7 @@ path to one of the IDS."
           (setf (fons-relation-blocked-paths copy-relation) blocked-paths)
           (setf (gethash id copy-relations) copy-relation)
           (dolist (path blocked-paths)
-            (push (fons-hop-from (car (fons-path-hops path))) blocker-ids))))
+            (push (fons-blocked-path-blocker path) blocker-ids))))
       ;; For each ID which is a blocker and for each blocker which blocked an ID,
       ;; keep the blocker relation for all IDs which are part of a path to it.
       (dolist (id (delete-dups (append relation-ids blocker-ids)))
@@ -288,6 +288,10 @@ RELATIONS may be a hash table of `fons-relations' structs."
   (cl-loop for path in (fons-relation-paths-of-type type relation)
            thereis (equal (h/public-key root)
                           (fons-hop-from (car (last (fons-path-hops path)))))))
+
+(defun fons-blocked-path-blocker (blocked-path)
+  "Return blocker id for BLOCKED-PATH."
+  (fons-hop-from (car (fons-path-hops blocked-path))))
 
 ;;;; Footer
 
