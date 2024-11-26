@@ -25,6 +25,29 @@
         - This becomes much more complicated with second-order, downstream effects: if Alice trusts Bob as a blocker for "politics", and Bob trusts Carol as a blocker for the default topic, is Carol included as a blocker when Alice searches on "politics"?
   - Workaround: If a user really wants per-topic blocks (e.g. to block Bob on politics but not on music), the user can create a separate hyperdrive identity for each topic they want granular control of their blocks over.
 
+*** Querying for blocks
+
+1) Collect blocker relations within
+   ~hyperdrive-peer-graph-blockers-max-hops~.
+2) Collect blocked relations based on blockers.
+3) Collect source relations within
+   ~hyperdrive-peer-graph-sources-max-hops~, excluding blocked.
+
+Each time we get data for a peer, we get *all* relations for that
+peer.  Each call to ~hyperdrive-peer-graph-data~ is cached.  This
+means that step (2) above should not make any gateway requests.
+
+At first, it may seem simpler and faster to do this:
+
+1) Collect blocker relations, only loading blocker data, not source
+   nor blocked.
+2) Collect source relations, checking blocked status at each hop
+   before recursing deeper.
+
+This approach is a red herring since it would require an additional
+request to each source in step (2), whereas in the above approach, at
+most one request is sent to the gateway per hyperdrive peer.
+
 ** Basic usage patterns / workflows
 
 /What specific tasks should Fons enable the user to perform?/
