@@ -166,9 +166,8 @@ updated RELATIONS hash table as its sole argument."
            (thunk-let ((copy-relation (compat-call copy-tree relation t)))
              ;; Skip `blocked', since its paths are always one hop.
              (dolist (type '(sources blockers))
-               (when-let*
-                   ((paths (fons-relation-paths-of-type type relation))
-                    (shortest-paths (shortest-paths paths)))
+               (when-let* ((paths (fons-relation-paths-of-type type relation))
+                           (shortest-paths (shortest-paths paths)))
                  (unless (eq shortest-paths paths)
                    (setf (fons-relation-paths-of-type type copy-relation)
                          shortest-paths)
