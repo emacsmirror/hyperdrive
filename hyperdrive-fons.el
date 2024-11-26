@@ -170,7 +170,7 @@ updated RELATIONS hash table as its sole argument."
                    ((paths (fons-relation-paths-of-type type relation))
                     (shortest-paths (shortest-paths paths)))
                  (unless (eq shortest-paths paths)
-                   (setf (fons-relation-paths-of-type type relation)
+                   (setf (fons-relation-paths-of-type type copy-relation)
                          shortest-paths)
                    (setf (gethash id copy-relations) copy-relation))))))
          (shortest-hops-length (paths)
