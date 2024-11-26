@@ -1068,7 +1068,13 @@ With numeric ARG, or interactively with universal prefix argument
 (defun hpg/format-paths-only-to ()
   (string-join
    (mapcar (lambda (hyperdrive)
-             (format "     - %s" (h//format hyperdrive)))
+             (format "     - %s%s" (h//format hyperdrive)
+                     (cond ((not (hpg/loaded-relations)) "")
+                           ((not (gethash (h/public-key hyperdrive)
+                                          (hpg/filter hpg/relations)))
+                            (propertize " (Not among filtered relations)"
+                                        'face 'error))
+                           (t ""))))
            hpg/paths-only-to)
    "\n"))
 
