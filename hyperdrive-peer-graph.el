@@ -1078,7 +1078,8 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
   :transient t
   :inapt-if-not #'hpg/loaded-relations
   (interactive
-   (list (h/read-hyperdrive :predicate
+   (list (h/read-hyperdrive :prompt "Paths only to (add)"
+           :predicate
            (lambda (hyperdrive)
              (unless (cl-member hyperdrive hpg/paths-only-to :test #'h/equal-p)
                (catch 'break
@@ -1098,7 +1099,8 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
                          ;; HACK: Skip prompt if `current-prefix-arg'.
                          (if (length= hpg/paths-only-to 1)
                              (car hpg/paths-only-to)
-                           (h/read-hyperdrive :predicate
+                           (h/read-hyperdrive :prompt "Paths only to (remove)"
+                             :predicate
                              (lambda (hyperdrive)
                                (cl-member hyperdrive hpg/paths-only-to
                                           :test #'h/equal-p)))))
