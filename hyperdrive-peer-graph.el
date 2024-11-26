@@ -602,6 +602,7 @@ blocked paths or has a one-hop source path."
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values sources))
+                (taxy-sort-taxys #'string< #'taxy-name)
                 (taxy-sort #'string< #'fons-relation-to)))
              (blockers-taxy
               (thread-last
@@ -614,6 +615,7 @@ blocked paths or has a one-hop source path."
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blockers))
+                (taxy-sort-taxys #'string< #'taxy-name)
                 (taxy-sort #'string< #'fons-relation-to)))
              (blocked-taxy
               (thread-last
@@ -626,6 +628,7 @@ blocked paths or has a one-hop source path."
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blocked))
+                (taxy-sort-taxys #'string< #'taxy-name)
                 (taxy-sort #'string< #'fons-relation-to)))
              (taxy (make-taxy-magit-section
                     :taxys (list sources-taxy blockers-taxy blocked-taxy)))
