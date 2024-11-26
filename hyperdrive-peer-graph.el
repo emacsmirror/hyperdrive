@@ -50,6 +50,10 @@
   "Buffer name to show peer graph list."
   :type 'string)
 
+(defcustom hpg/list-apply-filters t
+  "Whether to apply `hyperdrive-peer-graph-filter' to list view."
+  :type 'boolean)
+
 (defcustom hpg/display-buffer-action '(display-buffer-reuse-window)
   "Display buffer action for hyperdrive peer graph.
 Passed to `display-buffer', which see."
@@ -532,12 +536,15 @@ blocked paths or has a one-hop source path."
                        '(0 1 2 3 4 5 6)))
         (put-text-property (point-min) (point-max) 'keymap widget-keymap)
         (insert "\n")
-        (if (hash-table-empty-p hpg/relations)
-            (hpg/list-draw-empty-relations)
-          (hpg/list-draw-taxy))))))
+        (let ((relations (if hpg/list-apply-filters
+                             (hpg/filter hpg/relations)
+                           hpg/relations)))
+          (if (hash-table-empty-p relations)
+              (hpg/list-draw-empty-relations)
+            (hpg/list-draw-taxy relations)))))))
 
-(defun hpg/list-draw-taxy ()
-  "Insert hyperdrive peer list at point."
+(defun hpg/list-draw-taxy (relations)
+  "Insert hyperdrive peer list for RELATIONS at point."
   (let (format-table column-sizes)
     (cl-labels ((format-item (item)
                   (gethash item format-table))
@@ -555,10 +562,13 @@ blocked paths or has a one-hop source path."
                          :level-indent 2
                          :item-indent 0
                          args)))
-      (let* ((sources (fons-filter-to-types hpg/relations :sourcesp t))
-             (blockers (fons-filter-to-types hpg/relations :blockersp t))
+      (let* ((relations (if hpg/list-apply-filters
+                            (hpg/filter hpg/relations)
+                          hpg/relations))
+             (sources (fons-filter-to-types relations :sourcesp t))
+             (blockers (fons-filter-to-types relations :blockersp t))
              (blocked (fons-filter-to-types
-                       hpg/relations :blockedp t :all-blocked-p t))
+                       relations :blockedp t :all-blocked-p t))
              (sources-taxy
               (thread-last
                 (make-fn
@@ -621,6 +631,27 @@ blocked paths or has a one-hop source path."
     (insert "\n  - Click above to increase max hops for sources."))
   (when (equal 0 hpg/blockers-max-hops)
     (insert "\n  - Click above to increase max hops for blockers."))
+  (unless (and (equal hpg/show-sources-p hpg/show-sources-p-default)
+               (equal hpg/show-blockers-p hpg/show-blockers-p-default)
+               (equal hpg/show-blocked-p hpg/show-blocked-p-default)
+               (equal hpg/show-all-blocked-p hpg/show-all-blocked-p-default)
+               (equal hpg/shortest-path-p hpg/shortest-path-p-default)
+               (equal hpg/paths-only-to nil))
+    (insert (format
+             "\n  - %s"
+             (propertize
+              (buttonize
+               "[Reset filters]"
+               (lambda (_)
+                 (setf hpg/show-sources-p hpg/show-sources-p-default
+                       hpg/show-blockers-p hpg/show-blockers-p-default
+                       hpg/show-blocked-p hpg/show-blocked-p-default
+                       hpg/show-all-blocked-p hpg/show-all-blocked-p-default
+                       hpg/shortest-path-p hpg/shortest-path-p-default
+                       hpg/paths-only-to nil)
+                 (hpg/draw-graph)
+                 (hpg/draw-list)))
+              'face 'widget-button))))
   (when (h/writablep hpg/root-hyperdrive)
     (insert
      (format
@@ -968,7 +999,8 @@ With numeric ARG, or interactively with universal prefix argument
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/shortest-path-p)
-  (hpg/draw-graph))
+  (hpg/draw-graph)
+  (when hpg/list-apply-filters (hpg/draw-list)))
 
 (transient-define-suffix hpg/set-show-sources-p ()
   :transient t
@@ -979,7 +1011,8 @@ With numeric ARG, or interactively with universal prefix argument
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-sources-p)
-  (hpg/draw-graph))
+  (hpg/draw-graph)
+  (when hpg/list-apply-filters (hpg/draw-list)))
 
 (transient-define-suffix hpg/set-show-blockers-p ()
   :transient t
@@ -990,7 +1023,8 @@ With numeric ARG, or interactively with universal prefix argument
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-blockers-p)
-  (hpg/draw-graph))
+  (hpg/draw-graph)
+  (when hpg/list-apply-filters (hpg/draw-list)))
 
 (transient-define-suffix hpg/set-show-blocked-p ()
   :transient t
@@ -1001,7 +1035,8 @@ With numeric ARG, or interactively with universal prefix argument
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-blocked-p)
-  (hpg/draw-graph))
+  (hpg/draw-graph)
+  (when hpg/list-apply-filters (hpg/draw-list)))
 
 (transient-define-suffix hpg/set-show-all-blocked-p ()
   :transient t
@@ -1013,7 +1048,8 @@ With numeric ARG, or interactively with universal prefix argument
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-all-blocked-p)
-  (hpg/draw-graph))
+  (hpg/draw-graph)
+  (when hpg/list-apply-filters (hpg/draw-list)))
 
 (defun hpg/format-paths-only-to ()
   (string-join
@@ -1037,7 +1073,8 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
                               (throw 'break t)))
                           hpg/relations)))))))
   (push hyperdrive hpg/paths-only-to)
-  (hpg/draw-graph))
+  (hpg/draw-graph)
+  (when hpg/list-apply-filters (hpg/draw-list)))
 
 (transient-define-suffix hpg/paths-only-to-remove (hyperdrive allp)
   "Remove HYPERDRIVE from `hpg/paths-only-to' and reload."
@@ -1055,7 +1092,8 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
   (setf hpg/paths-only-to
         (and (not allp)
              (cl-delete hyperdrive hpg/paths-only-to :test #'h/equal-p)))
-  (hpg/draw-graph))
+  (hpg/draw-graph)
+  (when hpg/list-apply-filters (hpg/draw-list)))
 
 (defun hpg/refresh-menu ()
   "Refresh `hyperdrive-peer-graph-menu' if it's open."
