@@ -1100,7 +1100,8 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
 (transient-define-suffix hpg/paths-only-to-remove (hyperdrive allp)
   "Remove HYPERDRIVE from `hpg/paths-only-to' and reload."
   :transient t
-  :inapt-if-not #'hpg/loaded-relations
+  :inapt-if-not (lambda ()
+                  (and hpg/paths-only-to (hpg/loaded-relations)))
   (interactive (list (or current-prefix-arg
                          ;; HACK: Skip prompt if `current-prefix-arg'.
                          (if (length= hpg/paths-only-to 1)
