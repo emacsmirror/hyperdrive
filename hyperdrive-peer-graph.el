@@ -218,7 +218,7 @@ RELATION may be a hash table of `fons-relation' structs mapped by
                     (seed . "%s")
                     (domains . "%s")))
        (focusp (cl-member (h/url-hyperdrive public-key)
-                     hpg/paths-only-to :test #'h/equal-p))
+                          hpg/paths-only-to :test #'h/equal-p))
        (label
         `(table ((border . ,(if focusp "4" "1"))
                  (cellborder . "0")
@@ -588,7 +588,8 @@ blocked paths or has a one-hop source path."
                  'blocked
                  :name "Blocked"
                  :take (lambda (peer taxy)
-                         (taxy-take-keyed (list #'fons-shortest-blocked-hops-length)
+                         (taxy-take-keyed
+                           (list #'fons-shortest-blocked-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blocked))
