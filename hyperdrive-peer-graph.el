@@ -668,7 +668,9 @@ blocked paths or has a one-hop source path."
         ;; `magit-section-show-level-1' and `magit-section-show-level-1-all'
         ;; result in the buffer appearing empty and the other commands
         ;; `magit-section-show-level-*' show one fewer level than expected.
-        (delete-line)))))
+        (delete-line)
+        (put-text-property (point) (point-max)
+                           'keymap magit-section-mode-map)))))
 
 (defun hpg/list-draw-empty-relations ()
   "Insert suggestion to include more peers at point."
