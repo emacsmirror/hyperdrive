@@ -591,9 +591,10 @@ blocked paths or has a one-hop source path."
                           hpg/relations))
              (sources (fons-filter-to-types relations :sourcesp t))
              (blockers (fons-filter-to-types relations :blockersp t))
-             (blocked (fons-filter-to-types relations
-                                            :blocked-sources-p t
-                                            :blocked-non-sources-p t))
+             (blocked-sources
+              (fons-filter-to-types relations :blocked-sources-p t))
+             (blocked-non-sources
+              (fons-filter-to-types relations :blocked-non-sources-p t))
              (sources-taxy
               (thread-last
                 (make-fn
@@ -620,19 +621,37 @@ blocked paths or has a one-hop source path."
                 (taxy-fill (hash-table-values blockers))
                 (taxy-sort-taxys #'string< #'taxy-name)
                 (taxy-sort #'string< #'fons-relation-to)))
-             (blocked-taxy
+             (blocked-sources-taxy
               (thread-last
                 (make-fn
                  'blocked
-                 :name "Blocked"
+                 :name "Blocked sources"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
                            (list #'fons-shortest-blocked-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
-                (taxy-fill (hash-table-values blocked))
+                (taxy-fill (hash-table-values blocked-sources))
                 (taxy-sort-taxys #'string< #'taxy-name)
                 (taxy-sort #'string< #'fons-relation-to)))
+             (blocked-non-sources-taxy
+              (thread-last
+                (make-fn
+                 'blocked
+                 :name "Blocked non-sources"
+                 :take (lambda (peer taxy)
+                         (taxy-take-keyed
+                           (list #'fons-shortest-blocked-hops-length)
+                           peer taxy :key-name-fn #'hpg/format-hops)))
+                taxy-emptied
+                (taxy-fill (hash-table-values blocked-non-sources))
+                (taxy-sort-taxys #'string< #'taxy-name)
+                (taxy-sort #'string< #'fons-relation-to)))
+             (blocked-taxy
+              (make-fn
+               'blocked
+               :name "Blocked"
+               :taxys (list blocked-sources-taxy blocked-non-sources-taxy)))
              (taxy (make-taxy-magit-section
                     :taxys (list sources-taxy blockers-taxy blocked-taxy)))
              (format-cons (taxy-magit-section-format-items
