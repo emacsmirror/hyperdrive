@@ -53,6 +53,7 @@
 (defcustom hpg/show-blocked-p-default 'sources
   "Default setting to show blocked."
   :type '(choice (const :tag "Show blocked which are also sources" 'sources)
+                 (const :tag "Show blocked which are not sources" 'non-sources)
                  (const :tag "Show all blocked" 'all)
                  (const :tag "Hide blocked" nil)))
 
@@ -309,7 +310,10 @@ hops to traverse for sources and blockers, respectively."
     (cl-callf fons-filter-to-types relations
       :sourcesp hpg/show-sources-p
       :blockersp hpg/show-blockers-p
-      :blockedp hpg/show-blocked-p))
+      :blocked-sources-p (pcase hpg/show-blocked-p
+                           ((or 'sources 'all) t))
+      :blocked-non-sources-p (pcase hpg/show-blocked-p
+                               ((or 'non-sources 'all) t))))
   ;; Apply `hpg/paths-only-to' last
   (cl-callf2 fons-filter-paths-only-to
       (mapcar #'h/public-key hpg/paths-only-to)
@@ -587,7 +591,9 @@ blocked paths or has a one-hop source path."
                           hpg/relations))
              (sources (fons-filter-to-types relations :sourcesp t))
              (blockers (fons-filter-to-types relations :blockersp t))
-             (blocked (fons-filter-to-types relations :blockedp 'all))
+             (blocked (fons-filter-to-types relations
+                                            :blocked-sources-p t
+                                            :blocked-non-sources-p t))
              (sources-taxy
               (thread-last
                 (make-fn
@@ -1061,18 +1067,22 @@ With numeric ARG, or interactively with universal prefix argument
                          (pcase-exhaustive hpg/show-blocked-p
                            ('sources
                             (propertize "sources" 'face 'transient-argument))
+                           ('non-sources
+                            (propertize "non-sources" 'face 'transient-argument))
                            ('all
                             (propertize "all" 'face 'transient-argument))
                            ('nil (propertize "no" 'face 'transient-inactive-value)))))
   (interactive)
   ;; Cycle arguments
   (pcase-exhaustive hpg/show-blocked-p
-    ('sources (setf hpg/show-blocked-p 'all)
-              (message "SHOW ALL SOURCES"))
+    ('sources (setf hpg/show-blocked-p 'non-sources)
+              (message "BLOCKED NON-SOURCES"))
+    ('non-sources (setf hpg/show-blocked-p 'all)
+                  (message "ALL BLOCKED"))
     ('all (setf hpg/show-blocked-p nil)
           (message "HIDE BLOCKED"))
     ('nil (setf hpg/show-blocked-p 'sources)
-          (message "SHOW BLOCKED SOURCES")))
+          (message "BLOCKED SOURCES")))
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 

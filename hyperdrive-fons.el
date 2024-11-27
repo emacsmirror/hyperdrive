@@ -264,19 +264,18 @@ path to one of the IDS.  Avoids attempting to find paths to ROOT."
       copy-relations)))
 
 (cl-defun fons-filter-to-types
-    (relations &key sourcesp blockersp blockedp)
+    (relations &key sourcesp blockersp blocked-sources-p blocked-non-sources-p)
   "Return RELATIONS based on relation type.
 When BLOCKERSP, include \\+`blocker-paths'.
 
-With non-nil SOURCESP and nil BLOCKEDP, include \\+`source-paths'
-if relation has no \\+`blocked-paths'.
+When SOURCESP, include \\+`source-paths' if either
+BLOCKED-SOURCES-P or the relation has no \\+`blocked-paths'.
 
-With non-nil SOURCESP and non-nil BLOCKEDP, include all
-\\+`source-paths'.
+When BLOCKED-SOURCES-P, include \\+`blocked-paths' if relation
+also has \\+`source-paths'.
 
-If BLOCKEDP is \\+`sources', include \\+`blocked-paths' if
-relation also has \\+`source-paths'.  If BLOCKEDP is \\+`all',
-include all \\+`blocked-paths'."
+When BLOCKED-NON-SOURCES-P, include \\+`blocked-paths' if relation
+has no \\+`source-paths'."
   (let ((copy-relations (make-hash-table :test 'equal)))
     (maphash
      (lambda (id relation)
@@ -289,12 +288,12 @@ include all \\+`blocked-paths'."
          (when (and blockersp blocker-paths)
            (setf (fons-relation-blocker-paths copy-relation) blocker-paths)
            (setf (gethash id copy-relations) copy-relation))
-         (when (and sourcesp source-paths (or blockedp (not blocked-paths)))
+         (when (and sourcesp source-paths (or blocked-sources-p (not blocked-paths)))
            (setf (fons-relation-source-paths copy-relation) source-paths)
            (setf (gethash id copy-relations) copy-relation))
          (when (and blocked-paths
-                    (or (eq blockedp 'all)
-                        (and (eq blockedp 'sources) source-paths)))
+                    (or (and blocked-sources-p source-paths)
+                        (and blocked-non-sources-p (null source-paths))))
            (setf (fons-relation-blocked-paths copy-relation) blocked-paths)
            (setf (gethash id copy-relations) copy-relation))))
      relations)
