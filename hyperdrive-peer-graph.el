@@ -1018,6 +1018,9 @@ With numeric ARG, or interactively with universal prefix argument
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/shortest-path-p)
+  (if hpg/shortest-path-p
+      (message "SHORTEST PATHS")
+    (message "ALL PATHS"))
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
@@ -1030,6 +1033,9 @@ With numeric ARG, or interactively with universal prefix argument
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-sources-p)
+  (if hpg/show-sources-p
+      (message "SHOW SOURCES")
+    (message "HIDE SOURCES"))
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
@@ -1042,6 +1048,9 @@ With numeric ARG, or interactively with universal prefix argument
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
   (cl-callf not hpg/show-blockers-p)
+  (if hpg/show-blockers-p
+      (message "SHOW BLOCKERS")
+    (message "HIDE BLOCKERS"))
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
@@ -1058,9 +1067,12 @@ With numeric ARG, or interactively with universal prefix argument
   (interactive)
   ;; Cycle arguments
   (pcase-exhaustive hpg/show-blocked-p
-    ('sources (setf hpg/show-blocked-p 'all))
-    ('all (setf hpg/show-blocked-p nil))
-    ('nil (setf hpg/show-blocked-p 'sources)))
+    ('sources (setf hpg/show-blocked-p 'all)
+              (message "SHOW ALL SOURCES"))
+    ('all (setf hpg/show-blocked-p nil)
+          (message "HIDE BLOCKED"))
+    ('nil (setf hpg/show-blocked-p 'sources)
+          (message "SHOW BLOCKED SOURCES")))
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
