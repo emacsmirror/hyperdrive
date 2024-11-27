@@ -935,19 +935,18 @@ With numeric ARG, or interactively with universal prefix argument
    ("g" "Reload" hpg/reload)
    ("l" hpg/menu-history-back)
    ("r" hpg/menu-history-forward)]
+  ["Max hops"
+   ("h s" hpg/set-sources-max-hops)
+   ("h b" hpg/set-blockers-max-hops)]
   ["Paths only to"
    (:info #'hpg/format-paths-only-to :format "%d")
    ("o a" "Add" hpg/paths-only-to-add)
    ("o r" "Remove" hpg/paths-only-to-remove)]
-  [["Sources"
-    ("s s" hpg/set-show-sources-p)
-    ("s m" hpg/set-sources-max-hops)]
-   ["Blockers"
-    ("b s" hpg/set-show-blockers-p)
-    ("b m" hpg/set-blockers-max-hops)]
-   ["Blocked"
-    ("x s" hpg/set-show-blocked-p)
-    ("x a" hpg/set-show-all-blocked-p)]]
+  ["Show type"
+   ("s s" hpg/set-show-sources-p)
+   ("s b" hpg/set-show-blockers-p)
+   ("s x" hpg/set-show-blocked-p)
+   ("s a" hpg/set-show-all-blocked-p)]
   ["Options"
    ("S" hpg/set-shortest-path-p)]
   (interactive (hpg/interactive-args))
