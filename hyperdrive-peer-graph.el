@@ -930,8 +930,8 @@ With numeric ARG, or interactively with universal prefix argument
    :pad-keys t
    ;; TODO: When changing `hpg/root-hyperdrive', reset local variables to default values?
    ("R" hpg/set-root-hyperdrive)
-   ("L" "Display list" hpg/menu-display-list)
-   ("G" "Display graph" hpg/menu-display-graph)
+   ("L" "List" hpg/menu-display-list)
+   ("G" "Graph" hpg/menu-display-graph)
    ("g" "Reload" hpg/reload)
    ("l" hpg/menu-history-back)
    ("r" hpg/menu-history-forward)]
@@ -968,7 +968,7 @@ With numeric ARG, or interactively with universal prefix argument
   :transient t
   :description
   (lambda ()
-    (format (concat "Max hops for sources: "
+    (format (concat "Sources: "
                     (propertize "%d" 'face 'transient-argument))
             hpg/sources-max-hops))
   (interactive)
@@ -979,7 +979,7 @@ With numeric ARG, or interactively with universal prefix argument
   :transient t
   :description
   (lambda ()
-    (format (concat "Max hops for blockers: "
+    (format (concat "Blockers: "
                     (propertize "%d" 'face 'transient-argument))
             hpg/blockers-max-hops))
   (interactive)
@@ -1021,7 +1021,7 @@ With numeric ARG, or interactively with universal prefix argument
 (transient-define-suffix hpg/set-shortest-path-p ()
   :transient t
   :description (lambda ()
-                 (format "Shortest paths only: %s"
+                 (format "Shortest paths: %s"
                          (if hpg/shortest-path-p
                              (propertize "yes" 'face 'transient-argument)
                            (propertize "no" 'face 'transient-inactive-value))))
@@ -1033,7 +1033,7 @@ With numeric ARG, or interactively with universal prefix argument
 (transient-define-suffix hpg/set-show-sources-p ()
   :transient t
   :description (lambda ()
-                 (format "Show sources: %s"
+                 (format "Sources: %s"
                          (if hpg/show-sources-p
                              (propertize "yes" 'face 'transient-argument)
                            (propertize "no" 'face 'transient-inactive-value))))
@@ -1045,7 +1045,7 @@ With numeric ARG, or interactively with universal prefix argument
 (transient-define-suffix hpg/set-show-blockers-p ()
   :transient t
   :description (lambda ()
-                 (format "Show blockers: %s"
+                 (format "Blockers: %s"
                          (if hpg/show-blockers-p
                              (propertize "yes" 'face 'transient-argument)
                            (propertize "no" 'face 'transient-inactive-value))))
@@ -1057,7 +1057,7 @@ With numeric ARG, or interactively with universal prefix argument
 (transient-define-suffix hpg/set-show-blocked-p ()
   :transient t
   :description (lambda ()
-                 (format "Show blocked: %s"
+                 (format "Blocked: %s"
                          (if hpg/show-blocked-p
                              (propertize "yes" 'face 'transient-argument)
                            (propertize "no" 'face 'transient-inactive-value))))
@@ -1070,7 +1070,7 @@ With numeric ARG, or interactively with universal prefix argument
   :transient t
   :inapt-if-nil 'hpg/show-blocked-p
   :description (lambda ()
-                 (format "Show all blocked: %s"
+                 (format "All blocked: %s"
                          (if (and hpg/show-blocked-p hpg/show-all-blocked-p)
                              (propertize "yes" 'face 'transient-argument)
                            (propertize "no" 'face 'transient-inactive-value))))
