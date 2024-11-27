@@ -825,14 +825,14 @@ UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
   "G" #'h/peer-graph
   "l" #'hpg/history-back
   "r" #'hpg/history-forward
+  "h s" #'hpg/set-sources-max-hops
+  "h b" #'hpg/set-blockers-max-hops
   "o a" #'hpg/paths-only-to-add
   "o r" #'hpg/paths-only-to-remove
   "s s" #'hpg/set-show-sources-p
-  "s m" #'hpg/set-sources-max-hops
-  "b s" #'hpg/set-show-blockers-p
-  "b m" #'hpg/set-blockers-max-hops
-  "x s" #'hpg/set-show-blocked-p
-  "x a" #'hpg/set-show-all-blocked-p
+  "s b" #'hpg/set-show-blockers-p
+  "s x" #'hpg/set-show-blocked-p
+  "s a" #'hpg/set-show-all-blocked-p
   "S" #'hpg/set-shortest-path-p)
 
 (define-derived-mode hpg/mode h/fons-view-mode
