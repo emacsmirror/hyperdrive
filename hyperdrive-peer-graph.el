@@ -920,7 +920,6 @@ With numeric ARG, or interactively with universal prefix argument
 
 ;;;; Transient UI
 
-;;;###autoload (autoload 'hyperdrive-peer-graph-menu "hyperdrive-peer-graph" nil t)
 (transient-define-prefix hyperdrive-peer-graph-menu
   (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
