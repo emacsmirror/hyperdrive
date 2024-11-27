@@ -264,19 +264,19 @@ path to one of the IDS.  Avoids attempting to find paths to ROOT."
       copy-relations)))
 
 (cl-defun fons-filter-to-types
-    (relations &key sourcesp blockersp blockedp all-blocked-p)
+    (relations &key sourcesp blockersp blockedp)
   "Return RELATIONS based on relation type.
 When BLOCKERSP, include \\+`blocker-paths'.
 
-When SOURCESP but not BLOCKEDP, include \\+`source-paths' if
-relation has no \\+`blocked-paths'.
+With non-nil SOURCESP and nil BLOCKEDP, include \\+`source-paths'
+if relation has no \\+`blocked-paths'.
 
-When SOURCESP and BLOCKEDP, include all \\+`source-paths'.
+With non-nil SOURCESP and non-nil BLOCKEDP, include all
+\\+`source-paths'.
 
-When BLOCKEDP but not ALL-BLOCKED-P, include \\+`blocked-paths'
-if relation also has \\+`source-paths'.
-
-When BLOCKEDP and ALL-BLOCKED-P, include all \\+`blocked'."
+If BLOCKEDP is \\+`sources', include \\+`blocked-paths' if
+relation also has \\+`source-paths'.  If BLOCKEDP is \\+`all',
+include all \\+`blocked-paths'."
   (let ((copy-relations (make-hash-table :test 'equal)))
     (maphash
      (lambda (id relation)
@@ -292,7 +292,9 @@ When BLOCKEDP and ALL-BLOCKED-P, include all \\+`blocked'."
          (when (and sourcesp source-paths (or blockedp (not blocked-paths)))
            (setf (fons-relation-source-paths copy-relation) source-paths)
            (setf (gethash id copy-relations) copy-relation))
-         (when (and blockedp blocked-paths (or all-blocked-p source-paths))
+         (when (and blocked-paths
+                    (or (eq blockedp 'all)
+                        (and (eq blockedp 'sources) source-paths)))
            (setf (fons-relation-blocked-paths copy-relation) blocked-paths)
            (setf (gethash id copy-relations) copy-relation))))
      relations)

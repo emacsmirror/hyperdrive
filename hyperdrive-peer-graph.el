@@ -50,13 +50,11 @@
   "Default setting to show blockers."
   :type 'boolean)
 
-(defcustom hpg/show-blocked-p-default t
+(defcustom hpg/show-blocked-p-default 'sources
   "Default setting to show blocked."
-  :type 'boolean)
-
-(defcustom hpg/show-all-blocked-p-default nil
-  "Default setting to show all blocked, not just sources."
-  :type 'boolean)
+  :type '(choice (const :tag "Show blocked which are also sources" 'sources)
+                 (const :tag "Show all blocked" 'all)
+                 (const :tag "Hide blocked" nil)))
 
 (defcustom hpg/shortest-path-p-default t
   "Default setting to filter only to shortest paths."
@@ -91,7 +89,6 @@ Passed to `display-buffer', which see."
 (defvar hpg/show-sources-p hpg/show-sources-p-default)
 (defvar hpg/show-blockers-p hpg/show-blockers-p-default)
 (defvar hpg/show-blocked-p hpg/show-blocked-p-default)
-(defvar hpg/show-all-blocked-p hpg/show-all-blocked-p-default)
 
 (defvar hpg/shortest-path-p hpg/shortest-path-p-default)
 (defvar hpg/paths-only-to nil)
@@ -306,12 +303,13 @@ hops to traverse for sources and blockers, respectively."
   (when hpg/shortest-path-p
     (cl-callf fons-filter-shortest-path relations
       (h/public-key hpg/root-hyperdrive)))
-  (unless (and hpg/show-sources-p hpg/show-blockers-p hpg/show-blocked-p hpg/show-all-blocked-p)
+  (unless (and hpg/show-sources-p
+               hpg/show-blockers-p
+               (eq hpg/show-blocked-p 'all))
     (cl-callf fons-filter-to-types relations
       :sourcesp hpg/show-sources-p
       :blockersp hpg/show-blockers-p
-      :blockedp hpg/show-blocked-p
-      :all-blocked-p (and hpg/show-blocked-p hpg/show-all-blocked-p)))
+      :blockedp hpg/show-blocked-p))
   ;; Apply `hpg/paths-only-to' last
   (cl-callf2 fons-filter-paths-only-to
       (mapcar #'h/public-key hpg/paths-only-to)
@@ -589,8 +587,7 @@ blocked paths or has a one-hop source path."
                           hpg/relations))
              (sources (fons-filter-to-types relations :sourcesp t))
              (blockers (fons-filter-to-types relations :blockersp t))
-             (blocked (fons-filter-to-types
-                       relations :blockedp t :all-blocked-p t))
+             (blocked (fons-filter-to-types relations :blockedp 'all))
              (sources-taxy
               (thread-last
                 (make-fn
@@ -659,7 +656,6 @@ blocked paths or has a one-hop source path."
   (unless (and (equal hpg/show-sources-p hpg/show-sources-p-default)
                (equal hpg/show-blockers-p hpg/show-blockers-p-default)
                (equal hpg/show-blocked-p hpg/show-blocked-p-default)
-               (equal hpg/show-all-blocked-p hpg/show-all-blocked-p-default)
                (equal hpg/shortest-path-p hpg/shortest-path-p-default)
                (equal hpg/paths-only-to nil))
     (insert (format
@@ -671,7 +667,6 @@ blocked paths or has a one-hop source path."
                  (setf hpg/show-sources-p hpg/show-sources-p-default
                        hpg/show-blockers-p hpg/show-blockers-p-default
                        hpg/show-blocked-p hpg/show-blocked-p-default
-                       hpg/show-all-blocked-p hpg/show-all-blocked-p-default
                        hpg/shortest-path-p hpg/shortest-path-p-default
                        hpg/paths-only-to nil)
                  (hpg/draw-graph)
@@ -832,7 +827,6 @@ UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
   "s s" #'hpg/set-show-sources-p
   "s b" #'hpg/set-show-blockers-p
   "s x" #'hpg/set-show-blocked-p
-  "s a" #'hpg/set-show-all-blocked-p
   "S" #'hpg/set-shortest-path-p)
 
 (define-derived-mode hpg/mode h/fons-view-mode
@@ -866,7 +860,6 @@ Push an alist history item with the current values of
 - `hyperdrive-peer-graph-show-sources-p'
 - `hyperdrive-peer-graph-show-blockers-p'
 - `hyperdrive-peer-graph-show-blocked-p'
-- `hyperdrive-peer-graph-show-all-blocked-p'
 - `hyperdrive-peer-graph-shortest-path-p'
 - `hyperdrive-peer-graph-paths-only-to'
 
@@ -879,7 +872,6 @@ the latest element instead of pushing a new element."
                 (hpg/show-sources-p . ,hpg/show-sources-p)
                 (hpg/show-blockers-p . ,hpg/show-blockers-p)
                 (hpg/show-blocked-p . ,hpg/show-blocked-p)
-                (hpg/show-all-blocked-p . ,hpg/show-all-blocked-p)
                 (hpg/shortest-path-p . ,hpg/shortest-path-p)
                 (hpg/paths-only-to . ,hpg/paths-only-to)))
          (current-history-item (nth hpg/history-position hpg/history))
@@ -945,8 +937,7 @@ With numeric ARG, or interactively with universal prefix argument
   ["Show type"
    ("s s" hpg/set-show-sources-p)
    ("s b" hpg/set-show-blockers-p)
-   ("s x" hpg/set-show-blocked-p)
-   ("s a" hpg/set-show-all-blocked-p)]
+   ("s x" hpg/set-show-blocked-p)]
   ["Options"
    ("S" hpg/set-shortest-path-p)]
   (interactive (hpg/interactive-args))
@@ -1058,24 +1049,18 @@ With numeric ARG, or interactively with universal prefix argument
   :transient t
   :description (lambda ()
                  (format "Blocked: %s"
-                         (if hpg/show-blocked-p
-                             (propertize "yes" 'face 'transient-argument)
-                           (propertize "no" 'face 'transient-inactive-value))))
+                         (pcase-exhaustive hpg/show-blocked-p
+                           ('sources
+                            (propertize "sources" 'face 'transient-argument))
+                           ('all
+                            (propertize "all" 'face 'transient-argument))
+                           ('nil (propertize "no" 'face 'transient-inactive-value)))))
   (interactive)
-  (cl-callf not hpg/show-blocked-p)
-  (hpg/draw-graph)
-  (when hpg/list-apply-filters (hpg/draw-list)))
-
-(transient-define-suffix hpg/set-show-all-blocked-p ()
-  :transient t
-  :inapt-if-nil 'hpg/show-blocked-p
-  :description (lambda ()
-                 (format "All blocked: %s"
-                         (if (and hpg/show-blocked-p hpg/show-all-blocked-p)
-                             (propertize "yes" 'face 'transient-argument)
-                           (propertize "no" 'face 'transient-inactive-value))))
-  (interactive)
-  (cl-callf not hpg/show-all-blocked-p)
+  ;; Cycle arguments
+  (pcase-exhaustive hpg/show-blocked-p
+    ('sources (setf hpg/show-blocked-p 'all))
+    ('all (setf hpg/show-blocked-p nil))
+    ('nil (setf hpg/show-blocked-p 'sources)))
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
