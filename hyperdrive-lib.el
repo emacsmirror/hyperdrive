@@ -969,7 +969,7 @@ DEFAULT is the default hyperdrive.  Prompt with PROMPT, which
 will be passed to `format-prompt' along with formatted DEFAULT."
   (declare (indent defun))
   (when (zerop (hash-table-count h/hyperdrives))
-    (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
+    (h/user-error "No known hyperdrives.  Run \\[hyperdrive-new] to create a new one"))
   (unless predicate
     ;; cl-defun default value doesn't work when nil predicate value is passed in.
     (setf predicate #'always))
