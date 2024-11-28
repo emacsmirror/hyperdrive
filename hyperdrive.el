@@ -381,8 +381,8 @@ without confirmation."
   (require 'hyperdrive-peer-graph)
   (save-excursion
     (mouse-set-point event)
-    (apply #'hyperdrive-peer-graph-set-relation
-           (hyperdrive-peer-graph-set-relation-interactive-args
+    (apply #'h/peer-graph-set-relation
+           (h/peer-graph-set-relation-interactive-args
             :to (h/at-point event)))))
 
 ;; TODO: Group `h/peer-graph-set-relation-to-hyperdrive-at-point' and
