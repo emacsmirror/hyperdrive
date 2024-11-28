@@ -52,10 +52,11 @@
 
 (defcustom hpg/show-blocked-p-default 'sources
   "Default setting to show blocked."
-  :type '(choice (const :tag "Show blocked which are also sources" 'sources)
-                 (const :tag "Show blocked which are not sources" 'non-sources)
-                 (const :tag "Show all blocked" 'all)
-                 (const :tag "Hide blocked" nil)))
+  :type '(choice
+          (const :tag "Show blocked which are also sources" sources)
+          (const :tag "Show blocked which are not sources" non-sources)
+          (const :tag "Show all blocked" all)
+          (const :tag "Hide blocked" nil)))
 
 (defcustom hpg/shortest-path-p-default t
   "Default setting to filter only to shortest paths."
