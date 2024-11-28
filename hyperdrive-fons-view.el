@@ -166,10 +166,16 @@ graphviz string, and replaces it with the rendered output."
 
 (cl-defun hyperdrive-fons-view--render-graphviz (graphviz)
   "Render GRAPHVIZ string in current buffer."
-  (let* ((original-map (hyperdrive-fons-view--graph-map graphviz))
-         (svg-string (hyperdrive-fons-view--svg graphviz))
-         (inhibit-read-only t)
-         (image (create-image svg-string 'svg t :original-map original-map)))
+  (pcase-let* ((original-map (hyperdrive-fons-view--graph-map graphviz))
+               (`(,svg-string . ,image-width)
+                (hyperdrive-fons-view--svg graphviz))
+               (window-width
+                (window-text-width (get-buffer-window (current-buffer)) t))
+               (scale (/ window-width image-width 1.0))
+               (inhibit-read-only t)
+               (image (create-image svg-string 'svg t
+                                    :original-map original-map
+                                    :scale scale)))
     (when (> 30 emacs-major-version)
       ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
       (setq image
@@ -269,9 +275,18 @@ graphviz string, and replaces it with the rendered output."
 (cl-defun hyperdrive-fons-view--svg (graph)
   "Return SVG string for Graphviz GRAPH."
   (with-temp-buffer
-    (insert graph)
-    (hyperdrive-fons-view--graphviz "svg")
-    (buffer-string)))
+    (let (width height)
+      (insert graph)
+      (hyperdrive-fons-view--graphviz "svg")
+      (goto-char (point-min))
+      (when (re-search-forward
+             (rx "<svg width=\"" (group (1+ (not (any "\"")))) "\" "
+                 "height=\"" (group (1+ (not (any "\"")))) "\"")
+             nil t)
+        (setf width (substring (match-string 1) nil -2)))
+      (cons (buffer-string)
+            ;; Convert to pixels at 1.3333 pt/px (pt = 1/72 in, px = 1/96 in)
+            (* (string-to-number width) 1.3333)))))
 
 ;; (defvar hyperdrive-fons-view-prism-minimum-contrast 6
 ;;   "Attempt to enforce this minimum contrast ratio for user faces.
