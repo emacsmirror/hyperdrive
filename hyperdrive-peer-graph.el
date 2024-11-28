@@ -680,6 +680,8 @@ blocked paths or has a one-hop source path."
                :notify (lambda (widget &rest _ignore)
                          (setf hpg/sources-max-hops (widget-value widget))
                          (hpg/revert-buffers))
+               ;; Invalid likely just means >6: format it like valid input.
+               :void '(item :format "%t\n")
                (mapcar (lambda (n)
                          `(item :tag ,(number-to-string n) :value ,n))
                        '(0 1 2 3 4 5 6)))
@@ -687,6 +689,8 @@ blocked paths or has a one-hop source path."
                :tag "[Set blockers max hops]"
                :value hpg/blockers-max-hops
                :help-echo "Set blockers max hops"
+               ;; Invalid likely just means >6: format it like valid input.
+               :void '(item :format "%t\n")
                :notify (lambda (widget &rest _ignore)
                          (setf hpg/blockers-max-hops (widget-value widget))
                          (hpg/revert-buffers))
