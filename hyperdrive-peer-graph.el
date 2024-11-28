@@ -24,6 +24,8 @@
 
 ;;; Code:
 
+(require 'dom)
+
 (require 'hyperdrive-fons-view)
 (require 'hyperdrive-lib)
 (require 'taxy-magit-section)
@@ -379,6 +381,133 @@ argument \\[universal-argument], always prompt."
                                                root-changed))))
     (list root-hyperdrive sources-max-hops blockers-max-hops)))
 
+;;;; Peer Graph
+
+(defun hyperdrive-peer-graph (hyperdrive sources-max-hops blockers-max-hops)
+  "Show menu for HYPERDRIVE peer graph."
+  (interactive (hpg/interactive-args))
+  (cond ((hpg/need-refresh-p hyperdrive sources-max-hops blockers-max-hops)
+         (setf hpg/root-hyperdrive hyperdrive)
+         (setf hpg/sources-max-hops sources-max-hops)
+         (setf hpg/blockers-max-hops blockers-max-hops)
+         (hpg/revert-buffers))
+        ((not (buffer-live-p (get-buffer hpg/buffer-name)))
+         (hpg/draw-graph)))
+  (pop-to-buffer hpg/buffer-name hpg/display-buffer-action))
+
+(defun hpg/need-refresh-p (hyperdrive sources-max-hops blockers-max-hops)
+  "Return non-nil if the graph data parameters have changed."
+  (not (and hpg/root-hyperdrive
+            (h/equal-p hyperdrive hpg/root-hyperdrive)
+            (equal sources-max-hops hpg/sources-max-hops)
+            (equal blockers-max-hops hpg/blockers-max-hops)
+            (hpg/loaded-relations))))
+
+(cl-defun hpg/load (&key finally)
+  "Load `hpg/relations' and call FINALLY with no arguments."
+  ;; TODO: If called in rapid succession, stop the requests from the first call.
+  (setf hpg/relations
+        (hpg/relations
+         (h/public-key hpg/root-hyperdrive)
+         :sources-max-hops hpg/sources-max-hops
+         :blockers-max-hops hpg/blockers-max-hops
+         :finally
+         (lambda (relations)
+           (setf hpg/relations relations)
+           (h/fill-metadata-all
+            (cons hpg/root-hyperdrive
+                  (mapcar #'h/url-hyperdrive (hash-table-keys hpg/relations)))
+            :finally finally)))))
+
+(defun hpg/get-buffer-create ()
+  "Return hyperdrive peer graph buffer with mode enabled."
+  (with-current-buffer (get-buffer-create hpg/buffer-name)
+    (hpg/mode)
+    (current-buffer)))
+
+(defun hpg/draw-loading-buffer ()
+  "Draw loading buffer for hyperdrive peer graph."
+  (with-current-buffer (hpg/get-buffer-create)
+    (with-silent-modifications
+      (erase-buffer)
+      (insert "Loading hyperdrive peer graph data..."))))
+
+(defun hpg/draw-graph ()
+  "Draw buffer displaying hyperdrive peer graph."
+  (with-current-buffer (hpg/get-buffer-create)
+    (h/fons-view (hpg/filter hpg/relations)
+                 (h/public-key hpg/root-hyperdrive)
+                 :insert-relation-fun #'hpg/insert-relation)))
+
+(defun hpg/loaded-relations ()
+  "Return `hyperdrive-peer-graph-relations' if loaded."
+  (and (not (processp hpg/relations))
+       (not (timerp hpg/relations))
+       hpg/relations))
+
+(cl-defun hpg/revert-buffers (&key (update-history-p t))
+  "Revert peer graph buffers.
+Reload data and redisplays `hyperdrive-peer-graph-mode' and
+`hyperdrive-peer-graph-list-mode' buffers.  With
+UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
+  (clrhash hpg/data-cache)
+  ;; TODO: How should we handle refreshing the graph/list when it's not visible?
+  ;; Should we display an "outdated" warning?
+  (when (get-buffer-window hpg/buffer-name 'visible)
+    (hpg/draw-loading-buffer))
+  (when (get-buffer-window hpg/list-buffer-name 'visible)
+    (hpg/list-draw-loading-buffer))
+  (hpg/load :finally (lambda ()
+                       (when update-history-p (hpg/history-update))
+                       (when (get-buffer-window hpg/buffer-name 'visible)
+                         (hpg/draw-graph))
+                       (when (get-buffer-window hpg/list-buffer-name 'visible)
+                         (hpg/draw-list))
+                       (hpg/refresh-menu))))
+
+;;;;; Minor mode
+
+(defun hpg/revert-buffer-function (&optional _ignore-auto _noconfirm)
+  "Revert peer graph buffers."
+  (hpg/revert-buffers))
+
+(defvar-keymap hpg/mode-map
+  :parent special-mode-map
+  :doc "Local keymap for `hyperdrive-peer-graph-mode' buffers."
+  ;; It's easy to accidentally trigger drag events when clicking.
+  "<drag-mouse-1>" #'hpg/view-follow-link
+  "<mouse-1>" #'hpg/view-follow-link
+  "?"  #'hpg/menu
+  "R" #'hpg/set-root-hyperdrive
+  "L" #'hpg/list
+  "G" #'h/peer-graph
+  "l" #'hpg/history-back
+  "r" #'hpg/history-forward
+  "h s" #'hpg/set-sources-max-hops
+  "h b" #'hpg/set-blockers-max-hops
+  "o a" #'hpg/paths-only-to-add
+  "o r" #'hpg/paths-only-to-remove
+  "s s" #'hpg/set-show-sources-p
+  "s b" #'hpg/set-show-blockers-p
+  "s x" #'hpg/set-show-blocked-p
+  "S" #'hpg/set-shortest-path-p)
+
+(define-derived-mode hpg/mode h/fons-view-mode
+  '("Hyperdrive-peer-graph")
+  "Major mode for viewing Hyperdrive peer graph."
+  :group 'hyperdrive
+  :interactive nil
+  (setq-local revert-buffer-function #'hpg/revert-buffer-function))
+
+;;;;; Graph commands
+
+(defun hpg/view-follow-link (event)
+  "Follow link at EVENT's position."
+  (interactive "e")
+  (when-let ((hyperdrive (h/at-point event)))
+    (setf hpg/root-hyperdrive hyperdrive)
+    (hpg/revert-buffers)))
+
 ;;;; Peer List
 
 ;;;;; Columns
@@ -569,10 +698,10 @@ blocked paths or has a one-hop source path."
                            hpg/relations)))
           (if (hash-table-empty-p relations)
               (hpg/list-draw-empty-relations)
-            (hpg/list-draw-taxy relations)))))))
+            (hpg/list-draw-taxy)))))))
 
-(defun hpg/list-draw-taxy (relations)
-  "Insert hyperdrive peer list for RELATIONS at point."
+(defun hpg/list-draw-taxy ()
+  "Insert hyperdrive peer list at point."
   (let (format-table column-sizes)
     (cl-labels ((format-item (item)
                   (gethash item format-table))
@@ -748,133 +877,6 @@ blocked paths or has a one-hop source path."
   :group 'hyperdrive
   :interactive nil
   (setq-local revert-buffer-function #'hpg/list-revert-buffer-function))
-
-;;;; Peer Graph
-
-(defun hyperdrive-peer-graph (hyperdrive sources-max-hops blockers-max-hops)
-  "Show menu for HYPERDRIVE peer graph."
-  (interactive (hpg/interactive-args))
-  (cond ((hpg/need-refresh-p hyperdrive sources-max-hops blockers-max-hops)
-         (setf hpg/root-hyperdrive hyperdrive)
-         (setf hpg/sources-max-hops sources-max-hops)
-         (setf hpg/blockers-max-hops blockers-max-hops)
-         (hpg/revert-buffers))
-        ((not (buffer-live-p (get-buffer hpg/buffer-name)))
-         (hpg/draw-graph)))
-  (pop-to-buffer hpg/buffer-name hpg/display-buffer-action))
-
-(defun hpg/need-refresh-p (hyperdrive sources-max-hops blockers-max-hops)
-  "Return non-nil if the graph data parameters have changed."
-  (not (and hpg/root-hyperdrive
-            (h/equal-p hyperdrive hpg/root-hyperdrive)
-            (equal sources-max-hops hpg/sources-max-hops)
-            (equal blockers-max-hops hpg/blockers-max-hops)
-            (hpg/loaded-relations))))
-
-(cl-defun hpg/load (&key finally)
-  "Load `hpg/relations' and call FINALLY with no arguments."
-  ;; TODO: If called in rapid succession, stop the requests from the first call.
-  (setf hpg/relations
-        (hpg/relations
-         (h/public-key hpg/root-hyperdrive)
-         :sources-max-hops hpg/sources-max-hops
-         :blockers-max-hops hpg/blockers-max-hops
-         :finally
-         (lambda (relations)
-           (setf hpg/relations relations)
-           (h/fill-metadata-all
-            (cons hpg/root-hyperdrive
-                  (mapcar #'h/url-hyperdrive (hash-table-keys hpg/relations)))
-            :finally finally)))))
-
-(defun hpg/get-buffer-create ()
-  "Return hyperdrive peer graph buffer with mode enabled."
-  (with-current-buffer (get-buffer-create hpg/buffer-name)
-    (hpg/mode)
-    (current-buffer)))
-
-(defun hpg/draw-loading-buffer ()
-  "Draw loading buffer for hyperdrive peer graph."
-  (with-current-buffer (hpg/get-buffer-create)
-    (with-silent-modifications
-      (erase-buffer)
-      (insert "Loading hyperdrive peer graph data..."))))
-
-(defun hpg/draw-graph ()
-  "Draw buffer displaying hyperdrive peer graph."
-  (with-current-buffer (hpg/get-buffer-create)
-    (h/fons-view (hpg/filter hpg/relations)
-                 (h/public-key hpg/root-hyperdrive)
-                 :insert-relation-fun #'hpg/insert-relation)))
-
-(defun hpg/loaded-relations ()
-  "Return `hyperdrive-peer-graph-relations' if loaded."
-  (and (not (processp hpg/relations))
-       (not (timerp hpg/relations))
-       hpg/relations))
-
-(cl-defun hpg/revert-buffers (&key (update-history-p t))
-  "Revert peer graph buffers.
-Reload data and redisplays `hyperdrive-peer-graph-mode' and
-`hyperdrive-peer-graph-list-mode' buffers.  With
-UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
-  (clrhash hpg/data-cache)
-  ;; TODO: How should we handle refreshing the graph/list when it's not visible?
-  ;; Should we display an "outdated" warning?
-  (when (get-buffer-window hpg/buffer-name 'visible)
-    (hpg/draw-loading-buffer))
-  (when (get-buffer-window hpg/list-buffer-name 'visible)
-    (hpg/list-draw-loading-buffer))
-  (hpg/load :finally (lambda ()
-                       (when update-history-p (hpg/history-update))
-                       (when (get-buffer-window hpg/buffer-name 'visible)
-                         (hpg/draw-graph))
-                       (when (get-buffer-window hpg/list-buffer-name 'visible)
-                         (hpg/draw-list))
-                       (hpg/refresh-menu))))
-
-;;;;; Minor mode
-
-(defun hpg/revert-buffer-function (&optional _ignore-auto _noconfirm)
-  "Revert peer graph buffers."
-  (hpg/revert-buffers))
-
-(defvar-keymap hpg/mode-map
-  :parent special-mode-map
-  :doc "Local keymap for `hyperdrive-peer-graph-mode' buffers."
-  ;; It's easy to accidentally trigger drag events when clicking.
-  "<drag-mouse-1>" #'hpg/view-follow-link
-  "<mouse-1>" #'hpg/view-follow-link
-  "?"  #'hpg/menu
-  "R" #'hpg/set-root-hyperdrive
-  "L" #'hpg/list
-  "G" #'h/peer-graph
-  "l" #'hpg/history-back
-  "r" #'hpg/history-forward
-  "h s" #'hpg/set-sources-max-hops
-  "h b" #'hpg/set-blockers-max-hops
-  "o a" #'hpg/paths-only-to-add
-  "o r" #'hpg/paths-only-to-remove
-  "s s" #'hpg/set-show-sources-p
-  "s b" #'hpg/set-show-blockers-p
-  "s x" #'hpg/set-show-blocked-p
-  "S" #'hpg/set-shortest-path-p)
-
-(define-derived-mode hpg/mode h/fons-view-mode
-  '("Hyperdrive-peer-graph")
-  "Major mode for viewing Hyperdrive peer graph."
-  :group 'hyperdrive
-  :interactive nil
-  (setq-local revert-buffer-function #'hpg/revert-buffer-function))
-
-;;;;; Graph commands
-
-(defun hpg/view-follow-link (event)
-  "Follow link at EVENT's position."
-  (interactive "e")
-  (when-let ((hyperdrive (h/at-point event)))
-    (setf hpg/root-hyperdrive hyperdrive)
-    (hpg/revert-buffers)))
 
 ;;;; History
 
