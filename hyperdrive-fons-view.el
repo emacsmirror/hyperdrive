@@ -153,6 +153,7 @@ WIDTH and HEIGHT are in inches."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
     relations :root-name root :layout layout
+    :window (get-buffer-window (current-buffer))
     :insert-relation-fun insert-relation-fun)))
 
 (defun hyperdrive-fons-view--graphviz (type)
@@ -196,7 +197,7 @@ graphviz string, and replaces it with the rendered output."
             (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
 (cl-defun hyperdrive-fons-view--format-graph
-    (relations &key root-name layout insert-relation-fun)
+    (relations &key root-name layout window insert-relation-fun)
   "Return a graphviz-string string for RELATIONS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
@@ -229,9 +230,8 @@ graphviz string, and replaces it with the rendered output."
                      "bgcolor" (face-attribute 'default :background)
                      "overlap" hyperdrive-fons-view-overlap
                      "compound" "true"
-                     ;; "ranksep""1"
-                     ;; "margin" "0"
-                     "ratio" "fill"
+                     "ratio" (/ (window-text-height window t)
+                                (window-text-width window t) 1.0)
                      "mindist" "0")
         (dolist (hop (fons-relations-hops relations 'sources))
           (insert (format-hop hop 'sources)))
