@@ -1099,7 +1099,7 @@ The return value of this function is the retrieval buffer."
     ("Drives"
      :active (< 0 (hash-table-count h/hyperdrives))
      :label (if (zerop (hash-table-count h/hyperdrives))
-                "Drives (empty)"
+                "Drives (none)"
               "Drives")
      :filter
      (lambda (_)
