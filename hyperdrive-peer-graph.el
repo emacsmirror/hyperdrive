@@ -950,6 +950,10 @@ With numeric ARG, or interactively with universal prefix argument
   "Show menu for HYPERDRIVE peer graph."
   ;; TODO: Update info manual link
   :info-manual "(hyperdrive)"
+  ;; TODO: Uncomment these two lines when transient has :display-buffer-action:
+  ;; https://github.com/magit/transient/pull/332
+  ;; :display-buffer-action '(display-buffer-in-side-window (side . right) (dedicated . t) (inhibit-same-window . t))
+  ;; :transient-non-suffix t
   :refresh-suffixes t
   ["Hyperdrive peer graph"
    :pad-keys t
