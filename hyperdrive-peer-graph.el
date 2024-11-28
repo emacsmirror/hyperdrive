@@ -471,9 +471,8 @@ UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
   "Revert peer graph buffers."
   (hpg/revert-buffers))
 
-(defvar-keymap hpg/mode-map
-  :parent special-mode-map
-  :doc "Local keymap for `hyperdrive-peer-graph-mode' buffers."
+(defvar-keymap hpg/parent-mode-map
+  :doc "`hyperdrive-peer-graph-mode', `hyperdrive-peer-graph-list-mode' keys."
   ;; It's easy to accidentally trigger drag events when clicking.
   "<drag-mouse-1>" #'hpg/view-follow-link
   "<mouse-1>" #'hpg/view-follow-link
@@ -491,6 +490,9 @@ UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
   "s b" #'hpg/set-show-blockers-p
   "s x" #'hpg/set-show-blocked-p
   "S" #'hpg/set-shortest-path-p)
+
+(defvar hpg/mode-map (make-composed-keymap hpg/parent-mode-map special-mode-map)
+  "Local keymap for `hyperdrive-peer-graph-mode' buffers.")
 
 (define-derived-mode hpg/mode h/fons-view-mode
   '("Hyperdrive-peer-graph")
@@ -801,9 +803,7 @@ blocked paths or has a one-hop source path."
         ;; `magit-section-show-level-1' and `magit-section-show-level-1-all'
         ;; result in the buffer appearing empty and the other commands
         ;; `magit-section-show-level-*' show one fewer level than expected.
-        (delete-line)
-        (put-text-property (point) (point-max)
-                           'keymap magit-section-mode-map)))))
+        (delete-line)))))
 
 (defun hpg/list-draw-empty-relations ()
   "Insert suggestion to include more peers at point."
@@ -867,9 +867,9 @@ blocked paths or has a one-hop source path."
   "Revert peer graph list buffers."
   (hpg/revert-buffers))
 
-(defvar-keymap hpg/list-mode-map
-  :parent hpg/mode-map
-  :doc "Local keymap for `hyperdrive-peer-graph-list-mode' buffers.")
+(defvar hpg/list-mode-map
+  (make-composed-keymap hpg/parent-mode-map magit-section-mode-map)
+  "Local keymap for `hyperdrive-peer-graph-list-mode' buffers.")
 
 (define-derived-mode hpg/list-mode magit-section-mode
   '("Hyperdrive-peer-graph")
