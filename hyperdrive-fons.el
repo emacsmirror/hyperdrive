@@ -319,7 +319,7 @@ RELATIONS may be a hash table of `fons-relations' structs."
 (defun fons-relation-direct-p (root type relation)
   "Return non-nil if RELATION is direct from ROOT for TYPE."
   (cl-loop for path in (fons-relation-paths-of-type type relation)
-           thereis (equal (h/public-key root)
+           thereis (equal root
                           (fons-hop-from (car (last (fons-path-hops path)))))))
 
 (defun fons-blocked-path-blocker (blocked-path)

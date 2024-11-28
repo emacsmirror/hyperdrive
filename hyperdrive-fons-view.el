@@ -213,7 +213,7 @@ graphviz string, and replaces it with the rendered output."
                           ('sources hyperdrive-fons-view-sources-color)
                           ('blockers hyperdrive-fons-view-blockers-color)
                           ('blocked hyperdrive-fons-view-blocked-color))))
-              (format-to (to relation)
+              (format-to (to _relation)
                 (funcall insert-relation-fun to relations root-name))
               (format-root (root)
                 (funcall insert-relation-fun root relations root-name)

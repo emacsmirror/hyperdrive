@@ -373,6 +373,8 @@ without confirmation."
 (defvar h/peer-graph-root-hyperdrive)
 (declare-function h/peer-graph-read-relation-type "hyperdrive-peer-graph")
 (declare-function h/peer-graph-set-relation "hyperdrive-peer-graph")
+(declare-function h/peer-graph-set-relation-interactive-args
+                  "hyperdrive-peer-graph")
 (defun h/peer-graph-set-relation-to-hyperdrive-at-point (event)
   "Set relation to hyperdrive at point for EVENT."
   (interactive "event")

@@ -395,7 +395,8 @@ argument \\[universal-argument], always prompt."
 
 (hpg/define-column "Source" ()
   (let* ((directp (fons-relation-direct-p
-                   hpg/root-hyperdrive 'sources
+                   (h/public-key hpg/root-hyperdrive)
+                   'sources
                    ;; Item is filtered to one type: get original relation.
                    (gethash (fons-relation-to item) hpg/relations)))
          (text (if directp
@@ -412,7 +413,8 @@ argument \\[universal-argument], always prompt."
 
 (hpg/define-column "Blocker" ()
   (let* ((directp (fons-relation-direct-p
-                   hpg/root-hyperdrive 'blockers
+                   (h/public-key hpg/root-hyperdrive)
+                   'blockers
                    ;; Item is filtered to one type: get original relation.
                    (gethash (fons-relation-to item) hpg/relations)))
          (text (if directp
@@ -429,7 +431,8 @@ argument \\[universal-argument], always prompt."
 
 (hpg/define-column "Blocked" ()
   (let* ((directp (fons-relation-direct-p
-                   hpg/root-hyperdrive 'blocked
+                   (h/public-key hpg/root-hyperdrive)
+                   'blocked
                    ;; Item is filtered to one type: get original relation.
                    (gethash (fons-relation-to item) hpg/relations)))
          (text (if directp
@@ -532,7 +535,7 @@ blocked paths or has a one-hop source path."
         (erase-buffer)
         (widget-create
          'push-button
-         :notify (lambda (&rest ignore)
+         :notify (lambda (&rest _ignore)
                    (setf hpg/root-hyperdrive
                          (hpg/context-root-hyperdrive :force-prompt t))
                    (hpg/revert-buffers))
@@ -542,7 +545,7 @@ blocked paths or has a one-hop source path."
                :tag "[Set sources max hops]"
                :value hpg/sources-max-hops
                :help-echo "Set sources max hops"
-               :notify (lambda (widget &rest ignore)
+               :notify (lambda (widget &rest _ignore)
                          (setf hpg/sources-max-hops (widget-value widget))
                          (hpg/revert-buffers))
                (mapcar (lambda (n)
@@ -552,7 +555,7 @@ blocked paths or has a one-hop source path."
                :tag "[Set blockers max hops]"
                :value hpg/blockers-max-hops
                :help-echo "Set blockers max hops"
-               :notify (lambda (widget &rest ignore)
+               :notify (lambda (widget &rest _ignore)
                          (setf hpg/blockers-max-hops (widget-value widget))
                          (hpg/revert-buffers))
                (mapcar (lambda (n)
