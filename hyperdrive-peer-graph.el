@@ -224,6 +224,23 @@ Call THEN with a list of block IDs."
   (hpg/data (h/create :public-key blocker)
     :then (lambda (data) (funcall then (map-elt data 'blocked)))))
 
+;; TODO: The control flow between `hyperdrive-peer-graph' is messy.
+;; We need an Elisp library to abstract away the graphviz data model.
+
+(cl-defun hpg/edge-url-format (hop type)
+  "Return edge URL string for HOP of TYPE."
+  (pcase-let*
+      (((cl-struct fons-hop from to) hop)
+       (from-formatted (h//format-preferred (h/url-hyperdrive from)))
+       (to-formatted (h//format-preferred (h/url-hyperdrive to))))
+    (pcase type
+      ('sources (format "%s\nincludes\n%s\nas a source"
+                        from-formatted to-formatted))
+      ('blockers (format "%s\nincludes\n%s\nas a blocker"
+                         from-formatted to-formatted))
+      ('blocked (format "%s\nblocks\n%s\n"
+                        from-formatted to-formatted)))))
+
 (cl-defun hpg/insert-relation (public-key relations root)
   "Insert display string for PUBLIC-KEY in current buffer.
 RELATION may be a hash table of `fons-relation' structs mapped by
@@ -438,7 +455,8 @@ argument \\[universal-argument], always prompt."
   (with-current-buffer (hpg/get-buffer-create)
     (h/fons-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
-                 :insert-relation-fun #'hpg/insert-relation)))
+                 :insert-relation-fun #'hpg/insert-relation
+                 :edge-url-format-fun #'hpg/edge-url-format)))
 
 (defun hpg/loaded-relations ()
   "Return `hyperdrive-peer-graph-relations' if loaded."

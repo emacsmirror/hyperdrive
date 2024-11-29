@@ -133,13 +133,14 @@ May be any string listed here:
 ;;;; Functions
 
 (cl-defun hyperdrive-fons-view
-    (relations root &key (layout hyperdrive-fons-view-layout) insert-relation-fun)
+    (relations root &key (layout hyperdrive-fons-view-layout) insert-relation-fun edge-url-format-fun)
   "View RELATIONS from ROOT."
   (hyperdrive-fons-view--render-graphviz
    (hyperdrive-fons-view--format-graph
     relations :root-name root :layout layout
     :window (get-buffer-window (current-buffer))
-    :insert-relation-fun insert-relation-fun)))
+    :insert-relation-fun insert-relation-fun
+    :edge-url-format-fun edge-url-format-fun)))
 
 (defun hyperdrive-fons-view--graphviz (type)
   "Run Graphviz for TYPE on current buffer.
@@ -194,7 +195,7 @@ graphviz string, and replaces it with the rendered output."
             (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
 (cl-defun hyperdrive-fons-view--format-graph
-    (relations &key root-name layout window insert-relation-fun)
+    (relations &key root-name layout window insert-relation-fun edge-url-format-fun)
   "Return a graphviz-string string for RELATIONS."
   (cl-labels ((insert-vals (&rest pairs)
                 (cl-loop for (key value) on pairs by #'cddr
@@ -205,12 +206,13 @@ graphviz string, and replaces it with the rendered output."
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
               (format-hop (hop type)
-                (format "%s -> %s [color=\"%s\"];\n"
-                        (fons-hop-from hop) (fons-hop-to hop)
-                        (pcase type
-                          ('sources hyperdrive-fons-view-sources-color)
-                          ('blockers hyperdrive-fons-view-blockers-color)
-                          ('blocked hyperdrive-fons-view-blocked-color))))
+                (pcase-let (((cl-struct fons-hop from to) hop))
+                  (format "%s -> %s [edgeURL=\"%s\", color=\"%s\"];\n"
+                          from to (funcall edge-url-format-fun hop type)
+                          (pcase type
+                            ('sources hyperdrive-fons-view-sources-color)
+                            ('blockers hyperdrive-fons-view-blockers-color)
+                            ('blocked hyperdrive-fons-view-blocked-color)))))
               (format-to (to _relation)
                 (funcall insert-relation-fun to relations root-name)))
     (with-temp-buffer
