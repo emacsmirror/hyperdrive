@@ -258,7 +258,7 @@ graphviz string, and replaces it with the rendered output."
                       (equal root-name (fons-hop-from hop)))
               (insert (format-hop hop 'blocked)))))
         (funcall insert-relation-fun root-name relations root-name)
-        (insert (format "root=\"%s\"\n" root-name))
+        (insert (format "root=\"%s\"\n" root-name)) ; "twopi", "circo" only
         (maphash #'format-to relations)
         (insert "}"))
       ;; (message "%s" (buffer-string))
