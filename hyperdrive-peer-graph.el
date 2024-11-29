@@ -467,6 +467,71 @@ UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
 
 ;;;;; Minor mode
 
+;; The auto-resizing logic is adapted from `image-mode', but instead of scaling
+;; the image to fit the new window size, it re-renders the image with graphviz
+;; to preserve the aspect ratio.  Perhaps this logic belongs in
+;; `hyperdrive-fons', but the call to `hpg/draw-graph' lands it in this file.
+
+(defcustom hpg/auto-resize-on-window-resize 1
+  "Non-nil to resize the graph when the window's dimensions change.
+Non-nil value may be the number of seconds to wait before resizing."
+  :type '(choice (const :tag "No auto-resize on window size change" nil)
+                 (number :tag "Wait for number of seconds before resize" 1)))
+
+(defvar hpg/auto-resize-timer nil
+  "Timer for `hyperdrive-peer-graph-auto-resize-on-window-resize' option.")
+
+(defun hpg//window-state-change (window)
+  "Copy of `image--window-state-change'."
+  (when (numberp hpg/auto-resize-on-window-resize)
+    (when hpg/auto-resize-timer
+      (cancel-timer hpg/auto-resize-timer))
+    (setq hpg/auto-resize-timer
+          (run-with-idle-timer hpg/auto-resize-on-window-resize nil
+                               #'hpg/fit-to-window window))))
+
+(defvar hpg/fit-to-window-lock nil
+  "Lock for `hyperdrive-peer-graph-fit-to-window' timer function.")
+
+(defun hpg/fit-to-window (window)
+  "Adapted from `image-fit-to-window', accepting WINDOW."
+  (when (and (window-live-p window)
+             ;; Don't resize anything if we're in the minibuffer
+             ;; (which may transitively change the window sizes if you
+             ;; hit TAB, for instance).
+             (not (minibuffer-window-active-p (selected-window)))
+             ;; Don't resize if there's a message in the echo area.
+             (not (current-message)))
+    (with-current-buffer (window-buffer window)
+      (when (derived-mode-p 'hpg/mode)
+        (let ((spec
+               ;; Copied from `image-get-display-property'.
+               (get-char-property (point-min) 'display
+                                  ;; There might be different images for different displays.
+                                  (if (eq (window-buffer) (current-buffer))
+                                      (selected-window)))))
+          (when (eq (car-safe spec) 'image)
+            (let* ((image-width  (plist-get (cdr spec) :max-width))
+                   (image-height (plist-get (cdr spec) :max-height))
+                   (edges (window-inside-pixel-edges window))
+                   (window-width  (- (nth 2 edges) (nth 0 edges)))
+                   (window-height (- (nth 3 edges) (nth 1 edges))))
+              ;; If the size has been changed manually (with `+'/`-'),
+              ;; then :max-width/:max-height is nil.  In that case, do
+              ;; no automatic resizing.
+              (when (and (or (/= image-width window-width)
+                             (/= image-height window-height))
+                         ;; Don't do resizing if we have a manual
+                         ;; rotation (from the `r' command), either.
+                         (not (plist-get (cdr spec) :rotation)))
+                (unless hpg/fit-to-window-lock
+                  (unwind-protect
+                      (progn
+                        (setq-local hpg/fit-to-window-lock t)
+                        ;; Re-render graph with graphviz.
+                        (hyperdrive-peer-graph-draw-graph))
+                    (setq hpg/fit-to-window-lock nil)))))))))))
+
 (defun hpg/revert-buffer-function (&optional _ignore-auto _noconfirm)
   "Revert peer graph buffers."
   (hpg/revert-buffers))
@@ -499,7 +564,10 @@ UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
   "Major mode for viewing Hyperdrive peer graph."
   :group 'hyperdrive
   :interactive nil
-  (setq-local revert-buffer-function #'hpg/revert-buffer-function))
+  (setq-local revert-buffer-function #'hpg/revert-buffer-function)
+  ;; Resize image to fit window when window is resized.
+  (when hpg/auto-resize-on-window-resize
+    (add-hook 'window-state-change-functions #'hpg//window-state-change nil t)))
 
 ;;;;; Graph commands
 
