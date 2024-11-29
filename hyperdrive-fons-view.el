@@ -172,7 +172,10 @@ graphviz string, and replaces it with the rendered output."
          (image (create-image svg-string 'svg t :original-map original-map)))
     (when (> 30 emacs-major-version)
       ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
-      (setq image (nconc image (list :map (copy-tree original-map t)))))
+      (setq image
+            (nconc image
+                   (list
+                    :map (hyperdrive-fons-view-image--compute-map image)))))
     (erase-buffer)
     (insert-image image)
     (goto-char (point-min))))
