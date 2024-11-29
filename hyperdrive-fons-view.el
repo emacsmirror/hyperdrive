@@ -242,6 +242,12 @@ graphviz string, and replaces it with the rendered output."
                      "bgcolor" (face-attribute 'default :background)
                      "overlap" hyperdrive-fons-view-overlap
                      "compound" "true"
+                     ;; TODO: Comment: Look into using "size" with "ratio: fill"
+                     ;; to make the node text of consistently readable size.
+                     ;; "size" (format "%d,%d!"
+                     ;;                (/ (window-text-width window t) 92.0)
+                     ;;                (/ (window-text-height window t) 92.0))
+                     ;; "ratio" "fill"
                      "ratio" (/ (window-text-height window t)
                                 (window-text-width window t) 1.0)
                      "mindist" "0")
