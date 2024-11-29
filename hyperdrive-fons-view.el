@@ -212,10 +212,7 @@ graphviz string, and replaces it with the rendered output."
                           ('blockers hyperdrive-fons-view-blockers-color)
                           ('blocked hyperdrive-fons-view-blocked-color))))
               (format-to (to _relation)
-                (funcall insert-relation-fun to relations root-name))
-              (format-root (root)
-                (funcall insert-relation-fun root relations root-name)
-                (insert (format "root=\"%s\"\n" root-name))))
+                (funcall insert-relation-fun to relations root-name)))
     (with-temp-buffer
       (save-excursion
         (insert "digraph fonsrelationview {\n")
@@ -260,7 +257,8 @@ graphviz string, and replaces it with the rendered output."
                       ;; `hyperdrive-peer-graph-show-blockers-p' is nil.
                       (equal root-name (fons-hop-from hop)))
               (insert (format-hop hop 'blocked)))))
-        (format-root root-name)
+        (funcall insert-relation-fun root-name relations root-name)
+        (insert (format "root=\"%s\"\n" root-name))
         (maphash #'format-to relations)
         (insert "}"))
       ;; (message "%s" (buffer-string))
