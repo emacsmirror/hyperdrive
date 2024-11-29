@@ -176,6 +176,8 @@ graphviz string, and replaces it with the rendered output."
          (image (create-image svg-string 'svg t
                               :original-map original-map
                               :max-width window-width
+                              :max-height window-height
+                              :width window-width
                               :height window-height)))
     (when (> 30 emacs-major-version)
       ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
