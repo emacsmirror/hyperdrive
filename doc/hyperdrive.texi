@@ -266,7 +266,11 @@ the @ref{Menu bar support, , ``Hyperdrive'' menu bar}:
 @lisp
 (when (package-installed-p 'hyperdrive)
   (global-set-key (kbd "C-c h") #'hyperdrive-menu)
-  (hyperdrive-menu-bar-mode 1))
+  (menu-bar-mode +1)
+  (hyperdrive-menu-bar-mode +1)
+  (with-eval-after-load 'hyperdrive
+    (context-menu-mode +1)
+    (hyperdrive-context-menu-mode +1)))
 @end lisp
 
 With @ref{Top,use-package,,use-package,}:
@@ -275,6 +279,7 @@ With @ref{Top,use-package,,use-package,}:
 (use-package hyperdrive
   :bind ("C-c h" . hyperdrive-menu)
   :init
+  (menu-bar-mode +1)
   (hyperdrive-menu-bar-mode +1)
   :config
   (context-menu-mode +1)
