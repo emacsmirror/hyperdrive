@@ -72,7 +72,8 @@ options."
 (defface hyperdrive-fons-source '((t :inherit success))
   "Applied to sources.")
 
-(defface hyperdrive-fons-blocker '((t :inherit warning))
+(defface hyperdrive-fons-blocker '((t :inherit font-lock-constant-face
+                                      :weight bold))
   "Applied to blockers.")
 
 (defface hyperdrive-fons-blocked '((t :inherit error))
