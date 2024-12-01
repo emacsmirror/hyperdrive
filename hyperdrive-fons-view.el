@@ -113,6 +113,8 @@ May be any string listed here:
   "Major mode for viewing Hyperdrive Fons graphs."
   :group 'hyperdrive
   :interactive nil
+  ;; Don't scale with font pixel size.
+  (setq-local image-scaling-factor 1)
   ;; `pixel-scroll-precision-mode' makes <wheel-up>/<wheel-down> not scroll.
   ;; TODO: Test and report potential Emacs bug with scrolling images with
   ;; `pixel-scroll-precision-mode'.
