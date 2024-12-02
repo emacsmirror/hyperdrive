@@ -206,7 +206,10 @@ If FROM, candidates for TO will not include FROM, and vice versa."
                      :default (default-hyperdrive)
                      :prompt (format "From `%s' to"
                                      (hyperdrive--format-preferred from)))))
-           (type (or type (hpg/read-relation-type)))
+           (type (or type (hpg/read-relation-type
+                           (format "From `%s' to `%s', type"
+                                   (hyperdrive--format-preferred from)
+                                   (hyperdrive--format-preferred to)))))
            (bool (or bool (not current-prefix-arg))))
       (list :from from :to to :type type :bool bool))))
 
