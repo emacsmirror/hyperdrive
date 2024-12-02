@@ -248,8 +248,9 @@ path to one of the IDS.  Avoids attempting to find paths to ROOT."
           (setf (gethash id copy-relations) copy-relation)
           (dolist (path blocked-paths)
             (let ((blocker-id (fons-blocked-path-blocker path)))
-              (unless (equal root blocker-id)
-                ;; Don't attempt to filter to paths to root.
+              (when (gethash blocker-id relations)
+                ;; `blocker-id' may not be in RELATIONS if it is root or if
+                ;; RELATIONS has been filtered to exclude BLOCKERS.
                 (push blocker-id blocker-ids))))))
       ;; For each ID which is a blocker and for each blocker which blocked an ID,
       ;; keep the blocker relation for all IDs which are part of a path to it.
