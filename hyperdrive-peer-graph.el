@@ -138,7 +138,7 @@ errors will be demoted.  If data for HYPERDRIVE is already in
       (pcase then
         ((or 'nil 'sync)
          (condition-case err
-             (entries (h//bee-exec hyperdrive commands :then then))
+             (entries (h//bee-exec hyperdrive commands :then 'sync))
            (error
             ;; Despite error, call THEN so `pending-relations' gets decremented.
             (let ((inhibit-message t))
