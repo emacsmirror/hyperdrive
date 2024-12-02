@@ -211,11 +211,11 @@ ROOT is used to determine the shortest blocked relation."
       (maphash #'map-relation copy-relations)
       copy-relations)))
 
-(cl-defun fons-filter-paths-only-to (ids relations root)
+(cl-defun fons-filter-paths-only-to (ids relations)
   "Return RELATIONS with only paths to IDS.
 `fons-filter-paths-only-to' must be applied after other filter
 functions to ensure the exclusion of nodes which form a longer
-path to one of the IDS.  Avoids attempting to find paths to ROOT."
+path to one of the IDS."
   (unless ids (cl-return-from fons-filter-paths-only-to relations))
   ;; TODO: Refactor with `cl-loop'.
   (let ((copy-relations (make-hash-table :test 'equal))
