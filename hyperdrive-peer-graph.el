@@ -348,10 +348,11 @@ hops to traverse for sources and blockers, respectively."
 
 ;;;;; Reading user input
 
-(defun hpg/read-relation-type ()
-  "Return one of \\+`source', \\+`blocker', or \\+`blocked'."
+(cl-defun hpg/read-relation-type (&optional (prompt "Relation type"))
+  "Return one of \\+`source', \\+`blocker', or \\+`blocked'.
+Prompt with PROMPT if non-nil."
   (let ((string (completing-read
-                 (format-prompt "Relation type" "source")
+                 (format-prompt prompt "source")
                  '(source blocker blocked) nil t nil nil "source")))
     (pcase string
       ("source" 'source)
