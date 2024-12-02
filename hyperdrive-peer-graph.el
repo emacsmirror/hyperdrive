@@ -193,7 +193,9 @@ If FROM, candidates for TO will not include FROM, and vice versa."
                            (and (h/writablep hyperdrive)
                                 (not (h/equal-p to hyperdrive))))
                        #'h/writablep)
-                     :default default-hyperdrive
+                     :default
+                     (and (not (and to (h/equal-p default-hyperdrive to)))
+                          default-hyperdrive)
                      :prompt (if to
                                  (format "To `%s' from"
                                          (hyperdrive--format-preferred to))
@@ -202,7 +204,9 @@ If FROM, candidates for TO will not include FROM, and vice versa."
                  (h/read-hyperdrive
                    :predicate (lambda (hyperdrive)
                                 (not (h/equal-p hyperdrive from)))
-                   :default default-hyperdrive
+                   :default
+                   (and (not (and from (h/equal-p default-hyperdrive from)))
+                        default-hyperdrive)
                    :prompt (format "From `%s' to"
                                    (hyperdrive--format-preferred from)))))
          (type (or type (hpg/read-relation-type
