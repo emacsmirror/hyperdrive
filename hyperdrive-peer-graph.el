@@ -182,36 +182,35 @@ Interactively, with universal prefix argument
 (cl-defun hpg/set-relation-interactive-args (&key from to type bool)
   "Return argument list for `hyperdrive-peer-graph-set-relation'.
 If FROM, candidates for TO will not include FROM, and vice versa."
-  (cl-labels ((default-hyperdrive ()
-                (or hpg/root-hyperdrive
-                    (and h/current-entry
-                         (he/hyperdrive h/current-entry)))))
-    (let* ((from (or from
-                     (h/read-hyperdrive
-                       :predicate
-                       (if to
-                           (lambda (hyperdrive)
-                             (and (h/writablep hyperdrive)
-                                  (not (h/equal-p to hyperdrive))))
-                         #'h/writablep)
-                       :default (default-hyperdrive)
-                       :prompt (if to
-                                   (format "To `%s' from"
-                                           (hyperdrive--format-preferred to))
-                                 "From"))))
-           (to (or to
+  (let* ((default-hyperdrive (or hpg/root-hyperdrive
+                                 (and h/current-entry
+                                      (he/hyperdrive h/current-entry))))
+         (from (or from
                    (h/read-hyperdrive
-                     :predicate (lambda (hyperdrive)
-                                  (not (h/equal-p hyperdrive from)))
-                     :default (default-hyperdrive)
-                     :prompt (format "From `%s' to"
-                                     (hyperdrive--format-preferred from)))))
-           (type (or type (hpg/read-relation-type
-                           (format "From `%s' to `%s', type"
-                                   (hyperdrive--format-preferred from)
-                                   (hyperdrive--format-preferred to)))))
-           (bool (or bool (not current-prefix-arg))))
-      (list :from from :to to :type type :bool bool))))
+                     :predicate
+                     (if to
+                         (lambda (hyperdrive)
+                           (and (h/writablep hyperdrive)
+                                (not (h/equal-p to hyperdrive))))
+                       #'h/writablep)
+                     :default default-hyperdrive
+                     :prompt (if to
+                                 (format "To `%s' from"
+                                         (hyperdrive--format-preferred to))
+                               "From"))))
+         (to (or to
+                 (h/read-hyperdrive
+                   :predicate (lambda (hyperdrive)
+                                (not (h/equal-p hyperdrive from)))
+                   :default default-hyperdrive
+                   :prompt (format "From `%s' to"
+                                   (hyperdrive--format-preferred from)))))
+         (type (or type (hpg/read-relation-type
+                         (format "From `%s' to `%s', type"
+                                 (hyperdrive--format-preferred from)
+                                 (hyperdrive--format-preferred to)))))
+         (bool (or bool (not current-prefix-arg))))
+    (list :from from :to to :type type :bool bool)))
 
 (defun hpg/sources-hops-fn (from then)
   "Asynchronously get source hops from FROM.
