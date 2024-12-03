@@ -763,6 +763,7 @@ blocked paths or has a one-hop source path."
         (erase-buffer)
         (widget-create
          'push-button
+         :help-echo "Set root hyperdrive"
          :notify (lambda (&rest _ignore)
                    (setf hpg/root-hyperdrive
                          (hpg/context-root-hyperdrive :force-prompt t))
