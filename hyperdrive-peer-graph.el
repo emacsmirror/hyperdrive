@@ -931,7 +931,8 @@ blocked paths or has a one-hop source path."
                        hpg/shortest-path-p hpg/shortest-path-p-default
                        hpg/paths-only-to nil)
                  (hpg/draw-graph)
-                 (hpg/draw-list)))
+                 (hpg/draw-list))
+               nil "Reset peer graph filters")
               'face 'widget-button))))
   (when (h/writablep hpg/root-hyperdrive)
     (insert
@@ -943,7 +944,8 @@ blocked paths or has a one-hop source path."
         (lambda (_)
           (apply #'hpg/set-relation
                  (hpg/set-relation-interactive-args
-                  :from hpg/root-hyperdrive :type 'source :bool t))))
+                  :from hpg/root-hyperdrive :type 'source :bool t)))
+        nil "Mark a peer as a source")
        'face 'widget-button)
       (propertize
        (buttonize
@@ -951,7 +953,8 @@ blocked paths or has a one-hop source path."
         (lambda (_)
           (apply #'hpg/set-relation
                  (hpg/set-relation-interactive-args
-                  :from hpg/root-hyperdrive :type 'blocker :bool t))))
+                  :from hpg/root-hyperdrive :type 'blocker :bool t)))
+        nil "Mark a peer as a blocker")
        'face 'widget-button)
       (propertize
        (buttonize
@@ -959,7 +962,8 @@ blocked paths or has a one-hop source path."
         (lambda (_)
           (apply #'hpg/set-relation
                  (hpg/set-relation-interactive-args
-                  :from hpg/root-hyperdrive :type 'blocked :bool t))))
+                  :from hpg/root-hyperdrive :type 'blocked :bool t)))
+        nil "Mark a peer as blocked")
        'face 'widget-button)))))
 
 ;;;;; Minor mode
