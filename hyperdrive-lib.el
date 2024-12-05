@@ -756,10 +756,12 @@ use it."
                                  (he/url entry)))
                     (funcall then))))
          :else (lambda (plz-error)
-                 (let ((inhibit-message t))
-                   (h/message "Error loading metadata file: %s: %S"
-                              (he/url entry) plz-error)
-                   (funcall then))))))))
+                 (pcase (plz-response-status (plz-error-response plz-error))
+                   ;; FIXME: If plz-error is a curl-error, this block will fail.
+                   (404 nil)
+                   (_ (let ((inhibit-message t))
+                        (h/message "Error loading metadata file: %s: %S"
+                                   (he/url entry) plz-error))))))))))
 
 (cl-defun h/fill-metadata-all (hyperdrives &key finally)
   "Fill metadata for all hyperdrives then call FINALLY.
