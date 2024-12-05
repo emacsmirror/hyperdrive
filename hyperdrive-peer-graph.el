@@ -102,12 +102,14 @@ Passed to `display-buffer', which see."
 (defvar hpg/data-cache (make-hash-table :test 'equal)
   "Hash table mapping public keys to JSON hops.")
 
-(cl-defun hpg/data (hyperdrive &key then)
+(cl-defun hpg/data (hyperdrive &key then else)
   "Return peer graph data for HYPERDRIVE then call THEN.
-THEN will be called with the parsed JSON object as its sole
-argument.  If error, demote it and call THEN with nil argument.
-If THEN is nil or \\+`sync', the request will be synchronous, and
-errors will be demoted.  If data for HYPERDRIVE is already in
+THEN will be called with one argument, the parsed JSON object.
+
+If THEN is nil or \\+`sync', the request will be synchronous and
+ELSE will be ignored.  Otherwise, in case of error, ELSE will be called with a `plz-error' struct.
+
+If data for HYPERDRIVE is already in
 `hyperdrive-peer-graph-data-cache', use it and send no request."
   (declare (indent defun))
   ;; TODO: Add a queue limit.
@@ -148,11 +150,7 @@ errors will be demoted.  If data for HYPERDRIVE is already in
         (_
          (h//bee-exec hyperdrive commands
            :then (lambda (json) (funcall then (entries json)))
-           :else (lambda (plz-error)
-                   (let ((inhibit-message t))
-                     (h/message "Error getting peer graph data for %s: %S"
-                                (h/url hyperdrive) plz-error)
-                     (funcall then nil)))))))))
+           :else else))))))
 
 (cl-defun hpg/set-relation (&key from to type bool)
   "Mark TO hyperdrive as TYPE from FROM according to BOOL.
@@ -215,23 +213,35 @@ If FROM, candidates for TO will not include FROM, and vice versa."
          (bool (or bool (not current-prefix-arg))))
     (list :from from :to to :type type :bool bool)))
 
+(defun hpg/hops-fn-else (then plz-error)
+  "Handle PLZ-ERROR by saying demoted error and calling THEN."
+  ;; Call THEN to decrement the `pending-relations' counter in `fons-relations'.
+  (pcase (plz-response-status (plz-error-response plz-error))
+    ;; FIXME: If plz-error is a curl-error, this block will fail.
+    (404 nil)
+    (_ (h/message "Error getting peer graph data: %S" plz-error)))
+  (funcall then nil))
+
 (defun hpg/sources-hops-fn (from then)
   "Asynchronously get source hops from FROM.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
-    :then (lambda (data) (funcall then (map-elt data 'sources)))))
+    :then (lambda (data) (funcall then (map-elt data 'sources)))
+    :else (apply-partially #'hpg/hops-fn-else then)))
 
 (defun hpg/blockers-hops-fn (from then)
   "Asynchronously get blocker hops from FROM.
 Call THEN with a list of TOs."
   (hpg/data (h/create :public-key from)
-    :then (lambda (data) (funcall then (map-elt data 'blockers)))))
+    :then (lambda (data) (funcall then (map-elt data 'blockers)))
+    :else (apply-partially #'hpg/hops-fn-else then)))
 
 (cl-defun hpg/blocked-hops-fn (blocker then)
   "Asynchronously get blocks from BLOCKER.
 Call THEN with a list of block IDs."
   (hpg/data (h/create :public-key blocker)
-    :then (lambda (data) (funcall then (map-elt data 'blocked)))))
+    :then (lambda (data) (funcall then (map-elt data 'blocked)))
+    :else (apply-partially #'hpg/hops-fn-else then)))
 
 ;; TODO: The control flow between `hyperdrive-peer-graph' is messy.
 ;; We need an Elisp library to abstract away the graphviz data model.
