@@ -631,12 +631,16 @@ Non-nil value may be the number of seconds to wait before resizing."
                    (propertize "[Source]" 'face 'h/fons-source)
                  "[      ]")))
     (if (h/writablep hpg/root-hyperdrive)
-        (buttonize text
-                   (lambda (_)
-                     (hpg/set-relation
-                      :from hpg/root-hyperdrive
-                      :to (h/url-hyperdrive (fons-relation-to item))
-                      :type 'source :bool (not directp))))
+        (let ((from hpg/root-hyperdrive)
+              (to (h/url-hyperdrive (fons-relation-to item))))
+          (buttonize text
+                     (lambda (_)
+                       (hpg/set-relation :from from :to to
+                                         :type 'source :bool (not directp)))
+                     nil (format "%s `%s' as a source from `%s'"
+                                 (if directp "Unmark" "Mark")
+                                 (h//format-preferred to)
+                                 (h//format-preferred from))))
       text)))
 
 (hpg/define-column "Blocker" ()
@@ -649,12 +653,16 @@ Non-nil value may be the number of seconds to wait before resizing."
                    (propertize "[Blocker]" 'face 'h/fons-blocker)
                  "[       ]")))
     (if (h/writablep hpg/root-hyperdrive)
-        (buttonize text
-                   (lambda (_)
-                     (hpg/set-relation
-                      :from hpg/root-hyperdrive
-                      :to (h/url-hyperdrive (fons-relation-to item))
-                      :type 'blocker :bool (not directp))))
+        (let ((from hpg/root-hyperdrive)
+              (to (h/url-hyperdrive (fons-relation-to item))))
+          (buttonize text
+                     (lambda (_)
+                       (hpg/set-relation :from from :to to
+                                         :type 'blocker :bool (not directp)))
+                     nil (format "%s `%s' as a blocker from `%s'"
+                                 (if directp "Unmark" "Mark")
+                                 (h//format-preferred to)
+                                 (h//format-preferred from))))
       text)))
 
 (hpg/define-column "Blocked" ()
@@ -667,12 +675,16 @@ Non-nil value may be the number of seconds to wait before resizing."
                    (propertize "[Blocked]" 'face 'h/fons-blocker)
                  "[      ]")))
     (if (h/writablep hpg/root-hyperdrive)
-        (buttonize text
-                   (lambda (_)
-                     (hpg/set-relation
-                      :from hpg/root-hyperdrive
-                      :to (h/url-hyperdrive (fons-relation-to item))
-                      :type 'blocked :bool (not directp))))
+        (let ((from hpg/root-hyperdrive)
+              (to (h/url-hyperdrive (fons-relation-to item))))
+          (buttonize text
+                     (lambda (_)
+                       (hpg/set-relation :from from :to to
+                                         :type 'blocked :bool (not directp)))
+                     nil (format "%s `%s' as blocked from `%s'"
+                                 (if directp "Unmark" "Mark")
+                                 (h//format-preferred to)
+                                 (h//format-preferred from))))
       text)))
 
 (unless hpg/columns
