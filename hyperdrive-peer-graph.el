@@ -110,7 +110,6 @@ If THEN is nil or \\+`sync', the request will be synchronous, and
 errors will be demoted.  If data for HYPERDRIVE is already in
 `hyperdrive-peer-graph-data-cache', use it and send no request."
   (declare (indent defun))
-  ;; TODO: Add else handler so that we can replace the loading screen.
   ;; TODO: Add a queue limit.
   (when-let ((data (gethash (h/public-key hyperdrive) hpg/data-cache)))
     ;; TODO: The first time a drive is requested, only request and parse once.
