@@ -305,7 +305,8 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
       (setf (h/writablep (he/hyperdrive entry)) (string-match-p "PUT" allow)))
     (when x-drive-size
       (setf (map-elt (h/etc (he/hyperdrive entry)) 'disk-usage)
-            (cl-parse-integer x-drive-size)))
+            (ignore-errors ; Sometimes X-Drive-Size is "NaN"
+              (cl-parse-integer x-drive-size))))
     (when x-drive-version
       (setf (h/latest-version (he/hyperdrive entry))
             (string-to-number x-drive-version)))
