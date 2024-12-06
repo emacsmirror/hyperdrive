@@ -29,6 +29,7 @@ code since ~v0.4~, and more correctly handles edge cases and errors.
 - Correctly jump to headings when following Org links to a hyperdrive
   file whose buffer is already open in a window.
 - Only mark deleted hyperdrive file buffer as modified if it's live.
+- ~hyperdrive-ewoc-next~ now correctly handles empty directories.
 
 ** Internal
 
