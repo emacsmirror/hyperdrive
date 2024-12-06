@@ -79,12 +79,18 @@ column headers."
   ;; `cursor-intangible' on the column header causes `hl-line-mode' to
   ;; highlight the wrong line when crossing over the headers.
   (let ((lines-below-header (- (line-number-at-pos) 2)))
-    (if (cl-plusp lines-below-header)
-        (h/ewoc-move n)
-      ;; Point on first line or column header:
-      ;; jump to first ewoc entry and then maybe move.
-      (goto-char (ewoc-location (ewoc-nth h/ewoc 0)))
-      (h/ewoc-move (1- n)))))
+    (cond ((cl-plusp lines-below-header)
+           (h/ewoc-move n))
+          ((ewoc-nth h/ewoc 0)
+           ;; Point on first line or column header and directory has contents:
+           ;; jump to first ewoc entry and then maybe move.
+           (goto-char (ewoc-location (ewoc-nth h/ewoc 0)))
+           (h/ewoc-move (1- n)))
+          (t
+           ;; Point on first line or column header and directory is empty:
+           ;; jump past header line.
+           (goto-char (point-min))
+           (forward-line 2)))))
 
 (cl-defun h/ewoc-previous (&optional (n 1))
   "Move backward N entries.
