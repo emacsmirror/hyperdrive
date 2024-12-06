@@ -61,12 +61,12 @@ Updates `hyperdrive-existent-versions' as a side effect."
           (err (h/error "Unable to get history for `%s': %S" (he/url entry)
                         err))))
        (history-entries))
-    (pcase-dolist ((map exists blockLengthDownloaded version value)
+    (pcase-dolist ((map type blockLengthDownloaded seq value)
                    (json-parse-string
                     body :object-type 'alist :array-type 'list
                     :false-object nil :null-object nil))
       (let ((history-entry (he/create :hyperdrive hyperdrive
-                                      :path path :version version)))
+                                      :path path :version (1+ seq))))
         (setf (he/size history-entry)
               (map-elt (map-elt value 'blob) 'byteLength))
         (setf (map-elt (he/etc history-entry) 'block-length)
@@ -81,11 +81,13 @@ Updates `hyperdrive-existent-versions' as a side effect."
               (and-let* ((next-entry (car history-entries)))
                 (he/version next-entry)))
         (setf (map-elt (he/etc history-entry) 'existsp)
-              (pcase exists
-                ("unknown" 'unknown)
-                (_ exists)))
-        (when (eq t exists)
-          (h/update-existent-versions hyperdrive path version))
+              (pcase type
+                ("put" t)
+                ("del" nil)
+                ("unknown" 'unknown)))
+        (when (eq "put" type)
+          (h/update-existent-versions
+           hyperdrive path (he/version history-entry)))
         (push history-entry history-entries)))
     (when x-drive-size
       (setf (map-elt (h/etc hyperdrive) 'disk-usage)
