@@ -381,7 +381,7 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
 (defun h/purge-existent-versions (hyperdrive)
   "Purge all existent versions for HYPERDRIVE."
   (maphash (lambda (key _val)
-             (when (h/equal-p (he/hyperdrive key) hyperdrive)
+             (when (equal (car key) (h/public-key hyperdrive))
                (remhash key h/existent-versions)))
            h/existent-versions)
   (persist-save 'h/existent-versions))
