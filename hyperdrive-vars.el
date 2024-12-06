@@ -396,7 +396,7 @@ This hook is called by `hyperdrive--gateway-wait-for-dead' after
 ;;;; Internals
 
 (defvar h/gateway-version-expected
-  '(:name "hyper-gateway-ushin" :version "3.14.0"))
+  '(:name "hyper-gateway-ushin" :version "3.16.0"))
 
 (defvar h/gateway-version-checked-p nil
   "Non-nil if the gateway's version has been checked.

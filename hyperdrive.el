@@ -1480,20 +1480,20 @@ Intended for relative (i.e. non-full) URLs."
 
 (defvar h/gateway-urls-and-hashes
   '((gnu/linux
-     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.14.0/hyper-gateway-ushin-linux"
-       :sha256 "3beff6b797f494e17e3d986761ff20ba15493fddba95a56d87a1e96930ab4ac8")
-     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.14.0/hyper-gateway-ushin-linux-v3.14.0"
-       :sha256 "98aa12950e4de59bf900a76f9b6f1d8a62c3d195929ff4b58dd1cf11c59b193b"))
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.16.0/hyper-gateway-ushin-linux"
+       :sha256 "71226097adea29a32eb2e7df4586f6b97456b40ea975545ad62a74b3042c0ff7")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.16.0/hyper-gateway-ushin-linux-v3.16.0"
+       :sha256 "bed267b3873348ebdd116061673763dd33f75954e771e8d582b82e502aa360a1"))
     (darwin
-     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.14.0/hyper-gateway-ushin-macos"
-       :sha256 "0fdbe165f6f46263274bb5bd005260474389b2bbce5f9d0ecaed287c592ffec7")
-     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.14.0/hyper-gateway-ushin-macos-v3.14.0"
-       :sha256 "1527c5b06a11a3fd1e89c70b0413fdb0a2d904ab71a2bb4ce125208a05de0017"))
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.16.0/hyper-gateway-ushin-macos"
+       :sha256 "5b17f0b57944a00bba278c8a8c49be62e97ee5da1ca90e0591814871059c00ec")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.16.0/hyper-gateway-ushin-macos-v3.16.0"
+       :sha256 "45f627ab9b9580e44c0700c81c7066ff4741e44bdcbbf50bb6bc72b481879b7d"))
     (windows-nt
-     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.14.0/hyper-gateway-ushin-windows.exe"
-       :sha256 "6e6fa89b62f1d39056213b09f68fe7a4fb950ad1af53a7cbafa54cfc7fa5d953")
-     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.14.0/hyper-gateway-ushin-windows-v3.14.0.exe"
-       :sha256 "acaef5bb571b1a77e8cc648a06b1719cdc490c498f779c07bee60992a6926ef0")))
+     ( :url "https://codeberg.org/USHIN/hyper-gateway-ushin/releases/download/v3.16.0/hyper-gateway-ushin-windows.exe"
+       :sha256 "75a1795f819537ddda190af9e61b1ded89737d8660f9bb31fb6347ebf487d9a4")
+     ( :url "https://git.sr.ht/~ushin/hyper-gateway-ushin/refs/download/v3.16.0/hyper-gateway-ushin-windows-v3.16.0.exe"
+       :sha256 "1845b428a19dfdd04223b4f24fe68338b6024a1aa4f1bf0bc12f47924926fedc")))
   "Alist mapping `system-type' to URLs where the gateway can be downloaded.")
 
 ;;;###autoload
