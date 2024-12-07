@@ -31,7 +31,7 @@
 ;;;; Variables
 
 (defgroup h/sbb nil
-  "FIXME: Docstring."
+  "Simple structure for gathering sources, blockers, and blocked peers."
   :group 'hyperdrive)
 
 ;;;; Functions
