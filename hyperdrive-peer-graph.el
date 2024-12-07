@@ -1068,7 +1068,7 @@ With numeric ARG, or interactively with universal prefix argument
   :info-manual "(hyperdrive) Explore peer graph"
   :display-action h/peer-graph-menu-display-action
   :mode-line-format nil
-  ;; :transient-non-suffix t
+  :transient-non-suffix t
   :refresh-suffixes t
   ["Hyperdrive peer graph"
    :pad-keys t
