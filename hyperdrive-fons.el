@@ -29,7 +29,7 @@
 
 (defgroup fons nil
   "FIXME: Docstring."
-  :group 'applications)
+  :group 'hyperdrive)
 
 ;;;; Functions
 
