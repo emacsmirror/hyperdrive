@@ -157,8 +157,8 @@ To be used as the pretty-printer for `ewoc-create'."
       (propertize (or size "")
                   'face (and block-length-downloaded block-length
                              (pcase block-length-downloaded
-                               (0 'h/size-not-downloaded)
                                ((pred (= block-length)) 'h/size-fully-downloaded)
+                               (0 'h/size-not-downloaded)
                                (_ 'h/size-partially-downloaded)))
                   'help-echo (format "%s of %s blocks downloaded"
                                      block-length-downloaded block-length))
