@@ -20,7 +20,7 @@
 @finalout
 @titlepage
 @title Hyperdrive.el User Manual
-@subtitle Release 0.5-pre
+@subtitle Release 0.5
 @author Joseph Turner and Adam Porter
 @end titlepage
 
@@ -45,7 +45,7 @@ Homepage: @uref{https://ushin.org/hyperdrive/hyperdrive-manual.html}
 Repository: @uref{https://git.sr.ht/~ushin/hyperdrive.el}
 @end itemize
 
-This manual is for @code{hyperdrive.el} version 0.5-pre.
+This manual is for @code{hyperdrive.el} version 0.5.
 
 @end ifnottex
 

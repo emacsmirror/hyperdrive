@@ -4,7 +4,7 @@
 # All notable changes to [[https://ushin.org/hyperdrive/hyperdrive-manual.html][hyperdrive.el]] will be documented in this file.
 # This project adheres to [[https://semver.org/spec/v2.0.0.html][Semantic Versioning]].
 
-* 0.5-pre
+* 0.5 [2024-12-06 Fri]
 
 Version ~0.5~ adds the peer graph/list, adds a global hyperdrive context
 menu, and simplifies the internal logic for getting file history.
