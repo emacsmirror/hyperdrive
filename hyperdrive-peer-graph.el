@@ -1071,14 +1071,24 @@ With numeric ARG, or interactively with universal prefix argument
 
 ;;;; Transient UI
 
+(defcustom h/peer-graph-menu-display-action '(display-buffer-in-side-window
+                                              (side . right)
+                                              (dedicated . t)
+                                              (inhibit-same-window . t))
+  "Display action for hyperdrive peer graph transient menu."
+  :type display-buffer--action-custom-type
+  :set (lambda (option value)
+         (set-default option value)
+         (when-let ((prefix (get 'hpg/menu 'transient--prefix)))
+           (eieio-oset prefix 'display-action hpg/menu-display-action))))
+
 (transient-define-prefix hyperdrive-peer-graph-menu
   (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
   ;; TODO: Update info manual link
   :info-manual "(hyperdrive)"
-  ;; TODO: Uncomment these two lines when transient has :display-buffer-action:
-  ;; https://github.com/magit/transient/pull/332
-  ;; :display-buffer-action '(display-buffer-in-side-window (side . right) (dedicated . t) (inhibit-same-window . t))
+  :display-action h/peer-graph-menu-display-action
+  :mode-line-format nil
   ;; :transient-non-suffix t
   :refresh-suffixes t
   ["Hyperdrive peer graph"
