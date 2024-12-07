@@ -35,6 +35,8 @@ code since ~v0.4~, and more correctly handles edge cases and errors.
 
 - Add ~hyperdrive-fully-replicate~ to fully replicate a hyperdrive's
   inode db, blob store, or both.
+- ~hyperdrive-fill-metadata~ can now optionally be called
+  asynchronously.
 - Bump package dependencies.
 
 * 0.4.2 [2024-09-24 Tue]
