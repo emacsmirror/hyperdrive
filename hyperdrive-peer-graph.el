@@ -107,7 +107,8 @@ Passed to `display-buffer', which see."
 THEN will be called with one argument, the parsed JSON object.
 
 If THEN is nil or \\+`sync', the request will be synchronous and
-ELSE will be ignored.  Otherwise, in case of error, ELSE will be called with a `plz-error' struct.
+ELSE will be ignored.  Otherwise, in case of error, ELSE will be
+called with a `plz-error' struct.
 
 If data for HYPERDRIVE is already in
 `hyperdrive-peer-graph-data-cache', use it and send no request."
