@@ -81,6 +81,11 @@
 Passed to `display-buffer', which see."
   :type display-buffer--action-custom-type)
 
+(defcustom hpg/list-display-buffer-action '(display-buffer-reuse-window)
+  "Display buffer action for hyperdrive peer list.
+Passed to `display-buffer', which see."
+  :type display-buffer--action-custom-type)
+
 (defconst hpg/data-filename "/.well-known/peer-graph.json"
   "Hyperdrive filename to search for peer graph data.")
 
@@ -727,8 +732,7 @@ blocked paths or has a one-hop source path."
          (hpg/revert-buffers))
         ((not (buffer-live-p (get-buffer hpg/list-buffer-name)))
          (hpg/draw-list)))
-  ;; TODO: Add `hpg/list-display-buffer-action'
-  (pop-to-buffer hpg/list-buffer-name hpg/display-buffer-action))
+  (pop-to-buffer hpg/list-buffer-name hpg/list-display-buffer-action))
 
 (defun hpg/list-draw-loading-buffer ()
   "Draw loading buffer for hyperdrive peer graph."
