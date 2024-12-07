@@ -334,6 +334,11 @@ RELATIONS may be a hash table of `hyperdrive-sbb-relations' structs."
   "Return blocker id for BLOCKED-PATH."
   (h/sbb-hop-from (car (h/sbb-path-hops blocked-path))))
 
+(defun h/sbb-shortest-hops-length (type relation)
+  "Return the minimum number of TYPE hops in RELATION."
+  (cl-loop for path in (h/sbb-relation-paths-of-type type relation)
+           minimize (length (h/sbb-path-hops path))))
+
 ;;;; Footer
 
 (provide 'hyperdrive-sbb)

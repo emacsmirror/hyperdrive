@@ -702,11 +702,6 @@ Non-nil value may be the number of seconds to wait before resizing."
 
 ;;;;; Functions
 
-(defun h/sbb-shortest-hops-length (type relation)
-  "Return the minimum number of TYPE hops in RELATION."
-  (cl-loop for path in (h/sbb-relation-paths-of-type type relation)
-           minimize (length (h/sbb-path-hops path))))
-
 (defun h/sbb-shortest-sources-hops-length (relation)
   "Return the shortest number of source hops for RELATION."
   (h/sbb-shortest-hops-length 'sources relation))
