@@ -1194,6 +1194,7 @@ With numeric ARG, or interactively with universal prefix argument
   (if hpg/shortest-path-p
       (message "SHORTEST PATHS")
     (message "ALL PATHS"))
+  (hpg/history-update)
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
@@ -1209,6 +1210,7 @@ With numeric ARG, or interactively with universal prefix argument
   (if hpg/show-sources-p
       (message "SHOW SOURCES")
     (message "HIDE SOURCES"))
+  (hpg/history-update)
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
@@ -1224,6 +1226,7 @@ With numeric ARG, or interactively with universal prefix argument
   (if hpg/show-blockers-p
       (message "SHOW BLOCKERS")
     (message "HIDE BLOCKERS"))
+  (hpg/history-update)
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
@@ -1250,6 +1253,7 @@ With numeric ARG, or interactively with universal prefix argument
           (message "HIDE BLOCKED"))
     ('nil (setf hpg/show-blocked-p 'sources)
           (message "BLOCKED SOURCES")))
+  (hpg/history-update)
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
@@ -1285,6 +1289,7 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
                               (throw 'break t)))
                           hpg/relations)))))))
   (push hyperdrive hpg/paths-only-to)
+  (hpg/history-update)
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
@@ -1306,6 +1311,7 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
   (setf hpg/paths-only-to
         (and (not allp)
              (cl-delete hyperdrive hpg/paths-only-to :test #'h/equal-p)))
+  (hpg/history-update)
   (hpg/draw-graph)
   (when hpg/list-apply-filters (hpg/draw-list)))
 
