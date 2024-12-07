@@ -44,16 +44,6 @@
   "Visualize sbb relations."
   :group 'h/sbb)
 
-(defcustom h/sbb-view-overlap "voronoi"
-  "How to handle overlapping.  See Graphviz documentation.
-It seems unclear which is the best default, because each option
-renders one or another layout slightly better than other
-options."
-  :type '(choice (const :tag "Voronoi" "voronoi")
-		 (const :tag "Scale" "scale")
-		 (const :tag "Allow overlap" "true")
-		 (const :tag "VPSC" "vpsc")))
-
 (defcustom h/sbb-view-layout "dot"
   "Default layout.  See Graphviz documentation."
   :type '(choice
@@ -68,6 +58,16 @@ options."
            (const :description "Top-down, linear layout.  Not very efficient in terms of screen space."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
+
+(defcustom h/sbb-view-overlap "voronoi"
+  "How to handle overlapping.  See Graphviz documentation.
+It seems unclear which is the best default, because each option
+renders one or another layout slightly better than other
+options."
+  :type '(choice (const :tag "Voronoi" "voronoi")
+		 (const :tag "Scale" "scale")
+		 (const :tag "Allow overlap" "true")
+		 (const :tag "VPSC" "vpsc")))
 
 (defface h/sbb-source '((t :inherit success))
   "Applied to sources.")
