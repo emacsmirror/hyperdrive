@@ -1148,8 +1148,9 @@ running ~M-x customize-group RET hyperdrive RET~:
 
 - User Option: hyperdrive-persist-location ::
 
-  Location where ~persist~ will store ~hyperdrive-hyperdrives~.  By
-  default, uses the default ~persist~ location.
+  Location where ~persist~ will store ~hyperdrive-hyperdrives~ and
+  ~hyperdrive-existent-versions~.  Defaults to ~nil~, meaning that the
+  default ~persist~ location will be used.
 
 - User Option: hyperdrive-timestamp-format ::
 

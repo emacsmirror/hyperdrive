@@ -1559,8 +1559,9 @@ will start the gateway on this port.
 @end defopt
 
 @defopt hyperdrive-persist-location
-Location where @code{persist} will store @code{hyperdrive-hyperdrives}.  By
-default, uses the default @code{persist} location.
+Location where @code{persist} will store @code{hyperdrive-hyperdrives} and
+@code{hyperdrive-existent-versions}.  Defaults to @code{nil}, meaning that the
+default @code{persist} location will be used.
 @end defopt
 
 @defopt hyperdrive-timestamp-format
