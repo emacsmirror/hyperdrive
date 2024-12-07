@@ -162,10 +162,10 @@ updated RELATIONS hash table as its sole argument."
       (add-blocked-for root)
       (maphash #'map-relation relations))))
 
-(defun h/sbb-filter-shortest-path (relations root)
+(defun h/sbb-filter-shortest-paths (relations root)
   "Return RELATIONS with only shortest paths.
 ROOT is used to determine the shortest blocked relation."
-  ;; Call `h/sbb-filter-shortest-path' before `h/sbb-filter-to-types' since
+  ;; Call `h/sbb-filter-shortest-paths' before `h/sbb-filter-to-types' since
   ;; getting the shortest blocked path requires knowing blocker paths.
   (let ((copy-relations (copy-hash-table relations))
         (blocker-hops-cache (make-hash-table :test 'equal)))

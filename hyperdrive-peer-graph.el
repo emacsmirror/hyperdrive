@@ -60,7 +60,7 @@
           (const :tag "Show all blocked" all)
           (const :tag "Hide blocked" nil)))
 
-(defcustom hpg/shortest-path-p-default t
+(defcustom hpg/shortest-paths-p-default t
   "Default setting to filter only to shortest paths."
   :type 'boolean)
 
@@ -99,7 +99,7 @@ Passed to `display-buffer', which see."
 (defvar hpg/show-blockers-p hpg/show-blockers-p-default)
 (defvar hpg/show-blocked-p hpg/show-blocked-p-default)
 
-(defvar hpg/shortest-path-p hpg/shortest-path-p-default)
+(defvar hpg/shortest-paths-p hpg/shortest-paths-p-default)
 (defvar hpg/paths-only-to nil)
 
 ;;;; Functions:
@@ -347,8 +347,8 @@ hops to traverse for sources and blockers, respectively."
   "Return filtered RELATIONS."
   ;; TODO: Make filters customizable
   ;; Apply shortest path filter first.
-  (when hpg/shortest-path-p
-    (cl-callf h/sbb-filter-shortest-path relations
+  (when hpg/shortest-paths-p
+    (cl-callf h/sbb-filter-shortest-paths relations
       (h/public-key hpg/root-hyperdrive)))
   (unless (and hpg/show-sources-p
                hpg/show-blockers-p
@@ -597,7 +597,7 @@ Non-nil value may be the number of seconds to wait before resizing."
   "s s" #'hpg/set-show-sources-p
   "s b" #'hpg/set-show-blockers-p
   "s x" #'hpg/set-show-blocked-p
-  "S" #'hpg/set-shortest-path-p)
+  "S" #'hpg/set-shortest-paths-p)
 
 (defvar hpg/mode-map (make-composed-keymap hpg/parent-mode-map special-mode-map)
   "Local keymap for `hyperdrive-peer-graph-mode' buffers.")
@@ -918,7 +918,7 @@ blocked paths or has a one-hop source path."
   (unless (and (equal hpg/show-sources-p hpg/show-sources-p-default)
                (equal hpg/show-blockers-p hpg/show-blockers-p-default)
                (equal hpg/show-blocked-p hpg/show-blocked-p-default)
-               (equal hpg/shortest-path-p hpg/shortest-path-p-default)
+               (equal hpg/shortest-paths-p hpg/shortest-paths-p-default)
                (equal hpg/paths-only-to nil))
     (insert (format
              "\n  - %s"
@@ -929,7 +929,7 @@ blocked paths or has a one-hop source path."
                  (setf hpg/show-sources-p hpg/show-sources-p-default
                        hpg/show-blockers-p hpg/show-blockers-p-default
                        hpg/show-blocked-p hpg/show-blocked-p-default
-                       hpg/shortest-path-p hpg/shortest-path-p-default
+                       hpg/shortest-paths-p hpg/shortest-paths-p-default
                        hpg/paths-only-to nil)
                  (hpg/draw-graph)
                  (hpg/draw-list))
@@ -999,7 +999,7 @@ Push an alist history item with the current values of
 - `hyperdrive-peer-graph-show-sources-p'
 - `hyperdrive-peer-graph-show-blockers-p'
 - `hyperdrive-peer-graph-show-blocked-p'
-- `hyperdrive-peer-graph-shortest-path-p'
+- `hyperdrive-peer-graph-shortest-paths-p'
 - `hyperdrive-peer-graph-paths-only-to'
 
 If `hyperdrive-peer-graph-root-hyperdrive' is
@@ -1011,7 +1011,7 @@ the latest element instead of pushing a new element."
                 (hpg/show-sources-p . ,hpg/show-sources-p)
                 (hpg/show-blockers-p . ,hpg/show-blockers-p)
                 (hpg/show-blocked-p . ,hpg/show-blocked-p)
-                (hpg/shortest-path-p . ,hpg/shortest-path-p)
+                (hpg/shortest-paths-p . ,hpg/shortest-paths-p)
                 (hpg/paths-only-to . ,hpg/paths-only-to)))
          (current-history-item (nth hpg/history-position hpg/history))
          (current-root (map-elt current-history-item 'hpg/root-hyperdrive)))
@@ -1092,7 +1092,7 @@ With numeric ARG, or interactively with universal prefix argument
    ("s b" hpg/set-show-blockers-p)
    ("s x" hpg/set-show-blocked-p)]
   ["Options"
-   ("S" hpg/set-shortest-path-p)]
+   ("S" hpg/set-shortest-paths-p)]
   (interactive (hpg/interactive-args))
   (setf hpg/root-hyperdrive hyperdrive)
   (setf hpg/sources-max-hops sources-max-hops)
@@ -1162,16 +1162,16 @@ With numeric ARG, or interactively with universal prefix argument
   (interactive)
   (call-interactively #'hpg/history-forward))
 
-(transient-define-suffix hpg/set-shortest-path-p ()
+(transient-define-suffix hpg/set-shortest-paths-p ()
   :transient t
   :description (lambda ()
                  (format "Shortest paths: %s"
-                         (if hpg/shortest-path-p
+                         (if hpg/shortest-paths-p
                              (propertize "yes" 'face 'transient-argument)
                            (propertize "no" 'face 'transient-inactive-value))))
   (interactive)
-  (cl-callf not hpg/shortest-path-p)
-  (if hpg/shortest-path-p
+  (cl-callf not hpg/shortest-paths-p)
+  (if hpg/shortest-paths-p
       (message "SHORTEST PATHS")
     (message "ALL PATHS"))
   (hpg/history-update)
