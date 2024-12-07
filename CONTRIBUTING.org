@@ -92,7 +92,11 @@ whenever you attempt to commit changes to ~doc/hyperdrive.org~.
 To rebuild the texi manual without modifying the contents of
 ~doc/hyperdrive.org~ in order to, e.g., update the version number
 listed in the manual when tagging a new release, in the project root,
-run ~touch doc/hyperdrive.org && make doc~.
+run:
+
+#+begin_src shell
+touch doc/hyperdrive.org && make doc
+#+end_src
 
 * Git hooks
 
