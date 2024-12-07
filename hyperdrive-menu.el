@@ -272,6 +272,8 @@
 (defvar h/mirror-filter nil)
 (defvar h/mirror-confirm t)
 
+;; TODO: Mark peer as source, blocker, blocked in hyperdrive-menu-hyperdrive
+
 ;;;###autoload (autoload 'hyperdrive-menu-hyperdrive "hyperdrive-menu" nil t)
 (transient-define-prefix hyperdrive-menu-hyperdrive (hyperdrive)
   "Show menu for HYPERDRIVE."
@@ -288,6 +290,7 @@
    ;; TODO(transient): Implement :inapt-if* for groups.
    :pad-keys t
    ("d" h/menu-describe-hyperdrive)
+   ("G" h/menu-peer-graph)
    ("w" h/menu-hyperdrive-copy-url)
    (:info (lambda () (h//format (h/menu--scope) "Public key: %K" h/raw-formats)))
    ( :info (lambda () (h//format (h/menu--scope) "Seed: %S" h/raw-formats))
@@ -438,6 +441,22 @@
   :description "Describe"
   (interactive)
   (h/describe-hyperdrive (h/menu--scope)))
+
+(defvar h/peer-graph-root-hyperdrive)
+(defvar h/peer-graph-sources-max-hops)
+(defvar h/peer-graph-blockers-max-hops)
+(declare-function h/peer-graph-menu "hyperdrive-peer-graph" nil t)
+(declare-function h/peer-graph-read-max-hops "hyperdrive-peer-graph")
+(transient-define-suffix h/menu-peer-graph ()
+  ;; NOTE: This intermediate transient is needed to set `hpg/root-hyperdrive'.
+  :description "Peer graph"
+  (interactive)
+  (require 'hyperdrive-peer-graph)
+  (unless (eq h/peer-graph-root-hyperdrive (h/menu--scope))
+    (setf h/peer-graph-root-hyperdrive (h/menu--scope))
+    (setf h/peer-graph-sources-max-hops (h/peer-graph-read-max-hops 'sources))
+    (setf h/peer-graph-blockers-max-hops (h/peer-graph-read-max-hops 'blockers)))
+  (call-interactively #'h/peer-graph-menu))
 
 (transient-define-suffix h/menu-hyperdrive-copy-url ()
   :description "Copy URL"

@@ -329,7 +329,7 @@ This hook is called by `hyperdrive--gateway-wait-for-dead' after
 (defface h/domain '((t :inherit font-lock-keyword-face))
   "Applied to hyperdrive domains.")
 
-(defface h/nickname '((t :inherit font-lock-warning-face))
+(defface h/nickname '((t :inherit shadow))
   "Applied to hyperdrive nicknames.")
 
 (defface h/public-key '((t :inherit font-lock-function-name-face))
@@ -451,10 +451,17 @@ Keys are regexps matched against MIME types.")
   (defconst h//hyper-prefix "hyper://"
     "Hyperdrive URL prefix."))
 
-(defconst h//public-key-re
-  (rx (eval h//hyper-prefix) (group (= 52 alphanumeric)))
-  "Regexp to match \"hyper://\" + public key.
+(defconst h//public-key-re (rx (or bol (+ (not alphanumeric)))
+                               (group (= 52 alphanumeric))
+                               (or eol (+ (not alphanumeric))))
+  "Regexp to match public key.
+Capture group matches public key.")
 
+(defconst h//url-re
+  (rx (eval h//hyper-prefix)
+      (group (= 52 alphanumeric))
+      (or eol (+ (not alphanumeric))))
+  "Regexp to match \"hyper://\" + public key.
 Capture group matches public key.")
 
 (defconst h//version-re

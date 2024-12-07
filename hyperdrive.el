@@ -7,7 +7,7 @@
 ;; Maintainer: Joseph Turner <~ushin/ushin@lists.sr.ht>
 ;; Created: 2022
 ;; Version: 0.5-pre
-;; Package-Requires: ((emacs "28.1") (map "3.0") (compat "30.0.0.0") (org "9.7.6") (plz "0.9.1") (persist "0.6.1") (taxy-magit-section "0.14") (transient "0.7.7"))
+;; Package-Requires: ((emacs "28.1") (map "3.0") (compat "30.0.0.0") (org "9.7.6") (plz "0.9.1") (persist "0.6.1") (taxy-magit-section "0.14") (transient "0.8.0"))
 ;; Homepage: https://git.sr.ht/~ushin/hyperdrive.el
 
 ;; This program is free software; you can redistribute it and/or
@@ -171,7 +171,7 @@ hyperdrive, the new hyperdrive's petname will be set to SEED."
                 (h/api 'post (concat "hyper://localhost/?key="
                                      (url-hexify-string seed))
                   :as 'response))
-               (hyperdrive (he/hyperdrive (h/url-entry url))))
+               (hyperdrive (h/url-hyperdrive url)))
     (unless url (h/error "Unable to create new hyperdrive with seed: %S" seed))
     (setf (h/seed hyperdrive) seed)
     (setf (h/writablep hyperdrive) t)
@@ -348,6 +348,103 @@ without confirmation."
   "Like `revert-buffer-quick', but works with `hyperdrive-mode' files."
   (interactive nil h/mode)
   (h/revert-buffer nil (not (buffer-modified-p))))
+
+;;;; h/context-menu-mode
+
+;;;###autoload
+(define-minor-mode hyperdrive-context-menu-mode
+  "Global minor mode to add hyperdrive to `context-menu-mode'."
+  :global nil
+  :group 'hyperdrive
+  :lighter " hyperdrive-context-menu"
+  (if h/context-menu-mode
+      (progn
+        (context-menu-mode +1)  ; Ensure `context-menu-mode' is on.
+        (add-hook 'context-menu-functions #'h/context-menu-function))
+    (remove-hook 'context-menu-functions #'h/context-menu-function)))
+
+(defun h/open-at-point (event)
+  "Open hyperdrive at point for EVENT."
+  (interactive "event")
+  (save-excursion
+    (mouse-set-point event)
+    (h/open (he//create :hyperdrive (h/at-point event) :path "/"))))
+
+(defvar h/peer-graph-root-hyperdrive)
+(declare-function h/peer-graph-read-relation-type "hyperdrive-peer-graph")
+(declare-function h/peer-graph-set-relation "hyperdrive-peer-graph")
+(declare-function h/peer-graph-set-relation-interactive-args
+                  "hyperdrive-peer-graph")
+(defun h/peer-graph-set-relation-to-hyperdrive-at-point (event)
+  "Set relation to hyperdrive at point for EVENT."
+  (interactive "event")
+  (require 'hyperdrive-peer-graph)
+  (save-excursion
+    (mouse-set-point event)
+    (apply #'h/peer-graph-set-relation
+           (h/peer-graph-set-relation-interactive-args
+            :to (h/at-point event)))))
+
+;; TODO: Group `h/peer-graph-set-relation-to-hyperdrive-at-point' and
+;; `h/peer-graph-set-relation-from-hyperdrive-at-point' into one submenu.
+
+(defun h/peer-graph-set-relation-from-hyperdrive-at-point (event)
+  "Set relation to hyperdrive at point for EVENT."
+  (interactive "event")
+  (require 'hyperdrive-peer-graph)
+  (save-excursion
+    (mouse-set-point event)
+    (apply #'hyperdrive-peer-graph-set-relation
+           (hyperdrive-peer-graph-set-relation-interactive-args
+            :from (h/at-point event)))))
+
+(declare-function h/peer-graph "hyperdrive-peer-graph")
+(declare-function h/peer-graph-read-max-hops "hyperdrive-peer-graph")
+(defun h/peer-graph-at-point (event)
+  "Open peer graph for hyperdrive at point for EVENT."
+  (interactive "event")
+  (require 'hyperdrive-peer-graph)
+  (save-excursion
+    (mouse-set-point event)
+    (h/peer-graph (h/at-point event)
+                  (h/peer-graph-read-max-hops 'sources)
+                  (h/peer-graph-read-max-hops 'blockers))))
+
+(declare-function h/peer-graph-list "hyperdrive-peer-graph")
+(defun h/peer-graph-list-at-point (event)
+  "Open peer graph list for hyperdrive at point for EVENT."
+  (interactive "event")
+  (require 'hyperdrive-peer-graph)
+  (save-excursion
+    (mouse-set-point event)
+    (h/peer-graph-list (h/at-point event)
+                       (h/peer-graph-read-max-hops 'sources)
+                       (h/peer-graph-read-max-hops 'blockers))))
+
+(defun h/context-menu-function (menu click)
+  "Insert items into context MENU for CLICK."
+  (save-excursion
+    (mouse-set-point click)
+    (when (h/at-point click)
+      (keymap-set-after menu "<hyperdrive-separator>" menu-bar-separator)
+      (keymap-set-after menu "<hyperdrive-open-at-point>"
+        '(menu-item "Open hyperdrive" h/open-at-point
+                    :help "Open hyperdrive at point"))
+      (keymap-set-after menu "<hyperdrive-peer-graph-at-point>"
+        '(menu-item "Peer graph" h/peer-graph-at-point
+                    :help "Open peer graph for hyperdrive at point"))
+      (keymap-set-after menu "<hyperdrive-peer-graph-list-at-point>"
+        '(menu-item "Peer list" h/peer-graph-list-at-point
+                    :help "Open peer list for hyperdrive at point"))
+      (keymap-set-after menu "<hyperdrive-peer-graph-set-relation-to-hyperdrive-at-point>"
+        '(menu-item "Set relation to"
+                    h/peer-graph-set-relation-to-hyperdrive-at-point
+                    :help "Set relation to hyperdrive at point"))
+      (keymap-set-after menu "<hyperdrive-peer-graph-set-relation-from-hyperdrive-at-point>"
+        '(menu-item "Set relation from"
+                    h/peer-graph-set-relation-from-hyperdrive-at-point
+                    :help "Set relation from hyperdrive at point"))))
+  menu)
 
 ;;;; h/mode
 
@@ -528,7 +625,7 @@ without prompting.
 This function is for interactive use only since it calls
 `select-safe-coding-system', which may prompt for input.
 For non-interactive use, see `hyperdrive-write'."
-  (interactive (list (h/read-entry (h/read-hyperdrive #'h/writablep)
+  (interactive (list (h/read-entry (h/read-hyperdrive :predicate #'h/writablep)
                                    :default-path
                                    (or (and (buffer-file-name)
                                             (file-name-nondirectory
@@ -794,7 +891,7 @@ After successful upload, call THEN.  When QUEUE, use it."
   (declare (indent defun))
   (interactive (let ((filename (read-file-name "Upload file: " nil nil t)))
                  (list filename
-                       (h/read-entry (h/read-hyperdrive #'h/writablep)
+                       (h/read-entry (h/read-hyperdrive :predicate #'h/writablep)
                                      :default-path (file-name-nondirectory filename)
                                      :latest-version t))))
   (let ((last-modified (let ((system-time-locale "C"))
@@ -1002,7 +1099,7 @@ The return value of this function is the retrieval buffer."
     ("Drives"
      :active (< 0 (hash-table-count h/hyperdrives))
      :label (if (zerop (hash-table-count h/hyperdrives))
-                "Drives (empty)"
+                "Drives (none)"
               "Drives")
      :filter
      (lambda (_)

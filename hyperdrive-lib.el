@@ -120,6 +120,10 @@ domains slot."
                (host (or public-key (car domains))))
     (concat "hyper://" host)))
 
+(defun h/url-hyperdrive (url)
+  "Return a hyperdrive from URL."
+  (he/hyperdrive (h/url-entry url)))
+
 (defun h//url-hexify-string (string)
   "Return STRING having been URL-encoded.
 Calls `url-hexify-string' with the \"/\" character added to
@@ -272,7 +276,7 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
         (plz-response-headers response))
        ;; RESPONSE is guaranteed to have a "Link" header with the public key,
        ;; while ENTRY may have a DNSLink domain but no public key yet.
-       (public-key (progn (string-match h//public-key-re link)
+       (public-key (progn (string-match h//url-re link)
                           (match-string 1 link)))
        ;; NOTE: Don't destructure `persisted-hyperdrive' with `pcase' here since it may be nil.
        (persisted-hyperdrive (gethash public-key h/hyperdrives)))
@@ -561,6 +565,7 @@ echo area when the request for the file is made."
               (pcase-let* (((cl-struct hyperdrive-entry type) entry)
                            (handler (alist-get type h/type-handlers
                                                nil nil #'string-match-p)))
+                (h/fill-metadata hyperdrive)
                 (funcall (or handler #'h/handler-default) entry :then then)))
       :else (lambda (err)
               (cl-labels ((not-found-action ()
@@ -699,37 +704,71 @@ Accepts HYPERDRIVE, PATH, and VERSION, an existent range start."
   ;; TODO: Send request with entry version set to (1- next-version-range-start) for perf
   (he/api 'head entry :headers '(("X-Wait-On-Version-Data" . t))))
 
-(defun h/fill-metadata (hyperdrive)
-  "Fill HYPERDRIVE's public metadata and return it.
-Sends a synchronous request to get the latest contents of
-HYPERDRIVE's public metadata file."
+(cl-defun h/fill-metadata (hyperdrive &key then queue)
+  "Fill HYPERDRIVE's public metadata and persist HYPERDRIVE.
+Sends a request to get the latest contents of HYPERDRIVE's public
+metadata file.  If THEN is nil or \\+`sync', the request will be
+synchronous, and errors will be demoted.  Otherwise, THEN may be
+a function to be called with no arguments regardless of the
+success or failure of loading and parsing metadata.  When QUEUE,
+use it."
   (declare (indent defun))
-  (pcase-let*
-      ((entry (he/create
-               :hyperdrive hyperdrive
-               :path "/.well-known/host-meta.json"
-               ;; NOTE: Don't attempt to fill hyperdrive struct with old metadata
-               :version nil))
-       (metadata (condition-case err
-                     ;; TODO: Refactor to use :as 'response-with-buffer and call he/fill
-                     (pcase-let
-                         (((cl-struct plz-response body)
-                           (he/api 'get entry :noquery t)))
-                       (with-temp-buffer
-                         (insert body)
-                         (goto-char (point-min))
-                         (json-read)))
+  (let ((entry (he/create :hyperdrive hyperdrive
+                          :path "/.well-known/host-meta.json"
+                          ;; Don't fill hyperdrive struct with old metadata
+                          :version nil)))
+    (pcase then
+      ((or 'nil 'sync)
+       (condition-case err
+           ;; TODO: Refactor to use :as 'response-with-buffer.
+           (pcase-let
+               (((cl-struct plz-response body) (he/api 'get entry)))
+             (with-temp-buffer
+               (insert body)
+               (goto-char (point-min))
+               (setf (h/metadata hyperdrive) (json-read))
+               (h/persist hyperdrive)))
+         (json-error
+          (let ((inhibit-message t))
+            (h/message "Error parsing JSON metadata file: %s"
+                       (he/url entry))))
+         (plz-error
+          (pcase (plz-response-status (plz-error-response (caddr err)))
+            ;; FIXME: If plz-error is a curl-error, this block will fail.
+            (404 nil)
+            (_ (let ((inhibit-message t))
+                 (h/message "Error loading metadata file: %s: %S"
+                            (he/url entry) err)))))))
+      (_
+       (he/api 'get entry :noquery t :queue queue
+         ;; TODO: Refactor to use :as 'response-with-buffer.
+         :then (pcase-lambda ((cl-struct plz-response body))
+                 (condition-case _
+                     (with-temp-buffer
+                       (insert body)
+                       (goto-char (point-min))
+                       (setf (h/metadata hyperdrive) (json-read))
+                       (h/persist hyperdrive)
+                       (funcall then))
                    (json-error
-                    (h/message "Error parsing JSON metadata file: %s"
-                               (he/url entry)))
-                   (plz-error
-                    (pcase (plz-response-status (plz-error-response (caddr err)))
-                      ;; FIXME: If plz-error is a curl-error, this block will fail.
-                      (404 nil)
-                      (_ (signal (car err) (cdr err))))))))
-    (setf (h/metadata hyperdrive) metadata)
-    (h/persist hyperdrive)
-    hyperdrive))
+                    (let ((inhibit-message t))
+                      (h/message "Error parsing JSON metadata file: %s"
+                                 (he/url entry)))
+                    (funcall then))))
+         :else (lambda (plz-error)
+                 (pcase (plz-response-status (plz-error-response plz-error))
+                   ;; FIXME: If plz-error is a curl-error, this block will fail.
+                   (404 nil)
+                   (_ (let ((inhibit-message t))
+                        (h/message "Error loading metadata file: %s: %S"
+                                   (he/url entry) plz-error))))))))))
+
+(cl-defun h/fill-metadata-all (hyperdrives &key finally)
+  "Fill metadata for all hyperdrives then call FINALLY.
+FINALLY will be called with no arguments."
+  (let ((queue (make-plz-queue :limit h/queue-limit :finally finally)))
+    (dolist (hyperdrive hyperdrives)
+      (h/fill-metadata hyperdrive :then #'ignore :queue queue))))
 
 (cl-defun h/purge-no-prompt (hyperdrive &key then else)
   "Purge all data corresponding to HYPERDRIVE, then call THEN with response.
@@ -763,7 +802,7 @@ Returns URL formatted like:
 
   hyper://HOST-FORMAT/PATH/TO/FILE
 
-HOST-FORMAT is passed to `hyperdrive--preferred-format', which see.
+HOST-FORMAT is passed to `hyperdrive--format-preferred', which see.
 If WITH-PROTOCOL, \"hyper://\" is prepended.  If WITH-HELP-ECHO,
 propertize string with `help-echo' property showing the entry's
 full URL.  If WITH-TARGET, append the ENTRY's target, stored in
@@ -783,7 +822,7 @@ Path and target fragment are URI-encoded."
                (protocol (and with-protocol "hyper://"))
                (host (and host-format
                           ;; FIXME: Update docstring to say that host-format can be nil to omit it.
-                          (h//preferred-format (he/hyperdrive entry)
+                          (h//format-preferred (he/hyperdrive entry)
                                                host-format h/raw-formats)))
                (version-part (and version (format "/$/version/%s" version)))
                ((map target) etc)
@@ -821,36 +860,56 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                       (format (alist-get format formats)
                               (propertize value 'face face))
                     "")))
-      (format-spec
-       format
-       ;; TODO(deprecate-28): Use lambdas in each specifier.
-       `((?H . ,(and (string-match-p (rx "%"
-                                         ;; Flags
-                                         (optional
-                                          (1+ (or " " "0" "-" "<" ">" "^" "_")))
-                                         (0+ digit) ;; Width
-                                         (0+ digit) ;; Precision
-                                         "H")
-                                     format)
-                     ;; HACK: Once using lambdas in this specifier,
-                     ;; remove the `string-match-p' check.
-                     (h//preferred-format hyperdrive)))
-         (?P . ,(fmt 'petname petname 'h/petname))
-         (?N . ,(fmt 'nickname nickname 'h/nickname))
-         (?k . ,(fmt 'short-key public-key 'h/public-key))
-         (?K . ,(fmt 'public-key public-key 'h/public-key))
-         (?S . ,(fmt 'seed seed 'h/seed))
-         (?D . ,(if (car domains)
-                    (format (alist-get 'domains formats)
-                            (string-join
-                             (mapcar (lambda (domain)
-                                       (propertize domain
-                                                   'face 'h/domain))
-                                     domains)
-                             ","))
-                  "")))))))
+      (propertize
+       (format-spec
+        format
+        ;; TODO(deprecate-28): Use lambdas in each specifier.
+        `((?H . ,(and (string-match-p (rx "%"
+                                          ;; Flags
+                                          (optional
+                                           (1+ (or " " "0" "-" "<" ">" "^" "_")))
+                                          (0+ digit) ;; Width
+                                          (0+ digit) ;; Precision
+                                          "H")
+                                      format)
+                      ;; HACK: Once using lambdas in this specifier,
+                      ;; remove the `string-match-p' check.
+                      (h//format-preferred hyperdrive)))
+          (?P . ,(fmt 'petname petname 'h/petname))
+          (?N . ,(fmt 'nickname nickname 'h/nickname))
+          (?k . ,(fmt 'short-key public-key 'h/public-key))
+          (?K . ,(fmt 'public-key public-key 'h/public-key))
+          (?S . ,(fmt 'seed seed 'h/seed))
+          (?D . ,(if (car domains)
+                     (format (alist-get 'domains formats)
+                             (string-join
+                              (mapcar (lambda (domain)
+                                        (propertize domain
+                                                    'face 'h/domain))
+                                      domains)
+                              ","))
+                   ""))))
+       'hyperdrive hyperdrive))))
 
-(defun h//preferred-format (hyperdrive &optional format formats)
+(defun h//preferred-format (hyperdrive &optional format)
+  "Return preferred format for HYPERDRIVE.
+FORMAT should be one or a list of symbols, by default
+`hyperdrive-preferred-formats', which see for choices.  If the
+specified FORMAT is not available, return nil."
+  (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
+                           (metadata (map ('name nickname))))
+                hyperdrive))
+    (cl-loop for f in (ensure-list (or format h/preferred-formats))
+             when (pcase f
+                    ((and 'petname (guard petname)) 'petname)
+                    ((and 'nickname (guard nickname)) 'nickname)
+                    ((and 'domain (guard (car domains))) 'domain)
+                    ((and 'seed (guard seed)) 'domain)
+                    ((and 'short-key (guard public-key)) 'short-key)
+                    ((and 'public-key (guard public-key)) 'public-key))
+             return it)))
+
+(defun h//format-preferred (hyperdrive &optional format formats)
   "Return HYPERDRIVE's formatted hostname, or nil.
 FORMAT should be one or a list of symbols, by default
 `hyperdrive-preferred-formats', which see for choices.  If the
@@ -858,24 +917,13 @@ specified FORMAT is not available, return nil.
 
 Each item in FORMAT is formatted according to FORMATS, set by
 default to `hyperdrive-formats', which see."
-  (pcase-let* (((cl-struct hyperdrive petname public-key domains seed
-                           (metadata (map ('name nickname))))
-                hyperdrive))
-    (cl-loop for f in (ensure-list (or format h/preferred-formats))
-             when (pcase f
-                    ((and 'petname (guard petname))
-                     (h//format hyperdrive "%P" formats))
-                    ((and 'nickname (guard nickname))
-                     (h//format hyperdrive "%N" formats))
-                    ((and 'domain (guard (car domains)))
-                     (h//format hyperdrive "%D" formats))
-                    ((and 'seed (guard seed))
-                     (h//format hyperdrive "%S" formats))
-                    ((and 'short-key (guard public-key))
-                     (h//format hyperdrive "%k" formats))
-                    ((and 'public-key (guard public-key))
-                     (h//format hyperdrive "%K" formats)))
-             return it)))
+  (pcase (h//preferred-format hyperdrive format)
+    ('petname (h//format hyperdrive "%P" formats))
+    ('nickname (h//format hyperdrive "%N" formats))
+    ('domain (h//format hyperdrive "%D" formats))
+    ('seed (h//format hyperdrive "%S" formats))
+    ('short-key (h//format hyperdrive "%k" formats))
+    ('public-key (h//format hyperdrive "%K" formats))))
 
 ;;;; Reading from the user
 
@@ -915,26 +963,32 @@ case, when PREDICATE, only offer hyperdrives matching it."
       (cl-return-from h//context-hyperdrive current-hyperdrive)))
 
   ;; Otherwise, prompt for drive.
-  (h/read-hyperdrive predicate))
+  (h/read-hyperdrive :predicate predicate))
 
-(defun h/read-hyperdrive (&optional predicate)
-  "Read hyperdrive from among those which match PREDICATE."
+(cl-defun h/read-hyperdrive (&key predicate default (prompt "Hyperdrive"))
+  "Read hyperdrive from among those which match PREDICATE.
+DEFAULT is the default hyperdrive.  Prompt with PROMPT, which
+will be passed to `format-prompt' along with formatted DEFAULT."
+  (declare (indent defun))
   (when (zerop (hash-table-count h/hyperdrives))
-    (h/user-error "No known hyperdrives.  Use `hyperdrive-new' to create a new one"))
+    (h/user-error "No known hyperdrives.  Run \\[hyperdrive-new] to create a new one"))
   (unless predicate
     ;; cl-defun default value doesn't work when nil predicate value is passed in.
     (setf predicate #'always))
   (let* ((current-hyperdrive (and h/current-entry
                                   (he/hyperdrive h/current-entry)))
          (hyperdrives (cl-remove-if-not predicate (hash-table-values h/hyperdrives)))
-         (default (and h/current-entry
-                       (funcall predicate current-hyperdrive)
-                       (h//format-hyperdrive (he/hyperdrive h/current-entry))))
-         (prompt (format-prompt "Hyperdrive" default))
+         (default (or default
+                      (and h/current-entry
+                           (funcall predicate current-hyperdrive)
+                           (he/hyperdrive h/current-entry))))
+         (formatted-default (and default (h//format-hyperdrive default)))
+         (prompt (format-prompt prompt formatted-default))
          (candidates (mapcar (lambda (hyperdrive)
                                (cons (h//format-hyperdrive hyperdrive) hyperdrive))
                              hyperdrives))
          (completion-styles (cons 'substring completion-styles))
+         (input-public-key-p)
          (selected
           (completing-read
            prompt
@@ -943,8 +997,14 @@ case, when PREDICATE, only offer hyperdrives matching it."
                  '(metadata (category . hyperdrive))
                (complete-with-action
                 action candidates string predicate)))
-           nil 'require-match nil nil default)))
+           nil (lambda (input)
+                 (or (map-elt input candidates)
+                     ;; Looks like input contains a public-key.
+                     (setf input-public-key-p
+                           (string-match h//public-key-re input))))
+           nil nil formatted-default)))
     (or (alist-get selected candidates nil nil #'equal)
+        (and input-public-key-p (h/url-hyperdrive (match-string 1 selected)))
         (h/user-error "No such hyperdrive.  Use `hyperdrive-new' to create a new one"))))
 
 (cl-defun h//format-hyperdrive
@@ -953,7 +1013,7 @@ case, when PREDICATE, only offer hyperdrives matching it."
 For each of FORMATS, concatenates the value separated by two spaces."
   (string-trim
    (cl-loop for format in formats
-            when (h//preferred-format hyperdrive format)
+            when (h//format-preferred hyperdrive format)
             concat (concat it "  "))))
 
 (cl-defun h/read-entry (hyperdrive &key default-path latest-version read-version)
@@ -1052,13 +1112,44 @@ DEFAULT and INITIAL-INPUT are passed to `read-string' as-is."
 (cl-defun h/put-metadata (hyperdrive &key then)
   "Put HYPERDRIVE's metadata into the appropriate file, then call THEN."
   (declare (indent defun))
-  (let ((entry (he/create :hyperdrive hyperdrive
-                          :path "/.well-known/host-meta.json")))
+  (h/put-json hyperdrive
+    :data (h/metadata hyperdrive)
+    :path "/.well-known/host-meta.json"
+    :then then))
+
+(cl-defun h/put-json (hyperdrive &key data path then)
+  "Put DATA as JSON into HYPERDRIVE at PATH, then call THEN."
+  (declare (indent defun))
+  (let ((entry (he/create :hyperdrive hyperdrive :path path)))
     ;; TODO: Is it okay to always encode the JSON object as UTF-8?
-    (h/write entry :body (encode-coding-string
-                          (json-encode (h/metadata hyperdrive)) 'utf-8)
-      :then then)
-    hyperdrive))
+    (h/write entry :body (encode-coding-string (json-encode data) 'utf-8)
+      :then then)))
+
+(cl-defun h//bee-exec (hyperdrive commands &key then else)
+  "Run COMMANDS on HYPERDRIVE's hyperbee, then call THEN.
+If THEN is nil or \\+`sync', return immediately.
+If command fails, call ELSE."
+  (declare (indent defun))
+  (let ((url (format "hyper://%s/$/bee" (hyperdrive-public-key hyperdrive))))
+    (pcase then
+      ((or 'nil 'sync)
+       ;; TODO: Refactor to use :as 'response-with-buffer.
+       (h/api 'post url
+         :body (json-encode-array commands)
+         :headers '((content-type . "application/json"))
+         ;; TODO: Update latest-version and x-drive-size.
+         :as #'json-read))
+      (_
+       (h/api 'post url
+         :body (json-encode-array commands)
+         :headers '((content-type . "application/json"))
+         ;; TODO: Update latest-version and x-drive-size.
+         :as #'json-read
+         :then then
+         :else (or else
+                   (lambda (plz-error)
+                     (h/error "Error running hyperbee commands %S on %s: %S"
+                              commands url plz-error))))))))
 
 (cl-defun h/persist (hyperdrive &key purge)
   "Persist HYPERDRIVE in `hyperdrive-hyperdrives'.
@@ -1079,7 +1170,7 @@ hyperdrive."
             (h/api 'get (format "hyper://localhost/?key=%s"
                                 (url-hexify-string seed))
               :as 'response :noquery t)))
-        (h/fill (h/url-entry url))
+        (h/fill (h/url-hyperdrive url))
         url)
     (plz-error (if (= 400 (plz-response-status (plz-error-response (caddr err))))
                    ;; FIXME: If plz-error is a curl-error, this block will fail.
@@ -1393,6 +1484,16 @@ version."
           (and-let* ((local-entry (buffer-local-value 'h/current-entry buffer)))
             (he/equal-p entry local-entry any-version-p))))))
 
+(cl-defun h/at-point (&optional event)
+  "Return `hyperdrive' at point, optionally given EVENT."
+  (unless (listp event)  ;; Avoid errors.
+    (cl-return-from h/at-point))
+  (when-let (hyperdrive (get-text-property (point) 'hyperdrive))
+    (cl-return-from h/at-point hyperdrive))
+  (pcase (cadadr event)  ;; Image id from peer graph image map
+    ((and (rx (group (= 52 alphanumeric))) public-key)
+     (h/url-hyperdrive public-key))))
+
 (defun h//format-entry (entry &optional format formats)
   "Return ENTRY formatted according to FORMAT.
 FORMAT is a `format-spec' specifier string which maps to specifications
@@ -1409,7 +1510,7 @@ according to FORMATS, by default `hyperdrive-formats', which see."
                     `((?n . ,(fmt 'name name))
                       (?p . ,(fmt 'path path))
                       (?v . ,(fmt 'version version))
-                      (?H . ,(h//preferred-format hyperdrive nil formats))
+                      (?H . ,(h//format-preferred hyperdrive nil formats))
                       (?D . ,(h//format hyperdrive "%D" formats))
                       (?k . ,(h//format hyperdrive "%k" formats))
                       (?K . ,(h//format hyperdrive "%K" formats))

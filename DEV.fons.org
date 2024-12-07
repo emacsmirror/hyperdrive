@@ -1,0 +1,309 @@
+:PROPERTIES:
+:ID:       e8a9e175-884a-4b4d-bea0-2c524a4f9c9a
+:END:
+#+TITLE: Development notes about the ~sbb~ library
+
+* Design
+
+** Purpose
+
+/What is sbb for?/
+
++ Goal: Crowdsource /sources/ of information. :: On a P2P network, where there is no central index to tell users what is worth looking at, we must start with sources of our choosing (like "word of mouth").  The system does not come preconfigured with a list of sources and metadata about them.
+  - Note that we are not crowdsourcing /information/, but /sources/ of information.
+
+** Blocking
+
+/What is blocking and how does it facilitate the purpose?/
+
++ Blocking is generally intended as a last resort. :: It's not generally intended that a user block another user because of, e.g. having shared a single article that they didn't agree with.  Blocking is intended for extreme cases, abuse, spam, etc.
+  - Generally, if a user isn't fond of what another user is sharing about a specific topic, the intended solution is to lower that user's score.
++ Blocking is /not/ per-topic :: When a peer is blocked, it blocks that peer entirely from the user's perspective, regardless of topic.
+  - Rationale: It's simpler this way.  We began designing a per-topic blocking system, but the complexity didn't seem worth it.
+    * Complexity issues ::
+      + Distinction between fallback/default topic and universal block topic: How would these be applied?
+        - This becomes much more complicated with second-order, downstream effects: if Alice trusts Bob as a blocker for "politics", and Bob trusts Carol as a blocker for the default topic, is Carol included as a blocker when Alice searches on "politics"?
+  - Workaround: If a user really wants per-topic blocks (e.g. to block Bob on politics but not on music), the user can create a separate hyperdrive identity for each topic they want granular control of their blocks over.
+
+*** Querying for blocks
+
+1) Collect blocker relations within
+   ~hyperdrive-peer-graph-blockers-max-hops~.
+2) Collect blocked relations based on blockers.
+3) Collect source relations within
+   ~hyperdrive-peer-graph-sources-max-hops~, excluding blocked.
+
+Each time we get data for a peer, we get *all* relations for that
+peer.  Each call to ~hyperdrive-peer-graph-data~ is cached.  This
+means that step (2) above should not make any gateway requests.
+
+At first, it may seem simpler and faster to do this:
+
+1) Collect blocker relations, only loading blocker data, not source
+   nor blocked.
+2) Collect source relations, checking blocked status at each hop
+   before recursing deeper.
+
+This approach is a red herring since it would require an additional
+request to each source in step (2), whereas in the above approach, at
+most one request is sent to the gateway per hyperdrive peer.
+
+** Basic usage patterns / workflows
+
+/What specific tasks should Sbb enable the user to perform?/
+
+*** UI
+
+/What does performing these tasks look like to the user?/
+
++ Goal: Be able to specify multiple topics when gathering a list of source hyperdrives. ::
++ Goal: Be able to render trust graphs for multiple topics in a single view. ::
+
+# ** Topics
+
+# + We're inspired by Alex Cobleigh's work on Trustnet.  In it, per-topic trust is included in the design, but as a layer on top of the fundamental trust system.
+#   - Following that, we design the ~relations~ struct to not be topic-specific.  We add topics as a layer on top.
+
+** References
+
++ [[https://git.sr.ht/~ushin/trust.el][~ushin/trust.el - Explore trust relationships as a graph - sourcehut git]] ::
+  - Especially, see the graph example, which we use to guide our implementation.
++ [[https://media.libreplanet.org/u/libreplanet/m/emacs-for-p2p-deliberation/][Emacs for P2P Deliberation — GNU MediaGoblin]] :: Joseph Turner's talk at LibrePlanet 2023.
+
+** Scoring
+
+/This email from Joseph summarizes our current thoughts on scoring of sources and why we are not including it in the design anymore./
+
+#+begin_quote
+Reasons to remove scores from sbb.el:
+
+1. Source scores are not defined within a rubric.
+
+    Comparing/aggregating source scores between users is not meaningful
+    since there's no common understanding of what a source score means.
+
+2. Source scores negatively affect UI.
+
+    It's complex and unpleasant to assign scores to people. Instead of
+    just a checkbox, users have to assign a potentially daunting number.
+
+    Also, IMO the sbb-view graphs look much prettier without numbers.
+
+3. Source scores make the code/data more complex.
+
+    Boolean values (yes/no, true/false, 0/1) are simpler to work with
+    than continuous ranges of numbers.
+
+Source scores were intended as a way to narrow search results to the
+best sources of information.  We recently discussed a system for ranking
+information within shared rubrics (which might take into account the
+source of information).  This information ranking system could be used to
+limit search results based on information score.
+
+With a system for ranking information, we can generate source scores
+based on the scores of their previous publications.  This "automatic"
+source score could be useful for determining which new, unscored content
+to display in a user's feed (Gnus uses scores for this same purpose
+<https://www.gnu.org/software/emacs/manual/html_mono/gnus.html#Scoring>)
+#+end_quote
+
+* Types
+
+/Types of data represented by the library./
+
+** Hop
+:PROPERTIES:
+:ID:       d2cf6a99-44ce-4dc2-9ba3-3193555ae435
+:END:
+
++ Attributes ::
+  - From :: 
+  - To :: 
+  - Score :: A number from 0-1.
+    * [ ] Meaning :: Any value greater than 0 represents a positive relationship.
+
+** Path
+:PROPERTIES:
+:ID:       16fa8d27-5cd7-440b-969b-21fc88020a03
+:END:
+
++ Attributes ::
+  - Hops ::
+  - Score :: Same meaning as in [[id:d2cf6a99-44ce-4dc2-9ba3-3193555ae435][Hop]].
+    * The score of a path decays as its length increases.
+    * Computed by [[id:8a65ecf2-7025-4e03-a1db-cf0997f5ddba][sbb-path-score-fn]].
+
+** Relation
+
++ Attributes ::
+  - From ::
+  - To ::
+  - Paths :: A list of [[id:16fa8d27-5cd7-440b-969b-21fc88020a03][Paths]].
+  - Score :: Same meaning as in [[id:d2cf6a99-44ce-4dc2-9ba3-3193555ae435][Hop]].
+    * If multiple paths exist, the number should be higher than the highest path score.
+    * Computed by [[id:496b1d1e-85f4-493c-bb95-4303435e6f76][sbb-relation-score-fn]].
+
+*** Examples
+
+**** A
+
++ Story :: Alice views a document containing a link to Carol's document.
+
+  - [ ] What annotation do we show for the link? ::
+    + 
+
++ Hops :: 
+
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |     1 |
+  | Alice | Carol |     1 |
+  | Bob   | Carol |     1 |
+
++ Relations ::
+
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Carol |     1 |
+
+**** B (hop/path scores as percentages, relation scores as numbers >1)
+
++ Story :: Alice views a document containing a link to Carol's document and a link to Doug's document.
+
+  - [ ] What annotation do we show for the links? :: The relation score.
+
+    * Note that each link only has a single relation: one to Carol and one to Doug; but the relation to Carol has two paths, while the one to Doug has only one.
+
+    * This hypothetical example preserves the distinction between the types of units in the scores, the hop/path scores and the relation scores.  Internally they would still be represented as numbers greater than 0, but the hop scores would be represented to the user as percentages, to help the user think about them differently.
+
++ Hops :: 
+
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |  100% |
+  | Alice | Carol |  100% |
+  | Bob   | Carol |  100% |
+  | Bob   | Doug  |  100% |
+
++ Relations ::
+
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Carol |  1.75 |
+  | Alice | Doug  |  0.75 |
+
+**** C (American academic-style grading)
+
++ Story :: Alice views a document containing a link to Carol's document and a link to Doug's document.
+
+  - Note that each link only has a single relation: one to Carol and one to Doug; but the relation to Carol has two paths, while the one to Doug has only one.
+
+  - [ ] What annotation do we show for the links? ::
+
+    * Bob :: A
+    * Carol :: A+
+    * Doug :: C
+
++ Hops :: 
+
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |  100% |
+  | Alice | Carol |  100% |
+  | Bob   | Carol |  100% |
+  | Bob   | Doug  |  100% |
+
++ Relations ::
+
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |     1 |
+  | Alice | Carol |  1.75 |
+  | Alice | Doug  |  0.75 |
+
+**** D  Tie-breaker
+
+With this approach, no relation score is generated.  To compare
+relations, first sort by the 1-hop (direct) scores.  Wherever there
+is a tie, sort by the 2-hop (indirect) scores, and so on...
+
++ Story :: Alice wants to view some search results, with content
+  sorted by highest-scoring author.
+
++ Hops ::
+
+  | From  | To    | Score |
+  |-------+-------+-------|
+  | Alice | Bob   |     1 |
+  | Alice | Carol |     1 |
+  | Bob   | Carol |     1 |
+  | Bob   | Doug  |     1 |
+
++ Paths ::
+
+  | Hops                  | Score                           |
+  |-----------------------+---------------------------------|
+  | Alice -> Bob          | 1                               |
+  | Alice -> Carol        | 1                               |
+  | Alice -> Bob -> Carol | 0.75 (depends on path score fn) |
+  | Alice -> Bob -> Doug  | 0.75 (depends on path score fn) |
+
++ Relations (sorted from highest to lowest) ::
+
+  | From  | To    | Score                     |
+  |-------+-------+---------------------------|
+  | Alice | Carol | 1 (1 hop) + 0.75 (2 hops) |
+  | Alice | Bob   | 1 (1 hop)                 |
+  | Alice | Doug  | 0 (1 hop) + 0.75 (2 hops) |
+
+**** E Divide user's energy among all peers (Appleseed)
+
+We could implement the Appleseed algo in Elisp:
+
+- [[https://link.springer.com/article/10.1007/s10796-005-4807-3][Original paper]]
+- [[https://github.com/cblgh/appleseed-metric][Javascript implementation]]
+
+** Serialization
+
+              #+begin_src js-json
+                // NOTE: Uppercase letters represent placeholder values.
+                {
+                  "version": "0.1",
+                  "blocked": [
+                    "PUBLIC_KEY1",
+                    "PUBLIC_KEY2"
+                  ],
+                  "blockers": [
+                    "PUBLIC_KEY1",
+                    "PUBLIC_KEY2"
+                  ],
+                  "sources": [
+                    "PUBLIC_KEY1",
+                    "PUBLIC_KEY2"
+                  ]
+                }
+              #+end_src
+
+** sbb-path-score-fn (PATH)
+:PROPERTIES:
+:ID:       8a65ecf2-7025-4e03-a1db-cf0997f5ddba
+:END:
+
+
+
+** sbb-score-relation-fn (RELATION)
+:PROPERTIES:
+:ID:       496b1d1e-85f4-493c-bb95-4303435e6f76
+:END:
+
+What should it return?  What data does it need for its computation?
+
+- Should return :: A number from 0-1.
+
+- Needs to know ::
+
+  + Paths between FROM and TO.
+
+  + 
+
+** sbb-hop-score

@@ -55,7 +55,7 @@ This manual is for @code{hyperdrive.el} version 0.5-pre.
 * Example configuration::
 * Usage::
 * Concepts::
-* Customization::
+* Customization: Customization (1). 
 * Known limitations::
 * Tips::
 * Troubleshooting::
@@ -79,6 +79,7 @@ Usage
 
 * Install the gateway::
 * Menu bar support::
+* Context menu support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
 * Open a hyperdrive::
@@ -90,6 +91,7 @@ Usage
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Name a hyperdrive::
+* Explore peer graph::
 * Bookmark a hyperdrive::
 * Stream audio and video::
 * Download hyperdrive files::
@@ -118,6 +120,10 @@ Link to a hyperdrive
 View the hyperdrive version history
 
 * History buffer::
+
+Explore peer graph
+
+* Customization::
 
 Upload files from your filesystem
 
@@ -265,7 +271,11 @@ the @ref{Menu bar support, , ``Hyperdrive'' menu bar}:
 @lisp
 (when (package-installed-p 'hyperdrive)
   (global-set-key (kbd "C-c h") #'hyperdrive-menu)
-  (hyperdrive-menu-bar-mode 1))
+  (menu-bar-mode +1)
+  (hyperdrive-menu-bar-mode +1)
+  (with-eval-after-load 'hyperdrive
+    (context-menu-mode +1)
+    (hyperdrive-context-menu-mode +1)))
 @end lisp
 
 With @ref{Top,use-package,,use-package,}:
@@ -273,7 +283,12 @@ With @ref{Top,use-package,,use-package,}:
 @lisp
 (use-package hyperdrive
   :bind ("C-c h" . hyperdrive-menu)
-  :init (hyperdrive-menu-bar-mode 1))
+  :init
+  (menu-bar-mode +1)
+  (hyperdrive-menu-bar-mode +1)
+  :config
+  (context-menu-mode +1)
+  (hyperdrive-context-menu-mode +1))
 @end lisp
 
 @node Usage
@@ -290,6 +305,7 @@ On the network it still may be there.
 @menu
 * Install the gateway::
 * Menu bar support::
+* Context menu support::
 * Hyperdrive menu command::
 * Start/stop the gateway::
 * Open a hyperdrive::
@@ -301,6 +317,7 @@ On the network it still may be there.
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Name a hyperdrive::
+* Explore peer graph::
 * Bookmark a hyperdrive::
 * Stream audio and video::
 * Download hyperdrive files::
@@ -344,6 +361,27 @@ Enable the ``Hyperdrive'' menu bar.
 
 If you have disabled @code{menu-bar-mode}, you can still use the hyperdrive
 menu bar by pressing @code{C-mouse-3} in a hyperdrive file or directory.
+
+@node Context menu support
+@section Context menu support
+
+@findex context-menu-mode
+
+If you enable @code{hyperdrive-context-menu-mode}, either in your
+configuration (see @ref{Example configuration}) or with @code{M-x
+hyperdrive-context-menu-mode}, ``Hyperdrive''-related menu items should
+appear when you right-click on hyperdrive names, like @code{petname:foo}.
+If you don't see hyperdrive context menu items when you right-click on
+hyperdrive names, please check that @code{context-menu-mode} is enabled (it
+is enabled automatically by @code{hyperdrive-context-menu-mode}).
+
+@deffn Command hyperdrive-context-menu-mode
+Enable the ``Hyperdrive'' right-click context menu.
+@end deffn
+
+If you have disabled @code{context-menu-mode}, you can still use the
+context menu bar by putting point on a hyperdrive name and pressing
+@code{S-<f10>}.
 
 @node Hyperdrive menu command
 @section Hyperdrive menu command
@@ -950,6 +988,145 @@ different hyperdrive, use the universal prefix argument like this:
 @code{C-u M-x hyperdrive-set-nickname}.
 @end deffn
 
+@node Explore peer graph
+@section Explore peer graph
+
+@code{hyperdrive.el} includes a tool for building and exploring a network
+of sources of information.  This peer graph feature is based on three
+ways relating to other peers:
+
+@table @asis
+@item Sources
+Sources are peers whose content you want to see.  Sources
+are also used to discover other sources.
+
+@item Blockers
+Blockers are peers whose blocked peers will be hidden
+from your view.  Blockers are also used to discover other blockers.
+
+@item Blocked
+Blocked are peers whose content you do not want to see.
+@end table
+
+For a video demonstration and explanation of the peer graph, see
+@uref{https://ushin.org/presentations.html#emacsconf2024, EmacsConf 2024: New in hyperdrive.el: quick install, peer graph,
+transclusion!}
+
+@menu
+* Customization::
+@end menu
+
+@node Customization
+@subsection Customization
+
+@defopt hyperdrive-peer-graph-sources-max-hops-default
+Default maximum number of hops to go out when gathering source.
+Defaults to @code{3}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-blockers-max-hops-default
+Default maximum number of hops to go out when gathering blockers.
+Defaults to @code{3}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-show-sources-p-default
+Whether to show sources in peer graph and list views by default.
+Defaults to @code{t}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-show-blockers-p-default
+Whether to show blockers in peer graph and list views by default.
+Defaults to @code{t}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-show-blocked-p-default
+Whether to show blocked in peer graph and list views by default:
+
+@table @asis
+@item @code{all}
+Show blocked sources and non-sources.
+@item @code{sources}
+Show only blocked sources. (default)
+@item @code{non-sources}
+Show only blocked non-sources.
+@item @code{nil}
+Hide blocked peers.
+@end table
+@end defopt
+
+@defopt hyperdrive-peer-graph-shortest-paths-p-default
+Whether to show only the shortest paths between peers by default.
+Defaults to @code{t}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-buffer-name
+Buffer name to use for peer graph buffers.  Defaults to
+@code{"*hyperdrive-peer-graph*"}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-list-buffer-name
+Buffer name to use for peer list buffers.  Defaults to
+@code{"*hyperdrive-peer-graph-list*"}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-list-apply-filters
+Whether the filters applied to the peer graph should affect the peer
+list as well. Defaults to @code{t}.
+
+For example, if non-nil and @code{hyperdrive-peer-graph-show-sources-p}
+is @code{nil}, then sources will not appear in the peer list.  Regardless
+of this options value, you can fold the sections of the peer list
+with @code{magit-section-toggle}, bound to @code{TAB}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-display-buffer-action
+Display buffer action for peer graph buffers.  Passed to
+@code{display-buffer}, which see.
+@end defopt
+
+@defopt hyperdrive-peer-graph-list-display-buffer-action
+Display buffer action for peer list buffers.  Passed to
+@code{display-buffer}, which see.
+@end defopt
+
+@defopt hyperdrive-peer-graph-auto-resize-on-window-resize
+Whether to redraw the graph when the window displaying its buffer
+resizes.  Value has the same meaning as
+@code{image-auto-resize-on-window-resize}, defined in @code{image-mode.el}.
+@end defopt
+
+@defopt hyperdrive-peer-graph-menu-display-action
+Display buffer action for transient peer graph menu.  See
+@ref{Top,transient.el info manual,,transient,} for more information.
+@end defopt
+
+@defopt hyperdrive-sbb-view-layout
+Name of the Graphviz layout engine to use.  See @uref{https://graphviz.org/docs/attrs/layout/, Graphviz
+documentation on layout} for more information.  Defaults to @code{"dot"}.
+@end defopt
+
+@defopt hyperdrive-sbb-view-overlap
+How to handle overlapping nodes.  See @uref{https://graphviz.org/docs/attrs/overlap/, GraphViz documentation on
+overlap} for more information. Defaults to @code{"voronoi"}.
+
+Only affects @code{fdp}, @code{neato}, @code{sfdp}, @code{circo}, @code{twopi} layouts.
+@end defopt
+
+@defopt hyperdrive-sbb-view-sources-color
+Color used for sources in peer graph.  Defaults to foreground of
+@code{hyperdrive-sbb-source} face.
+@end defopt
+
+@defopt hyperdrive-sbb-view-blockers-color
+Color used for blockers in peer graph.  Defaults to foreground of
+@code{hyperdrive-sbb-blocker} face.
+@end defopt
+
+@defopt hyperdrive-sbb-view-blocked-color
+Color used for blocked in peer graph.  Defaults to foreground of
+@code{hyperdrive-sbb-blocked} face.
+@end defopt
+
 @node Bookmark a hyperdrive
 @section Bookmark a hyperdrive
 
@@ -1496,7 +1673,7 @@ connections.
 DNS domains are checked for suspicious characters (see
 @ref{Suspicious Text,,,elisp,}).
 
-@node Customization
+@node Customization (1)
 @chapter Customization
 
 You can adjust the following options in the customization interface by
@@ -1527,8 +1704,9 @@ will start the gateway on this port.
 @end defopt
 
 @defopt hyperdrive-persist-location
-Location where @code{persist} will store @code{hyperdrive-hyperdrives}.  By
-default, uses the default @code{persist} location.
+Location where @code{persist} will store @code{hyperdrive-hyperdrives} and
+@code{hyperdrive-existent-versions}.  Defaults to @code{nil}, meaning that the
+default @code{persist} location will be used.
 @end defopt
 
 @defopt hyperdrive-timestamp-format

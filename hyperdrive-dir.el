@@ -40,14 +40,8 @@ If THEN, call it in the directory buffer with no arguments."
   ;; NOTE: ENTRY is not necessarily "filled" yet.
   (pcase-let*
       (((cl-struct hyperdrive-entry hyperdrive version) directory-entry)
-       (header (progn
-                 ;; Fill metadata first to get the current nickname.
-                 ;; TODO: Consider filling metadata earlier, outside
-                 ;; of this function (e.g.  so it will be available if
-                 ;; the user loads a non-directory file directly).
-                 (h/fill-metadata hyperdrive)
-                 (h/dir-column-headers
-                  (h//format-entry directory-entry))))
+       ;; Nickname should have been filled in `h/open'.
+       (header (h/dir-column-headers (h//format-entry directory-entry)))
        (prev-entry) (prev-point))
     (with-current-buffer (h//get-buffer-create directory-entry)
       (h/dir-mode)

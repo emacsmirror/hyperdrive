@@ -82,7 +82,11 @@ the [[*Menu bar support]["Hyperdrive" menu bar]]:
 #+begin_src emacs-lisp
   (when (package-installed-p 'hyperdrive)
     (global-set-key (kbd "C-c h") #'hyperdrive-menu)
-    (hyperdrive-menu-bar-mode 1))
+    (menu-bar-mode +1)
+    (hyperdrive-menu-bar-mode +1)
+    (with-eval-after-load 'hyperdrive
+      (context-menu-mode +1)
+      (hyperdrive-context-menu-mode +1)))
 #+end_src
 
 With [[info:use-package][use-package]]:
@@ -90,7 +94,12 @@ With [[info:use-package][use-package]]:
 #+begin_src emacs-lisp
   (use-package hyperdrive
     :bind ("C-c h" . hyperdrive-menu)
-    :init (hyperdrive-menu-bar-mode 1))
+    :init
+    (menu-bar-mode +1)
+    (hyperdrive-menu-bar-mode +1)
+    :config
+    (context-menu-mode +1)
+    (hyperdrive-context-menu-mode +1))
 #+end_src
 
 * Usage
@@ -132,6 +141,25 @@ that ~menu-bar-mode~ is enabled (it is enabled by default).
 
 If you have disabled ~menu-bar-mode~, you can still use the hyperdrive
 menu bar by pressing ~C-mouse-3~ in a hyperdrive file or directory.
+
+** Context menu support
+#+findex: context-menu-mode
+
+If you enable ~hyperdrive-context-menu-mode~, either in your
+configuration (see [[*Example configuration]]) or with ~M-x
+hyperdrive-context-menu-mode~, "Hyperdrive"-related menu items should
+appear when you right-click on hyperdrive names, like ~petname:foo~.
+If you don't see hyperdrive context menu items when you right-click on
+hyperdrive names, please check that ~context-menu-mode~ is enabled (it
+is enabled automatically by ~hyperdrive-context-menu-mode~).
+
+- Command: hyperdrive-context-menu-mode ::
+
+  Enable the "Hyperdrive" right-click context menu.
+
+If you have disabled ~context-menu-mode~, you can still use the
+context menu bar by putting point on a hyperdrive name and pressing
+~S-<f10>~.
 
 ** Hyperdrive menu command
 
@@ -639,6 +667,128 @@ information means, see [[*Naming]].
   different hyperdrive, use the universal prefix argument like this:
   ~C-u M-x hyperdrive-set-nickname~.
 
+** Explore peer graph
+
+~hyperdrive.el~ includes a tool for building and exploring a network
+of sources of information.  This peer graph feature is based on three
+ways relating to other peers:
+
+- Sources :: Sources are peers whose content you want to see.  Sources
+  are also used to discover other sources.
+
+- Blockers :: Blockers are peers whose blocked peers will be hidden
+  from your view.  Blockers are also used to discover other blockers.
+
+- Blocked :: Blocked are peers whose content you do not want to see.
+
+For a video demonstration and explanation of the peer graph, see
+[[https://ushin.org/presentations.html#emacsconf2024][EmacsConf 2024: New in hyperdrive.el: quick install, peer graph,
+transclusion!]]
+
+*** Customization
+
+- User Option: hyperdrive-peer-graph-sources-max-hops-default ::
+
+  Default maximum number of hops to go out when gathering source.
+  Defaults to ~3~.
+
+- User Option: hyperdrive-peer-graph-blockers-max-hops-default ::
+
+  Default maximum number of hops to go out when gathering blockers.
+  Defaults to ~3~.
+
+- User Option: hyperdrive-peer-graph-show-sources-p-default ::
+
+  Whether to show sources in peer graph and list views by default.
+  Defaults to ~t~.
+
+- User Option: hyperdrive-peer-graph-show-blockers-p-default ::
+
+  Whether to show blockers in peer graph and list views by default.
+  Defaults to ~t~.
+
+- User Option: hyperdrive-peer-graph-show-blocked-p-default ::
+
+  Whether to show blocked in peer graph and list views by default:
+
+  + ~all~ :: Show blocked sources and non-sources.
+  + ~sources~ :: Show only blocked sources. (default)
+  + ~non-sources~ :: Show only blocked non-sources.
+  + ~nil~ :: Hide blocked peers.
+
+- User Option: hyperdrive-peer-graph-shortest-paths-p-default ::
+
+  Whether to show only the shortest paths between peers by default.
+  Defaults to ~t~.
+
+- User Option: hyperdrive-peer-graph-buffer-name ::
+
+  Buffer name to use for peer graph buffers.  Defaults to
+  ~"*hyperdrive-peer-graph*"~.
+
+- User Option: hyperdrive-peer-graph-list-buffer-name ::
+
+  Buffer name to use for peer list buffers.  Defaults to
+  ~"*hyperdrive-peer-graph-list*"~.
+
+- User Option: hyperdrive-peer-graph-list-apply-filters ::
+
+  Whether the filters applied to the peer graph should affect the peer
+  list as well. Defaults to ~t~.
+
+  For example, if non-nil and ~hyperdrive-peer-graph-show-sources-p~
+  is ~nil~, then sources will not appear in the peer list.  Regardless
+  of this options value, you can fold the sections of the peer list
+  with ~magit-section-toggle~, bound to ~TAB~.
+
+- User Option: hyperdrive-peer-graph-display-buffer-action ::
+
+  Display buffer action for peer graph buffers.  Passed to
+  ~display-buffer~, which see.
+
+- User Option: hyperdrive-peer-graph-list-display-buffer-action ::
+
+  Display buffer action for peer list buffers.  Passed to
+  ~display-buffer~, which see.
+
+- User Option: hyperdrive-peer-graph-auto-resize-on-window-resize ::
+
+  Whether to redraw the graph when the window displaying its buffer
+  resizes.  Value has the same meaning as
+  ~image-auto-resize-on-window-resize~, defined in ~image-mode.el~.
+
+- User Option: hyperdrive-peer-graph-menu-display-action ::
+
+  Display buffer action for transient peer graph menu.  See
+  [[info:transient][transient.el info manual]] for more information.
+
+- User Option: hyperdrive-sbb-view-layout ::
+
+  Name of the Graphviz layout engine to use.  See [[https://graphviz.org/docs/attrs/layout/][Graphviz
+  documentation on layout]] for more information.  Defaults to ~"dot"~.
+
+- User Option: hyperdrive-sbb-view-overlap ::
+
+  How to handle overlapping nodes.  See [[https://graphviz.org/docs/attrs/overlap/][GraphViz documentation on
+  overlap]] for more information. Defaults to ~"voronoi"~.
+
+  Only affects ~fdp~, ~neato~, ~sfdp~, ~circo~, ~twopi~ layouts.
+
+- User Option: hyperdrive-sbb-view-sources-color ::
+
+  Color used for sources in peer graph.  Defaults to foreground of
+  ~hyperdrive-sbb-source~ face.
+
+- User Option: hyperdrive-sbb-view-blockers-color ::
+
+  Color used for blockers in peer graph.  Defaults to foreground of
+  ~hyperdrive-sbb-blocker~ face.
+
+- User Option: hyperdrive-sbb-view-blocked-color ::
+
+  Color used for blocked in peer graph.  Defaults to foreground of
+  ~hyperdrive-sbb-blocked~ face.
+
 ** Bookmark a hyperdrive
 #+findex: bookmark-set
 #+findex: bookmark-jump
@@ -1120,8 +1270,9 @@ running ~M-x customize-group RET hyperdrive RET~:
 
 - User Option: hyperdrive-persist-location ::
 
-  Location where ~persist~ will store ~hyperdrive-hyperdrives~.  By
-  default, uses the default ~persist~ location.
+  Location where ~persist~ will store ~hyperdrive-hyperdrives~ and
+  ~hyperdrive-existent-versions~.  Defaults to ~nil~, meaning that the
+  default ~persist~ location will be used.
 
 - User Option: hyperdrive-timestamp-format ::
 

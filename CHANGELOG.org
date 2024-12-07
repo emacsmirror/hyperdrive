@@ -6,9 +6,15 @@
 
 * 0.5-pre
 
-Version ~0.5~ simplifies the history logic, removes the persisted
-~hyperdrive-version-ranges~ variable, deletes hundreds of lines of
-code since ~v0.4~, and more correctly handles edge cases and errors.
+Version ~0.5~ adds the peer graph/list, adds a global hyperdrive context
+menu, and simplifies the internal logic for getting file history.
+
+** Added
+
+- Add peer graph and peer list for discovering sources of information
+  and exploring the connections between peers.
+- Enable ~hyperdrive-context-menu-mode~ to enable right-click menus on
+  on hyperdrive names.
 
 ** Changed
 
@@ -20,6 +26,12 @@ code since ~v0.4~, and more correctly handles edge cases and errors.
   delete the old data inside ~hyperdrive-persist-location~.
 - Link website, library source, and Info manual in Customize group.
 - More colorful version descriptions in ~hyperdrive-menu~.
+- Hyperdrive nickname metadata are now loaded when opening any file,
+  not just directories.
+- ~hyperdrive-read-hyperdrive~ now parses the hyperdrive from a URL or
+  public key and returns it.
+- ~hyperdrive-nickname~ face now inherits from ~shadow~ to show its
+  relative lack of trustworthiness compared to ~hyperdrive-petname~.
 
 ** Fixed
 
@@ -33,8 +45,14 @@ code since ~v0.4~, and more correctly handles edge cases and errors.
 
 ** Internal
 
+- ~hyper-gateway-ushin~ can now directly control the hyperbee, so
+  key/value (like peer graph data) can now be stored efficiently.
+- ~hyper-gateway-ushin~ now has a ~/$/history~ API which can be
+  queried to get the file history for a particular file.
 - Add ~hyperdrive-fully-replicate~ to fully replicate a hyperdrive's
   inode db, blob store, or both.
+- ~hyperdrive-fill-metadata~ can now optionally be called
+  asynchronously.
 - Bump package dependencies.
 
 * 0.4.2 [2024-09-24 Tue]
