@@ -702,33 +702,6 @@ Non-nil value may be the number of seconds to wait before resizing."
 
 ;;;;; Functions
 
-(defun h/sbb-shortest-sources-hops-length (relation)
-  "Return the shortest number of source hops for RELATION."
-  (h/sbb-shortest-hops-length 'sources relation))
-
-(defun h/sbb-shortest-blockers-hops-length (relation)
-  "Return the minimum number of blocker hops in RELATION."
-  (h/sbb-shortest-hops-length 'blockers relation))
-
-(cl-defun h/sbb-shortest-blocked-hops-length (relation)
-  "Return the minimum number of blocked hops in RELATION.
-A blocked hop includes the number of hops to the blocker."
-  ;; TODO: Generalize this function so it doesn't rely on `hpg/...' variables.
-  (when-let*
-      ((blocked-paths (h/sbb-relation-blocked-paths relation))
-       (blockers
-        (mapcar (lambda (path)
-                  (let ((blocker-public-key (h/sbb-blocked-path-blocker path)))
-                    (when (equal (h/public-key hpg/root-hyperdrive)
-                                 blocker-public-key)
-                      ;; Direct block from root: return 1.
-                      (cl-return-from h/sbb-shortest-blocked-hops-length 1))
-                    (gethash blocker-public-key hpg/relations)))
-                blocked-paths)))
-    (1+ (cl-loop
-         for blocker in blockers
-         minimize (h/sbb-shortest-hops-length 'blockers blocker)))))
-
 (defun hpg/format-hops (hops)
   "Return formatted string for HOPS, which is an integer."
   (if (= 1 hops) "1 hop" (format "%d hops" hops)))
@@ -838,7 +811,14 @@ blocked paths or has a one-hop source path."
                              ('blocked 'h/sbb-blocked)))
                          :level-indent 2
                          :item-indent 0
-                         args)))
+                         args))
+                (shortest-sources-hops-length (relation)
+                  (h/sbb-shortest-hops-length 'sources relation))
+                (shortest-blockers-hops-length (relation)
+                  (h/sbb-shortest-hops-length 'blockers relation))
+                (shortest-blocked-hops-length (relation)
+                  (h/sbb-shortest-blocked-hops-length
+                   relation hpg/relations (h/public-key hpg/root-hyperdrive))))
       (let* ((relations (if hpg/list-apply-filters
                             (hpg/filter hpg/relations)
                           hpg/relations))
@@ -855,7 +835,7 @@ blocked paths or has a one-hop source path."
                  :name "Sources"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
-                           (list #'h/sbb-shortest-sources-hops-length)
+                           (list #'shortest-sources-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values sources))
@@ -868,7 +848,7 @@ blocked paths or has a one-hop source path."
                  :name "Blockers"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
-                           (list #'h/sbb-shortest-blockers-hops-length)
+                           (list #'shortest-blockers-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blockers))
@@ -881,7 +861,7 @@ blocked paths or has a one-hop source path."
                  :name "Blocked sources"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
-                           (list #'h/sbb-shortest-blocked-hops-length)
+                           (list #'shortest-blocked-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blocked-sources))
@@ -894,7 +874,7 @@ blocked paths or has a one-hop source path."
                  :name "Blocked non-sources"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
-                           (list #'h/sbb-shortest-blocked-hops-length)
+                           (list #'shortest-blocked-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blocked-non-sources))

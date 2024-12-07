@@ -339,6 +339,24 @@ RELATIONS may be a hash table of `hyperdrive-sbb-relations' structs."
   (cl-loop for path in (h/sbb-relation-paths-of-type type relation)
            minimize (length (h/sbb-path-hops path))))
 
+(cl-defun h/sbb-shortest-blocked-hops-length (relation relations root)
+  "Return the minimum number of blocked hops in RELATION.
+A blocked hop includes the number of hops to the blocker based on
+RELATIONS.  If one of the blockers in RELATION is ROOT, return 1."
+  (when-let*
+      ((blocked-paths (h/sbb-relation-blocked-paths relation))
+       (blockers
+        (mapcar (lambda (path)
+                  (let ((blocker-id (h/sbb-blocked-path-blocker path)))
+                    (when (equal root blocker-id)
+                      ;; Direct block from root: return 1.
+                      (cl-return-from h/sbb-shortest-blocked-hops-length 1))
+                    (gethash blocker-id relations)))
+                blocked-paths)))
+    (1+ (cl-loop
+         for blocker in blockers
+         minimize (h/sbb-shortest-hops-length 'blockers blocker)))))
+
 ;;;; Footer
 
 (provide 'hyperdrive-sbb)
