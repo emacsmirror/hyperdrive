@@ -10,6 +10,11 @@ Version ~0.5~ simplifies the history logic, removes the persisted
 ~hyperdrive-version-ranges~ variable, deletes hundreds of lines of
 code since ~v0.4~, and more correctly handles edge cases and errors.
 
+** Added
+
+- Enable ~hyperdrive-context-menu-mode~ to enable right-click menus on
+  on hyperdrive names.
+
 ** Changed
 
 - It's now possible to attempt to jump to the next version of a file
