@@ -1065,8 +1065,7 @@ With numeric ARG, or interactively with universal prefix argument
 (transient-define-prefix hyperdrive-peer-graph-menu
   (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
-  ;; TODO: Update info manual link
-  :info-manual "(hyperdrive)"
+  :info-manual "(hyperdrive) Explore peer graph"
   :display-action h/peer-graph-menu-display-action
   :mode-line-format nil
   ;; :transient-non-suffix t
