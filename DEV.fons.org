@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID:       e8a9e175-884a-4b4d-bea0-2c524a4f9c9a
 :END:
-#+TITLE: Development notes about the ~fons~ library
+#+TITLE: Development notes about the ~sbb~ library
 
 * Design
 
 ** Purpose
 
-/What is Fons for?/
+/What is sbb for?/
 
 + Goal: Crowdsource /sources/ of information. :: On a P2P network, where there is no central index to tell users what is worth looking at, we must start with sources of our choosing (like "word of mouth").  The system does not come preconfigured with a list of sources and metadata about them.
   - Note that we are not crowdsourcing /information/, but /sources/ of information.
@@ -50,7 +50,7 @@ most one request is sent to the gateway per hyperdrive peer.
 
 ** Basic usage patterns / workflows
 
-/What specific tasks should Fons enable the user to perform?/
+/What specific tasks should Sbb enable the user to perform?/
 
 *** UI
 
@@ -75,7 +75,7 @@ most one request is sent to the gateway per hyperdrive peer.
 /This email from Joseph summarizes our current thoughts on scoring of sources and why we are not including it in the design anymore./
 
 #+begin_quote
-Reasons to remove scores from fons.el:
+Reasons to remove scores from sbb.el:
 
 1. Source scores are not defined within a rubric.
 
@@ -87,7 +87,7 @@ Reasons to remove scores from fons.el:
     It's complex and unpleasant to assign scores to people. Instead of
     just a checkbox, users have to assign a potentially daunting number.
 
-    Also, IMO the fons-view graphs look much prettier without numbers.
+    Also, IMO the sbb-view graphs look much prettier without numbers.
 
 3. Source scores make the code/data more complex.
 
@@ -131,7 +131,7 @@ to display in a user's feed (Gnus uses scores for this same purpose
   - Hops ::
   - Score :: Same meaning as in [[id:d2cf6a99-44ce-4dc2-9ba3-3193555ae435][Hop]].
     * The score of a path decays as its length increases.
-    * Computed by [[id:8a65ecf2-7025-4e03-a1db-cf0997f5ddba][fons-path-score-fn]].
+    * Computed by [[id:8a65ecf2-7025-4e03-a1db-cf0997f5ddba][sbb-path-score-fn]].
 
 ** Relation
 
@@ -141,7 +141,7 @@ to display in a user's feed (Gnus uses scores for this same purpose
   - Paths :: A list of [[id:16fa8d27-5cd7-440b-969b-21fc88020a03][Paths]].
   - Score :: Same meaning as in [[id:d2cf6a99-44ce-4dc2-9ba3-3193555ae435][Hop]].
     * If multiple paths exist, the number should be higher than the highest path score.
-    * Computed by [[id:496b1d1e-85f4-493c-bb95-4303435e6f76][fons-relation-score-fn]].
+    * Computed by [[id:496b1d1e-85f4-493c-bb95-4303435e6f76][sbb-relation-score-fn]].
 
 *** Examples
 
@@ -284,14 +284,14 @@ We could implement the Appleseed algo in Elisp:
                 }
               #+end_src
 
-** fons-path-score-fn (PATH)
+** sbb-path-score-fn (PATH)
 :PROPERTIES:
 :ID:       8a65ecf2-7025-4e03-a1db-cf0997f5ddba
 :END:
 
 
 
-** fons-score-relation-fn (RELATION)
+** sbb-score-relation-fn (RELATION)
 :PROPERTIES:
 :ID:       496b1d1e-85f4-493c-bb95-4303435e6f76
 :END:
@@ -306,5 +306,4 @@ What should it return?  What data does it need for its computation?
 
   + 
 
-** fons-hop-score
-
+** sbb-hop-score

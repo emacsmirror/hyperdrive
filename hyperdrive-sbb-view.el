@@ -1,4 +1,4 @@
-;;; hyperdrive-fons-view.el --- Visualize fons relations  -*- lexical-binding: t; -*-
+;;; hyperdrive-sbb-view.el --- Visualize sbb relations  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 USHIN, Inc.
 
@@ -21,7 +21,7 @@
 
 ;;; Commentary:
 
-;; This library implements a graphviz-based view for `fons' relations data.
+;; This library implements a graphviz-based view for `sbb' relations data.
 
 ;; Some of the code is copied from `org-graph-view':
 ;; https://github.com/alphapapa/org-graph-view, which is GPLv3+ licensed.
@@ -36,15 +36,15 @@
 (require 'map)
 (require 'color)
 
-(require 'hyperdrive-fons)
+(require 'hyperdrive-sbb)
 
 ;;;; Customization
 
-(defgroup hyperdrive-fons-view nil
-  "Visualize fons relations."
-  :group 'fons)
+(defgroup h/sbb-view nil
+  "Visualize sbb relations."
+  :group 'h/sbb)
 
-(defcustom hyperdrive-fons-view-overlap "voronoi"
+(defcustom h/sbb-view-overlap "voronoi"
   "How to handle overlapping.  See Graphviz documentation.
 It seems unclear which is the best default, because each option
 renders one or another layout slightly better than other
@@ -54,7 +54,7 @@ options."
 		 (const :tag "Allow overlap" "true")
 		 (const :tag "VPSC" "vpsc")))
 
-(defcustom hyperdrive-fons-view-layout "dot"
+(defcustom h/sbb-view-layout "dot"
   "Default layout.  See Graphviz documentation."
   :type '(choice
           ((const :description "Pretty good layout.  Offers perspective/root node."
@@ -69,18 +69,18 @@ options."
                   "dot")
            (const :description "Similar to fdp." "sfdp"))))
 
-(defface hyperdrive-fons-source '((t :inherit success))
+(defface h/sbb-source '((t :inherit success))
   "Applied to sources.")
 
-(defface hyperdrive-fons-blocker '((t :inherit font-lock-constant-face
-                                      :weight bold))
+(defface h/sbb-blocker '((t :inherit font-lock-constant-face
+                            :weight bold))
   "Applied to blockers.")
 
-(defface hyperdrive-fons-blocked '((t :inherit error))
+(defface h/sbb-blocked '((t :inherit error))
   "Applied to blocked.")
 
 ;; TODO: Reload image on defcustom change
-(defcustom hyperdrive-fons-view-sources-color (face-foreground 'hyperdrive-fons-source nil t)
+(defcustom h/sbb-view-sources-color (face-foreground 'h/sbb-source nil t)
   "Source edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -88,7 +88,7 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blockers-color (face-foreground 'hyperdrive-fons-blocker nil t)
+(defcustom h/sbb-view-blockers-color (face-foreground 'h/sbb-blocker nil t)
   "Blocker edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -96,7 +96,7 @@ May be any string listed here:
   ;; colors, and they may contain spaces, preventing the graph from rendering.
   :type 'string)
 
-(defcustom hyperdrive-fons-view-blocked-color (face-foreground 'hyperdrive-fons-blocked nil t)
+(defcustom h/sbb-view-blocked-color (face-foreground 'h/sbb-blocked nil t)
   "Blocked edge and node color.
 May be any string listed here:
 <https://graphviz.org/doc/info/colors.html>."
@@ -106,11 +106,11 @@ May be any string listed here:
 
 ;;;; Mode
 
-(define-derived-mode hyperdrive-fons-view-mode special-mode
-  `("Hyperdrive-fons-view"
+(define-derived-mode h/sbb-view-mode special-mode
+  `("Hyperdrive-sbb-view"
     ;; TODO: Add more to lighter, e.g. menu to change params.
     )
-  "Major mode for viewing Hyperdrive Fons graphs."
+  "Major mode for viewing hyperdrive sbb graphs."
   :group 'hyperdrive
   :interactive nil
   ;; Don't scale with font pixel size.
@@ -135,17 +135,17 @@ May be any string listed here:
 
 ;;;; Functions
 
-(cl-defun hyperdrive-fons-view
-    (relations root &key (layout hyperdrive-fons-view-layout) insert-relation-fun edge-url-format-fun)
+(cl-defun h/sbb-view
+    (relations root &key (layout h/sbb-view-layout) insert-relation-fun edge-url-format-fun)
   "View RELATIONS from ROOT."
-  (hyperdrive-fons-view--render-graphviz
-   (hyperdrive-fons-view--format-graph
+  (h/sbb-view--render-graphviz
+   (h/sbb-view--format-graph
     relations :root-name root :layout layout
     :window (get-buffer-window (current-buffer))
     :insert-relation-fun insert-relation-fun
     :edge-url-format-fun edge-url-format-fun)))
 
-(defun hyperdrive-fons-view--graphviz (type)
+(defun h/sbb-view--graphviz (type)
   "Run Graphviz for TYPE on current buffer.
 Graphviz is called on current buffer content, which should be a
 graphviz string, and replaces it with the rendered output."
@@ -153,10 +153,10 @@ graphviz string, and replaces it with the rendered output."
                                       (concat "-T" type)))
     (error "Error generating graph: %S" (buffer-string))))
 
-(cl-defun hyperdrive-fons-view--render-graphviz (graphviz)
+(cl-defun h/sbb-view--render-graphviz (graphviz)
   "Render GRAPHVIZ string in current buffer."
-  (let* ((original-map (hyperdrive-fons-view--graph-map graphviz))
-         (svg-string (hyperdrive-fons-view--svg graphviz))
+  (let* ((original-map (h/sbb-view--graph-map graphviz))
+         (svg-string (h/sbb-view--svg graphviz))
          (window-width
           (window-text-width (get-buffer-window (current-buffer)) t))
          (window-height
@@ -169,20 +169,20 @@ graphviz string, and replaces it with the rendered output."
                               :width window-width
                               :height window-height)))
     (when (> 30 emacs-major-version)
-      ;; TODO(deprecate-29): (bug#69602) resolved in Emacs 30.
+      ;; TODO(deprecate-29): bug#69602 resolved in Emacs 30.
       (setq image
             (nconc image
                    (list
-                    :map (hyperdrive-fons-view-image--compute-map image)))))
+                    :map (h/sbb-view-image--compute-map image)))))
     (erase-buffer)
     (insert-image image)
     (goto-char (point-min))))
 
-(defun hyperdrive-fons-view--graph-map (graph)
+(defun h/sbb-view--graph-map (graph)
   "Return image map for Graphviz GRAPH."
   (with-temp-buffer
     (insert graph)
-    (hyperdrive-fons-view--graphviz "cmapx")
+    (h/sbb-view--graphviz "cmapx")
     (mapcar (lambda (area)
               (pcase-let* ((`(area ,(map shape href coords)) area)
                            (coords-list (mapcar #'string-to-number
@@ -197,7 +197,7 @@ graphviz string, and replaces it with the rendered output."
         	      href (list 'help-echo href))))
             (cddr (libxml-parse-xml-region (point-min) (point-max))))))
 
-(cl-defun hyperdrive-fons-view--format-graph
+(cl-defun h/sbb-view--format-graph
     (relations &key root-name layout window insert-relation-fun edge-url-format-fun)
   "Return a graphviz-string string for RELATIONS."
   (cl-labels ((insert-vals (&rest pairs)
@@ -209,25 +209,25 @@ graphviz string, and replaces it with the rendered output."
                                          collect (format "%s=\"%s\"" key value))
                                 ",")))
               (format-hop (hop type)
-                (pcase-let (((cl-struct fons-hop from to) hop))
+                (pcase-let (((cl-struct h/sbb-hop from to) hop))
                   (format "%s -> %s [edgeURL=\"%s\", color=\"%s\"];\n"
                           from to (funcall edge-url-format-fun hop type)
                           (pcase type
-                            ('sources hyperdrive-fons-view-sources-color)
-                            ('blockers hyperdrive-fons-view-blockers-color)
-                            ('blocked hyperdrive-fons-view-blocked-color)))))
+                            ('sources h/sbb-view-sources-color)
+                            ('blockers h/sbb-view-blockers-color)
+                            ('blocked h/sbb-view-blocked-color)))))
               (format-to (to _relation)
                 (funcall insert-relation-fun to relations root-name)))
     (with-temp-buffer
       (save-excursion
-        (insert "digraph fonsrelationview {\n")
+        (insert "digraph sbbrelationview {\n")
         (insert "edge" (format-val-list "color" (face-attribute 'default :foreground)) ";\n")
         (insert "node" (format-val-list "fontname" (face-attribute 'default :family)
 				        "mindist" "1")
 	        ";\n")
         (insert-vals "layout" layout
                      "bgcolor" (face-attribute 'default :background)
-                     "overlap" hyperdrive-fons-view-overlap
+                     "overlap" h/sbb-view-overlap
                      "compound" "true"
                      ;; TODO: Comment: Look into using "size" with "ratio: fill"
                      ;; to make the node text of consistently readable size.
@@ -238,9 +238,9 @@ graphviz string, and replaces it with the rendered output."
                      "ratio" (/ (window-text-height window t)
                                 (window-text-width window t) 1.0)
                      "mindist" "0")
-        (dolist (hop (fons-relations-hops relations 'sources))
+        (dolist (hop (h/sbb-relations-hops relations 'sources))
           (insert (format-hop hop 'sources)))
-        (dolist (hop (fons-relations-hops relations 'blockers))
+        (dolist (hop (h/sbb-relations-hops relations 'blockers))
           (insert (format-hop hop 'blockers)))
         (let ((blocker-paths-exist-p
                (catch 'blocker-paths-exist-p
@@ -248,19 +248,19 @@ graphviz string, and replaces it with the rendered output."
                  ;; display blocked hops when blockers are displayed.  Blocked
                  ;; nodes may still be displayed without edges.
                  (maphash (lambda (_id relation)
-                            (when (fons-relation-blocker-paths relation)
+                            (when (h/sbb-relation-blocker-paths relation)
                               (throw 'blocker-paths-exist-p t)))
                           relations))))
-          (dolist (hop (fons-relations-hops relations 'blocked))
+          (dolist (hop (h/sbb-relations-hops relations 'blocked))
             (when (or blocker-paths-exist-p
                       ;; NOTE: Without adding another argument to
-                      ;; `hyperdrive-fons-view--format-graph', there's no way to
+                      ;; `h/sbb-view--format-graph', there's no way to
                       ;; distinguish between a `relations' table which has been
                       ;; filtered to remove blocker paths and a table which
                       ;; never had any blocker paths.  Therefore, this code
                       ;; always shows direct blocked hops from root, even when
-                      ;; `hyperdrive-peer-graph-show-blockers-p' is nil.
-                      (equal root-name (fons-hop-from hop)))
+                      ;; `hpg/show-blockers-p' is nil.
+                      (equal root-name (h/sbb-hop-from hop)))
               (insert (format-hop hop 'blocked)))))
         (funcall insert-relation-fun root-name relations root-name)
         (insert (format "root=\"%s\"\n" root-name)) ; "twopi", "circo" only
@@ -269,22 +269,22 @@ graphviz string, and replaces it with the rendered output."
       ;; (message "%s" (buffer-string))
       (buffer-string))))
 
-(cl-defun hyperdrive-fons-view--svg (graph)
+(cl-defun h/sbb-view--svg (graph)
   "Return SVG string for Graphviz GRAPH."
   (with-temp-buffer
     (insert graph)
-    (hyperdrive-fons-view--graphviz "svg")
+    (h/sbb-view--graphviz "svg")
     (goto-char (point-min))
     (buffer-string)))
 
-;; (defvar hyperdrive-fons-view-prism-minimum-contrast 6
+;; (defvar h/sbb-view-prism-minimum-contrast 6
 ;;   "Attempt to enforce this minimum contrast ratio for user faces.
 ;; This should be a reasonable number from, e.g. 0-7 or so."
 ;;   ;; Prot would almost approve of this default.  :) I would go all the way
 ;;   ;; to 7, but 6 already significantly dilutes the colors in some cases.
 ;;   )
 
-;; (cl-defun hyperdrive-fons-view--prism-color
+;; (cl-defun h/sbb-view--prism-color
 ;;     (string &key (contrast-with (face-background 'default nil 'default)))
 ;;   ;; Copied from ement.el.
 ;;   "Return a computed color for STRING.
@@ -330,8 +330,8 @@ graphviz string, and replaces it with the rendered output."
 ;;                             (/ (float (ash (logand color-num 65280) -8)) 255)
 ;;                             (/ (float (ash (logand color-num 16711680) -16)) 255)))
 ;;            (contrast-with-rgb (color-name-to-rgb contrast-with)))
-;;       (when (< (contrast-ratio color-rgb contrast-with-rgb) hyperdrive-fons-view-prism-minimum-contrast)
-;;         (setf color-rgb (increase-contrast color-rgb contrast-with-rgb hyperdrive-fons-view-prism-minimum-contrast
+;;       (when (< (contrast-ratio color-rgb contrast-with-rgb) h/sbb-view-prism-minimum-contrast)
+;;         (setf color-rgb (increase-contrast color-rgb contrast-with-rgb h/sbb-view-prism-minimum-contrast
 ;;                                            (color-name-to-rgb
 ;;                                             ;; Ideally we would use the foreground color,
 ;;                                             ;; but in some themes, like Solarized Dark,
@@ -374,30 +374,30 @@ graphviz string, and replaces it with the rendered output."
   ;; Adding this global :after advice should not interfere with other packages
   ;; since it has no effect on images that lack an :original-map property.
   (advice-add #'image--change-size
-              :after #'hyperdrive-fons-view--recompute-image-map-at-point)
+              :after #'h/sbb-view--recompute-image-map-at-point)
   (advice-add #'image-rotate
-              :after #'hyperdrive-fons-view--recompute-image-map-at-point)
+              :after #'h/sbb-view--recompute-image-map-at-point)
   (advice-add #'image-flip-horizontally
-              :after #'hyperdrive-fons-view--recompute-image-map-at-point)
+              :after #'h/sbb-view--recompute-image-map-at-point)
   (advice-add #'image-flip-vertically
-              :after #'hyperdrive-fons-view--recompute-image-map-at-point))
+              :after #'h/sbb-view--recompute-image-map-at-point))
 
-(defun hyperdrive-fons-view--recompute-image-map-at-point (&rest _args)
+(defun h/sbb-view--recompute-image-map-at-point (&rest _args)
   "Recompute :map for image at point.
 Intended as :after advice for commands which transform images."
   (when-let* ((image (image--get-image))
               (original-map (image-property image :original-map)))
     (setf (image-property image :map)
-          (hyperdrive-fons-view-image--compute-map image))))
+          (h/sbb-view-image--compute-map image))))
 
-(defsubst hyperdrive-fons-view-image--compute-rotation (image)
+(defsubst h/sbb-view-image--compute-rotation (image)
   "Copy of `image--compute-rotation' from Emacs 30.
 Accepts IMAGE."
   (let ((degrees (or (image-property image :rotation) 0)))
     (and (= 0 (mod degrees 1))
          (car (memql (truncate (mod degrees 360)) '(0 90 180 270))))))
 
-(defun hyperdrive-fons-view-image--compute-map (image)
+(defun h/sbb-view-image--compute-map (image)
   "Copy of `image--compute-map' from Emacs 30.
 Accepts IMAGE."
   (when-let* ((map (image-property image :original-map)))
@@ -411,27 +411,27 @@ Accepts IMAGE."
            (scale (/ (float (car size))
                      (car (image-size
                            (image--image-without-parameters image) t))))
-           (rotation (hyperdrive-fons-view-image--compute-rotation image))
+           (rotation (h/sbb-view-image--compute-rotation image))
            ;; Image is flipped only if rotation is a multiple of 90,
            ;; including 0.
            (flip (and rotation (image-property image :flip))))
       ;; SIZE fits MAP after transformations.  Scale MAP before flip and
       ;; rotate operations, since both need MAP to fit SIZE.
       (unless (= scale 1)
-        (hyperdrive-fons-view-image--scale-map map scale))
+        (h/sbb-view-image--scale-map map scale))
       ;; In rendered images, rotation is always applied before flip.
       (when (memql rotation '(90 180 270))
-        (hyperdrive-fons-view-image--rotate-map
+        (h/sbb-view-image--rotate-map
          map rotation (if (= rotation 180)
                           size
                         ;; If rotated ±90°, swap width and height.
                         (cons (cdr size) (car size)))))
       ;; After rotation, there's no need to swap width and height.
       (when flip
-        (hyperdrive-fons-view-image--flip-map map size)))
+        (h/sbb-view-image--flip-map map size)))
     map))
 
-;; (defun hyperdrive-fons-view-image--compute-original-map (image)
+;; (defun h/sbb-view-image--compute-original-map (image)
 ;;   "Copy of `image--compute-original-map' from Emacs 30.
 ;; Accepts IMAGE."
 ;;   (when-let* ((original-map (image-property image :map)))
@@ -445,7 +445,7 @@ Accepts IMAGE."
 ;;            (scale (/ (float (car size))
 ;;                      (car (image-size
 ;;                            (image--image-without-parameters image) t))))
-;;            (rotation (hyperdrive-fons-view-image--compute-rotation image))
+;;            (rotation (h/sbb-view-image--compute-rotation image))
 ;;            ;; Image is flipped only if rotation is a multiple of 90
 ;;            ;; including 0.
 ;;            (flip (and rotation (image-property image :flip))))
@@ -456,14 +456,14 @@ Accepts IMAGE."
 ;;       ;; both need ORIGINAL-MAP to fit SIZE.
 ;;       ;; In rendered images, rotation is always applied before flip.
 ;;       (when flip
-;;         (hyperdrive-fons-view-image--flip-map original-map size))
+;;         (h/sbb-view-image--flip-map original-map size))
 ;;       (when (memql rotation '(90 180 270))
-;;         (hyperdrive-fons-view-image--rotate-map original-map (- rotation) size))
+;;         (h/sbb-view-image--rotate-map original-map (- rotation) size))
 ;;       (unless (= scale 1)
-;;         (hyperdrive-fons-view-image--scale-map original-map (/ 1.0 scale))))
+;;         (h/sbb-view-image--scale-map original-map (/ 1.0 scale))))
 ;;     original-map))
 
-(defun hyperdrive-fons-view-image--scale-map (map scale)
+(defun h/sbb-view-image--scale-map (map scale)
   "Copy of `image--scale-map' from Emacs 30.
 Accepts IMAGE and SCALE."
   (pcase-dolist (`(,`(,type . ,coords) ,_id ,_plist) map)
@@ -483,7 +483,7 @@ Accepts IMAGE and SCALE."
                (round (* (aref coords i) scale)))))))
   map)
 
-(defun hyperdrive-fons-view-image--rotate-map (map rotation size)
+(defun h/sbb-view-image--rotate-map (map rotation size)
   "Copy of `image--rotate-map' from Emacs 30.
 Accepts MAP, ROTATION, and SIZE."
   (setq rotation (mod rotation 360))
@@ -502,22 +502,22 @@ Accepts MAP, ROTATION, and SIZE."
            (270 ; ...old upper right and bottom left
             (setq x0 (cadr coords) y0 (cdar coords)
                   x1 (caar coords) y1 (cddr coords))))
-         (setcar coords (hyperdrive-fons-view-image--rotate-coord x0 y0 rotation size))
-         (setcdr coords (hyperdrive-fons-view-image--rotate-coord x1 y1 rotation size))))
+         (setcar coords (h/sbb-view-image--rotate-coord x0 y0 rotation size))
+         (setcdr coords (h/sbb-view-image--rotate-coord x1 y1 rotation size))))
       ('circle
-       (setcar coords (hyperdrive-fons-view-image--rotate-coord
+       (setcar coords (h/sbb-view-image--rotate-coord
                        (caar coords) (cdar coords) rotation size)))
       ('poly
        (dotimes (i (length coords))
          (when (= 0 (% i 2))
            (pcase-let ((`(,x . ,y)
-                        (hyperdrive-fons-view-image--rotate-coord
+                        (h/sbb-view-image--rotate-coord
                          (aref coords i) (aref coords (1+ i)) rotation size)))
              (aset coords i x)
              (aset coords (1+ i) y)))))))
   map)
 
-(defun hyperdrive-fons-view-image--rotate-coord (x y angle size)
+(defun h/sbb-view-image--rotate-coord (x y angle size)
   "Copy of `image--rotate-coord' from Emacs 30.
 Accepts X, Y, ANGLE, and SIZE."
   (pcase-let* ((radian (* (/ angle 180.0) float-pi))
@@ -540,7 +540,7 @@ Accepts X, Y, ANGLE, and SIZE."
                (y1 (- y1)))
     (cons (round x1) (round y1))))
 
-(defun hyperdrive-fons-view-image--flip-map (map size)
+(defun h/sbb-view-image--flip-map (map size)
   "Copy of `image--flip-map' from Emacs 30.
 Accepts MAP and SIZE."
   (pcase-dolist (`(,`(,type . ,coords) ,_id ,_plist) map)
@@ -560,5 +560,16 @@ Accepts MAP and SIZE."
            (aset coords i (- (car size) (aref coords i))))))))
   map)
 
-(provide 'hyperdrive-fons-view)
-;;; hyperdrive-fons-view.el ends here
+;;;; Footer
+
+(provide 'hyperdrive-sbb-view)
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("he//" . "hyperdrive-entry--")
+;;   ("he/"  . "hyperdrive-entry-")
+;;   ("h//"  . "hyperdrive--")
+;;   ("h/"   . "hyperdrive-"))
+;; End:
+
+;;; hyperdrive-sbb-view.el ends here

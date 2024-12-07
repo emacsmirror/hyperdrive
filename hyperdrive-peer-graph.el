@@ -26,7 +26,7 @@
 
 (require 'dom)
 
-(require 'hyperdrive-fons-view)
+(require 'hyperdrive-sbb-view)
 (require 'hyperdrive-lib)
 (require 'taxy-magit-section)
 
@@ -216,7 +216,7 @@ If FROM, candidates for TO will not include FROM, and vice versa."
 
 (defun hpg/hops-fn-else (then plz-error)
   "Handle PLZ-ERROR by saying demoted error and calling THEN."
-  ;; Call THEN to decrement the `pending-relations' counter in `fons-relations'.
+  ;; Call THEN to decrement the `pending-relations' counter in `sbb-relations'.
   (pcase (plz-response-status (plz-error-response plz-error))
     ;; FIXME: If plz-error is a curl-error, this block will fail.
     (404 nil)
@@ -250,7 +250,7 @@ Call THEN with a list of block IDs."
 (cl-defun hpg/edge-url-format (hop type)
   "Return edge URL string for HOP of TYPE."
   (pcase-let*
-      (((cl-struct fons-hop from to) hop)
+      (((cl-struct h/sbb-hop from to) hop)
        (from-formatted (h//format-preferred (h/url-hyperdrive from)))
        (to-formatted (h//format-preferred (h/url-hyperdrive to))))
     (pcase type
@@ -263,14 +263,14 @@ Call THEN with a list of block IDs."
 
 (cl-defun hpg/insert-relation (public-key relations root)
   "Insert display string for PUBLIC-KEY in current buffer.
-RELATION may be a hash table of `fons-relation' structs mapped by
+RELATION may be a hash table of `sbb-relation' structs mapped by
 \\+`public-key'.  ROOT is the \\+`public-key' of the root node."
   (pcase-let*
       ((hyperdrive (h/url-hyperdrive public-key))
        (rootp (equal public-key root))
        ((or (guard rootp)
             (cl-struct
-             fons-relation blocker-paths blocked-paths source-paths))
+             h/sbb-relation blocker-paths blocked-paths source-paths))
         (gethash public-key relations))
        ;; Display the value with no prefix.
        (h/formats '((petname . "%s")
@@ -297,15 +297,15 @@ RELATION may be a hash table of `fons-relation' structs mapped by
         (dom-append-child label `(tr nil (td nil (b nil "root"))))
       (when source-paths
         (dom-append-child
-         label `(tr nil (td nil (font ((color . ,h/fons-view-sources-color))
+         label `(tr nil (td nil (font ((color . ,h/sbb-view-sources-color))
                                       "source")))))
       (when blocker-paths
         (dom-append-child
-         label `(tr nil (td nil (font ((color . ,h/fons-view-blockers-color))
+         label `(tr nil (td nil (font ((color . ,h/sbb-view-blockers-color))
                                       "blocker")))))
       (when blocked-paths
         (dom-append-child
-         label `(tr nil (td nil (font ((color . ,h/fons-view-blocked-color))
+         label `(tr nil (td nil (font ((color . ,h/sbb-view-blocked-color))
                                       "blocked"))))))
     (insert (format "%s [label=<\n  " public-key))
     (dom-print label)
@@ -314,27 +314,27 @@ RELATION may be a hash table of `fons-relation' structs mapped by
 (cl-defun hpg/relations (root &key finally sources-max-hops blockers-max-hops)
   "Load relations from ROOT and call FINALLY.
 FINALLY should be a function which accepts a single argument, a
-hash table of `fons-relation' structs keyed by public key.
+hash table of `sbb-relation' structs keyed by public key.
 SOURCES-MAX-HOPS and BLOCKERS-MAX-HOPS are the maximum number of
 hops to traverse for sources and blockers, respectively."
-  (fons-relations root
+  (h/sbb-relations root
     :hops-fn #'hpg/blockers-hops-fn :type 'blockers
     :max-hops blockers-max-hops :finally
     (lambda (relations)
-      (fons-blocked root relations
+      (h/sbb-blocked root relations
         :hops-fn #'hpg/blocked-hops-fn :finally
         (lambda (relations)
           (when-let* ((root-public-key (h/public-key hpg/root-hyperdrive))
                       (relation-to-root (gethash root-public-key relations))
                       (blocked-paths-to-root
-                       (fons-relation-paths-of-type 'blocked relation-to-root)))
+                       (h/sbb-relation-paths-of-type 'blocked relation-to-root)))
             (dolist (path blocked-paths-to-root)
               (h/message
                "Ignoring blocked path to root %s from %s"
                (h/url hpg/root-hyperdrive)
-               (h/url (h/url-hyperdrive (fons-blocked-path-blocker path))))
+               (h/url (h/url-hyperdrive (h/sbb-blocked-path-blocker path))))
               (remhash root-public-key relations)))
-          (fons-relations root
+          (h/sbb-relations root
             :relations relations :type 'sources :max-hops sources-max-hops
             :hops-fn #'hpg/sources-hops-fn :finally finally))))))
 
@@ -343,12 +343,12 @@ hops to traverse for sources and blockers, respectively."
   ;; TODO: Make filters customizable
   ;; Apply shortest path filter first.
   (when hpg/shortest-path-p
-    (cl-callf fons-filter-shortest-path relations
+    (cl-callf h/sbb-filter-shortest-path relations
       (h/public-key hpg/root-hyperdrive)))
   (unless (and hpg/show-sources-p
                hpg/show-blockers-p
                (eq hpg/show-blocked-p 'all))
-    (cl-callf fons-filter-to-types relations
+    (cl-callf h/sbb-filter-to-types relations
       :sourcesp hpg/show-sources-p
       :blockersp hpg/show-blockers-p
       :blocked-sources-p (pcase hpg/show-blocked-p
@@ -356,7 +356,7 @@ hops to traverse for sources and blockers, respectively."
       :blocked-non-sources-p (pcase hpg/show-blocked-p
                                ((or 'non-sources 'all) t))))
   ;; Apply `hpg/paths-only-to' last
-  (cl-callf2 fons-filter-paths-only-to (mapcar #'h/public-key hpg/paths-only-to)
+  (cl-callf2 h/sbb-filter-paths-only-to (mapcar #'h/public-key hpg/paths-only-to)
              relations)
   relations)
 
@@ -472,7 +472,7 @@ argument \\[universal-argument], always prompt."
 (defun hpg/draw-graph ()
   "Draw buffer displaying hyperdrive peer graph."
   (with-current-buffer (hpg/get-buffer-create)
-    (h/fons-view (hpg/filter hpg/relations)
+    (h/sbb-view (hpg/filter hpg/relations)
                  (h/public-key hpg/root-hyperdrive)
                  :insert-relation-fun #'hpg/insert-relation
                  :edge-url-format-fun #'hpg/edge-url-format)))
@@ -508,7 +508,7 @@ UPDATE-HISTORY-P, update `hyperdrive-peer-graph-history'."
 ;; The auto-resizing logic is adapted from `image-mode', but instead of scaling
 ;; the image to fit the new window size, it re-renders the image with graphviz
 ;; to preserve the aspect ratio.  Perhaps this logic belongs in
-;; `hyperdrive-fons', but the call to `hpg/draw-graph' lands it in this file.
+;; `hyperdrive-sbb', but the call to `hpg/draw-graph' lands it in this file.
 
 (defcustom hpg/auto-resize-on-window-resize 1
   "Non-nil to resize the graph when the window's dimensions change.
@@ -597,7 +597,7 @@ Non-nil value may be the number of seconds to wait before resizing."
 (defvar hpg/mode-map (make-composed-keymap hpg/parent-mode-map special-mode-map)
   "Local keymap for `hyperdrive-peer-graph-mode' buffers.")
 
-(define-derived-mode hpg/mode h/fons-view-mode
+(define-derived-mode hpg/mode h/sbb-view-mode
   '("Hyperdrive-peer-graph")
   "Major mode for viewing Hyperdrive peer graph."
   :group 'hyperdrive
@@ -628,21 +628,21 @@ Non-nil value may be the number of seconds to wait before resizing."
 (hpg/define-column "Peer" ()
   (h//format-preferred
    (h/url-hyperdrive
-    (fons-relation-to
+    (h/sbb-relation-to
      item))))
 
 (hpg/define-column "Source" ()
-  (let* ((directp (fons-relation-direct-p
+  (let* ((directp (h/sbb-relation-direct-p
                    (h/public-key hpg/root-hyperdrive)
                    'sources
                    ;; Item is filtered to one type: get original relation.
-                   (gethash (fons-relation-to item) hpg/relations)))
+                   (gethash (h/sbb-relation-to item) hpg/relations)))
          (text (if directp
-                   (propertize "[Source]" 'face 'h/fons-source)
+                   (propertize "[Source]" 'face 'h/sbb-source)
                  "[      ]")))
     (if (h/writablep hpg/root-hyperdrive)
         (let ((from hpg/root-hyperdrive)
-              (to (h/url-hyperdrive (fons-relation-to item))))
+              (to (h/url-hyperdrive (h/sbb-relation-to item))))
           (buttonize text
                      (lambda (_)
                        (hpg/set-relation :from from :to to
@@ -654,17 +654,17 @@ Non-nil value may be the number of seconds to wait before resizing."
       text)))
 
 (hpg/define-column "Blocker" ()
-  (let* ((directp (fons-relation-direct-p
+  (let* ((directp (h/sbb-relation-direct-p
                    (h/public-key hpg/root-hyperdrive)
                    'blockers
                    ;; Item is filtered to one type: get original relation.
-                   (gethash (fons-relation-to item) hpg/relations)))
+                   (gethash (h/sbb-relation-to item) hpg/relations)))
          (text (if directp
-                   (propertize "[Blocker]" 'face 'h/fons-blocker)
+                   (propertize "[Blocker]" 'face 'h/sbb-blocker)
                  "[       ]")))
     (if (h/writablep hpg/root-hyperdrive)
         (let ((from hpg/root-hyperdrive)
-              (to (h/url-hyperdrive (fons-relation-to item))))
+              (to (h/url-hyperdrive (h/sbb-relation-to item))))
           (buttonize text
                      (lambda (_)
                        (hpg/set-relation :from from :to to
@@ -676,17 +676,17 @@ Non-nil value may be the number of seconds to wait before resizing."
       text)))
 
 (hpg/define-column "Blocked" ()
-  (let* ((directp (fons-relation-direct-p
+  (let* ((directp (h/sbb-relation-direct-p
                    (h/public-key hpg/root-hyperdrive)
                    'blocked
                    ;; Item is filtered to one type: get original relation.
-                   (gethash (fons-relation-to item) hpg/relations)))
+                   (gethash (h/sbb-relation-to item) hpg/relations)))
          (text (if directp
-                   (propertize "[Blocked]" 'face 'h/fons-blocker)
+                   (propertize "[Blocked]" 'face 'h/sbb-blocker)
                  "[      ]")))
     (if (h/writablep hpg/root-hyperdrive)
         (let ((from hpg/root-hyperdrive)
-              (to (h/url-hyperdrive (fons-relation-to item))))
+              (to (h/url-hyperdrive (h/sbb-relation-to item))))
           (buttonize text
                      (lambda (_)
                        (hpg/set-relation :from from :to to
@@ -702,37 +702,37 @@ Non-nil value may be the number of seconds to wait before resizing."
 
 ;;;;; Functions
 
-(defun fons-shortest-hops-length (type relation)
+(defun h/sbb-shortest-hops-length (type relation)
   "Return the minimum number of TYPE hops in RELATION."
-  (cl-loop for path in (fons-relation-paths-of-type type relation)
-           minimize (length (fons-path-hops path))))
+  (cl-loop for path in (h/sbb-relation-paths-of-type type relation)
+           minimize (length (h/sbb-path-hops path))))
 
-(defun fons-shortest-sources-hops-length (relation)
+(defun h/sbb-shortest-sources-hops-length (relation)
   "Return the shortest number of source hops for RELATION."
-  (fons-shortest-hops-length 'sources relation))
+  (h/sbb-shortest-hops-length 'sources relation))
 
-(defun fons-shortest-blockers-hops-length (relation)
+(defun h/sbb-shortest-blockers-hops-length (relation)
   "Return the minimum number of blocker hops in RELATION."
-  (fons-shortest-hops-length 'blockers relation))
+  (h/sbb-shortest-hops-length 'blockers relation))
 
-(cl-defun fons-shortest-blocked-hops-length (relation)
+(cl-defun h/sbb-shortest-blocked-hops-length (relation)
   "Return the minimum number of blocked hops in RELATION.
 A blocked hop includes the number of hops to the blocker."
   ;; TODO: Generalize this function so it doesn't rely on `hpg/...' variables.
   (when-let*
-      ((blocked-paths (fons-relation-blocked-paths relation))
+      ((blocked-paths (h/sbb-relation-blocked-paths relation))
        (blockers
         (mapcar (lambda (path)
-                  (let ((blocker-public-key (fons-blocked-path-blocker path)))
+                  (let ((blocker-public-key (h/sbb-blocked-path-blocker path)))
                     (when (equal (h/public-key hpg/root-hyperdrive)
                                  blocker-public-key)
                       ;; Direct block from root: return 1.
-                      (cl-return-from fons-shortest-blocked-hops-length 1))
+                      (cl-return-from h/sbb-shortest-blocked-hops-length 1))
                     (gethash blocker-public-key hpg/relations)))
                 blocked-paths)))
     (1+ (cl-loop
          for blocker in blockers
-         minimize (fons-shortest-hops-length 'blockers blocker)))))
+         minimize (h/sbb-shortest-hops-length 'blockers blocker)))))
 
 (defun hpg/format-hops (hops)
   "Return formatted string for HOPS, which is an integer."
@@ -742,12 +742,12 @@ A blocked hop includes the number of hops to the blocker."
   "Return non-nil if RELATION is a source.
 Return non-nil if RELATION has source paths and either has no
 blocked paths or has a one-hop source path."
-  (pcase-let (((cl-struct fons-relation source-paths blocked-paths) relation))
+  (pcase-let (((cl-struct h/sbb-relation source-paths blocked-paths) relation))
     (or (and source-paths (not blocked-paths))
         (cl-loop for path in source-paths
                  ;; TODO: Make this customizable (include N-hop relations)?
-                 ;; TODO: Move this logic into `fons-filter-to-types'.
-                 thereis (= 1 (length (fons-path-hops path)))))))
+                 ;; TODO: Move this logic into `sbb-filter-to-types'.
+                 thereis (= 1 (length (h/sbb-path-hops path)))))))
 
 (defun hpg/list (hyperdrive sources-max-hops blockers-max-hops)
   "Show menu for HYPERDRIVE peer graph."
@@ -838,21 +838,21 @@ blocked paths or has a one-hop source path."
                          :heading-face-fn
                          (lambda (_)
                            (pcase type
-                             ('sources 'hyperdrive-fons-source)
-                             ('blockers 'hyperdrive-fons-blocker)
-                             ('blocked 'hyperdrive-fons-blocked)))
+                             ('sources 'h/sbb-source)
+                             ('blockers 'h/sbb-blocker)
+                             ('blocked 'h/sbb-blocked)))
                          :level-indent 2
                          :item-indent 0
                          args)))
       (let* ((relations (if hpg/list-apply-filters
                             (hpg/filter hpg/relations)
                           hpg/relations))
-             (sources (fons-filter-to-types relations :sourcesp t))
-             (blockers (fons-filter-to-types relations :blockersp t))
+             (sources (h/sbb-filter-to-types relations :sourcesp t))
+             (blockers (h/sbb-filter-to-types relations :blockersp t))
              (blocked-sources
-              (fons-filter-to-types relations :blocked-sources-p t))
+              (h/sbb-filter-to-types relations :blocked-sources-p t))
              (blocked-non-sources
-              (fons-filter-to-types relations :blocked-non-sources-p t))
+              (h/sbb-filter-to-types relations :blocked-non-sources-p t))
              (sources-taxy
               (thread-last
                 (make-fn
@@ -860,12 +860,12 @@ blocked paths or has a one-hop source path."
                  :name "Sources"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
-                           (list #'fons-shortest-sources-hops-length)
+                           (list #'h/sbb-shortest-sources-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values sources))
                 (taxy-sort-taxys #'string< #'taxy-name)
-                (taxy-sort #'string< #'fons-relation-to)))
+                (taxy-sort #'string< #'h/sbb-relation-to)))
              (blockers-taxy
               (thread-last
                 (make-fn
@@ -873,12 +873,12 @@ blocked paths or has a one-hop source path."
                  :name "Blockers"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
-                           (list #'fons-shortest-blockers-hops-length)
+                           (list #'h/sbb-shortest-blockers-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blockers))
                 (taxy-sort-taxys #'string< #'taxy-name)
-                (taxy-sort #'string< #'fons-relation-to)))
+                (taxy-sort #'string< #'h/sbb-relation-to)))
              (blocked-sources-taxy
               (thread-last
                 (make-fn
@@ -886,12 +886,12 @@ blocked paths or has a one-hop source path."
                  :name "Blocked sources"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
-                           (list #'fons-shortest-blocked-hops-length)
+                           (list #'h/sbb-shortest-blocked-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blocked-sources))
                 (taxy-sort-taxys #'string< #'taxy-name)
-                (taxy-sort #'string< #'fons-relation-to)))
+                (taxy-sort #'string< #'h/sbb-relation-to)))
              (blocked-non-sources-taxy
               (thread-last
                 (make-fn
@@ -899,12 +899,12 @@ blocked paths or has a one-hop source path."
                  :name "Blocked non-sources"
                  :take (lambda (peer taxy)
                          (taxy-take-keyed
-                           (list #'fons-shortest-blocked-hops-length)
+                           (list #'h/sbb-shortest-blocked-hops-length)
                            peer taxy :key-name-fn #'hpg/format-hops)))
                 taxy-emptied
                 (taxy-fill (hash-table-values blocked-non-sources))
                 (taxy-sort-taxys #'string< #'taxy-name)
-                (taxy-sort #'string< #'fons-relation-to)))
+                (taxy-sort #'string< #'h/sbb-relation-to)))
              (blocked-taxy
               (make-fn
                'blocked
@@ -1332,7 +1332,6 @@ Only drives not in `hpg/paths-only-to' are offered for completion."
 ;;   ("h//"  . "hyperdrive--")
 ;;   ("hpg/"  . "hyperdrive-peer-graph-")
 ;;   ("hpg//"  . "hyperdrive-peer-graph--")
-;;   ("hf/"  . "hyperdrive-fons-")
 ;;   ("h/"   . "hyperdrive-"))
 ;; End:
 
