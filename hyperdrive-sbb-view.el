@@ -35,6 +35,7 @@
 (require 'cl-lib)
 (require 'map)
 (require 'color)
+(require 'image)
 
 (require 'hyperdrive-sbb)
 
