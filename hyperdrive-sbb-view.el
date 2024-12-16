@@ -47,17 +47,17 @@
 (defcustom h/sbb-view-layout "dot"
   "Default layout.  See Graphviz documentation."
   :type '(choice
-          ((const :description "Pretty good layout.  Offers perspective/root node."
-                  "twopi")
-           (const :description "Good all-around layout.  No perspective/root node."
-                  "neato")
-           (const :description "Spacious layout, smaller labels with larger graphs.  Offers perspective/root node."
-                  "circo")
-           (const :description "Very cozy layout, larger labels.  Some randomness.  No perspective/root node."
-                  "fdp")
-           (const :description "Top-down, linear layout.  Not very efficient in terms of screen space."
-                  "dot")
-           (const :description "Similar to fdp." "sfdp"))))
+          (const :tag "Pretty good layout.  Offers perspective/root node."
+                 "twopi")
+          (const :tag "Good all-around layout.  No perspective/root node."
+                 "neato")
+          (const :tag "Spacious layout, smaller labels with larger graphs.  Offers perspective/root node."
+                 "circo")
+          (const :tag "Very cozy layout, larger labels.  Some randomness.  No perspective/root node."
+                 "fdp")
+          (const :tag "Top-down, linear layout.  Not very efficient in terms of screen space."
+                 "dot")
+          (const :tag "Similar to fdp." "sfdp")))
 
 (defcustom h/sbb-view-overlap "voronoi"
   "How to handle overlapping.  See Graphviz documentation.
