@@ -85,7 +85,7 @@ Updates `hyperdrive-existent-versions' as a side effect."
                 ("put" t)
                 ("del" nil)
                 ("unknown" 'unknown)))
-        (when (eq "put" type)
+        (when (equal "put" type)
           (h/update-existent-versions
            hyperdrive path (he/version history-entry)))
         (push history-entry history-entries)))
