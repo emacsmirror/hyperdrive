@@ -667,7 +667,7 @@ information means, see [[*Naming]].
   different hyperdrive, use the universal prefix argument like this:
   ~C-u M-x hyperdrive-set-nickname~.
 
-** Explore peer graph
+** Explore the peer graph
 
 ~hyperdrive.el~ includes a tool for building and exploring a network
 of sources of information.  This peer graph feature is based on three
@@ -682,8 +682,7 @@ ways relating to other peers:
 - Blocked :: Blocked are peers whose content you do not want to see.
 
 For a video demonstration and explanation of the peer graph, see
-[[https://ushin.org/presentations.html#emacsconf2024][EmacsConf 2024: New in hyperdrive.el: quick install, peer graph,
-transclusion!]]
+[[https://ushin.org/presentations.html#emacsconf2024][EmacsConf 2024: New in hyperdrive.el: quick install, peer graph, transclusion!]]
 
 *** Customization
 
