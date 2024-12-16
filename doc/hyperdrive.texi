@@ -91,7 +91,7 @@ Usage
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Name a hyperdrive::
-* Explore peer graph::
+* Explore the peer graph::
 * Bookmark a hyperdrive::
 * Stream audio and video::
 * Download hyperdrive files::
@@ -121,7 +121,7 @@ View the hyperdrive version history
 
 * History buffer::
 
-Explore peer graph
+Explore the peer graph
 
 * Customization::
 
@@ -317,7 +317,7 @@ On the network it still may be there.
 * View the hyperdrive version history::
 * Describe a hyperdrive::
 * Name a hyperdrive::
-* Explore peer graph::
+* Explore the peer graph::
 * Bookmark a hyperdrive::
 * Stream audio and video::
 * Download hyperdrive files::
@@ -988,8 +988,8 @@ different hyperdrive, use the universal prefix argument like this:
 @code{C-u M-x hyperdrive-set-nickname}.
 @end deffn
 
-@node Explore peer graph
-@section Explore peer graph
+@node Explore the peer graph
+@section Explore the peer graph
 
 @code{hyperdrive.el} includes a tool for building and exploring a network
 of sources of information.  This peer graph feature is based on three
@@ -1009,8 +1009,7 @@ Blocked are peers whose content you do not want to see.
 @end table
 
 For a video demonstration and explanation of the peer graph, see
-@uref{https://ushin.org/presentations.html#emacsconf2024, EmacsConf 2024: New in hyperdrive.el: quick install, peer graph,
-transclusion!}
+@uref{https://ushin.org/presentations.html#emacsconf2024, EmacsConf 2024: New in hyperdrive.el: quick install, peer graph, transclusion!}
 
 @menu
 * Customization::
