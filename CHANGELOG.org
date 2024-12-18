@@ -6,7 +6,12 @@
 
 * 0.5.1-pre
 
-Nothing yet...
+** Fixed
+
+- Fix equality predicate in ~hyperdrive-history-get~.  This fix means
+  that loading an old version of a file after viewing that file's
+  history will be much faster.  Thanks to Jonas Bernoulli for the fix!
+- Fix ~hyperdrive-sbb-view-layout~ custom type.  Thanks again, Jonas!
 
 * 0.5 [2024-12-06 Fri]
 
