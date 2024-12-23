@@ -6,9 +6,9 @@
 <a href="https://anonymous.cheogram.com/discuss@conference.ushin.org">
   <img alt="Discuss via XMPP" src="https://img.shields.io/badge/discuss-via_xmpp-8a2be2?logo=xmpp">
 </a>
-<a href="https://builds.sr.ht/~ushin/hyperdrive.el/commits/master/emacs-29.4.yml?">
-  <img alt="SourceHut Builds Badge" src="https://builds.sr.ht/~ushin/hyperdrive.el/commits/master/emacs-29.4.yml.svg">
-</a>
+<!-- <a href="https://builds.sr.ht/~ushin/hyperdrive.el/commits/master/emacs-29.4.yml?"> -->
+<!--   <img alt="SourceHut Builds Badge" src="https://builds.sr.ht/~ushin/hyperdrive.el/commits/master/emacs-29.4.yml.svg"> -->
+<!-- </a> -->
 <a href="https://elpa.nongnu.org/nongnu/hyperdrive.html">
   <img alt="NonGNU ELPA Badge" src="https://elpa.nongnu.org/nongnu/hyperdrive.svg">
 </a>
