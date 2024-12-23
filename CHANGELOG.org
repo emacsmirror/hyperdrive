@@ -8,6 +8,13 @@
 
 Nothing yet...
 
+* 0.5.2 [2024-12-22 Sun]
+
+** Fixed
+
+- Bumped ~hyper-gateway-ushin~ to version ~3.17.0~, fixing an infinite
+  loop when viewing the history and blocks were missing.
+
 * 0.5.1 [2024-12-17 Tue]
 
 ** Fixed
