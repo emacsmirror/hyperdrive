@@ -9,6 +9,9 @@
 <a href="https://builds.sr.ht/~ushin/hyperdrive.el/commits/master/emacs-29.4.yml?">
   <img alt="SourceHut Builds Badge" src="https://builds.sr.ht/~ushin/hyperdrive.el/commits/master/emacs-29.4.yml.svg">
 </a>
+<a href="https://elpa.nongnu.org/nongnu/hyperdrive.html">
+  <img alt="NonGNU ELPA Badge" src="https://elpa.nongnu.org/nongnu/hyperdrive.svg">
+</a>
 <br/>
 <br/>
 #+END_EXPORT
