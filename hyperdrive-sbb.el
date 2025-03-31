@@ -88,12 +88,12 @@ relations hash table as its sole argument."
             hops-fn from
             (lambda (tos)
               (dolist (to tos)
-                (when-let ((hop (h/sbb-hop-create :from from :to to))
-                           ((not (equal root to)))
-                           (to-relation
-                            (and (not (equal root to))
-                                 (ensure-relation to)))
-                           (paths-to-to (extended-paths paths-to-from hop)))
+                (when-let* ((hop (h/sbb-hop-create :from from :to to))
+                            ((not (equal root to)))
+                            (to-relation
+                             (and (not (equal root to))
+                                  (ensure-relation to)))
+                            (paths-to-to (extended-paths paths-to-from hop)))
                   (cl-callf append
                       (h/sbb-relation-paths-of-type type to-relation)
                     paths-to-to)
@@ -247,9 +247,9 @@ longer path to one of the IDS."
       ;; For each ID which is blocked, add the blocked relation.  Also track the
       ;; `blocker-id's of the blockers which block ID.
       (dolist (id relation-ids)
-        (when-let ((relation (gethash id relations))
-                   (blocked-paths (h/sbb-relation-blocked-paths relation))
-                   (copy-relation (safe-copy-relation id relation)))
+        (when-let* ((relation (gethash id relations))
+                    (blocked-paths (h/sbb-relation-blocked-paths relation))
+                    (copy-relation (safe-copy-relation id relation)))
           (setf (h/sbb-relation-blocked-paths copy-relation) blocked-paths)
           (setf (gethash id copy-relations) copy-relation)
           (dolist (path blocked-paths)

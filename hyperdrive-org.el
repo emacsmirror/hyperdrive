@@ -121,8 +121,8 @@ TARGET may be a CUSTOM_ID or a headline."
 
 Added to `org-open-at-point-functions' in order to short-circuit
 the logic for handling links of \"file\" type."
-  (when-let ((h/mode)
-             (link (h/org--link-entry-at-point)))
+  (when-let* ((h/mode)
+              (link (h/org--link-entry-at-point)))
     (h/open link)))
 
 (defun h/org--link-entry-at-point ()

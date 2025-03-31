@@ -297,7 +297,7 @@ Callback for queue finalizer in `hyperdrive-mirror'."
                                               files-and-urls
                                               :key #'h/mirror-item-status)))
         (setq-local h/mirror-files-and-urls files-and-urls)
-        (when-let ((window (get-buffer-window (current-buffer))))
+        (when-let* ((window (get-buffer-window (current-buffer))))
           (setf window-point (window-point window))
           (setf window-start (window-start window)))
         (when h/mirror-visibility-cache
@@ -313,7 +313,7 @@ Callback for queue finalizer in `hyperdrive-mirror'."
                  (section (magit-get-section section-ident)))
             (goto-char (oref section start))
           (goto-char pos))
-        (when-let ((window (get-buffer-window (current-buffer))))
+        (when-let* ((window (get-buffer-window (current-buffer))))
           (set-window-start window window-start)
           (set-window-point window window-point))))
     (set-buffer-modified-p nil)))

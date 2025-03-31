@@ -119,7 +119,7 @@ If data for HYPERDRIVE is already in
 `hyperdrive-peer-graph-data-cache', use it and send no request."
   (declare (indent defun))
   ;; TODO: Add a queue limit.
-  (when-let ((data (gethash (h/public-key hyperdrive) hpg/data-cache)))
+  (when-let* ((data (gethash (h/public-key hyperdrive) hpg/data-cache)))
     ;; TODO: The first time a drive is requested, only request and parse once.
     (cl-return-from hpg/data
       (pcase then
@@ -617,7 +617,7 @@ Non-nil value may be the number of seconds to wait before resizing."
 (defun hpg/view-follow-link (event)
   "Follow link at EVENT's position."
   (interactive "e")
-  (when-let ((hyperdrive (h/at-point event)))
+  (when-let* ((hyperdrive (h/at-point event)))
     (setf hpg/root-hyperdrive hyperdrive)
     (hpg/revert-buffers)))
 
@@ -1059,7 +1059,7 @@ With numeric ARG, or interactively with universal prefix argument
   :type display-buffer--action-custom-type
   :set (lambda (option value)
          (set-default option value)
-         (when-let ((prefix (get 'hpg/menu 'transient--prefix)))
+         (when-let* ((prefix (get 'hpg/menu 'transient--prefix)))
            (eieio-oset prefix 'display-action hpg/menu-display-action))))
 
 (transient-define-prefix hyperdrive-peer-graph-menu

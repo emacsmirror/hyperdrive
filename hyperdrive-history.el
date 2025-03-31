@@ -73,8 +73,8 @@ Updates `hyperdrive-existent-versions' as a side effect."
               (map-elt (map-elt value 'blob) 'blockLength))
         (setf (map-elt (he/etc history-entry) 'block-length-downloaded)
               blockLengthDownloaded)
-        (when-let ((mtime
-                    (map-elt (map-elt value 'metadata) 'mtime)))
+        (when-let* ((mtime
+                     (map-elt (map-elt value 'metadata) 'mtime)))
           (setf (he/mtime history-entry)
                 (seconds-to-time (/ mtime 1000.0))))
         (setf (map-elt (he/etc history-entry) 'next-version-number)
@@ -178,7 +178,7 @@ error.  With non-nil NO-ERROR, return nil in that case."
            (let ((copy-entry (compat-call copy-tree h/history-current-entry t)))
              (setf (map-elt (he/etc copy-entry) 'next-version-number) nil)
              (setf (he/version copy-entry) nil)
-             (when-let ((first-node (ewoc-nth h/ewoc 0)))
+             (when-let* ((first-node (ewoc-nth h/ewoc 0)))
                (setf (map-elt (he/etc copy-entry) 'existsp)
                      (map-elt (he/etc (ewoc-data first-node)) 'existsp)))
              copy-entry))

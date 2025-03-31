@@ -1731,7 +1731,7 @@ If FORCEP, don't prompt for confirmation before downloading."
 ;;   "Return non-nil if a local installation of the gateway appears valid.
 ;; That is, if an executable file exists at the expected location
 ;; with an expected hash."
-;;   (when-let ((file-name (h//gateway-path)))
+;;   (when-let* ((file-name (h//gateway-path)))
 ;;     (let* ((file-hash (with-temp-buffer
 ;;                          (insert-file-contents-literally file-name)
 ;;                          (secure-hash 'sha256 (current-buffer))))

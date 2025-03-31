@@ -53,9 +53,9 @@ If THEN, call it in the directory buffer with no arguments."
         (ewoc-filter h/ewoc #'ignore)
         (ewoc-set-hf h/ewoc header "Loading...")))
     (cl-labels ((goto-entry (entry ewoc)
-                  (when-let ((node (h/ewoc-find-node ewoc entry
-                                     :predicate #'he/equal-p)))
-                    (goto-char (ewoc-location node)))))
+                  (and-let ((node (h/ewoc-find-node ewoc entry
+                                                    :predicate #'he/equal-p)))
+                           (goto-char (ewoc-location node)))))
       (he/api 'get directory-entry :noquery t
         ;; Get "full" listing with metadata
         :headers `(("Accept" . "application/json; metadata=full"))

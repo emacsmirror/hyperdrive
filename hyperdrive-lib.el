@@ -362,14 +362,14 @@ it exists.  Persists ENTRY's hyperdrive.  Invalidates ENTRY display."
       (when etag
         (h/update-existent-versions
          (he/hyperdrive entry) (he/path entry) (json-parse-string etag)))
-      (when-let (((string-equal "true" x-next-version-exists))
-                 (next-version-number
-                  (json-parse-string x-next-version-number :null-object nil)))
+      (when-let* (((string-equal "true" x-next-version-exists))
+                  (next-version-number
+                   (json-parse-string x-next-version-number :null-object nil)))
         (h/update-existent-versions
          (he/hyperdrive entry) (he/path entry) next-version-number))
-      (when-let (((string-equal "true" x-previous-version-exists))
-                 (previous-version-number
-                  (json-parse-string x-previous-version-number)))
+      (when-let* (((string-equal "true" x-previous-version-exists))
+                  (previous-version-number
+                   (json-parse-string x-previous-version-number)))
         (h/update-existent-versions
          (he/hyperdrive entry) (he/path entry) previous-version-number)))
 
@@ -1488,7 +1488,7 @@ version."
   "Return `hyperdrive' at point, optionally given EVENT."
   (unless (listp event)  ;; Avoid errors.
     (cl-return-from h/at-point))
-  (when-let (hyperdrive (get-text-property (point) 'hyperdrive))
+  (when-let* (hyperdrive (get-text-property (point) 'hyperdrive))
     (cl-return-from h/at-point hyperdrive))
   (pcase (cadadr event)  ;; Image id from peer graph image map
     ((and (rx (group (= 52 alphanumeric))) public-key)
