@@ -1,6 +1,6 @@
 # SETUPFILE for Org manual
 
-# Copyright (C) 2023, 2024 USHIN, Inc. <contact@ushin.org>
+# Copyright (C) 2023, 2024, 2025 USHIN, Inc. <contact@ushin.org>
 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Affero General Public License

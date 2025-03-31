@@ -1,6 +1,6 @@
 ;;; hyperdrive-org.el --- Org-related functionality  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023, 2024  USHIN, Inc.
+;; Copyright (C) 2023, 2024, 2025  USHIN, Inc.
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 

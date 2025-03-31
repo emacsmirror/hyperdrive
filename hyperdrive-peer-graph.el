@@ -1,6 +1,6 @@
 ;;; hyperdrive-peer-graph.el --- View graph of sources, blockers, and blocked  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2024 USHIN, Inc.
+;; Copyright (C) 2024, 2025 USHIN, Inc.
 
 ;; Author: Joseph Turner <joseph@ushin.org>
 ;; Maintainer: Joseph Turner <~ushin/ushin@lists.sr.ht>

@@ -1,6 +1,6 @@
 ;;; hyperdrive-lib.el --- Library functions and structures  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023, 2024  USHIN, Inc.
+;; Copyright (C) 2023, 2024, 2025  USHIN, Inc.
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 

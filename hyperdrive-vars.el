@@ -1,6 +1,6 @@
 ;;; hyperdrive-vars.el --- Shared (persist-)defvars, deffaces, defcustoms  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023, 2024  USHIN, Inc.
+;; Copyright (C) 2023, 2024, 2025  USHIN, Inc.
 
 ;; Author: Joseph Turner <joseph@ushin.org>
 

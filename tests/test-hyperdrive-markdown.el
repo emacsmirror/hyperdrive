@@ -1,6 +1,6 @@
 ;;; test-hyperdrive-markdown.el --- Test Hyperdrive.el's integration with markdown-mode  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023, 2024 USHIN, Inc.
+;; Copyright (C) 2023, 2024, 2025 USHIN, Inc.
 
 ;; Author: Joseph Turner
 ;; Author: Adam Porter <adam@alphapapa.net>
