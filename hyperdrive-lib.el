@@ -1488,7 +1488,7 @@ version."
   "Return `hyperdrive' at point, optionally given EVENT."
   (unless (listp event)  ;; Avoid errors.
     (cl-return-from h/at-point))
-  (when-let* (hyperdrive (get-text-property (point) 'hyperdrive))
+  (when-let* ((hyperdrive (get-text-property (point) 'hyperdrive)))
     (cl-return-from h/at-point hyperdrive))
   (pcase (cadadr event)  ;; Image id from peer graph image map
     ((and (rx (group (= 52 alphanumeric))) public-key)
